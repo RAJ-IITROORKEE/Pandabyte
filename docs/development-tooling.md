@@ -2,6 +2,10 @@
 
 **Research date:** 23 October 2026. **Status:** planning only. PandaByte is still in phase zero with no application/package manifest. This document recommends tools for later authorized work; no package, MCP server, skill pack, provider project or credential was installed, linked or changed here.
 
+## Subsequent authorized setup
+
+After the research-only snapshot below, the user authorized Next.js initialization and selective ECC skill installation. The app now uses Next.js 16.4.3 with root app/ routing. See [project-local ECC selection](ecc-skills.md) and [phase evidence](phase-progress.md) for actual installation/check status; earlier “not installed during this review” statements describe the research checkpoint, not current application state.
+
 ## Recommended toolkit
 
 | Use | Recommendation | When it fits PandaByte | Current status |

@@ -16,13 +16,15 @@ Deliverables: consolidated README with unchanged original audit appendix; revise
 
 Review work covers the actual current-site evidence, the two chats' requirements, official Next.js/Clerk/InsForge guidance and bounded GitHub research. Two Luna extra-high workers handle independent architecture/tooling research; root integrates. The main model follows the chat setting; no tool changed it.
 
-Exit: local document links resolve, shared decisions/phase sequence agree, original audit is preserved, and no app/Git/provider setup has been performed. Application tests cannot pass before an application exists.
+Historical Phase 0 exit: local links/decisions/source preservation passed before app/Git/provider setup. Initialization and application checks are now tracked separately in docs/phase-progress.md; no live provider integration has been verified.
 
 ## Initialization checkpoint — before Phase 1
 
 Create the single Next.js app, preserve existing context/design evidence, use a private package and local development branch, and prepare repeatable lint/typecheck/build commands. Test the development preview on localhost using the built-in app browser. Review findings, fix defects and commit this checkpoint before assigning dependent Phase 1 work. This does not complete Phase 2 identity/data integration. See [phase-progress.md](docs/phase-progress.md) for actual evidence.
 
 ## Phase 1 — contracts, operating decisions and design handoff
+
+Status: independent preparation checkpoint produced and reviewed; the full exit gate remains held for the required owner/provider/design decisions. See [implementation contracts](docs/phase-1-contracts.md), [design handoff](docs/phase-1-design-handoff.md) and [phase progress](docs/phase-progress.md).
 
 **Dependencies:** verified and committed initialization checkpoint; only resolve choices needed for the next slice. Owner keys/exports belong in protected configuration, never Markdown or prompts.
 
@@ -45,7 +47,7 @@ Exit: minimal written contracts for the next slice, a compatible visual handoff 
 **Dependencies:** implementation authorization and Phase 1 foundation decisions. Git/publication remain subject to the user's scope; do not assume a coding instruction permits publishing a repository.
 
 Frontend:
-- Initialize one Next.js/TypeScript app with pinned compatible stable versions and one package manager/lockfile. Add only selected Aceternity visual components, needed accessible shadcn primitives, Tailwind tokens and Heroicons. Use the Aceternity registry through the official shadcn CLI after the app exists; inspect generated source, compatibility, dependencies and component terms before accepting changes. Keep one shared component set and do not overwrite reviewed tokens.
+- Extend the verified root-app Next.js/TypeScript initialization (checkpoint 8cf0769); do not rerun the initializer or recreate src/. Keep the pinned compatible versions and one package manager/lockfile. Add only selected Aceternity visual components, needed accessible shadcn primitives, Tailwind tokens and the selected Lucide icons (ISC). Use the Aceternity registry through the official shadcn CLI after the app exists; inspect generated source, compatibility, dependencies and component terms before accepting changes. Keep one shared component set and do not overwrite reviewed tokens.
 - Build shared shell, accessible nested menus, theme, route error/loading/not-found boundaries, Clerk sign-in/account entry and an authorized staff shell. Public pages remain usable independently of private account data.
 - Preserve cart and an allowlisted internal return path through login; no external redirect injection. Missing keys produce an explicit development setup state, never a fake authenticated session.
 

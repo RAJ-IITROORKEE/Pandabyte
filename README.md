@@ -1,6 +1,6 @@
 # PandaByte.in — single project context
 
-Updated 23 October 2026, Asia/Calcutta. **Current work: Next.js initialization, then Phase 1 contracts and design handoff.** This file consolidates decisions, architecture, source findings and the complete original audit. Read it first; [design.md](design.md) specifies page/content behavior, [plan.md](plan.md) defines implementation phases, and [AGENTS.md](AGENTS.md) governs agent work.
+Updated 23 October 2026, Asia/Calcutta. **Current work: initialization verified and committed; Phase 1 preparation checkpoint reviewed, with the full exit gate awaiting required design/owner/provider decisions.** This file consolidates decisions, architecture, source findings and the complete original audit. Read it first; [design.md](design.md) specifies page/content behavior, [plan.md](plan.md) defines implementation phases, and [AGENTS.md](AGENTS.md) governs agent work.
 
 ## Local development
 
@@ -66,8 +66,8 @@ Public sources identify Pandabyte Innovations Private Limited, `pandabytehelp@gm
 
 Confirmed main order: **Solutions → Learn → About → Contact**. Keep visible Login/account, cart/theme and a clearly labeled Agent prototype entry. Remove navbar search; retain catalog search/filtering.
 
-- Solutions includes IoT Kits, Shop IoT & embedded products with nested categories, and the future PandaByte agent software overview. The Products submenu includes owner-named QR Logger, Campus Tracker, Smart Park and Nexus Solution (AI). These concepts get truthful overview/Coming soon pages, not fabricated sellable SKUs.
-- The latest UI brief describes a future downloadable Windows/Linux/macOS agent harness with an Arduino-compatible editor, PCB/CAD tools, IoT dashboard and Plan/Build/Ask modes. These are proposed future product intentions, not available capabilities. The UI chat's suggested names PandaForge/Pando are unapproved; do not finalize a name here.
+- Solutions includes IoT Kits, Shop IoT & embedded products with nested categories, and owner-approved public Skills/CLI tools for IoT & Embedded content, plus the future PandaByte agent software overview. The Products submenu includes owner-named QR Logger, Campus Tracker, Smart Park and Nexus Solution (AI). These concepts get truthful overview/Coming soon pages, not fabricated sellable SKUs.
+- The latest UI brief describes a future downloadable Windows/Linux/macOS agent harness with an Arduino-compatible editor, PCB/CAD tools, IoT dashboard and Plan/Build/Ask modes. These are proposed future product intentions, not available capabilities. The latest UI instruction excludes Agent Desktop from homepage highlights and keeps it in Solutions/About Coming soon content. The UI chat's suggested names PandaForge/Pando are unapproved; do not finalize a name here.
 - Learn includes blogs, embedded resources, kit guides, YouTube and product specs/resources. About is directly discoverable and has a dropdown. Menus work by click/keyboard/mobile as well as optional hover.
 - Home sequence: hero → verified brand strip → categories → featured hardware → support card → FAQs → footer. Source logos alone do not prove a sponsorship/collaboration; label only approved relationships.
 - About includes company/goals, founder/cofounder/team section, verified relationships where available, Contact card and FAQs. All ordinary content is editable. Neutral preview avatars do not create fictional founders.
@@ -84,7 +84,7 @@ The design chat is active and its records change. Earlier one-homepage/v5 checks
 | Layer | Choice/direction | Implementation rule |
 | --- | --- | --- |
 | App | Next.js App Router, React, TypeScript | Server-render public data; small interactive client islands |
-| UI | Aceternity visual components, Tailwind tokens, selected accessible shadcn primitives, Heroicons | One reviewed system; selected Motion effects, static/reduced-motion fallbacks |
+| UI | Aceternity visual components, Tailwind tokens, selected accessible shadcn primitives, Lucide icons | One reviewed system; selected Motion effects, static/reduced-motion fallbacks |
 | Identity | Clerk / @clerk/nextjs | Required before checkout; authorize at every resource boundary |
 | Data | InsForge PostgreSQL/storage, typed SDK and reviewed SQL/RPC | One migration owner, grants/RLS and atomic stock operations |
 | APIs | Next.js server services, Route Handlers/Server Actions | Validate inputs/ownership/capabilities; server-only privileged clients |
@@ -96,7 +96,7 @@ The design chat is active and its records change. Earlier one-homepage/v5 checks
 
 Pin compatible stable versions and one package manager/lockfile at foundation time. Avoid Prisma initially because privileged database access can bypass RLS and needs separate pooling/authorization review. Avoid a dedicated search service until measured query/relevance requirements justify it. Future AI does not justify adding a model SDK/vector store now.
 
-Prefer MIT UI code and retain notices. InsForge/TypeScript/Playwright use Apache-2.0; PostgreSQL has its own permissive license. Heroicons is MIT; Lucide is ISC. Tiptap core/selected open-source extensions are a proposal, not its paid Cloud/Pro bundle. Hosted service terms and media rights are separate from software licenses. [Historical resource ledger](docs/resources.md), [current tooling/license snapshot](docs/development-tooling.md), [Tiptap editor](https://tiptap.dev/docs/editor/getting-started/overview).
+Prefer MIT UI code and retain notices. InsForge/TypeScript/Playwright use Apache-2.0; PostgreSQL has its own permissive license. Heroicons is MIT; the latest UI brief prefers Lucide under ISC, replacing the earlier icon preference. Tiptap core/selected open-source extensions are a proposal, not its paid Cloud/Pro bundle. Hosted service terms and media rights are separate from software licenses. [Historical resource ledger](docs/resources.md), [current tooling/license snapshot](docs/development-tooling.md), [Tiptap editor](https://tiptap.dev/docs/editor/getting-started/overview).
 
 ## 6. Identity, authorization and data
 
@@ -160,8 +160,8 @@ Read relevant skills only when needed: Ponytail; InsForge CLI/SDK/integrations; 
 | Phase | Deliverable | Exit evidence |
 | --- | --- | --- |
 | 0 — completed documentation baseline | Reviewed context, design contracts, plan and tooling research | Document links/consistency/source preservation |
-| Initialization — current | Next.js local project | Lint/typecheck/build, built-in-browser smoke checks, review and local commit |
-| 1 | Contracts, operating decisions and relevant visual handoff | Models/roles/policies and selected component directions |
+| Initialization — verified/committed | Next.js local project | Lint/typecheck/build, built-in-browser smoke checks, review and local commit |
+| 1 — preparation checkpoint | Contracts, operating decisions and relevant visual handoff; required decisions pending | Models/roles/policies and selected component directions |
 | 2 | Authorized app, Clerk/InsForge and data foundation | Real identity/RLS/private-file checks |
 | 3 | Editable admin and publishing | Draft/preview/publish, revision/permission tests, edits without deployment |
 | 4 | Storefront/search/company/learning pages | Real admin-to-public flows, discovery/accessibility/performance baseline |
@@ -170,7 +170,7 @@ Read relevant skills only when needed: Ponytail; InsForge CLI/SDK/integrations; 
 | 7 | Separately authorized production release | Production readiness, rollback and smoke checks |
 | Later | Agent software/runtime and other advanced products | Separate scope and acceptance |
 
-[plan.md](plan.md) contains frontend/backend tasks, dependencies, verification and role/publication contracts. Backend foundation work may proceed after authorization while unrelated design polish continues; only implement visual components against the relevant approved handoff.
+[plan.md](plan.md) contains frontend/backend tasks and gates; the [Phase 1 contracts](docs/phase-1-contracts.md) and [design handoff snapshot](docs/phase-1-design-handoff.md) make the next implementation slice concrete without approving pending designs or live integrations. Backend foundation work may proceed after authorization while unrelated design polish continues; only implement visual components against the relevant approved handoff.
 
 ## 12. Open decisions and evidence limits
 
@@ -188,9 +188,9 @@ These do not block planning. Never fabricate secrets, identities, stock, provide
 - [content inventory](docs/content-inventory.md), [resource ledger](docs/resources.md), [tooling review](docs/development-tooling.md): evidence and source/tool limits.
 - docs/design-*.md and .superdesign/: preserved visual records, with ongoing delivery owned by the UI chat.
 
-Future structure is one app with public/account/admin/API routes, shared UI, server domain services, typed data access, a single migration path and focused tests. Create directories only when used; no empty monorepo scaffolding. Preserve owner assets and historical evidence during cleanup.
+Current application routes live in root app/, with root TypeScript/config/package files and public/brand for the unchanged logo. Subsequent public/account/admin/API routes, shared UI, server domain services, typed data access, a single migration path and focused tests are added when their phase is authorized and ready. Create directories only when used; no empty monorepo scaffolding. Preserve owner assets and historical evidence during cleanup.
 
-Review verification covers local Markdown targets, shared phase/navigation/auth decisions, source appendix equality and absence of new app/Git setup. Live provider, capacity and commerce checks remain future work. Local application checks are recorded in docs/phase-progress.md. The 23 October review verified 110 local links across 16 Markdown documents after the Aceternity update, all resolving; the original audit appendix matched exactly, phases 0–7 and required admin modules were present, and no package manifest or Git initialization existed. This excludes the UI chat’s concurrent visual outputs.
+Review verification covers local Markdown targets, shared phase/navigation/auth decisions, source appendix equality and absence of new app/Git setup. Live provider, capacity and commerce checks remain future work. Local application checks are recorded in docs/phase-progress.md. The earlier documentation-only review verified 110 local links across 16 Markdown documents after the Aceternity update, all resolving; the original audit appendix matched exactly, phases 0–7 and required admin modules were present, and no package manifest or Git initialization existed. This excludes the UI chat’s concurrent visual outputs.
 
 ## 14. Original public audit appendix
 

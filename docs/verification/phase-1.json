@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-23",
+  "scope": "Phase1 preparation checkpoint; full exit gate held",
+  "baseCommit": "8cf0769",
+  "artifacts": [
+    "docs/phase-1-contracts.md",
+    "docs/phase-1-design-handoff.md"
+  ],
+  "checks": {
+    "localMarkdownTargets": 137,
+    "brokenTargets": 0,
+    "documentsChecked": 23,
+    "originalAuditExact": true,
+    "installedECCSkills": 3,
+    "upstreamSkillFilesHashVerified": 5,
+    "independentReview": "no material conflicts; checkout-only minimum clarification applied"
+  },
+  "runtime": {
+    "applicationCodeChanged": false,
+    "evidence": "docs/verification/initialization.json",
+    "liveClerkInsForgeVerified": false
+  },
+  "gate": {
+    "phase1Complete": false,
+    "phase2Dispatched": false,
+    "pending": [
+      "approved current UI versions and selected component variants",
+      "selected Clerk methods/test configuration",
+      "selected InsForge staging project and CLI access",
+      "required staff/bootstrap/business/content policies at their relevant slices"
+    ]
+  },
+  "commit": "Phase1 preparation checkpoint; see local Git history"
+}

@@ -1,6 +1,6 @@
 # PandaByte.in — editable website and design contract
 
-Updated 23 October 2026. This defines behavior, editable content and structural blocks for the upgraded company/storefront. Visual refinements remain in the running **Pandabyte.in UI design — OpenDesign…** chat; coordination with that chat is now authorized. Implementation has not started. Read [README.md](README.md) for decisions and [plan.md](plan.md) for the delivery sequence.
+Updated 23 October 2026. This defines behavior, editable content and structural blocks for the upgraded company/storefront. Visual refinements remain in the running **Pandabyte.in UI design — OpenDesign…** chat; coordination with that chat is now authorized. Next.js initialization is verified and committed; Phase 1 contracts/handoff are in progress. The current localhost page is only a development preview. Read [README.md](README.md) for decisions and [plan.md](plan.md) for the delivery sequence.
 
 ## Scope and content rules
 
@@ -14,11 +14,11 @@ Clerk is the sole identity provider; login is required before checkout. InsForge
 
 The planning chat read the latest user brief in UI chat `01a16889-15db-7302-91f6-a44e92551fa3` and sent a coordination message on 23 October. Planning owns root README/design/plan/AGENTS and the tooling ledger; the design chat owns `.superdesign/` and [design-delivery.md](docs/design-delivery.md). Do not overwrite each other's files. Exact previews, versions and verification remain in the design delivery record; a request or working draft is not proof of completion or approval.
 
-The user’s UI brief specifies **Solutions → Learn → About → Contact**, no navbar search, visible Login, cart/theme controls and a labeled Agent entry. Search remains prominent within the catalog. The homepage hero and Supabase-inspired direction are retained for later visual refinement. The Agent workspace is a design prototype; production AI features, uploads to models and autonomous tools remain later scope.
+The user’s UI brief specifies **Solutions → Learn → About → Contact**, no navbar search, visible Login, cart/theme controls and the separately reviewed Agent prototype entry. The latest UI instruction keeps future Agent Desktop out of homepage highlights; only a Coming soon overview belongs under Solutions/About. Solutions also includes owner-approved public “Skills and CLI tools for IoT & Embedded” content; never publish local developer skill/config files. Search remains prominent within the catalog. The homepage hero and Supabase-inspired direction are retained for later visual refinement. The Agent workspace is a design prototype; production AI features, uploads to models and autonomous tools remain later scope.
 
 ## Aceternity component direction
 
-The user selected **Aceternity UI as the preferred visual component source**, extending the earlier shadcn-only direction for text treatments, animation, buttons, cards and reusable presentation blocks. Use it within the current PandaByte tokens, exact logo and approved visual direction. Aceternity uses the shadcn CLI/registry workflow; retain accessible structural primitives where useful rather than duplicating their behavior. [Official CLI](https://ui.aceternity.com/docs/cli), [installation](https://ui.aceternity.com/installation).
+The user selected **Aceternity UI as the preferred visual component source**, extending the earlier shadcn-only direction for text treatments, animation, buttons, cards and reusable presentation blocks. Use it within the current PandaByte tokens, exact logo and approved visual direction. The latest UI brief requests a minimal Solutions dropdown and Lucide icons (ISC); use one consistent icon family rather than mixing it with older Heroicons choices. Aceternity uses the shadcn CLI/registry workflow; retain accessible structural primitives where useful rather than duplicating their behavior. [Official CLI](https://ui.aceternity.com/docs/cli), [installation](https://ui.aceternity.com/installation).
 
 The following are candidates for the UI chat to select and review, not a claim they are already rendered or approved individually:
 
@@ -42,7 +42,7 @@ This step updates the plan and informs the UI chat. No registry configuration, a
 | Control | Content and behavior |
 | --- | --- |
 | Logo | Exact unchanged mark linked home, preserved proportions and suitable light backing in dark mode |
-| Solutions | Dropdown with a nested Shop group: all catalog, IoT kits, boards, components, sensors, shields, accessories. Existing categories migrate; new Components/category entries are admin-authored and need published content. Include a Products group for approved solution/product overviews. |
+| Solutions | Dropdown with a nested Shop group: all catalog, IoT kits, boards, components, sensors, shields, accessories. Existing categories migrate; new Components/category entries are admin-authored and need published content. Include a Products group for approved solution/product overviews and a public Skills/CLI-tools overview when owner content is ready. |
 | Products within Solutions | QR Logger, Campus Tracker, Smart Park, Nexus Solution (AI), and the agentic IoT/embedded-development platform are owner-named upcoming concepts in the UI brief. Provide overview/Coming soon structures with no invented capabilities, stock or release dates. The design chat's proposed “PandaForge” and later “Pando” names are unapproved. The latest brief highlights IoT Kits, Shop IoT & embedded products and the future agent software under Solutions; preserve the approved hierarchy at handoff. Distinguish these overview pages from purchasable hardware SKUs. |
 | Learn | Blog, embedded-systems resources, PandaByte kit guides, YouTube, product specs/resources and Help Center. New articles/guides/video entries can be created in admin. |
 | About | Directly discoverable About dropdown: company overview/team, approved projects, careers and upcoming information. No invented openings or achievements. |
@@ -56,7 +56,7 @@ Footer: company/unchanged logo, owner-approved tagline/brand text and no office 
 
 ## Homepage and standard blocks
 
-Current UI sequence: **Hero → brand strip → Explore Categories → Featured Hardware → Contact Support card → FAQs → footer**. The future agent software overview may describe the owner-requested planned desktop editor, Arduino compatibility, PCB/CAD tools, IoT dashboard and Plan/Build/Ask modes. Windows/Linux/macOS downloads remain disabled/Coming soon. These are future intentions, not implemented capabilities; its product name still needs approval.
+Current UI sequence: **Hero → brand strip → Explore Categories → Featured Hardware → Contact Support card → FAQs → footer**. The future agent software must not displace or be highlighted in the hardware homepage hero. Its Solutions/About Coming soon overview may describe the owner-requested planned desktop editor, Arduino compatibility, PCB/CAD tools, IoT dashboard and Plan/Build/Ask modes. Windows/Linux/macOS downloads remain disabled/Coming soon. These are future intentions, not implemented capabilities; its product name still needs approval.
 
 The brand strip uses only verified source logos with an accurately approved label; a vendor logo on the old site does not prove a collaboration. Hide unavailable sections, and provide a static/reduced-motion alternative to any moving strip.
 

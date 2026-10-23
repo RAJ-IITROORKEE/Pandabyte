@@ -16,9 +16,17 @@ Updated 23 October 2026. Root integrates; bounded Luna xhigh workers implement/r
 - Review: final Luna read-only review found no material code/security issue. Clarified upstreamPath versus installedPath in the skill source manifest. Root reviewed React/server boundaries, source provenance and secret ignores.
 - Commit: initialization checkpoint, recorded in the local Git history before Phase 1 dispatch.
 
-## Phase 1 — not started
+## Phase 1 — preparation checkpoint verified; exit gate held
 
-The initialization checkpoint must pass review/checks/browser smoke and be committed before dependent Phase 1 tasks are dispatched.
+Initialization prerequisite: local commit 8cf0769 passed lint, typecheck, build, dependency tree, code review and built-in-browser smoke checks. Only after that commit were Phase 1 workers dispatched.
+
+- foundation_audit owns docs/phase-1-contracts.md (catalog/content/API/capability/publication/migration handoff). It reads the installed ECC API/migration skills with PandaByte overrides.
+- foundation_ui owns docs/phase-1-design-handoff.md (actual design-record snapshot, approval gaps and component selection proposals).
+- Root integrated the handoffs, pricing/contact/restore/withdrawal corrections and latest UI requirements. A separate Luna review found no material contract conflicts; its checkout-only minimum completeness suggestion was incorporated.
+- Deliverables: [implementation contracts](phase-1-contracts.md) and [design handoff/evidence snapshot](phase-1-design-handoff.md). Fixed invariants are separated from proposals and owner decisions.
+- Verification: 137 local links across 23 Markdown documents resolve; original audit and 5 upstream skill file hashes remain exact; the independent contract review passes. See [checkpoint evidence](verification/phase-1.json). No application code changed during Phase 1, so the initialization build/browser evidence remains the current runtime baseline; no live API/auth/data/payment test is claimed.
+- Commit: Phase 1 preparation checkpoint, recorded in local Git history.
+- Exit gate: held for selected/approved UI versions, required owner policies and selected Clerk/InsForge staging access. Live integration and dependent Phase 2 work are not dispatched. A checkpoint commit does not mark those pending items complete.
 
 ## External prerequisites
 
