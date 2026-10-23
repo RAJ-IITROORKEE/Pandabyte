@@ -32,3 +32,9 @@ Production build, TypeScript and lint passed. The built-in browser confirms the 
 Next's loopback hostname rewrite produced local 500s with `--hostname 127.0.0.1`; using `--hostname localhost` resolved the observed failure. See the [upstream issue](https://github.com/vercel/next.js/issues/94745). Local scripts stay on localhost; no production network binding decision is implied.
 
 The browser identity check passed again after 89.7 seconds, beyond the 60-second token lifetime: a fresh server request obtains a usable current template token. This does not prove explicit rejection of an expired token or multi-user switching. Subsequent customer/staff/storage results are recorded separately; no orders, payments, production keys or deployment are claimed. See [phase progress](phase-progress.md).
+
+## Phase 3 development environment
+
+The ignored local environment now includes server-only INSFORGE_ANON_KEY for published RPCs/contact submissions and INSFORGE_EDITORIAL_STORAGE_READ_KEY for the constrained published-file fallback. The latter is a privileged project credential, confined to the server-only media route after positive publication checks; never prefix it NEXT_PUBLIC_, return it, log it or import CLI linkage into the app. Private reads and all application writes still use Clerk-scoped clients. [Operations](phase-3-operations.md) documents why restricted Cloud storage privileges require this exception and the corresponding production risk.
+
+The separate editorial-media bucket is private. The Phase3 migrations and forward repairs are applied only to the existing development project. Run npm run test:publishing against localhost with the ignored development configuration; it verifies its target, creates only disposable users/data, and removes them. The final run and independent cleanup checks pass. Notifications, production credentials/rotation, hosting configuration and infrastructure restore drills remain later operating work.

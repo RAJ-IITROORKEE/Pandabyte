@@ -36,6 +36,7 @@ export function isSameOriginRequest(request: Request): boolean {
 
 export async function readBoundedBody(
   request: Request,
+  maxBytes = MAX_ACCOUNT_FILE_REQUEST_BYTES,
 ): Promise<{ ok: true; bytes: Uint8Array } | { ok: false; reason: "too_large" | "invalid" }> {
   const lengthHeader = request.headers.get("content-length");
   const declaredLength = lengthHeader === null ? null : Number(lengthHeader);
@@ -47,7 +48,7 @@ export async function readBoundedBody(
     return { ok: false, reason: "invalid" };
   }
 
-  if (declaredLength !== null && declaredLength > MAX_ACCOUNT_FILE_REQUEST_BYTES) {
+  if (declaredLength !== null && declaredLength > maxBytes) {
     return { ok: false, reason: "too_large" };
   }
 
@@ -69,7 +70,7 @@ export async function readBoundedBody(
 
       total += value.byteLength;
 
-      if (total > MAX_ACCOUNT_FILE_REQUEST_BYTES) {
+      if (total > maxBytes) {
         await reader.cancel().catch(() => undefined);
         return { ok: false, reason: "too_large" };
       }

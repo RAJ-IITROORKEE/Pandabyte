@@ -44,6 +44,21 @@ body {
 }
 
 .route-state p + p { margin-top: 16px; }
+.published-document { max-width: 760px; overflow-wrap: anywhere; line-height: 1.75; }
+.published-document h2 { margin-top: 32px; margin-bottom: 12px; font-size: 26px; font-weight: 600; }
+.published-document h3 { margin-top: 24px; margin-bottom: 8px; font-size: 21px; font-weight: 600; }
+.published-document p, .published-document ul, .published-document ol, .published-document pre, .published-document dl { margin-block: 16px; }
+.published-document ul { padding-left: 24px; list-style: disc; }
+.published-document ol { padding-left: 24px; list-style: decimal; }
+.published-document a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.published-document img { margin-block: 24px; }
+.published-document pre { overflow-x: auto; padding: 16px; background: var(--surface); border: 1px solid var(--divider); border-radius: 8px; }
+.document-summary { color: var(--muted); font-size: 19px; }
+.document-table { max-width: 100%; overflow-x: auto; }
+.document-table table { border-collapse: collapse; width: 100%; }
+.document-table th, .document-table td { padding: 10px; text-align: left; border: 1px solid var(--border); min-width: 96px; }
+.published-document dt { font-weight: 600; }
+.published-document dd { color: var(--muted); }
 .route-state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin-top: 24px; }
 .policy-states { margin-top: 32px; }
 .policy-states section { scroll-margin-top: 100px; padding-block: 20px; border-top: 1px solid var(--divider); }

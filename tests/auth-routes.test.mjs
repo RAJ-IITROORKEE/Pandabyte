@@ -31,6 +31,12 @@ test("signed-out staff entry preserves the guarded staff destination", async () 
   assert.equal((await request("/sign-in?redirect_url=%2Fstaff")).status, 200);
 });
 
+test("signed-out admin entry preserves the guarded admin destination", async () => {
+  const response = await request("/admin");
+  assert.equal(response.status, 307);
+  assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Fadmin");
+});
+
 test("auth return paths reject external and duplicate redirect parameters", async () => {
   for (const route of ["sign-in", "sign-up"]) {
     for (const value of [
@@ -43,5 +49,6 @@ test("auth return paths reject external and duplicate redirect parameters", asyn
       assert.equal(response.headers.get("location"), `/${route}?redirect_url=%2Faccount`);
     }
     assert.equal((await request(`/${route}?redirect_url=%2Faccount`)).status, 200);
+    assert.equal((await request(`/${route}?redirect_url=%2Fadmin`)).status, 200);
   }
 });

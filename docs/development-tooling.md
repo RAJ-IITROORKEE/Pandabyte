@@ -93,3 +93,9 @@ I fetched GitHub's global [daily Trending](https://github.com/trending?since=dai
 ## Phase 2 frontend adoption — 24 October 2026
 
 Installed exact lucide-react 1.61.0 for selected line icons after checking official npm metadata and compatibility. Named imports only. The original ISC notice and applicable Feather MIT notice are retained in [the package license](licenses/lucide-react.txt). No new theme, animation, design registry, MCP or paid component dependency was introduced for the shared shell.
+
+### Phase 3 media processing and dependency audit
+
+Pinned `sharp` 0.35.5 explicitly for bounded image decoding, metadata removal and WebP normalization on the server. This version was already a Next.js transitive dependency; its original Apache-2.0 notice is retained in [sharp.txt](licenses/sharp.txt). This is an explicit non-MIT dependency exception for image validation, alongside the previously chosen InsForge stack.
+
+The 24 October npm audit reports three high findings through one dependency chain: `@insforge/sdk` 1.5.2 → `@insforge/shared-schemas` 1.2.1 → Zod 3.25.76. [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) covers oversized collection validation; the patched Zod major is incompatible with the vendor's declared Zod 3 dependency. No compatible vendor release was available at review. Do not force a major override merely to silence audit. The inspected SDK uses shared-schema error constants/provider options, with no Zod parsing of application requests on these paths; the application bounds request streams and uses closed manual field validation. These measures contain the reviewed request path but do not patch the dependency. Keep production acceptance and subsequent phase advancement held for dependency review or an upstream compatible fix.

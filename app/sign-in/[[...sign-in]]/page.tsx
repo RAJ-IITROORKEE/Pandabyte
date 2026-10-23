@@ -8,7 +8,7 @@ type SignInPageProps = {
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const { redirect_url: redirectUrl } = await searchParams;
 
-  if (redirectUrl !== undefined && redirectUrl !== "/account" && redirectUrl !== "/staff") {
+  if (redirectUrl !== undefined && redirectUrl !== "/account" && redirectUrl !== "/staff" && redirectUrl !== "/admin") {
     redirect("/sign-in?redirect_url=%2Faccount");
   }
 

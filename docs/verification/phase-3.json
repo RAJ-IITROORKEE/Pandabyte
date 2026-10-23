@@ -1,0 +1,134 @@
+{
+  "date": "2026-10-24",
+  "timezone": "Asia/Calcutta",
+  "scope": "Existing development Clerk and InsForge project; local production build only",
+  "checkpoint": "Phase 3 editable administration and publishing",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoningEffort": "xhigh",
+    "count": 3,
+    "ownership": "API/validation, admin UI, schema review; root integrates and owns migrations"
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "unitTests": {
+      "passed": 19
+    },
+    "authHttpTests": {
+      "passed": 5
+    },
+    "publicShellHttpTests": {
+      "passed": 3
+    },
+    "backendTokenTests": {
+      "passed": 3
+    },
+    "publishingIntegration": "passed: final clean-fixture production-build run",
+    "fixtureCleanup": "passed; independently verified 16 business/capability tables, both file buckets, disposable Clerk users and absent fixture state",
+    "originalReadmeAudit": "preserved exactly",
+    "clientSecretScan": "privileged editorial key absent from all 26 client build files"
+  },
+  "integrationCoverage": [
+    "anonymous/customer/staff RPC and HTTP boundaries; grant revocation; revision table access denial",
+    "closed validators and bounded request streams for all 11 editorial modules",
+    "create/read/search/update; category cycles and dependencies; duplicate SKU rejection",
+    "draft privacy, publish, live/draft separation, stale versions, historical slugs, restore, unpublish, archive",
+    "integer-paise prices; future, active and expired sale windows; stale price writes",
+    "nonnegative stock, exact capability masking, idempotent retry, conflicting UUID reuse and concurrent version serialization",
+    "PNG decoding to WebP; spoofed SVG/HTML, empty, malformed and oversized upload rejection without storage writes",
+    "private draft media, public API delivery, no overwrite, null dimension rejection, reference protection, withdrawal and archival",
+    "private customer tables/files remain isolated; customer file UUID cannot be served by editorial media route",
+    "persisted inquiry receipt, identical replay, conflicting replay, rate limit, private notes/status, stale versions and capability revocation"
+  ],
+  "browser": {
+    "tool": "Codex built-in browser",
+    "target": "http://localhost:3000",
+    "bundle": "production build",
+    "passedJourneys": [
+      "ordinary owner customer denied admin before fixture testing",
+      "real Clerk disposable staff sign-in with documented development test email/code",
+      "blog create, save, reload, private preview, publish, public render, draft/live separation and unpublish to404",
+      "Publish updates saves dirty content and updates live article without deployment",
+      "paragraph field has contextual accessible name in actual accessibility tree",
+      "browser file chooser uploads synthetic PNG, private WebP preview, explicit media publication",
+      "inquiry inbox saves resolved status and internal note; saved note/status visible",
+      "mobile admin drawer opens; Escape closes and returns focus to trigger"
+    ],
+    "editorOuterWidths": [
+      320,
+      768,
+      1024,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "editorDocumentWidths": [
+      305,
+      753,
+      1009,
+      1425
+    ],
+    "editorScrollWidths": [
+      305,
+      753,
+      1009,
+      1425
+    ],
+    "mediaAndInquiryOverflowAt320": "none observed",
+    "reducedMotion": "source rules reviewed; browser preference emulation not performed",
+    "screenshot": "phase-3-admin-media.png",
+    "screenshotContent": "Disposable development fixtures only",
+    "ownerSessionRestored": "Google customer session restored; admin access denied after cleanup",
+    "viewportOverrides": "reset"
+  },
+  "migrations": [
+    "20261023212810_phase3-publishing.sql",
+    "20261023214320_phase3-json-loop-fix.sql",
+    "20261023214742_phase3-json-projection-fix.sql",
+    "20261023220441_phase3-editorial-read-grants.sql"
+  ],
+  "migrationCaveat": "The storage grant attempt is historical and ineffective on restricted Cloud: project_admin lacks GRANT OPTION. Effective anon storage privileges remain denied. See phase-3-operations.md.",
+  "resolvedFindings": [
+    "SQL scalar JSON helper output aliases in loops and uniqueness projections",
+    "Tailwind loader scoped to globals.css so native CSS modules retain their classes",
+    "media picker API limit and repeated-query loading state",
+    "Clerk trigger sizing through appearance API and original logo aspect ratio",
+    "publish updates action and contextual block field names",
+    "public list projections omit document bodies",
+    "SDK storage metadata checks use actual list result shape and verify exact bucket/key/uploader",
+    "restricted Cloud published-media delivery uses a constrained server-only download after positive public projection and a second publication check"
+  ],
+  "dependencyAudit": {
+    "highFindings": 3,
+    "chain": "@insforge/sdk 1.5.2 -> @insforge/shared-schemas 1.2.1 -> zod 3.25.76",
+    "advisory": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+    "status": "unpatched compatible vendor dependency; no forced incompatible major override",
+    "containment": "bounded streams and closed manual application validation; reviewed SDK paths do not call Zod parsing on application input",
+    "feedbackId": "33ae2a09-c12a-4809-bba8-64eac65ff410",
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 3,
+      "critical": 0,
+      "total": 3
+    }
+  },
+  "platformFeedbackId": "b9b904f2-2b79-42fc-8360-12fb90c02cea",
+  "limits": [
+    "server-only editorial read credential has full project scope; its compromise remains a material risk",
+    "inquiry notifications are durably unconfigured; no delivery provider or recipient selected",
+    "global inquiry quota needs trusted edge/IP abuse controls before production",
+    "ambiguous media registration can preserve a committed asset while reporting503, so retry can duplicate it",
+    "archived media has no restore UI",
+    "no database-plus-storage restore drill, load test or exhaustive assistive-technology audit",
+    "full public layouts, checkout, orders and production deployment belong to later phases"
+  ],
+  "phase4Dispatched": false,
+  "githubPublished": false,
+  "productionDeployed": false
+}

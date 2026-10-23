@@ -1,0 +1,558 @@
+"use client";
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronDown,
+  Eye,
+  Plus,
+  RefreshCw,
+  Save,
+  Search,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  ADMIN_MODULES,
+  parseDocument,
+  type AdminDocument,
+  type AdminModule,
+  type ContentBlock,
+} from "@/lib/admin/validation";
+import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { PublishedDocument } from "@/components/published-document";
+import styles from "./admin-ui.module.css";
+
+type RecordListItem = {
+  id: string;
+  kind: string;
+  title: string;
+  slug: string;
+  version: number;
+  publishedRevisionId: string | null;
+  archived: boolean;
+  updatedAt: string;
+};
+
+type Revision = {
+  id: string;
+  revisionNumber: number;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  publishedBySubject: string | null;
+  sourceRevisionId: string | null;
+};
+
+type AdminRecord = RecordListItem & {
+  document: AdminDocument;
+  revisions?: Revision[];
+};
+
+type ApiError = { error?: { code?: string; message?: string; fields?: { field: string; message: string }[] } };
+type Option = { id: string; label: string };
+type ModuleMeta = { title: string; description: string; singular: string };
+
+const META: Record<AdminModule, ModuleMeta> = {
+  products: { title: "Products", singular: "product", description: "Manage product copy, catalog relationships, and technical details.", },
+  categories: { title: "Categories", singular: "category", description: "Organize the catalog with clear, searchable category records.", },
+  blog: { title: "Blog", singular: "article", description: "Edit sourced editorial content and its publication status.", },
+  pages: { title: "Pages", singular: "page", description: "Manage published site pages with structured content blocks.", },
+  faqs: { title: "FAQs", singular: "FAQ", description: "Maintain approved answers and their placement on the site.", },
+  team: { title: "Team", singular: "team member", description: "Manage team profiles using owner-approved information.", },
+  navigation: { title: "Navigation", singular: "navigation set", description: "Edit the visible header and footer links.", },
+  contact: { title: "Contact", singular: "contact record", description: "Maintain the public contact details and hours.", },
+  solutions: { title: "Solutions", singular: "solution", description: "Manage solution pages and their structured content.", },
+  learn: { title: "Learn resources", singular: "resource", description: "Manage learning links and the products they support.", },
+  videos: { title: "Videos", singular: "video", description: "Manage approved YouTube videos and related products.", },
+};
+
+function freshDocument(module: AdminModule): AdminDocument {
+  const common = { title: "", slug: "", summary: "", blocks: [] as ContentBlock[], seoTitle: "", seoDescription: "" };
+  switch (module) {
+    case "products": return { ...common, categoryIds: [], variants: [], specifications: [], compatibility: [], kitContents: [], resources: [], mediaIds: [] };
+    case "categories": return { ...common, parentId: null, position: 0, mediaIds: [] };
+    case "blog": return { ...common, author: "", tags: [], mediaIds: [] };
+    case "pages": case "solutions": return common;
+    case "faqs": return { ...common, answer: "", topic: "", placements: [], position: 0 };
+    case "team": return { ...common, name: "", role: "", bio: "", mediaIds: [], links: [], position: 0 };
+    case "navigation": return { ...common, links: [] };
+    case "contact": return { ...common, email: "", phone: "", address: "", hours: "", timezone: "", socialLinks: [] };
+    case "learn": case "videos": return { ...common, url: "", productIds: [], position: 0 };
+  }
+}
+
+function readJson<T>(value: unknown, fallback: T): T {
+  return value === null || value === undefined ? fallback : value as T;
+}
+
+async function api<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, { cache: "no-store", ...init });
+  const body = await response.json().catch(() => null) as T | ApiError | null;
+  if (!response.ok) {
+    const error = body && typeof body === "object" && "error" in body ? body.error : undefined;
+    const message = error?.message || (response.status === 409 ? "This record changed. Reload the current version before saving." : `The request failed (${response.status}).`);
+    throw Object.assign(new Error(message), { status: response.status, fields: error?.fields });
+  }
+  return body as T;
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date) : value;
+}
+
+export function RecordListScreen({ module }: { module: AdminModule }) {
+  const meta = META[module];
+  const capability = ADMIN_MODULES[module].editCapability;
+  const capabilities = useAdminCapabilities();
+  const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [items, setItems] = useState<RecordListItem[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const pageSize = 20;
+
+  const load = useCallback(async (nextOffset = 0, search = submittedQuery) => {
+    try {
+      const params = new URLSearchParams({ limit: String(pageSize), offset: String(nextOffset) });
+      if (search.trim()) params.set("q", search.trim());
+      const result = await api<{ items: RecordListItem[]; total: number }>(`/api/admin/${module}?${params}`);
+      setItems(result.items);
+      setTotal(result.total);
+      setOffset(nextOffset);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Records could not be loaded.");
+      setItems([]);
+      setTotal(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [module, submittedQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams({ limit: String(pageSize), offset: "0" });
+    if (submittedQuery.trim()) params.set("q", submittedQuery.trim());
+    void api<{ items: RecordListItem[]; total: number }>(`/api/admin/${module}?${params}`)
+      .then((result) => { if (active) { setItems(result.items); setTotal(result.total); setOffset(0); } })
+      .catch((reason) => { if (active) { setError(reason instanceof Error ? reason.message : "Records could not be loaded."); setItems([]); setTotal(null); } })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [module, submittedQuery, reloadKey]);
+
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    setOffset(0);
+    setSubmittedQuery(query.trim());
+    setReloadKey((value) => value + 1);
+  }
+
+  if (!capabilities.includes(capability)) return <AdminAccessDeniedScreen title={meta.title} />;
+
+  return (
+    <div className={styles.screen}>
+      <div className={styles.pageHeading}>
+        <div>
+          <p className={styles.eyebrow}>Content workspace</p>
+          <h1>{meta.title}</h1>
+          <p className={styles.lede}>{meta.description}</p>
+        </div>
+        {capabilities.includes(capability) && <Link className={styles.primaryButton} href={`/admin/${module}/new`}><Plus aria-hidden="true" size={17} /> New {meta.singular}</Link>}
+      </div>
+
+      <form className={styles.toolbar} onSubmit={search} role="search">
+        <label className={styles.searchBox}>
+          <Search aria-hidden="true" size={17} />
+          <span className={styles.visuallyHidden}>Search {meta.title.toLowerCase()}</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by title or slug" />
+        </label>
+        <button className={styles.secondaryButton} type="submit">Search</button>
+        <span className={styles.toolbarCount} aria-live="polite">{loading ? "Loading records…" : total === null ? "" : `${total} ${total === 1 ? "record" : "records"}`}</span>
+      </form>
+
+      {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} onClick={() => { setLoading(true); setError(""); void load(offset); }} type="button"><RefreshCw size={15} aria-hidden="true" /> Try again</button></div>}
+      <div className={styles.tableFrame}>
+        <table className={styles.table}>
+          <thead><tr><th scope="col">Title</th><th scope="col">Slug</th><th scope="col">Status</th><th scope="col">Updated</th><th scope="col"><span className={styles.visuallyHidden}>Open</span></th></tr></thead>
+          <tbody>
+            {loading && <tr><td className={styles.tableMessage} colSpan={5}>Loading records…</td></tr>}
+            {!loading && !error && items.length === 0 && <tr><td className={styles.tableMessage} colSpan={5}>{submittedQuery ? "No records match this search." : `No ${meta.title.toLowerCase()} yet. Create the first record when approved content is ready.`}</td></tr>}
+            {!loading && items.map((item) => {
+              const status = item.archived ? "Archived" : item.publishedRevisionId ? "Published" : "Draft";
+              return <tr key={item.id}>
+                <td><Link className={styles.recordTitle} href={`/admin/${module}/${item.id}`}>{item.title || "Untitled"}</Link><span className={styles.rowSubtext}>v{item.version}</span></td>
+                <td><code className={styles.slug}>{item.slug}</code></td>
+                <td><span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span></td>
+                <td className={styles.dateCell}>{formatDate(item.updatedAt)}</td>
+                <td><Link className={styles.iconLink} aria-label={`Edit ${item.title || meta.singular}`} href={`/admin/${module}/${item.id}`}><ArrowRight aria-hidden="true" size={17} /></Link></td>
+              </tr>;
+            })}
+          </tbody>
+        </table>
+      </div>
+      <nav className={styles.pagination} aria-label={`${meta.title} pages`}>
+        <span>{total === null ? "" : total === 0 ? "" : `${offset + 1}–${Math.min(offset + items.length, total)} of ${total}`}</span>
+        <div>
+          <button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); void load(Math.max(0, offset - pageSize)); }} disabled={loading || offset === 0}><ArrowLeft aria-hidden="true" size={16} /> Previous</button>
+          <button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); void load(offset + pageSize); }} disabled={loading || total === null || offset + pageSize >= total}>Next <ArrowRight aria-hidden="true" size={16} /></button>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+function Field({ label, hint, children, className = "" }: { label: string; hint?: string; children: ReactNode; className?: string }) {
+  return <label className={`${styles.field} ${className}`}><span className={styles.fieldLabel}>{label}</span>{children}{hint && <span className={styles.fieldHint}>{hint}</span>}</label>;
+}
+
+function TextInput({ value, onChange, placeholder, type = "text", maxLength }: { value: string; onChange: (value: string) => void; placeholder?: string; type?: string; maxLength?: number }) {
+  return <input className={styles.input} type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} maxLength={maxLength} />;
+}
+
+function TextArea({ value, onChange, rows = 4, placeholder }: { value: string; onChange: (value: string) => void; rows?: number; placeholder?: string }) {
+  return <textarea className={styles.textarea} value={value} onChange={(event) => onChange(event.target.value)} rows={rows} placeholder={placeholder} />;
+}
+
+function TokenInput({ label, values, onChange, hint }: { label: string; values: string[]; onChange: (next: string[]) => void; hint?: string }) {
+  const [entry, setEntry] = useState("");
+  function add(raw: string) {
+    const next = raw.split(",").map((part) => part.trim()).filter(Boolean);
+    if (next.length) onChange([...new Set([...values, ...next])]);
+    setEntry("");
+  }
+  return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span><div className={styles.tokenField}>
+    {values.map((value, index) => <span className={styles.token} key={`${value}-${index}`}>{value}<button type="button" aria-label={`Remove ${value}`} onClick={() => onChange(values.filter((_, current) => current !== index))}>×</button></span>)}
+    <input aria-label={`Add ${label}`} value={entry} onChange={(event) => setEntry(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); add(entry); } }} onBlur={() => { if (entry.trim()) add(entry); }} placeholder="Type and press Enter" />
+  </div>{hint && <span className={styles.fieldHint}>{hint}</span>}</div>;
+}
+
+function RelationPicker({ label, module, values, onChange }: { label: string; module: "categories" | "products" | "media"; values: string[]; onChange: (next: string[]) => void }) {
+  const [options, setOptions] = useState<Option[]>([]);
+  const [loadError, setLoadError] = useState("");
+  useEffect(() => {
+    let alive = true;
+    async function load() {
+      try {
+        const limit = module === "media" ? 50 : 100;
+        const result = await api<{ items: (RecordListItem & { filename?: string; published?: boolean })[] }>(`/api/admin/${module}?limit=${limit}&offset=0`);
+        if (alive) setOptions(result.items.filter((item) => !item.archived && (module !== "media" || item.published === true)).map((item) => ({ id: item.id, label: module === "media" ? item.filename || item.title : item.title })));
+      } catch (error) {
+        if (alive) setLoadError(error instanceof Error ? error.message : "Options could not be loaded.");
+      }
+    }
+    void load();
+    return () => { alive = false; };
+  }, [module]);
+  return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span>
+    {options.length > 0 ? <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...values, option.id] : values.filter((id) => id !== option.id))} /><span>{option.label || option.id}</span></label>)}</div> : <p className={styles.fieldHint}>{loadError || "No selectable records are available yet."}</p>}
+  </div>;
+}
+
+function MediaPicker({ value, onChange, label = "Media asset" }: { value: string; onChange: (next: string) => void; label?: string }) {
+  const [options, setOptions] = useState<Option[]>([]);
+  const [message, setMessage] = useState("Loading media…");
+  useEffect(() => {
+    let alive = true;
+    void api<{ items: { id: string; filename: string; archived: boolean; published: boolean }[] }>("/api/admin/media?limit=50&offset=0")
+      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived); setOptions(available.map((item) => ({ id: item.id, label: item.filename }))); setMessage(available.length ? "" : "No published media assets are available."); } })
+      .catch((error) => { if (alive) setMessage(error instanceof Error ? error.message : "Media could not be loaded."); });
+    return () => { alive = false; };
+  }, []);
+  return <label className={styles.field}><span className={styles.fieldLabel}>{label}</span><select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}><option value="">Select an asset</option>{options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select>{message && <span className={styles.fieldHint}>{message}</span>}</label>;
+}
+
+function ParentCategoryPicker({ value, currentId, onChange }: { value: string | null; currentId?: string; onChange: (next: string | null) => void }) {
+  const [options, setOptions] = useState<Option[]>([]);
+  const [message, setMessage] = useState("Loading categories…");
+  useEffect(() => {
+    let alive = true;
+    void api<{ items: RecordListItem[] }>("/api/admin/categories?limit=100&offset=0")
+      .then((result) => { if (alive) { const available = result.items.filter((item) => !item.archived && item.id !== currentId); setOptions(available.map((item) => ({ id: item.id, label: item.title }))); setMessage(available.length ? "" : "No other categories are available."); } })
+      .catch((error) => { if (alive) setMessage(error instanceof Error ? error.message : "Categories could not be loaded."); });
+    return () => { alive = false; };
+  }, [currentId]);
+  return <label className={styles.field}><span className={styles.fieldLabel}>Parent category</span><select className={styles.input} value={value ?? ""} onChange={(event) => onChange(event.target.value || null)}><option value="">No parent</option>{options.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}</select>{message && <span className={styles.fieldHint}>{message}</span>}</label>;
+}
+
+function RowEditor({ label, rows, columns, onChange, addLabel }: { label: string; rows: Record<string, unknown>[]; columns: { key: string; label: string; type?: "text" | "number" | "checkbox" | "select"; placeholder?: string; options?: { value: string; label: string }[]; immutableWhenExisting?: boolean }[]; onChange: (next: Record<string, unknown>[]) => void; addLabel: string }) {
+  function update(index: number, key: string, value: unknown) {
+    onChange(rows.map((row, rowIndex) => rowIndex === index ? { ...row, [key]: value } : row));
+  }
+  return <section className={styles.rowEditor} aria-label={label}>
+    <div className={styles.rowEditorHeading}><h3>{label}</h3><button className={styles.secondaryButton} type="button" onClick={() => onChange([...rows, Object.fromEntries(columns.map((column) => [column.key, column.type === "checkbox" ? true : column.type === "number" ? 1 : ""]))])}><Plus size={15} aria-hidden="true" /> {addLabel}</button></div>
+    {rows.length === 0 && <p className={styles.fieldHint}>No entries added.</p>}
+    {rows.map((row, index) => <div className={styles.relationRow} key={index}>
+       {columns.map((column) => {
+         const locked = Boolean(column.immutableWhenExisting && typeof row.id === "string");
+          const accessibleName = `${label} row ${index + 1}: ${column.label}`;
+          return <label className={column.type === "checkbox" ? styles.inlineCheck : styles.rowField} key={column.key}><span>{column.label}</span>{column.type === "checkbox" ? <input type="checkbox" aria-label={accessibleName} checked={Boolean(row[column.key])} onChange={(event) => update(index, column.key, event.target.checked)} /> : column.type === "select" ? <select className={styles.input} aria-label={accessibleName} value={String(row[column.key] ?? "header")} onChange={(event) => update(index, column.key, event.target.value)}>{column.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select> : <input type={column.type === "number" ? "number" : "text"} aria-label={accessibleName} value={String(row[column.key] ?? "")} placeholder={column.placeholder} disabled={locked} onChange={(event) => update(index, column.key, column.type === "number" ? Number(event.target.value) : event.target.value)} />}{locked && <span className={styles.fieldHint}>Existing SKU is locked. Add another variant to correct it.</span>}</label>;
+       })}
+      <button className={styles.iconButton} type="button" aria-label={`Remove ${label} row ${index + 1}`} onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}><Trash2 size={16} aria-hidden="true" /></button>
+    </div>)}
+  </section>;
+}
+
+function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (next: ContentBlock[]) => void }) {
+  function update(index: number, patch: Record<string, unknown>) {
+    onChange(blocks.map((block, blockIndex) => blockIndex === index ? { ...block, ...patch } as ContentBlock : block));
+  }
+  function add(type: ContentBlock["type"]) {
+    const values: Record<ContentBlock["type"], ContentBlock> = {
+      heading: { type: "heading", level: 2, text: "" }, paragraph: { type: "paragraph", text: "" },
+      bulletList: { type: "bulletList", items: [""] }, orderedList: { type: "orderedList", items: [""] },
+      link: { type: "link", label: "", url: "" }, image: { type: "image", mediaId: "", alt: "" },
+      code: { type: "code", language: "text", code: "" }, table: { type: "table", headers: [""], rows: [[""]] },
+    };
+    onChange([...blocks, values[type]]);
+  }
+  return <section className={styles.blocks}>
+    <div className={styles.sectionHeading}><div><h2>Page content</h2><p>Add blocks in the order they should appear.</p></div></div>
+    {blocks.length === 0 && <p className={styles.emptyBlocks}>No content blocks yet. Add a block to build the page.</p>}
+    {blocks.map((block, index) => <fieldset className={styles.blockCard} key={`${block.type}-${index}`}>
+      <legend><span>Block {index + 1}: {block.type === "bulletList" || block.type === "orderedList" ? block.type === "bulletList" ? "Bullet list" : "Numbered list" : block.type[0].toUpperCase() + block.type.slice(1)}</span><button className={styles.iconButton} type="button" aria-label={`Remove block ${index + 1}`} onClick={() => onChange(blocks.filter((_, current) => current !== index))}><Trash2 aria-hidden="true" size={15} /></button></legend>
+      {block.type === "paragraph" && <Field label={`Paragraph text, block ${index + 1}`}><TextArea value={block.text} onChange={(text) => update(index, { text })} rows={4} placeholder="Write a paragraph" /></Field>}
+      {block.type === "heading" && <div className={styles.headingFields}><label className={styles.field}><span className={styles.fieldLabel}>Heading level, block {index + 1}</span><select className={styles.input} value={block.level} onChange={(event) => update(index, { level: Number(event.target.value) })}><option value={1}>Heading 1</option><option value={2}>Heading 2</option><option value={3}>Heading 3</option></select></label><Field label={`Heading text, block ${index + 1}`}><TextInput value={block.text} onChange={(text) => update(index, { text })} /></Field></div>}
+      {(block.type === "bulletList" || block.type === "orderedList") && <Field label={`List items, block ${index + 1}`} hint="One item per line."><TextArea value={block.items.join("\n")} onChange={(text) => update(index, { items: text.split("\n") })} rows={Math.max(3, Math.min(8, block.items.length + 1))} /></Field>}
+      {block.type === "link" && <div className={styles.headingFields}><Field label={`Link text, block ${index + 1}`}><TextInput value={block.label} onChange={(label) => update(index, { label })} /></Field><Field label={`URL, block ${index + 1}`} hint="Use a site path or HTTPS URL."><TextInput value={block.url} onChange={(url) => update(index, { url })} placeholder="/learn or https://…" /></Field></div>}
+      {block.type === "image" && <div className={styles.headingFields}><MediaPicker label={`Image media asset, block ${index + 1}`} value={block.mediaId} onChange={(mediaId) => update(index, { mediaId })} /><Field label={`Alternative text, block ${index + 1}`}><TextInput value={block.alt} onChange={(alt) => update(index, { alt })} /></Field></div>}
+      {block.type === "code" && <div className={styles.stackFields}><Field label={`Language, block ${index + 1}`}><TextInput value={block.language} onChange={(language) => update(index, { language })} placeholder="text" /></Field><Field label={`Code, block ${index + 1}`}><TextArea value={block.code} onChange={(code) => update(index, { code })} rows={5} /></Field></div>}
+      {block.type === "table" && <div className={styles.stackFields}><Field label={`Column headings, table block ${index + 1}`} hint="One heading per line."><TextArea value={block.headers.join("\n")} onChange={(text) => update(index, { headers: text.split("\n") })} rows={Math.max(2, block.headers.length)} /></Field><Field label={`Rows and cells, table block ${index + 1}`} hint="One row per line. Separate cells with the | character."><TextArea value={block.rows.map((row) => row.join(" | ")).join("\n")} onChange={(text) => update(index, { rows: text.split("\n").map((row) => row.split("|").map((cell) => cell.trim())) })} rows={Math.max(3, block.rows.length)} /></Field></div>}
+    </fieldset>)}
+    <details className={styles.addBlock}>
+      <summary><Plus aria-hidden="true" size={16} /> Add content block <ChevronDown aria-hidden="true" size={15} /></summary>
+      <div className={styles.blockChoices}>{(["heading", "paragraph", "bulletList", "orderedList", "link", "image", "code", "table"] as const).map((type) => <button key={type} className={styles.secondaryButton} type="button" onClick={() => add(type)}>{type === "bulletList" ? "Bullet list" : type === "orderedList" ? "Numbered list" : type[0].toUpperCase() + type.slice(1)}</button>)}</div>
+    </details>
+  </section>;
+}
+
+function DraftPreview({ document }: { document: AdminDocument }) {
+  return <section className={styles.previewPanel} aria-label="Private draft preview">
+    <p className={styles.eyebrow}>Private draft preview</p>
+    <PublishedDocument document={document} />
+    <p className={styles.previewPrivacy}>This preview is visible in your authenticated admin session only.</p>
+  </section>;
+}
+
+function DocumentFields({ module, document, setDocument, recordId }: { module: AdminModule; document: AdminDocument; setDocument: (next: AdminDocument) => void; recordId?: string }) {
+  const doc = document as unknown as Record<string, unknown>;
+  const set = (key: string, value: unknown) => setDocument({ ...doc, [key]: value } as AdminDocument);
+  const str = (key: string) => String(doc[key] ?? "");
+  const num = (key: string) => Number(doc[key] ?? 0);
+  const arr = (key: string) => readJson<string[]>(doc[key], []);
+  const rows = (key: string) => readJson<Record<string, unknown>[]>(doc[key], []);
+  return <>
+    <section className={styles.panel}>
+      <div className={styles.sectionHeading}><div><h2>Record details</h2><p>Use confirmed, owner-approved content.</p></div></div>
+      <div className={styles.formGrid}>
+        <Field label="Title"><TextInput value={str("title")} onChange={(value) => set("title", value)} maxLength={240} /></Field>
+        <Field label="Slug" hint="Lowercase letters, numbers, and hyphens."><TextInput value={str("slug")} onChange={(value) => set("slug", value)} maxLength={180} /></Field>
+        <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>
+      </div>
+    </section>
+
+    {(module === "products" || module === "categories") && <section className={styles.panel}>
+      <div className={styles.sectionHeading}><div><h2>Catalog details</h2><p>Price and inventory are managed in their separate operational screens.</p></div></div>
+      <div className={styles.formGrid}>
+        {module === "products" && <RelationPicker label="Categories" module="categories" values={arr("categoryIds")} onChange={(value) => set("categoryIds", value)} />}
+        {module === "categories" && <>
+          <ParentCategoryPicker value={doc.parentId === null ? null : str("parentId")} currentId={recordId} onChange={(value) => set("parentId", value)} />
+          <Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field>
+        </>}
+        {module === "products" && <>
+          <RowEditor label="Variants" addLabel="Add variant" rows={rows("variants")} columns={[{ key: "sku", label: "SKU", immutableWhenExisting: true }, { key: "label", label: "Variant label" }]} onChange={(value) => set("variants", value)} />
+          <RowEditor label="Specifications" addLabel="Add specification" rows={rows("specifications")} columns={[{ key: "name", label: "Name" }, { key: "value", label: "Value" }]} onChange={(value) => set("specifications", value)} />
+          <TokenInput label="Compatibility" values={arr("compatibility")} onChange={(value) => set("compatibility", value)} />
+          <RowEditor label="Kit contents" addLabel="Add item" rows={rows("kitContents")} columns={[{ key: "title", label: "Item title" }, { key: "quantity", label: "Quantity", type: "number" }]} onChange={(value) => set("kitContents", value)} />
+          <RowEditor label="Resources" addLabel="Add link" rows={rows("resources")} columns={[{ key: "label", label: "Link title" }, { key: "url", label: "URL" }]} onChange={(value) => set("resources", value)} />
+        </>}
+      </div>
+    </section>}
+
+    {module === "blog" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Article details</h2></div></div><div className={styles.formGrid}><Field label="Author"><TextInput value={str("author")} onChange={(value) => set("author", value)} /></Field><TokenInput label="Tags" values={arr("tags")} onChange={(value) => set("tags", value)} /></div></section>}
+    {module === "faqs" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>FAQ details</h2></div></div><div className={styles.formGrid}><Field label="Topic"><TextInput value={str("topic")} onChange={(value) => set("topic", value)} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><TokenInput label="Placements" values={arr("placements")} onChange={(value) => set("placements", value)} /><Field label="Answer" className={styles.spanTwo}><TextArea value={str("answer")} onChange={(value) => set("answer", value)} rows={6} /></Field></div></section>}
+    {module === "team" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Profile details</h2><p>Use real or owner-approved identities and biographies.</p></div></div><div className={styles.formGrid}><Field label="Name"><TextInput value={str("name")} onChange={(value) => set("name", value)} /></Field><Field label="Role"><TextInput value={str("role")} onChange={(value) => set("role", value)} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><Field label="Biography" className={styles.spanTwo}><TextArea value={str("bio")} onChange={(value) => set("bio", value)} rows={5} /></Field><RowEditor label="Profile links" addLabel="Add link" rows={rows("links")} columns={[{ key: "label", label: "Label" }, { key: "url", label: "HTTPS URL" }]} onChange={(value) => set("links", value)} /></div></section>}
+    {module === "navigation" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Navigation links</h2><p>Links are grouped into the header or footer and can be hidden without deleting them.</p></div></div><RowEditor label="Links" addLabel="Add navigation link" rows={rows("links")} columns={[{ key: "label", label: "Label" }, { key: "href", label: "Path or HTTPS URL" }, { key: "group", label: "Group", type: "select", options: [{ value: "header", label: "Header" }, { value: "footer", label: "Footer" }] }, { key: "position", label: "Position", type: "number" }, { key: "visible", label: "Visible", type: "checkbox" }]} onChange={(value) => set("links", value.map((row) => ({ ...row, group: row.group === "footer" ? "footer" : "header" })))} /></section>}
+    {module === "contact" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Public contact details</h2><p>Only publish details approved for the public site.</p></div></div><div className={styles.formGrid}><Field label="Email"><TextInput type="email" value={str("email")} onChange={(value) => set("email", value)} /></Field><Field label="Phone"><TextInput value={str("phone")} onChange={(value) => set("phone", value)} /></Field><Field label="Address" className={styles.spanTwo}><TextArea value={str("address")} onChange={(value) => set("address", value)} rows={3} /></Field><Field label="Hours"><TextInput value={str("hours")} onChange={(value) => set("hours", value)} /></Field><Field label="Timezone"><TextInput value={str("timezone")} onChange={(value) => set("timezone", value)} placeholder="Asia/Kolkata" /></Field><RowEditor label="Social links" addLabel="Add link" rows={rows("socialLinks")} columns={[{ key: "label", label: "Platform" }, { key: "url", label: "HTTPS URL" }]} onChange={(value) => set("socialLinks", value)} /></div></section>}
+    {(module === "learn" || module === "videos") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "learn" ? "Resource details" : "Video details"}</h2></div></div><div className={styles.formGrid}><Field label={module === "learn" ? "Resource URL" : "YouTube URL or ID"}><TextInput value={str("url")} onChange={(value) => set("url", value)} placeholder={module === "learn" ? "https://… or /learn/…" : "https://youtube.com/watch?v=…"} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><RelationPicker label="Related products" module="products" values={arr("productIds")} onChange={(value) => set("productIds", value)} /></div></section>}
+
+    {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Media</h2><p>Only published media can appear on public pages.</p></div></div><RelationPicker label="Media assets" module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} /></section>}
+
+    <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />
+    <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
+  </>;
+}
+
+export function RecordEditorScreen({ module, id }: { module: AdminModule; id: string }) {
+  const isNew = id === "new";
+  const meta = META[module];
+  const capabilities = useAdminCapabilities();
+  const canEdit = capabilities.includes(ADMIN_MODULES[module].editCapability);
+  const canPublish = capabilities.includes("content.publish");
+  const router = useRouter();
+  const [record, setRecord] = useState<AdminRecord | null>(null);
+  const [draft, setDraft] = useState<AdminDocument>(() => freshDocument(module));
+  const [baseline, setBaseline] = useState("");
+  const [loading, setLoading] = useState(!isNew);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [conflict, setConflict] = useState(false);
+  const [restoreId, setRestoreId] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const serialized = useMemo(() => JSON.stringify(draft), [draft]);
+  const dirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
+
+  const load = useCallback(async () => {
+    if (isNew) return;
+    try {
+      const result = await api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`);
+      setRecord(result.record);
+      setDraft(result.record.document);
+      setBaseline(JSON.stringify(result.record.document));
+      setConflict(false);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Record could not be loaded.");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, isNew, module]);
+
+  useEffect(() => {
+    if (isNew) return;
+    let active = true;
+    void api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`)
+      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setConflict(false); } })
+      .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Record could not be loaded."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id, isNew, module]);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const guardNavigation = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const anchor = target.closest("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement) || anchor.target || anchor.hasAttribute("download")) return;
+      const destination = new URL(anchor.href, window.location.href);
+      if (destination.origin === window.location.origin && destination.href !== window.location.href && !window.confirm("You have unsaved changes. Leave this page and discard them?")) event.preventDefault();
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", guardNavigation, true);
+    return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", guardNavigation, true); };
+  }, [dirty]);
+
+  async function save(event?: FormEvent) {
+    event?.preventDefault();
+    setBusy(true);
+    setError("");
+    setNotice("");
+    const parsed = parseDocument(module, draft);
+    if (!parsed.ok) {
+      setError(parsed.fields.map((field) => field.message).join(" "));
+      setBusy(false);
+      return null;
+    }
+    try {
+      const result = isNew
+        ? await api<{ record: AdminRecord }>(`/api/admin/${module}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ document: parsed.value }) })
+        : await api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expectedVersion: record?.version, document: parsed.value }) });
+      setRecord(result.record);
+      setDraft(result.record.document);
+      setBaseline(JSON.stringify(result.record.document));
+      setConflict(false);
+      setNotice("Draft saved.");
+      if (isNew) router.replace(`/admin/${module}/${result.record.id}`);
+      return result.record;
+    } catch (reason) {
+      const status = (reason as { status?: number }).status;
+      setConflict(status === 409);
+      setError(reason instanceof Error ? reason.message : "The draft could not be saved.");
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function transition(action: "publish" | "unpublish" | "archive" | "restore", revisionId?: string) {
+    let current = record;
+    if (dirty) current = await save();
+    if (!current) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const result = await api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(current.id)}/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedVersion: current.version, ...(action === "restore" ? { revisionId } : {}) }),
+      });
+      setRecord(result.record);
+      setDraft(result.record.document);
+      setBaseline(JSON.stringify(result.record.document));
+      setConflict(false);
+      setNotice(action === "publish" ? "Record published." : action === "unpublish" ? "Record unpublished." : action === "archive" ? "Record archived." : "Revision restored as a new draft.");
+    } catch (reason) {
+      const status = (reason as { status?: number }).status;
+      setConflict(status === 409);
+      setError(reason instanceof Error ? reason.message : "The action could not be completed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!canEdit) return <AdminAccessDeniedScreen title={meta.title} />;
+  if (loading) return <div className={styles.screen}><p className={styles.loadingState}>Loading {meta.singular}…</p></div>;
+  if (!isNew && !record && error) return <div className={styles.screen}><div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setError(""); void load(); }}><RefreshCw size={15} aria-hidden="true" /> Try again</button></div></div>;
+  const status = record?.archived ? "Archived" : record?.publishedRevisionId ? "Published" : "Draft";
+
+  return <div className={styles.screen}>
+    <div className={styles.editorHeading}>
+      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><p className={styles.eyebrow}>{isNew ? "New draft" : `Record · v${record?.version}`}</p><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
+      <div className={styles.editorActions}>
+        <button className={styles.secondaryButton} type="button" onClick={() => setPreviewOpen((value) => !value)}><Eye size={16} aria-hidden="true" /> {previewOpen ? "Hide preview" : "Preview draft"}</button>
+        <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
+      </div>
+    </div>
+    {previewOpen && <DraftPreview document={draft} />}
+    {!canEdit && <div className={styles.errorBanner} role="status"><p>You can view this record, but your current staff capabilities do not allow editing it.</p></div>}
+    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
+    {notice && <p className={styles.successBanner} role="status"><Check size={16} aria-hidden="true" /> {notice}</p>}
+    <form className={styles.editorForm} onSubmit={save} aria-busy={busy}>
+      <fieldset className={styles.editorFieldset} disabled={!canEdit}>
+        <DocumentFields module={module} document={draft} setDocument={setDraft} recordId={record?.id} />
+      </fieldset>
+      <div className={styles.bottomActions}><span>{dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
+    </form>
+    {record && <section className={styles.panel} aria-labelledby="publishing-heading"><div className={styles.sectionHeading}><div><h2 id="publishing-heading">Publishing</h2><p>Publication is a separate action and requires content publishing access.</p></div></div>
+      <div className={styles.lifecycleActions}>
+        <button className={styles.primaryButton} type="button" onClick={() => void transition("publish")} disabled={!canPublish || busy || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
+        {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || record.archived}>Unpublish</button>}
+        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy}>Archive</button>}
+      </div>
+      {!canPublish && <p className={styles.fieldHint}>You need content.publish for publishing, unpublishing, or archiving.</p>}
+      {record.revisions && record.revisions.length > 0 && <div className={styles.revisionPicker}><label className={styles.field}><span className={styles.fieldLabel}>Restore a published revision as a draft</span><select className={styles.input} value={restoreId} onChange={(event) => setRestoreId(event.target.value)}><option value="">Select a revision</option>{record.revisions.map((revision) => <option value={revision.id} key={revision.id}>Revision {revision.revisionNumber} · {revision.title} · {formatDate(revision.publishedAt)}</option>)}</select></label><button className={styles.secondaryButton} type="button" disabled={!restoreId || !canEdit || busy} onClick={() => void transition("restore", restoreId)}>Restore draft</button></div>}
+      {record.archived && (!record.revisions || record.revisions.length === 0) && <p className={styles.fieldHint}>No published revision is available to restore.</p>}
+      {record.publishedRevisionId && <p className={styles.fieldHint}>Published record slug: <code>{record.slug}</code></p>}
+    </section>}
+  </div>;
+}
+
+export function AdminUnavailableScreen({ title, description }: { title: string; description: string }) {
+  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1><p className={styles.lede}>{description}</p></div></div><div className={styles.emptyPanel}><p>This area does not have an operational API in this phase.</p><Link className={styles.secondaryButton} href="/admin">Return to dashboard</Link></div></div>;
+}
+
+export function AdminAccessDeniedScreen({ title }: { title: string }) {
+  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1></div></div><div className={styles.errorBanner} role="status"><p>Your current staff capabilities do not allow access to this area.</p></div></div>;
+}

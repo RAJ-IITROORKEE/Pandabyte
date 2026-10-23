@@ -16,6 +16,8 @@ const requiredCapabilities = [
   "content.publish",
   "orders.manage",
   "staff.manage",
+  "media.manage",
+  "inquiries.manage",
 ];
 const fileBucketName = "private-account-files";
 
@@ -256,18 +258,20 @@ async function cleanFixtures(context, fixtures, runId) {
   const cleanupFailures = [];
 
   for (const fixture of fixtures) {
-    try {
-      const { error } = await context.admin.database
-        .schema("public")
-        .rpc("set_staff_capability", {
-          target_user_id: fixture.userId,
-          capability_name: "content.edit",
-          enabled: false,
-          reason: `phase2 fixture cleanup ${runId}`,
-        });
-      if (error) cleanupFailures.push("capability");
-    } catch {
-      cleanupFailures.push("capability");
+    for (const capability of requiredCapabilities) {
+      try {
+        const { error } = await context.admin.database
+          .schema("public")
+          .rpc("set_staff_capability", {
+            target_user_id: fixture.userId,
+            capability_name: capability,
+            enabled: false,
+            reason: `phase2 fixture cleanup ${runId}`,
+          });
+        if (error) cleanupFailures.push("capability");
+      } catch {
+        cleanupFailures.push("capability");
+      }
     }
   }
 
@@ -927,4 +931,6 @@ async function main() {
   }
 }
 
-await main();
+export { preflight, createFixtures, verifyFixtureOwnership, cleanFixtures, saveFixtures, createRuntimeClient, appRequest, ensure, safeJson };
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
