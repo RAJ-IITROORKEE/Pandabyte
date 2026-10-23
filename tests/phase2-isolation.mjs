@@ -465,7 +465,7 @@ async function verifyProfileAndApi(context, fixtures, auth) {
   const initialBody = await safeJson(initialApiRead, "profile_api_invalid_json");
   ensure(initialBody.profile?.display_name === "Owner direct update", "profile_api_get_shape_invalid");
   ensure(
-    Object.keys(initialBody.profile).sort().join(",") === "created_at,display_name",
+    Object.keys(initialBody.profile).sort().join(",") === "created_at,display_name,phone",
     "profile_api_exposed_extra_fields",
   );
 

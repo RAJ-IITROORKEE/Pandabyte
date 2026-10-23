@@ -91,6 +91,8 @@ Exit evidence: authorized staff creates a new product and category beyond the se
 
 ## Phase 4 — published storefront, discovery and company pages
 
+Current separately authorized account extension: [dashboard/address contracts](docs/account-dashboard.md) and [verification](docs/verification/account-dashboard.json) cover Clerk identity/settings, the account dropdown, private contact phone and shipping/billing address book, auth returns and Agent presentation. This extension follows Phase 3 commit `8ec7285`; it does not resume the broader Phase 4 gate. Clerk phone verification is deferred, with contact phone stored unverified in the private profile.
+
 **Dependencies:** publishable admin data and the corresponding approved design handoff.
 
 Frontend:

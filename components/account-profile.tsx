@@ -1,42 +1,75 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import styles from "@/components/account.module.css";
 
-type ProfileResponse = {
-  profile: { display_name: string; created_at: string } | null;
+type Profile = {
+  display_name: string;
+  phone: string;
+  created_at: string;
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseProfile(value: unknown): Profile | null {
+  if (!isRecord(value)) return null;
+  if (
+    typeof value.display_name !== "string" ||
+    typeof value.phone !== "string" ||
+    typeof value.created_at !== "string"
+  ) return null;
+
+  return {
+    display_name: value.display_name,
+    phone: value.phone,
+    created_at: value.created_at,
+  };
+}
+
+function parseProfileResponse(value: unknown): Profile | null | undefined {
+  if (!isRecord(value) || !("profile" in value)) return undefined;
+  return value.profile === null ? null : parseProfile(value.profile) ?? undefined;
+}
+
 export function AccountProfile() {
-  const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState("Loading your profile.");
+  const [status, setStatus] = useState("Loading your contact details.");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let mounted = true;
+  const loadProfile = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await fetch("/api/account/profile", { cache: "no-store", signal });
+      if (!response.ok) throw new Error("Your contact details could not be loaded.");
+      const body: unknown = await response.json();
+      const profile = parseProfileResponse(body);
+      if (profile === undefined) throw new Error("Your contact details could not be loaded.");
 
-    fetch("/api/account/profile", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Your profile could not be loaded.");
-        return (await response.json()) as ProfileResponse;
-      })
-      .then(({ profile }) => {
-        if (!mounted) return;
-        setDisplayName(profile?.display_name ?? "");
-        setStatus(profile ? "Profile loaded." : "No profile details saved yet.");
-      })
-      .catch(() => {
-        if (mounted) setError("Your profile could not be loaded. Please try again later.");
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
+      setPhone(profile?.phone ?? "");
+      setLoaded(true);
+      setError("");
+      setStatus(profile ? "Contact details loaded." : "No contact details saved yet.");
+    } catch {
+      if (!signal?.aborted) {
+        setError("Your contact details could not be loaded. Please try again.");
+        setStatus("");
+      }
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    queueMicrotask(() => {
+      if (!controller.signal.aborted) void loadProfile(controller.signal);
+    });
+    return () => controller.abort();
+  }, [loadProfile]);
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,58 +81,92 @@ export function AccountProfile() {
       const response = await fetch("/api/account/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName }),
+        body: JSON.stringify({ phone: phone.trim() }),
       });
-      const result = (await response.json()) as ProfileResponse | { error?: string };
-
-      if (!response.ok || !("profile" in result) || !result.profile) {
-        throw new Error("Your profile could not be saved.");
+      if (!response.ok) {
+        if (response.status === 401) throw new Error("Your session expired. Sign in again and retry.");
+        if (response.status === 400) throw new Error("Please check the contact details and try again.");
+        throw new Error("Your contact details could not be saved. Please try again.");
       }
 
-      setDisplayName(result.profile.display_name);
-      setStatus("Profile saved.");
-    } catch {
-      setError("Your profile could not be saved. Please try again.");
+      const body: unknown = await response.json();
+      const profile = parseProfileResponse(body);
+      if (!profile) throw new Error("Your saved contact details could not be confirmed. Reload and try again.");
+
+      setPhone(profile.phone);
+      setStatus("Contact details saved.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Your contact details could not be saved. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <section className="status-panel" aria-labelledby="account-profile-heading">
-      <div className="panel-heading">
+    <section className={styles.section} aria-labelledby="account-profile-heading">
+      <div className={styles.sectionHeading}>
         <div>
-          <p className="section-kicker">Profile</p>
-          <h2 id="account-profile-heading">Your details</h2>
+          <h2 id="account-profile-heading">Contact details</h2>
+          <p>These details are saved to your PandaByte account profile.</p>
         </div>
       </div>
-      <form onSubmit={saveProfile}>
-        <p>
-          <label htmlFor="display-name">Display name</label>
-        </p>
-        <p>
-          <input
-            id="display-name"
-            name="displayName"
-            type="text"
-            autoComplete="name"
-            maxLength={240}
-            value={displayName}
-            onChange={(event) => {
-              setDisplayName(Array.from(event.target.value).slice(0, 120).join(""));
-            }}
-            aria-describedby="display-name-help"
-            disabled={loading || saving}
-          />
-        </p>
-        <p id="display-name-help" className="auth-description">
-          Maximum 120 characters.
-        </p>
-        <button type="submit" disabled={loading || saving}>
-          {saving ? "Saving…" : "Save profile"}
-        </button>
-        <p role="status" aria-live="polite">{status}</p>
-        {error && <p role="alert">{error}</p>}
+
+      <form className={styles.contactForm} onSubmit={saveProfile}>
+        {loading ? (
+          <p className={styles.loadingState} role="status">Loading your contact details…</p>
+        ) : !loaded ? (
+          <div className={styles.contactActions}>
+            <div className={styles.errorState} role="alert">
+              <p>{error || "Your contact details could not be loaded. Please try again."}</p>
+              <button
+                className={styles.secondaryAction}
+                type="button"
+                onClick={() => {
+                  setLoading(true);
+                  setError("");
+                  setStatus("");
+                  void loadProfile();
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.contactFields}>
+            <div className={styles.field}>
+              <label htmlFor="account-contact-phone">Contact phone</label>
+              <input
+                id="account-contact-phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                maxLength={48}
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                aria-describedby="account-contact-phone-help"
+                disabled={saving}
+              />
+              <small id="account-contact-phone-help">Optional contact detail, not verified here. Leave blank and save to clear it.</small>
+            </div>
+          </div>
+        )}
+
+        {!loading && loaded && (
+          <div className={styles.contactActions}>
+            {error && (
+              <div className={styles.errorState} role="alert">
+                <p>{error}</p>
+              </div>
+            )}
+            <div className={styles.formActions}>
+              <button className={styles.primaryAction} type="submit" disabled={saving}>
+                {saving ? "Saving…" : "Save contact details"}
+              </button>
+            </div>
+          </div>
+        )}
+        {!loading && loaded && !error && status && <p className={styles.liveStatus} role="status" aria-live="polite">{status}</p>}
       </form>
     </section>
   );

@@ -13,7 +13,7 @@ async function request(path) {
 }
 
 test("signed-out visitors can render public auth entry points", async () => {
-  for (const path of ["/", "/sign-in", "/sign-up"]) {
+  for (const path of ["/", "/about", "/contact", "/shop", "/sign-in", "/sign-up"]) {
     assert.equal((await request(path)).status, 200, path);
   }
 });
@@ -22,6 +22,14 @@ test("account content requires a session", async () => {
   const response = await request("/account");
   assert.equal(response.status, 307);
   assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Faccount");
+});
+
+test("private settings preserve their exact intended destination", async () => {
+  for (const path of ["/account/settings", "/account/settings/security"]) {
+    const response = await request(path);
+    assert.equal(response.status, 307);
+    assert.equal(response.headers.get("location"), `/sign-in?redirect_url=${encodeURIComponent(path)}`);
+  }
 });
 
 test("signed-out staff entry preserves the guarded staff destination", async () => {
@@ -37,18 +45,36 @@ test("signed-out admin entry preserves the guarded admin destination", async () 
   assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Fadmin");
 });
 
+test("checkout and Agent require an active session while public storefront routes stay open", async () => {
+  for (const path of ["/checkout", "/agent"]) {
+    const response = await request(path);
+    assert.equal(response.status, 307, path);
+    assert.equal(response.headers.get("location"), `/sign-in?redirect_url=${encodeURIComponent(path)}`);
+  }
+});
+
 test("auth return paths reject external and duplicate redirect parameters", async () => {
   for (const route of ["sign-in", "sign-up"]) {
     for (const value of [
       "https%3A%2F%2Fexample.com",
       "%2F%2Fexample.com",
       "%2Faccount&redirect_url=https%3A%2F%2Fexample.com",
+      "%2F%252f%252fevil.example",
+      "%2Fshop%2F..%2Fadmin",
     ]) {
       const response = await request(`/${route}?redirect_url=${value}`);
       assert.equal(response.status, 307);
-      assert.equal(response.headers.get("location"), `/${route}?redirect_url=%2Faccount`);
+      assert.equal(response.headers.get("location"), `/${route}?redirect_url=%2F`);
     }
     assert.equal((await request(`/${route}?redirect_url=%2Faccount`)).status, 200);
     assert.equal((await request(`/${route}?redirect_url=%2Fadmin`)).status, 200);
+    assert.equal((await request(`/${route}?redirect_url=%2Fcheckout`)).status, 200);
+    assert.equal((await request(`/${route}?redirect_url=%2Fagent`)).status, 200);
+    assert.equal((await request(`/${route}?redirect_url=%2Fshop%3Fcategory%3Dkit`)).status, 200);
+    for (const key of ["redirect", "redirectTo", "return_to", "next", "callbackUrl"]) {
+      const response = await request(`/${route}?${key}=%2F%2Fevil.example`);
+      assert.equal(response.status, 307);
+      assert.equal(response.headers.get("location"), `/${route}?redirect_url=%2F`);
+    }
   }
 });

@@ -4,6 +4,7 @@ import {
   isJsonContentType,
   isSameOrigin,
   parseDisplayNamePatch,
+  parseProfilePatch,
   readProfilePatchBody,
 } from "../lib/account/profile.ts";
 
@@ -16,6 +17,21 @@ test("display name patches accept only the trimmed displayName field up to 120 U
   assert.equal(parseDisplayNamePatch({ displayName: "Raj", userId: "other" }), null);
   assert.equal(parseDisplayNamePatch({ displayName: 42 }), null);
   assert.equal(parseDisplayNamePatch([]), null);
+});
+
+test("profile patches accept displayName and optional unverified contact phone only", () => {
+  assert.deepEqual(parseProfilePatch({ phone: "  +91 98765 43210  " }), { phone: "+91 98765 43210" });
+  assert.deepEqual(parseProfilePatch({ displayName: "  Raj  ", phone: "  " }), {
+    displayName: "Raj",
+    phone: "",
+  });
+  assert.deepEqual(parseProfilePatch({ displayName: "Ada" }), { displayName: "Ada" });
+  assert.equal(parseProfilePatch({}), null);
+  assert.equal(parseProfilePatch({ phone: "x".repeat(49) }), null);
+  assert.equal(parseProfilePatch({ phone: "123\n456" }), null);
+  assert.equal(parseProfilePatch({ phone: 9876543210 }), null);
+  assert.equal(parseProfilePatch({ phone: "123", phoneVerified: true }), null);
+  assert.equal(parseProfilePatch({ userId: "another-user", phone: "123" }), null);
 });
 
 test("mutation headers require JSON and an exact same origin", () => {

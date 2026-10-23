@@ -3,11 +3,11 @@ import { createInsforgeServerClient } from "@/lib/insforge/server";
 import {
   isJsonContentType,
   isSameOrigin,
-  parseDisplayNamePatch,
+  parseProfilePatch,
   readProfilePatchBody,
 } from "@/lib/account/profile";
 
-const profileFields = "display_name, created_at";
+const profileFields = "display_name, phone, created_at";
 const privateHeaders = { "Cache-Control": "private, no-store" };
 
 function errorResponse(code: string, status: number) {
@@ -54,14 +54,18 @@ export async function PATCH(request: Request) {
     return errorResponse(body.status === 413 ? "payload_too_large" : "invalid_json", body.status);
   }
 
-  const patch = parseDisplayNamePatch(body.value);
-  if (!patch) return errorResponse("invalid_display_name", 400);
+  const patch = parseProfilePatch(body.value);
+  if (!patch) return errorResponse("invalid_profile_patch", 400);
+
+  const values: { display_name?: string; phone?: string } = {};
+  if (patch.displayName !== undefined) values.display_name = patch.displayName;
+  if (patch.phone !== undefined) values.phone = patch.phone;
 
   try {
     const client = await createInsforgeServerClient();
     const profiles = client.database.schema("public").from("customer_profiles");
     const { data: updated, error: updateError } = await profiles
-      .update({ display_name: patch.displayName })
+      .update(values)
       .eq("user_id", userId)
       .select(profileFields);
 
@@ -73,7 +77,7 @@ export async function PATCH(request: Request) {
     const { data: inserted, error: insertError } = await client.database
       .schema("public")
       .from("customer_profiles")
-      .insert([{ user_id: userId, display_name: patch.displayName }])
+      .insert([{ user_id: userId, ...values }])
       .select(profileFields);
 
     if (!insertError && inserted?.[0]) {
@@ -84,7 +88,7 @@ export async function PATCH(request: Request) {
       const { data: retried, error: retryError } = await client.database
         .schema("public")
         .from("customer_profiles")
-        .update({ display_name: patch.displayName })
+        .update(values)
         .eq("user_id", userId)
         .select(profileFields);
 

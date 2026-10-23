@@ -1,0 +1,556 @@
+.dashboard {
+  width: min(100%, 1100px);
+  margin-inline: auto;
+  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 32px) 72px;
+  text-align: left;
+}
+
+.accountPage {
+  width: 100%;
+  min-width: 0;
+}
+
+.connectionMessage {
+  width: min(100% - 32px, 1100px);
+  margin: 20px auto 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.connectionError {
+  width: min(100% - 32px, 760px);
+  margin: clamp(48px, 10vh, 120px) auto;
+  padding: 22px;
+  color: #b42318;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  line-height: 1.6;
+}
+
+.dashboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 18px;
+}
+
+.avatar {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+  place-items: center;
+  overflow: hidden;
+  background: var(--status-soft);
+  border: 1px solid var(--divider);
+  border-radius: 50%;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.identity h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 620;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.email {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.settingsLink,
+.secondaryAction,
+.primaryAction,
+.dangerAction {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.settingsLink,
+.secondaryAction {
+  color: var(--foreground);
+  background: var(--surface);
+}
+
+.settingsLink:hover,
+.secondaryAction:hover {
+  background: var(--status-soft);
+}
+
+.primaryAction {
+  color: var(--action-text);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.primaryAction:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.dangerAction {
+  color: #b42318;
+  background: var(--surface);
+  border-color: color-mix(in srgb, #b42318 35%, var(--divider));
+}
+
+.dangerAction:hover:not(:disabled) {
+  background: rgb(180 35 24 / 7%);
+}
+
+.settingsLink:focus-visible,
+.secondaryAction:focus-visible,
+.primaryAction:focus-visible,
+.dangerAction:focus-visible,
+.addressForm input:focus-visible,
+.addressForm button:focus-visible,
+.addressForm select:focus-visible,
+.addressForm textarea:focus-visible,
+.contactForm input:focus-visible,
+.contactForm button:focus-visible,
+.moreDetails summary:focus-visible,
+.deleteConfirm button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.section {
+  margin-top: 36px;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+}
+
+.sectionHeading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.contactForm {
+  display: grid;
+  gap: 14px;
+  padding: clamp(16px, 3vw, 24px);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+}
+
+.contactFields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 600px;
+  gap: 16px;
+}
+
+.contactActions {
+  display: grid;
+  gap: 8px;
+}
+
+.contactActions .errorState {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.contactActions .errorState p {
+  margin: 0;
+}
+
+.defaultGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.defaultCard,
+.addressCard {
+  min-width: 0;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+}
+
+.defaultCard h3,
+.addressCard h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 620;
+}
+
+.defaultCard p,
+.addressCard p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.defaultRecipient {
+  color: var(--foreground) !important;
+  font-weight: 600;
+}
+
+.addressBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.addressBadge {
+  padding: 4px 8px;
+  color: var(--accent);
+  background: var(--status-soft);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 620;
+}
+
+.addressList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.addressCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.addressCardActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.textAction {
+  min-height: 36px;
+  padding: 6px 8px;
+  color: var(--accent);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.textAction:hover {
+  background: var(--status-soft);
+}
+
+.loadingState,
+.emptyState,
+.errorState {
+  padding: 20px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.errorState {
+  color: #b42318;
+}
+
+:global(:root[data-theme="dark"]) .errorState,
+:global(:root[data-theme="dark"]) .alert,
+:global(:root[data-theme="dark"]) .dangerAction {
+  color: #fda29b;
+}
+
+.formPanel {
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 24px);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+}
+
+.formPanel h3 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 620;
+}
+
+.addressForm {
+  display: grid;
+  gap: 16px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.field label,
+.field legend {
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.field textarea {
+  min-height: 74px;
+  resize: vertical;
+}
+
+.field small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.defaults {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 0;
+  border: 0;
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.checkboxLabel input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.liveStatus {
+  min-height: 22px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.alert {
+  margin: 12px 0 0;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.deleteConfirm {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--background);
+  border: 1px solid var(--divider);
+  border-radius: 9px;
+}
+
+.deleteConfirm p {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 13px;
+}
+
+.deleteConfirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.moreDetails {
+  margin-top: 38px;
+  padding-top: 20px;
+  border-top: 1px solid var(--divider);
+}
+
+.moreDetails summary {
+  width: fit-content;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.detailContent {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.detailContent > * {
+  min-width: 0;
+}
+
+.settingsPage {
+  width: min(100%, 1100px);
+  margin-inline: auto;
+  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 32px) 72px;
+}
+
+.settingsPage h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 620;
+  letter-spacing: -0.04em;
+}
+
+.settingsIntro {
+  max-width: 650px;
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.backLink {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.avatar :global(.cl-avatarBox) { width: 100%; height: 100%; }
+.avatar :global(.cl-avatarImage) { object-fit: cover; }
+
+.clerkProfile {
+  width: 100%;
+}
+
+@media (max-width: 680px) {
+  .dashboardHeader {
+    align-items: flex-start;
+  }
+
+  .identity {
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    flex-basis: 60px;
+  }
+
+  .defaultGrid,
+  .addressList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 440px) {
+  .dashboardHeader {
+    flex-direction: column;
+  }
+
+  .sectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fieldWide {
+    grid-column: auto;
+  }
+
+  .addressCardHeader {
+    flex-direction: column;
+  }
+}

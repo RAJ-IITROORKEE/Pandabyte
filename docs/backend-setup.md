@@ -1,6 +1,8 @@
 # Clerk and InsForge setup checkpoint
 
-Updated 23 October 2026. This is an authorized foundation slice, not a completed identity/data phase or a production deployment.
+Updated 24 October 2026. This records the authorized development identity, publishing and customer-account setup; it is not a production deployment.
+
+The latest [account extension](account-dashboard.md) applies owner-only address storage and optional contact phone in `customer_profiles`. The customer dashboard reads actual Clerk identity; name/avatar editing stays in Clerk settings. Clerk phone support remains disabled and its verification setup is deferred by the owner. Contact and delivery phone fields are unverified database data. See [account verification](verification/account-dashboard.json).
 
 ## Connected services
 

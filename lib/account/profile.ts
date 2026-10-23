@@ -1,11 +1,36 @@
-export function parseDisplayNamePatch(value: unknown): { displayName: string } | null {
+export type ProfilePatch = { displayName?: string; phone?: string };
+
+export function parseProfilePatch(value: unknown): ProfilePatch | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
 
   const body = value as Record<string, unknown>;
-  if (Object.keys(body).length !== 1 || typeof body.displayName !== "string") return null;
+  const keys = Object.keys(body);
+  if (keys.length < 1 || keys.length > 2 || keys.some((key) => key !== "displayName" && key !== "phone")) {
+    return null;
+  }
 
-  const displayName = body.displayName.trim();
-  return Array.from(displayName).length <= 120 ? { displayName } : null;
+  const patch: ProfilePatch = {};
+  if (Object.hasOwn(body, "displayName")) {
+    if (typeof body.displayName !== "string") return null;
+    const displayName = body.displayName.trim();
+    if (Array.from(displayName).length > 120) return null;
+    patch.displayName = displayName;
+  }
+
+  if (Object.hasOwn(body, "phone")) {
+    if (typeof body.phone !== "string") return null;
+    const phone = body.phone.trim();
+    if (Array.from(phone).length > 48 || /[\u0000-\u001f\u007f-\u009f]/u.test(phone)) return null;
+    patch.phone = phone;
+  }
+
+  return patch;
+}
+
+export function parseDisplayNamePatch(value: unknown): { displayName: string } | null {
+  const patch = parseProfilePatch(value);
+  if (!patch || Object.hasOwn(patch, "phone") || typeof patch.displayName !== "string") return null;
+  return { displayName: patch.displayName };
 }
 
 export function isJsonContentType(value: string | null): boolean {

@@ -1,21 +1,17 @@
-import { Show, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { Show } from "@clerk/nextjs";
 import { Suspense } from "react";
+import { AccountMenu } from "@/components/account-menu";
+import { LoginLink } from "@/components/login-link";
 
 export function AuthControls() {
   return (
     <nav className="auth-controls" aria-label="Account">
       <Suspense fallback={null}>
         <Show when="signed-out">
-          <Link className="auth-link" href="/sign-in">
-            Login
-          </Link>
+          <LoginLink />
         </Show>
         <Show when="signed-in">
-          <Link className="auth-link" href="/account">
-            Account
-          </Link>
-          <UserButton />
+          <AccountMenu />
         </Show>
       </Suspense>
     </nav>

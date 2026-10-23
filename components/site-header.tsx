@@ -21,6 +21,7 @@ import {
   Layers,
   Menu,
   ShoppingCart,
+  Sparkles,
   Terminal,
   X,
 } from "lucide-react";
@@ -404,7 +405,8 @@ function SiteHeaderContent() {
 
         <div className="pb-header-actions">
           <Link className="pb-agent-link" href="/agent" aria-label="Agent tools, coming soon" onClick={closeNavigation}>
-            Agent <span>Coming soon</span>
+            <Sparkles aria-hidden="true" />
+            <span className="pb-agent-label" aria-hidden="true"><span>Agent</span><span>Coming soon</span></span>
           </Link>
           <AuthControls />
           <Link className="pb-icon-button pb-cart-link" href="/cart" aria-label="Cart" onClick={closeNavigation}>

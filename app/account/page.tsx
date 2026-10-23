@@ -2,8 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
-import { AccountProfile } from "@/components/account-profile";
-import { AccountFiles } from "@/components/account-files";
+import { AccountDashboard } from "@/components/account-dashboard";
+import styles from "@/components/account.module.css";
 
 export default async function AccountPage() {
   const { isAuthenticated, sessionStatus, userId } = await auth();
@@ -13,10 +13,8 @@ export default async function AccountPage() {
   }
 
   return (
-    <main id="main" className="auth-page account-layout" tabIndex={-1}>
-      <p className="section-kicker">Account</p>
-      <h1 className="auth-title">You’re signed in.</h1>
-      <Suspense fallback={<p className="auth-description" role="status">Connecting to your account…</p>}>
+    <main id="main" className={styles.accountPage} tabIndex={-1}>
+      <Suspense fallback={<p className={styles.connectionMessage} role="status">Connecting to your account…</p>}>
         <AccountData userId={userId} />
       </Suspense>
     </main>
@@ -39,17 +37,9 @@ async function AccountData({ userId }: { userId: string }) {
 
   return (
     <>
-      <p className="auth-description">
-        {identityVerified
-          ? "Your account connection is verified."
-          : "Your Clerk session is active, but we couldn’t verify the account data connection. Please try again later."}
-      </p>
-      {identityVerified && (
-        <div className="account-sections">
-          <AccountProfile />
-          <AccountFiles />
-        </div>
-      )}
+      {identityVerified
+        ? <AccountDashboard />
+        : <p className={styles.connectionError} role="alert">Your session is active, but we couldn’t verify the account data connection. Please try again later.</p>}
     </>
   );
 }

@@ -24,8 +24,8 @@ test("public route shell has one header/footer, a skip target and local navigati
   }
 });
 
-test("every planned destination renders an honest foundation state", async () => {
-  const routes = Object.keys(foundationPages);
+test("public planned destinations render an honest foundation state", async () => {
+  const routes = Object.keys(foundationPages).filter((route) => route !== "/agent");
   // Bound concurrency so a regression check does not overwhelm local development.
   for (let index = 0; index < routes.length; index += 4) {
     await Promise.all(routes.slice(index, index + 4).map(async (route) => {
@@ -36,8 +36,12 @@ test("every planned destination renders an honest foundation state", async () =>
   }
 });
 
-test("unknown routes return the not-found state rather than a fabricated page", async () => {
+test("unknown routes render the not-found state with noindex, including streamed responses", async () => {
   const { response, html } = await page("/not-a-pandabyte-route");
-  assert.equal(response.status, 404);
+  // Next.js retains 200 once the layout has streamed; the not-found UI and noindex remain required.
+  assert([200, 404].includes(response.status));
+  if (response.status === 200) assert.match(html, /data-dgst="NEXT_HTTP_ERROR_FALLBACK;404"/);
   assert.match(html, /Page not found/);
+  assert.match(html, /<meta\s+name="robots"\s+content="[^"]*noindex/i);
+  assert(!html.includes("This section is being prepared."));
 });

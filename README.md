@@ -10,6 +10,8 @@ Copy .env.example to ignored .env.local when the owner supplies the selected tes
 
 ## 1. Latest decisions and authorization
 
+- After Phase 3 commit `8ec7285`, the owner authorized the [customer dashboard and address-book extension](docs/account-dashboard.md): actual Clerk identity in the navbar, Dashboard/Shop/Settings/Logout dropdown, avatar/name settings, private contact phone and shipping/billing addresses, safe home/intended-page login returns, public company/catalog routes and protected checkout/Agent. The local Unfiltered IITians project supplies layout inspiration within PandaByte's theme. Logout is themed red; Agent uses Sparkles and Coming soon on hover/focus. **Clerk phone setup is deferred by the owner's latest correction; contact phone is unverified private database data.** This specific account work does not dispatch the remaining storefront/commerce phase.
+
 - The owner selected [Superdesign homepage v17](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba) and its corresponding screen layouts as the implementation reference. The authenticated official CLI confirmed 39 drafts. Use the matching layout for each route from [design delivery](docs/design-delivery.md), preserving real assets and responsive behavior; record the exact version when implementing. Superdesign is accessed through its official CLI here; no connected MCP capability was discovered.
 
 - Upgrade PandaByte.in from its limited Wix catalog into a robust company, hardware commerce and learning site. The current 44-product snapshot is an import seed, not a catalog/content limit. Staff must add products, categories, pricing, discounts, FAQs, company content, team members and blogs from admin without routine code edits or deployments.

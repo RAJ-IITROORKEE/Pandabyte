@@ -372,16 +372,30 @@
   min-height: 44px;
   min-width: 44px;
   align-items: center;
-  gap: 6px;
-  padding-inline: 8px;
+  gap: 7px;
+  padding-inline: 12px;
   color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--divider));
+  border-radius: 10px;
   font-size: 13px;
   white-space: nowrap;
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.pb-agent-link span {
-  color: var(--muted);
-  font-size: 10px;
+.pb-agent-link > svg { width: 17px; height: 17px; }
+.pb-agent-label { display: grid; min-width: 72px; text-align: center; }
+.pb-agent-label > span { grid-area: 1 / 1; transition: opacity 160ms ease; }
+.pb-agent-label > span:last-child { opacity: 0; font-size: 11px; align-self: center; }
+.pb-agent-link:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  border-color: var(--accent);
+}
+.pb-agent-link:is(:hover, :focus-visible) .pb-agent-label > span:first-child { opacity: 0; }
+.pb-agent-link:is(:hover, :focus-visible) .pb-agent-label > span:last-child { opacity: 1; }
+@media (hover: none) {
+  .pb-agent-label > span:first-child { opacity: 0; }
+  .pb-agent-label > span:last-child { opacity: 1; }
 }
 
 .pb-header-actions .auth-controls {
@@ -564,10 +578,6 @@
     min-height: 44px;
     padding-inline: 5px;
     font-size: 12px;
-  }
-
-  .pb-agent-link span {
-    display: none;
   }
 
   .pb-header-actions .auth-controls {

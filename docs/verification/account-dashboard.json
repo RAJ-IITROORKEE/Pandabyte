@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-24",
+  "scope": "Authorized customer account extension after Phase 3",
+  "phase3Commit": "8ec7285",
+  "workers": "Luna xhigh; bounded UI, API/auth and schema/review ownership",
+  "reference": "Local unfiltered_iitians navbar and dashboard structure, with existing PandaByte theme and logo",
+  "migrations": [
+    "20261024000100_customer-addresses.sql",
+    "20261024000101_customer-contact-phone.sql"
+  ],
+  "checks": {
+    "unitTests": 28,
+    "authHttpTests": 7,
+    "publicShellHttpTests": 3,
+    "backendIdentityTests": 3,
+    "addressAndContactIsolation": "passed on the existing development backend with two disposable Clerk users",
+    "independentCleanup": "passed: no disposable users, address fixtures, staff grants or retained fixture state",
+    "securityReview": "independent Luna read-only review found no blocking issue",
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "browser": {
+    "surface": "built-in app browser on localhost production build",
+    "verified": [
+      "actual Clerk identity, avatar and email in the account menu and dashboard",
+      "Dashboard, Shop, Settings and Logout navigation",
+      "menu Escape dismissal restores trigger focus",
+      "logout returns home",
+      "Google login restores owner and returns to the exact catalog query path",
+      "disposable name and avatar edits persisted in Clerk",
+      "private contact phone save and clear flow",
+      "address create, edit and delete with confirmation",
+      "mobile dropdown stays within viewport",
+      "red Logout text and icon in light and dark themes",
+      "Sparkles Agent icon and Coming soon on keyboard focus",
+      "Clerk settings mobile layout",
+      "unknown route renders actual Page not found content after hydration"
+    ],
+    "ownerSessionRestored": true,
+    "ownerDataChanged": false,
+    "privateOwnerScreenshot": "Saved locally in ignored .bootstrap; intentionally excluded from Git",
+    "reducedMotion": "source reviewed; browser preference emulation unavailable",
+    "responsive": [
+      {
+        "theme": "dark",
+        "requestedCssWidth": 320,
+        "clientWidth": 305,
+        "cssWidth": 320,
+        "scrollWidth": 305
+      },
+      {
+        "theme": "dark",
+        "requestedCssWidth": 768,
+        "clientWidth": 753,
+        "cssWidth": 768,
+        "scrollWidth": 753
+      },
+      {
+        "theme": "dark",
+        "requestedCssWidth": 1024,
+        "clientWidth": 1009,
+        "cssWidth": 1024,
+        "scrollWidth": 1009
+      },
+      {
+        "theme": "dark",
+        "requestedCssWidth": 1440,
+        "clientWidth": 1425,
+        "cssWidth": 1440,
+        "scrollWidth": 1425
+      },
+      {
+        "theme": "light",
+        "requestedCssWidth": 320,
+        "clientWidth": 305,
+        "cssWidth": 320,
+        "scrollWidth": 305
+      },
+      {
+        "theme": "light",
+        "requestedCssWidth": 768,
+        "clientWidth": 753,
+        "cssWidth": 768,
+        "scrollWidth": 753
+      },
+      {
+        "theme": "light",
+        "requestedCssWidth": 1024,
+        "clientWidth": 1009,
+        "cssWidth": 1024,
+        "scrollWidth": 1009
+      },
+      {
+        "theme": "light",
+        "requestedCssWidth": 1440,
+        "clientWidth": 1425,
+        "cssWidth": 1440,
+        "scrollWidth": 1425
+      }
+    ]
+  },
+  "phoneDecision": "Clerk phone support remains disabled by latest owner instruction; pending CLI OAuth was canceled. Contact and delivery phone fields are unverified private database data.",
+  "limits": [
+    "Checkout and Agent are authenticated unavailable/coming-soon pages; their workflows are not implemented",
+    "Unknown-route fallback may retain HTTP 200 after streaming; the regression check requires Next's 404 fallback marker, not-found content and noindex",
+    "No production deployment, load/restore exercise, real SMS or complete assistive-technology audit",
+    "Existing InsForge/Zod dependency chain still has three high audit findings; prior production gates remain held"
+  ]
+}
