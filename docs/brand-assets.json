@@ -1,0 +1,10 @@
+{
+  "logo": {
+    "file": "public/brand/pandabyte-logo.png",
+    "source": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/brand-assets/brand-pandabyte-original-logo.png/logo.png",
+    "sha256": "be8a4871720b60a4543b498720372c94888f87af6e301fa261e708218bec7830",
+    "width": 558,
+    "height": 564,
+    "note": "Exact existing logo from the design asset record; bytes unchanged."
+  }
+}

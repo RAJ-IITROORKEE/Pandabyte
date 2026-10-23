@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-23",
+  "scope": "Next.js initialization preview only",
+  "browser": "Codex built-in in-app browser",
+  "url": "http://127.0.0.1:3000/",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "next typegen + tsc --noEmit passed",
+    "productionBuild": "passed; root and not-found static routes",
+    "dependencyTree": "npm ls --all passed after compatible ESLint restoration",
+    "installAudit": "0 vulnerabilities reported",
+    "http": {
+      "home": 200,
+      "logo": 200,
+      "missingRoute": 404
+    },
+    "browser": {
+      "responsive": [
+        {
+          "width": 320,
+          "documentWidth": 320
+        },
+        {
+          "width": 768,
+          "documentWidth": 753
+        },
+        {
+          "width": 1024,
+          "documentWidth": 1009
+        },
+        {
+          "width": 1440,
+          "documentWidth": 1425
+        }
+      ],
+      "originalLogoLoaded": true,
+      "robots": "noindex, nofollow",
+      "keyboard": {
+        "firstTab": "Skip to main content",
+        "focusVisible": true,
+        "enterTarget": "main",
+        "hash": "#main"
+      },
+      "consoleWarnings": [],
+      "consoleErrors": [],
+      "missingRoute": "404 / This page could not be found."
+    }
+  },
+  "limits": [
+    "Only current OS/browser dark theme was rendered; both theme CSS branches reviewed, light theme not emulated",
+    "No live Clerk, InsForge, checkout, search or admin features exist yet",
+    "Not a full accessibility or capacity audit",
+    "ESLint9.39.5 is the current Next-plugin-compatible release but npm reports it unsupported; revisit when plugin peers support ESLint10"
+  ],
+  "source": {
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "node": "24.18.0",
+    "npm": "11.16.0",
+    "routing": "root app/; no src/"
+  }
+}

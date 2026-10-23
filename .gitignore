@@ -1,0 +1,32 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Build and dependency output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+playwright-report/
+test-results/
+.vercel/
+*.log
+
+# Temporary design output and private migration exports
+.superdesign/tmp/
+.firecrawl/
+private/
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local bootstrap/review workspace
+.bootstrap/
+.superpowers/
+*.tsbuildinfo

@@ -1,0 +1,60 @@
+{
+  "repository": "https://github.com/affaan-m/ECC",
+  "commit": "90606c8315ee09cafc303515c5f33024db6b9882",
+  "installedAt": "2026-10-23",
+  "scope": "repository-local",
+  "installer": "Codex skill-installer; explicit --dest and pinned --ref",
+  "license": "MIT; see LICENSE.ecc",
+  "skills": [
+    {
+      "name": "api-design",
+      "when": "Design or review custom API/Route Handler contracts.",
+      "upstreamPath": ".agents/skills/api-design",
+      "installedPath": ".agents/skills/api-design"
+    },
+    {
+      "name": "security-review",
+      "when": "Review auth, public boundaries, permissions, uploads, payments or webhooks.",
+      "upstreamPath": ".agents/skills/security-review",
+      "installedPath": ".agents/skills/security-review"
+    },
+    {
+      "name": "database-migrations",
+      "when": "Plan/review InsForge PostgreSQL migrations, indexes or backfills.",
+      "upstreamPath": "skills/database-migrations",
+      "installedPath": ".agents/skills/database-migrations"
+    }
+  ],
+  "files": [
+    {
+      "file": ".agents/skills/api-design/agents/openai.yaml",
+      "sha256": "46c8bc7b5ccea34cc3ba4f90e36c36c0ad6e8109084ee77911a54bf3d6da1ac5"
+    },
+    {
+      "file": ".agents/skills/api-design/SKILL.md",
+      "sha256": "5568a8b1e2e9ea1cc1433535ba8fcf9c21309b996108887343150d4fc76992e6"
+    },
+    {
+      "file": ".agents/skills/security-review/agents/openai.yaml",
+      "sha256": "40a07bb9a3933a13d4403e59d72426d5cc25ddd67a91f6fabee6f03c0721266b"
+    },
+    {
+      "file": ".agents/skills/security-review/SKILL.md",
+      "sha256": "81d7a4cbf8509963539cbe2e3d3ecbde33077d9fa63bc7c8f6d09e7eb7531743"
+    },
+    {
+      "file": ".agents/skills/database-migrations/SKILL.md",
+      "sha256": "dad2f1964295eee14a96e06213ce3f60992bbcdc1f37a50c828bbc2e1abd79dd"
+    }
+  ],
+  "excluded": [
+    "full plugin",
+    "hooks",
+    "global configuration",
+    "MCP configuration",
+    "continuous-learning runtime",
+    "upstream executable scripts",
+    "e2e-testing",
+    "postgres-patterns"
+  ]
+}
