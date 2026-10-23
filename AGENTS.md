@@ -151,3 +151,26 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+<!-- INSFORGE:START -->
+## InsForge backend
+
+This project uses [InsForge](https://insforge.dev): a Postgres-based backend. PandaByte currently selects its database and file storage; Clerk remains the sole identity provider. Other platform capabilities are not automatically in scope.
+
+- **Project:** **Pandabyte** (API base `https://r2g8wzib.us-east.insforge.app`)
+- **Skills:** these InsForge skills are installed for supported coding agents. Reach for them before implementing any InsForge feature instead of guessing the API:
+  - `insforge`: app code with the `@insforge/sdk` client (database CRUD, auth, storage, edge functions, realtime, AI, email, and Stripe payments).
+  - `insforge-cli`: backend and infrastructure via the `insforge` CLI (projects, SQL, migrations, RLS policies, storage buckets, functions, secrets, payment setup, schedules, deploys).
+  - `insforge-debug`: diagnosing failures (SDK/HTTP errors, RLS denials, auth and OAuth issues) and running security or performance audits.
+  - `insforge-integrations`: wiring external auth providers (Clerk, Auth0, WorkOS, Better Auth, etc.) for JWT-based RLS, or the OKX x402 payment facilitator.
+  - `find-skills`: discovering additional skills on demand.
+- **Credentials:** app code reads keys from `.env.local`; the CLI reads `.insforge/project.json`. Never hardcode or commit keys.
+
+Project-local `find-skills` and `clerk-nextjs-patterns` are installed for Codex. Read the relevant skill before use; see `docs/skills-selection.md` for selection and provenance. Discovery does not authorize arbitrary package installs, account replacement, hooks, or backend mutations. InsForge skills are available in the host skill catalog; do not assume they were copied into this repository.
+
+Key patterns:
+
+- Database inserts take an array: `insert([{ ... }])`.
+- Clerk owns user identities. Reference verified Clerk text subjects and use the reviewed `requesting_user_id()` helper in RLS; do not use InsForge `auth.users(id)` or `auth.uid()` for Clerk-owned customer records.
+- For storage uploads, persist both the returned `url` and `key`.
+<!-- INSFORGE:END -->

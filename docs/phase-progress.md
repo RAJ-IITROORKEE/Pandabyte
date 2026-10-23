@@ -30,4 +30,13 @@ Initialization prerequisite: local commit 8cf0769 passed lint, typecheck, build,
 
 ## External prerequisites
 
-Clerk test keys/methods and InsForge staging CLI/project access are pending owner provision. Staff bootstrap permissions, merchant/tax/shipping/minimum basis and traffic/cost assumptions remain decisions at the relevant phase. Pending integration is not a passed gate.
+The owner supplied Clerk development keys and InsForge CLI access. The matching existing backend is linked; see the subsequent checkpoint below. Staff bootstrap permissions, merchant/tax/shipping/minimum basis and traffic/cost assumptions remain decisions at the relevant phase. Pending integration is not a passed gate.
+
+## Authorized provider and skills checkpoint — Phase 2 exit gate held
+
+- User authorized existing-project InsForge linking, Clerk testing and targeted Skills CLI installation. Root owns credentials/dependencies; Luna xhigh workers implemented the Clerk slice and independently reviewed auth/skills/bridge boundaries. No separate fast-mode toggle is available.
+- Installed official project-local find-skills and clerk-nextjs-patterns for Codex; retained provenance/license evidence. [Skills selection](skills-selection.md) explains what is installed versus host-available. No duplicate MCP or broad pack.
+- Added Clerk v7 provider/controls, catch-all routes and a resource-level account session gate. Preserved the selected app and development keys. Signed-out regression checks pass; a registered test user is required for positive session verification. Brave showed No users yet; dashboard login does not create a customer.
+- Linked existing Pandabyte InsForge project in us-east. Read-only table listing and SELECT 1 passed; no schema/data/storage mutation. CLI credentials remain ignored. [Backend setup](backend-setup.md) records remaining JWT-template/RLS work.
+- Fixed observed localhost rewrite 500s by using localhost in local server scripts. Copied skills are excluded from application lint. Lint/typecheck/build, dependency tree and signed-out HTTP checks pass; built-in browser renders the real Clerk form and account redirect.
+- Independent Luna auth review found no material code defect; configuration and real-user/RLS checks remain gates. A local checkpoint commit records verified setup only. No dependent admin/catalog phase is dispatched.

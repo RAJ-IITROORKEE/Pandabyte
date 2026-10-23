@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-23",
+  "scope": "Clerk signed-out foundation, existing InsForge link, targeted official skills",
+  "versions": {
+    "next": "16.4.3",
+    "clerkNextjs": "7.9.20"
+  },
+  "backend": {
+    "name": "Pandabyte",
+    "projectId": "988b987b-f809-4cd5-94b2-c1d1e5cc9120",
+    "region": "us-east",
+    "tables": [],
+    "readOnlyProbe": {
+      "connection_ok": 1
+    },
+    "mutations": "No schema, rows, buckets or policies changed"
+  },
+  "skills": {
+    "projectLocal": [
+      "find-skills",
+      "clerk-nextjs-patterns"
+    ],
+    "provenance": ".agents/skills/official-sources.json",
+    "workers": "Luna xhigh; bounded implementation and read-only reviews"
+  },
+  "checks": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "build": "pass: npm run check",
+    "dependencies": "npm ls --all: no problems",
+    "authRegression": "3 tests passed using node:test; no browser cookies",
+    "browser": {
+      "surface": "built-in in-app browser",
+      "origin": "http://localhost:3000",
+      "signInForm": "Google/email form rendered",
+      "accountSignedOut": "redirected to sign-in",
+      "mobile320": "no horizontal overflow",
+      "theme": "current OS theme only",
+      "consoleErrors": 0,
+      "consoleWarnings": "Clerk development-key warning"
+    },
+    "review": "Luna read-only review found no material code defect",
+    "documentation": "57 local links and official skill hashes pass; original audit appendix exact"
+  },
+  "pending": [
+    "First customer signup/session verification; Brave selected app showed No users yet",
+    "Clerk insforge JWT template",
+    "Real authenticated RLS/storage and cross-user isolation",
+    "Production release gates"
+  ],
+  "limitations": "Dashboard login does not create an app user; privileged CLI database success does not verify customer access"
+}

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "clerk-nextjs-patterns": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-nextjs-patterns/SKILL.md",
+      "computedHash": "208b936809f814fa0aa2a6e15b2e880b8b9fee5f0b3ca4fce9ac2f2ea7472418"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    }
+  }
+}

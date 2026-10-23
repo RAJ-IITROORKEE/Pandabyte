@@ -281,6 +281,50 @@ a:focus-visible {
   line-height: 1.5;
 }
 
+.site-header {
+  flex-wrap: wrap;
+}
+
+.auth-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.auth-link {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.auth-page {
+  display: flex;
+  min-height: calc(100vh - 120px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.auth-title {
+  margin: 12px 0;
+  font-size: clamp(30px, 5vw, 42px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.auth-description {
+  max-width: 520px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 @media (max-width: 640px) {
   .site-shell {
     padding-top: 20px;

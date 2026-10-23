@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AuthControls } from "@/components/auth-controls";
 
 const statuses = [
   {
@@ -16,14 +17,14 @@ const statuses = [
   },
   {
     title: "Clerk identity",
-    detail: "Clerk remains the sole identity provider; project setup and keys will follow.",
-    status: "Awaiting configuration",
-    state: "pending",
+    detail: "Sign-in renders and signed-out account access redirects correctly; a registered test account is still needed.",
+    status: "Signed-out checks passed",
+    state: "active",
   },
   {
     title: "InsForge data and files",
-    detail: "A staging project must be configured before data or storage can connect.",
-    status: "Awaiting configuration",
+    detail: "The existing Pandabyte backend is linked and its read-only database connection passed; user access rules remain pending.",
+    status: "Connected · user access pending",
     state: "pending",
   },
 ];
@@ -56,6 +57,7 @@ export default function Home() {
           >
             Current live site <span aria-hidden="true">↗</span>
           </a>
+          <AuthControls />
         </header>
 
         <main id="main" className="main-content" tabIndex={-1}>
@@ -93,8 +95,9 @@ export default function Home() {
           </section>
 
           <p className="availability-note">
-            Shopping, sign-in, accounts, and admin features are not available in
-            this preview yet.
+            Clerk entry points and the InsForge database connection are checked.
+            Authenticated account access and database permissions still need
+            verification. Commerce and admin features remain unavailable.
           </p>
         </main>
 

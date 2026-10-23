@@ -1,10 +1,12 @@
 # Development tooling shortlist
 
-**Research date:** 23 October 2026. **Status:** planning only. PandaByte is still in phase zero with no application/package manifest. This document recommends tools for later authorized work; no package, MCP server, skill pack, provider project or credential was installed, linked or changed here.
+**Research date:** 23 October 2026. **Status:** the tables below retain the original research checkpoint; the subsequent-setup section records current installations and connections.
 
 ## Subsequent authorized setup
 
 After the research-only snapshot below, the user authorized Next.js initialization and selective ECC skill installation. The app now uses Next.js 16.4.3 with root app/ routing. See [project-local ECC selection](ecc-skills.md) and [phase evidence](phase-progress.md) for actual installation/check status; earlier “not installed during this review” statements describe the research checkpoint, not current application state.
+
+Current additions: project-local `find-skills` (requested official Vercel source) and `clerk-nextjs-patterns` (official Clerk source), reviewed by Luna xhigh workers. The existing Pandabyte InsForge project is now linked and a read-only database probe passed. See [skills selection](skills-selection.md) and [phase progress](phase-progress.md). No duplicate MCP server was added.
 
 ## Recommended toolkit
 

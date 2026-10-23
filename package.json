@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 127.0.0.1",
+    "dev": "next dev --hostname localhost",
     "build": "next build",
-    "start": "next start --hostname 127.0.0.1",
+    "start": "next start --hostname localhost",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
+    "@clerk/nextjs": "7.9.20",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0"

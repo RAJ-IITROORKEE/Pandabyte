@@ -1,0 +1,79 @@
+{
+  "reviewedAt": "2026-10-23",
+  "scope": "Project-local Codex skills; no hooks or automatic updates",
+  "skills": [
+    {
+      "name": "find-skills",
+      "source": "https://github.com/vercel-labs/skills",
+      "files": [
+        {
+          "path": ".agents/skills/find-skills/LICENSE",
+          "sha256": "661142e53c313d2bb5e1b055f5c0a39001450ff1b5e27b89dc4bc7de9a6352ca"
+        },
+        {
+          "path": ".agents/skills/find-skills/SKILL.md",
+          "sha256": "c00eeea0e13e74fe4a9d84ba0a8542205a1b736d65f13134fe1a6647eb14976f"
+        }
+      ]
+    },
+    {
+      "name": "clerk-nextjs-patterns",
+      "source": "https://github.com/clerk/skills",
+      "files": [
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/SKILL.md",
+          "sha256": "2291b2072539f536e628277c78e843a9acd33fd2150a5d0c51bc2bf0f537c858"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/evals/evals.json",
+          "sha256": "0fd34522a789e075bd4348043856c0a461ba3888c36292ac3429a5f5a69b87e7"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/references/api-routes.md",
+          "sha256": "751a4881c20d6bbbd1e53555e3228af3e13a29fd61dd724b496a0cd9c9a6b51e"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/references/caching-auth.md",
+          "sha256": "6ef75a4acde4fee28f98aec016bcc7d267155e1b388eebfb05ae4a54ff34973b"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/references/middleware-strategies.md",
+          "sha256": "3a536d99b312deddeb614b9fb830e501c60bac2a5b9ad6738b95f9dda184b594"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/references/server-actions.md",
+          "sha256": "b4eca13874b0e3eb747fd38a5424243d2d080dd17eb7927130f0fe31bb416061"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/references/server-vs-client.md",
+          "sha256": "391f06ed3305df70d2509124d18b44a176052eabd76c908e4c3712facc1f6453"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/templates/nextjs-basic-auth/next.config.ts",
+          "sha256": "aa0d56003dcb9ae705ab05d21521c92b6110bf38963de14e15530a916ad2ea58"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/templates/nextjs-basic-auth/package.json",
+          "sha256": "55ab88596ca9eafb40b54c7a2a19837f32fbc2739ad23d4010cdb0692b13d49a"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/templates/nextjs-basic-auth/proxy.ts",
+          "sha256": "3f3d57175d003288cb831b4aa57cc63b6a1d4fdc7af09abe8a785814534fe71f"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/templates/nextjs-basic-auth/tsconfig.json",
+          "sha256": "8bb20ac87b40721a3ca19cf3cd80d7d0b6c97e74477d67f70ef0559f1d076f4c"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/templates/nextjs-basic-auth/app/layout.tsx",
+          "sha256": "6bb508885bf225e90f2b342dee741809df514a36c73873230d9a903463826928"
+        },
+        {
+          "path": ".agents/skills/clerk-nextjs-patterns/templates/nextjs-basic-auth/app/page.tsx",
+          "sha256": "1bb49c33a007de7405bc342e4a8efcd36b6573a76ffc48cb85c17b11a4804980"
+        }
+      ]
+    }
+  ],
+  "lineEndings": "LF for reproducible Git checkout; textual content preserved"
+}
