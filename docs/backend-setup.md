@@ -4,26 +4,31 @@ Updated 23 October 2026. This is an authorized foundation slice, not a completed
 
 ## Connected services
 
-- Clerk SDK `@clerk/nextjs` 7.9.20 uses the owner's existing development keys. No replacement application or test user was created. Provider, visible controls, sign-in/sign-up routes, Next 16 proxy and server-gated `/account` are implemented.
-- The selected existing Clerk app is `app_3L6TKANHqV7XNlc22Pwvhk4oLWn`, development instance `ins_3L6TKBiLRXyJbJGRnpa9t3gvFAI`. Its Brave dashboard Users page showed **No users yet**. A dashboard administrator account is separate from customer registration. Register through the local Sign up page once; no API-key replacement is indicated by “The External Account was not found.”
+- Clerk SDK `@clerk/nextjs` 7.9.20 uses the owner's existing development keys. No replacement application or agent-created test user. The owner registered through Google; the real `/account` session and signed-in navigation are verified in the built-in browser.
+- The selected existing Clerk app remains `app_3L6TKANHqV7XNlc22Pwvhk4oLWn`, development instance `ins_3L6TKBiLRXyJbJGRnpa9t3gvFAI`. The earlier “External Account was not found” happened before customer signup, when Brave showed **No users yet**. Dashboard administration and application customer registration are separate; no key replacement was needed.
 - InsForge CLI is authenticated and linked to existing **Pandabyte**, project `988b987b-f809-4cd5-94b2-c1d1e5cc9120`, region `us-east`. No duplicate project or region change. API base: `https://r2g8wzib.us-east.insforge.app`.
-- Read-only `db tables --json` returned `[]`; `SELECT 1 AS connection_ok` returned one row containing `1`. No application schema, rows, buckets or policies were created or changed.
+- Initial table listing returned `[]`; `SELECT 1 AS connection_ok` passed. The subsequent reviewed [identity migration](../migrations/20261023171953_clerk-identity.sql) adds only an application-owned identity helper and its grants. No business tables, customer rows, buckets or RLS policies have been created.
 
-## Credentials and remaining bridge
+## Credentials and verified bridge
 
 `.env.local` is ignored and retains the owner's Clerk configuration. The public InsForge base URL was added without printing existing keys. `.insforge/project.json` is ignored and contains privileged CLI linkage credentials; it must never be imported into app code. A user API key authenticates the CLI, not the browser application. No privileged project key is assigned to a `NEXT_PUBLIC_` variable.
 
-Clerk → InsForge user authentication remains pending. Follow the [official integration](https://insforge.dev/integrations/clerk) and the installed integration skill against the chosen development project:
+The real Clerk → InsForge identity round trip now passes, using the [official integration](https://insforge.dev/integrations/clerk) and version-checked SDK:
 
-1. In the same Clerk development instance, configure a JWT template named `insforge`, custom HS256 signing, with the InsForge project's JWT secret. Retrieve that secret through the official CLI only when configuring the template; enter it directly in the intended secure dashboard field, never chat or project Markdown.
-2. Set claims `role: authenticated` and `aud: insforge-api`; Clerk supplies `sub` and `iss`. Keep Clerk as the sole identity provider.
-3. Before app integration, pin/recheck the actual SDK API. The reviewed 1.5.2 source uses `setAccessToken`; older examples showing `setAuthToken` must not be copied blindly. No unused SDK dependency/client was added at this checkpoint.
-4. Create reviewed migrations/RLS using text Clerk subjects and `requesting_user_id()`. Use request-scoped server clients; test anonymous/customer/staff access, token expiry/refresh, sign-out and user switching with real identities. Do not infer these checks from the privileged CLI probe.
+1. A template named `insforge` was created in the same verified development instance through the supported [Clerk Backend API](https://clerk.com/docs/reference/backend-api). Custom HS256 signing uses the linked InsForge project's JWT secret, retrieved privately through its CLI and sent directly to Clerk. No key was printed, committed or added to browser configuration. The installed integration reference describes dashboard setup; the current Backend API also supports it.
+2. Claims are `role: authenticated` and `aud: insforge-api`; Clerk supplies `sub` and `iss`. Lifetime is 60 seconds with 5 seconds clock skew. Clerk remains the sole identity provider.
+3. Exact SDK `@insforge/sdk` 1.5.2 is installed. [Server client](../lib/insforge/server.ts) requires an active Clerk session, obtains a template token per request, and constructs a fresh client. It uses no admin or anon key and maintains no shared mutable user token. No browser SDK singleton or refresh interval is needed for this server-only slice.
+4. The migration creates `public.requesting_user_id()` as a stable SQL `SECURITY INVOKER` function with a pinned search path. It returns the trusted text subject, grants execution to `authenticated`, and explicitly revokes `PUBLIC`/`anon`. Existing-function absence and migration history were checked first. A paid backend branch was unnecessary for one additive helper on the empty development project; no existing data/auth configuration was replaced.
+5. `/account` compares the database-returned subject to Clerk's verified subject before showing connection success. It renders a safe error state on a missing token, query error or mismatch; private identifiers/tokens/raw provider errors are not rendered.
+
+The helper and JWT bridge establish identity, not customer-row isolation. Business table RLS, staff capabilities, private storage, second-user isolation and full session lifecycle checks remain required before the Phase 2 exit gate. No staff role was granted to the owner's customer account.
+
+Rollback before dependent policies exist is a new compensating migration containing `DROP FUNCTION public.requesting_user_id();` without CASCADE. Review dependencies first; applied migration history is immutable. The Clerk template is additive; remove it only as a deliberate coordinated rollback, since removal stops the bridge. No backup/restore capability is claimed by this helper-only migration.
 
 ## Verification and limits
 
-Production build, TypeScript and lint passed for the auth integration. The built-in browser rendered the Google/email sign-in form, and `/account` redirected signed-out visitors. Mobile sign-in had no horizontal overflow at 320 px; the current OS theme was used. HTTP regression tests cover public entry points, signed-out account protection, and external/duplicate redirect clamping: with the dev server running, `node --test tests/auth-routes.test.mjs`.
+Production build, TypeScript and lint passed. The built-in browser confirms the registered user's active session and “Your account connection is verified.” Signed-out `/account` still redirects to sign-in. SQL privilege checks show `anon_execute=false`, `authenticated_execute=true`. Three direct SDK checks reject anonymous, malformed and wrongly signed authenticated claims with 401 and no identity data. Run `npm run test:auth` with the dev server, and `npm run test:backend` against the selected development backend. The latter explicitly loads the ignored .env.local through Node; no credentials are output.
 
 Next's loopback hostname rewrite produced local 500s with `--hostname 127.0.0.1`; using `--hostname localhost` resolved the observed failure. See the [upstream issue](https://github.com/vercel/next.js/issues/94745). Local scripts stay on localhost; no production network binding decision is implied.
 
-Google OAuth returned “The External Account was not found”; the selected development instance had no registered users. Positive session verification remains pending owner registration/login. No claim is made for live customer RLS, storage permissions, staff privileges, orders, payments, production keys or deployment. See [phase progress](phase-progress.md).
+The browser identity check passed again after 89.7 seconds, beyond the 60-second token lifetime: a fresh server request obtains a usable current template token. This does not prove explicit rejection of an expired token or multi-user switching. No claim is made for customer-row RLS, storage permissions, staff privileges, orders, payments, production keys or deployment. See [phase progress](phase-progress.md).

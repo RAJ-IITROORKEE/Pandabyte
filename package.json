@@ -8,10 +8,13 @@
     "start": "next start --hostname localhost",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "test:auth": "node --test tests/auth-routes.test.mjs",
+    "test:backend": "node --env-file=.env.local --test tests/insforge-access.test.mjs",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@clerk/nextjs": "7.9.20",
+    "@insforge/sdk": "1.5.2",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0"

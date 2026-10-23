@@ -17,14 +17,14 @@ const statuses = [
   },
   {
     title: "Clerk identity",
-    detail: "Sign-in renders and signed-out account access redirects correctly; a registered test account is still needed.",
-    status: "Signed-out checks passed",
+    detail: "Google signup, an active account session, and signed-out route protection are verified in the local preview.",
+    status: "Session verified",
     state: "active",
   },
   {
     title: "InsForge data and files",
-    detail: "The existing Pandabyte backend is linked and its read-only database connection passed; user access rules remain pending.",
-    status: "Connected · user access pending",
+    detail: "Clerk tokens reach the database with the verified user identity; business data and storage permissions remain pending.",
+    status: "Identity bridge verified",
     state: "pending",
   },
 ];
@@ -95,9 +95,9 @@ export default function Home() {
           </section>
 
           <p className="availability-note">
-            Clerk entry points and the InsForge database connection are checked.
-            Authenticated account access and database permissions still need
-            verification. Commerce and admin features remain unavailable.
+            Clerk login and the authenticated InsForge identity connection are
+            verified. Business data permissions, commerce, and admin features
+            remain under development.
           </p>
         </main>
 

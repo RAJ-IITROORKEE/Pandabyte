@@ -40,3 +40,12 @@ The owner supplied Clerk development keys and InsForge CLI access. The matching 
 - Linked existing Pandabyte InsForge project in us-east. Read-only table listing and SELECT 1 passed; no schema/data/storage mutation. CLI credentials remain ignored. [Backend setup](backend-setup.md) records remaining JWT-template/RLS work.
 - Fixed observed localhost rewrite 500s by using localhost in local server scripts. Copied skills are excluded from application lint. Lint/typecheck/build, dependency tree and signed-out HTTP checks pass; built-in browser renders the real Clerk form and account redirect.
 - Independent Luna auth review found no material code defect; configuration and real-user/RLS checks remain gates. A local checkpoint commit records verified setup only. No dependent admin/catalog phase is dispatched.
+
+## Clerk–InsForge identity slice — verified; Phase 2 data/storage exit gate held
+
+- Owner completed Google customer signup. Root verified the signed-in account page and navigation in the built-in localhost browser. No key replacement, second identity provider, agent-created test user or staff escalation.
+- Luna xhigh identity_bridge_app owns server client/account consumer; identity_bridge_sql independently reviewed helper SQL and final security boundaries. Root owns dependency, template, migration, testing and integration.
+- Configured the existing development instance’s insforge JWT template through Clerk Backend API (HS256, 60 seconds, role authenticated, audience insforge-api), with the linked backend secret handled privately.
+- Installed SDK 1.5.2 and applied only migration 20261023171953_clerk-identity.sql. Request-scoped server clients use Clerk template tokens and no privileged keys. The account page confirms the database subject equals the verified Clerk subject.
+- Live browser identity round trip passes. SQL execution privileges are closed to anon and open to authenticated. Signed-out route/redirect tests pass; direct SDK anonymous/malformed/forged-token requests return401 with no identity data. Lint, typecheck, build and dependency checks pass.
+- Business tables, customer-row RLS, staff capability bootstrap, private storage, second-user isolation, production deployment and the later commerce/admin phases remain separate gates. This checkpoint does not mark Phase 2 complete. See [backend setup](backend-setup.md).

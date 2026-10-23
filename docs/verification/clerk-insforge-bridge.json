@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-23",
+  "scope": "Development Clerk session and server-to-InsForge identity bridge",
+  "versions": {
+    "clerkNextjs": "7.9.20",
+    "insforgeSdk": "1.5.2",
+    "next": "16.4.3"
+  },
+  "projectId": "988b987b-f809-4cd5-94b2-c1d1e5cc9120",
+  "template": {
+    "name": "insforge",
+    "algorithm": "HS256",
+    "lifetimeSeconds": 60,
+    "allowedClockSkewSeconds": 5,
+    "claims": {
+      "role": "authenticated",
+      "aud": "insforge-api"
+    },
+    "configuredVia": "Clerk Backend API; matching existing development instance; secret handled privately"
+  },
+  "migration": {
+    "file": "migrations/20261023171953_clerk-identity.sql",
+    "applied": true,
+    "anonExecute": false,
+    "authenticatedExecute": true,
+    "security": "INVOKER",
+    "businessTablesOrRowsChanged": false
+  },
+  "verification": {
+    "browser": "Built-in localhost in-app browser",
+    "clerkSession": "Real user signup/login and protected account passed",
+    "identity": "Database RPC subject equals verified Clerk subject; only boolean success rendered",
+    "renewal": "Repeated browser request after 89.7 seconds succeeded",
+    "anonymous": "401, data null",
+    "malformed": "401, data null",
+    "forgedClaims": "401, data null",
+    "authTests": "3 passed",
+    "backendTests": "3 passed",
+    "lint": "pass",
+    "typecheck": "pass",
+    "productionBuild": "pass",
+    "dependencyTree": "clean",
+    "npmInstallAudit": "0 vulnerabilities",
+    "review": "Independent Luna xhigh review found no code/migration blockers; runner env requirement resolved by explicit npm script"
+  },
+  "pending": [
+    "Customer-row RLS and real second-user isolation",
+    "Private storage authorization",
+    "Staff capability and bootstrap rules",
+    "Explicit expired-token rejection, sign-out lifecycle, user switching",
+    "Full Phase 2 exit gates and production release"
+  ]
+}

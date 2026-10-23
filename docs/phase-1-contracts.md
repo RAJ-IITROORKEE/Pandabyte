@@ -113,7 +113,7 @@ If an InsForge server credential bypasses RLS, every server call using it must p
 
 ## InsForge migration and data safety gate
 
-No schema, SQL, provider, or project has been selected or connected by this document. The user has not supplied staging access or keys. Do not apply a migration until the staging project, CLI identity/scope, migration owner and backup/restore path are verified.
+This preparation document originally preceded provider access. The owner has since supplied Clerk development keys and InsForge CLI access; the existing development project and identity bridge are verified in [backend setup](backend-setup.md). Root remains the sole migration owner. Only the additive identity helper has been applied; business data, RLS/storage isolation and backup/restore gates are still pending.
 
 When authorized, keep one migration owner and use the official InsForge CLI/workflow. Before each reviewed migration:
 
@@ -139,7 +139,7 @@ Unpublish first revokes the database public projection. Completion also requires
 ## Owner decisions and blocked implementation inputs
 
 - **Clerk:** sign-in methods, test/staging keys, verified Clerk–InsForge token template/claims and lifecycle test access. Keep Clerk as sole identity provider.
-- **InsForge:** selected staging project/region, user-provided credentials/CLI access, limits, storage configuration and confirmed restore coverage. No live integration has been tested.
+- **InsForge:** selected staging project/region, user-provided credentials/CLI access, limits, storage configuration and confirmed restore coverage. The live identity bridge passes; data/storage access and restore coverage remain separate unverified gates.
 - **Staff:** final capability names/allocation, bootstrap/revocation procedure, publisher approval rules and audit retention.
 - **Prices/commerce:** exact ₹5,000 qualifying subtotal and equality boundary; tax/GST/invoice basis; shipping; coupon/discount behavior; sale-window timezone and overlap policy; merchant/payment integration and webhook owner.
 - **Operations/privacy:** notification provider/recipient and retry owner; contact attachment size/type, consent and retention; customer/order/inquiry retention; support/refund responsibilities.
