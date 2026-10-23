@@ -4,10 +4,10 @@ Updated 23 October 2026. This is an authorized foundation slice, not a completed
 
 ## Connected services
 
-- Clerk SDK `@clerk/nextjs` 7.9.20 uses the owner's existing development keys. No replacement application or agent-created test user. The owner registered through Google; the real `/account` session and signed-in navigation are verified in the built-in browser.
+- Clerk SDK `@clerk/nextjs` 7.9.20 uses the owner's existing development keys. No replacement application. The owner later approved two disposable development users for isolation tests; all test users and grants are scoped and cleaned up. The owner registered through Google; the real `/account` session and signed-in navigation are verified in the built-in browser.
 - The selected existing Clerk app remains `app_3L6TKANHqV7XNlc22Pwvhk4oLWn`, development instance `ins_3L6TKBiLRXyJbJGRnpa9t3gvFAI`. The earlier “External Account was not found” happened before customer signup, when Brave showed **No users yet**. Dashboard administration and application customer registration are separate; no key replacement was needed.
 - InsForge CLI is authenticated and linked to existing **Pandabyte**, project `988b987b-f809-4cd5-94b2-c1d1e5cc9120`, region `us-east`. No duplicate project or region change. API base: `https://r2g8wzib.us-east.insforge.app`.
-- Initial table listing returned `[]`; `SELECT 1 AS connection_ok` passed. The subsequent reviewed [identity migration](../migrations/20261023171953_clerk-identity.sql) adds only an application-owned identity helper and its grants. No business tables, customer rows, buckets or RLS policies have been created.
+- Initial table listing returned `[]`; `SELECT 1 AS connection_ok` passed. The subsequent reviewed [identity migration](../migrations/20261023171953_clerk-identity.sql) adds only an application-owned identity helper and its grants. That historical baseline has since been extended by the authorized [Phase 2 access migrations](phase-2-access.md): owner-scoped profiles/files, server-controlled capabilities/audit and one private bucket.
 
 ## Credentials and verified bridge
 
@@ -21,9 +21,9 @@ The real Clerk → InsForge identity round trip now passes, using the [official 
 4. The migration creates `public.requesting_user_id()` as a stable SQL `SECURITY INVOKER` function with a pinned search path. It returns the trusted text subject, grants execution to `authenticated`, and explicitly revokes `PUBLIC`/`anon`. Existing-function absence and migration history were checked first. A paid backend branch was unnecessary for one additive helper on the empty development project; no existing data/auth configuration was replaced.
 5. `/account` compares the database-returned subject to Clerk's verified subject before showing connection success. It renders a safe error state on a missing token, query error or mismatch; private identifiers/tokens/raw provider errors are not rendered.
 
-The helper and JWT bridge establish identity, not customer-row isolation. Business table RLS, staff capabilities, private storage, second-user isolation and full session lifecycle checks remain required before the Phase 2 exit gate. No staff role was granted to the owner's customer account.
+The helper and JWT bridge establish identity. The later [Phase 2 access foundation](phase-2-access.md) implements owner-only profiles/files and capability checks; live access and lifecycle results are tracked in [phase progress](phase-progress.md). No staff role was granted to the owner's customer account.
 
-Rollback before dependent policies exist is a new compensating migration containing `DROP FUNCTION public.requesting_user_id();` without CASCADE. Review dependencies first; applied migration history is immutable. The Clerk template is additive; remove it only as a deliberate coordinated rollback, since removal stops the bridge. No backup/restore capability is claimed by this helper-only migration.
+Dependent policies now exist; do not drop the identity helper in isolation. Follow the ordered compensating migration guidance in [Phase 2 access](phase-2-access.md), review dependencies first and keep applied migration history immutable. The Clerk template is additive; remove it only as a deliberate coordinated rollback, since removal stops the bridge. No backup/restore capability is claimed by this helper-only migration.
 
 ## Verification and limits
 
@@ -31,4 +31,4 @@ Production build, TypeScript and lint passed. The built-in browser confirms the 
 
 Next's loopback hostname rewrite produced local 500s with `--hostname 127.0.0.1`; using `--hostname localhost` resolved the observed failure. See the [upstream issue](https://github.com/vercel/next.js/issues/94745). Local scripts stay on localhost; no production network binding decision is implied.
 
-The browser identity check passed again after 89.7 seconds, beyond the 60-second token lifetime: a fresh server request obtains a usable current template token. This does not prove explicit rejection of an expired token or multi-user switching. No claim is made for customer-row RLS, storage permissions, staff privileges, orders, payments, production keys or deployment. See [phase progress](phase-progress.md).
+The browser identity check passed again after 89.7 seconds, beyond the 60-second token lifetime: a fresh server request obtains a usable current template token. This does not prove explicit rejection of an expired token or multi-user switching. Subsequent customer/staff/storage results are recorded separately; no orders, payments, production keys or deployment are claimed. See [phase progress](phase-progress.md).

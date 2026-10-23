@@ -11,8 +11,8 @@ const statuses = [
   },
   {
     title: "Visual design handoff",
-    detail: "The UI design workspace owns the current screens and delivery record.",
-    status: "In progress",
+    detail: "The owner selected the Superdesign homepage and matching screen layouts for implementation.",
+    status: "Reference selected",
     state: "active",
   },
   {
@@ -23,9 +23,9 @@ const statuses = [
   },
   {
     title: "InsForge data and files",
-    detail: "Clerk tokens reach the database with the verified user identity; business data and storage permissions remain pending.",
-    status: "Identity bridge verified",
-    state: "pending",
+    detail: "Customer profile isolation, staff capability checks, and private text-file access pass live development tests.",
+    status: "Access verified",
+    state: "active",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function Home() {
 
         <main id="main" className="main-content" tabIndex={-1}>
           <section className="intro" aria-labelledby="page-title">
-            <p className="eyebrow">Phase 1 <span aria-hidden="true">/</span> Foundation</p>
+            <p className="eyebrow">Phase 2 <span aria-hidden="true">/</span> Access foundation</p>
             <h1 id="page-title">The PandaByte app foundation is initialized.</h1>
             <p className="intro-copy">
               This local preview tracks the foundation work and its handoffs. The
@@ -95,15 +95,15 @@ export default function Home() {
           </section>
 
           <p className="availability-note">
-            Clerk login and the authenticated InsForge identity connection are
-            verified. Business data permissions, commerce, and admin features
-            remain under development.
+            Clerk login and customer, staff, and private-file access are verified
+            in development. The storefront, publishing, commerce, and full admin
+            workflows remain under development.
           </p>
         </main>
 
         <footer className="site-footer">
           <span>Local development preview</span>
-          <span>Phase 1 · Foundation</span>
+          <span>Phase 2 · Access foundation</span>
         </footer>
       </div>
     </>

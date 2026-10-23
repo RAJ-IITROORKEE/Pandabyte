@@ -1,0 +1,116 @@
+{
+  "verifiedAt": "2026-10-23T18:13:21.052Z",
+  "scope": "Phase 2 customer profiles, staff capabilities, private text files; development only",
+  "models": {
+    "workers": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "fastMode": "No separate flag exposed"
+  },
+  "providers": {
+    "clerkInstance": "ins_3L6TKBiLRXyJbJGRnpa9t3gvFAI",
+    "insforgeProject": "988b987b-f809-4cd5-94b2-c1d1e5cc9120",
+    "bucket": "private-account-files",
+    "public": false
+  },
+  "migrations": [
+    "20261023173124_phase2-access-controls.sql",
+    "20261023173853_private-file-limits.sql",
+    "20261023180315_private-storage-boundaries.sql"
+  ],
+  "liveSuite": {
+    "status": "passed",
+    "realDisposableUsers": 2,
+    "groups": [
+      "Customer profile RLS, own-field API validation, protected owner/time fields, cross-user denial",
+      "Server-controlled capabilities; metadata cannot grant; grant 200, revoke 403, regrant 200; runtime grant/audit mutation denial",
+      "Private file SDK and app API ownership; anonymous/cross-user reads/deletes denied; owner and foreign overwrites denied with unchanged original bytes; direct path/type/size constraints",
+      "Genuine expired InsForge template token rejected with 401"
+    ]
+  },
+  "fixedIssues": [
+    {
+      "issue": "Limited PostgREST profile mutation returned PGRST109",
+      "fix": "Removed limit from mutations already constrained by primary key; GET remains bounded",
+      "verified": "Browser save and reload persistence plus live API suite"
+    },
+    {
+      "issue": "Native file input and long account text overflowed narrow viewport",
+      "fix": "min-width:0 on flex/grid children and file input, wrapping on text",
+      "verified": "No horizontal document overflow at 320,768,1024,1440 px"
+    },
+    {
+      "issue": "Bucket creation installed permissive owner policies that ORed with path policies",
+      "fix": "Restrictive owner/path boundary for all operations plus restrictive private UPDATE denial",
+      "verified": "Before: foreign path presigned strategy 200, object transfer 204 and persisted. After: strategy 403, no transfer and no persisted object; full live regression passed."
+    }
+  ],
+  "browser": {
+    "tool": "Built-in in-app browser",
+    "checks": [
+      "Owner Google login and verified database identity",
+      "Own profile save and persistence after reload; original value restored",
+      "Private upload and download; downloaded bytes matched source",
+      "Invalid control characters rejected with HTTP400",
+      "65537-byte text file rejected with HTTP413",
+      "Customer staff denial",
+      "Disposable staff sign-in using documented Clerk development test email; granted page allowed; revocation page Forbidden",
+      "Sign-out and restoration of owner Google login",
+      "Tab from display-name input reaches Save profile with solid 2px visible outline",
+      "Final production build at localhost: owner upload and real download pass after restrictive policy; downloaded bytes equal source; fixture then removed and empty state verified"
+    ],
+    "widths": [
+      320,
+      768,
+      1024,
+      1440
+    ],
+    "horizontalOverflow": false,
+    "screenshots": [
+      ".bootstrap/phase2-staff-allowed.png",
+      ".bootstrap/phase2-staff-revoked.png",
+      ".bootstrap/phase2-account-upload.png"
+    ],
+    "limits": [
+      "Development foundation account/staff pages; final Superdesign page implementation is separate",
+      "No full screen-reader or OS reduced-motion audit",
+      "Active OS dark theme exercised for new access controls; no browser color-scheme emulation available",
+      "File deletion was covered by live API suite; browser fixture cleanup used scoped administrative SDK tooling"
+    ]
+  },
+  "cleanup": {
+    "command": "npm run test:access -- --cleanup",
+    "status": "passed",
+    "independentVerification": "No retained fixture file, disposable Clerk users absent, capability/audit/file metadata tables empty, private bucket empty, owner user retained with no staff grants"
+  },
+  "checks": {
+    "unit": {
+      "passed": 7
+    },
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "signedOutHttp": {
+      "passed": 3
+    },
+    "backendTokenRejection": {
+      "passed": 3
+    },
+    "liveIsolationHarness": "passed",
+    "documentationLinks": {
+      "checked": 181,
+      "missing": 0
+    },
+    "auditAppendix": "byte-exact",
+    "migrationHistory": "4 expected migrations applied, including earlier identity helper"
+  },
+  "remaining": [
+    "Shared storefront shell and selected screen implementation",
+    "Production staff operator identity and retention policy",
+    "Per-user storage totals/quotas and orphan reconciliation",
+    "Full database and file restore drill",
+    "Actual content/admin/commerce workflows and business policies",
+    "Production keys, load testing and deployment"
+  ],
+  "nextPhaseStarted": false,
+  "recoveryEvidence": "Current schema-only snapshot saved privately after final migration; no database/file restore drill performed"
+}

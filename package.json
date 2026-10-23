@@ -10,6 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:auth": "node --test tests/auth-routes.test.mjs",
     "test:backend": "node --env-file=.env.local --test tests/insforge-access.test.mjs",
+    "test:unit": "node --test tests/account-profile.test.mjs tests/account-files-validation.test.mjs",
+    "test:access": "node --env-file=.env.local tests/phase2-isolation.mjs",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {

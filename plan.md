@@ -1,6 +1,6 @@
 # PandaByte.in — phased delivery plan
 
-Updated 23 October 2026, Asia/Calcutta. **Current work: authorized Next.js initialization, then Phase 1 contracts/handoff.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; business data RLS/storage and lifecycle coverage remain required gates. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.
+Updated 23 October 2026, Asia/Calcutta. **Current work: Phase 2 customer/staff/private-storage foundation; owner-selected Superdesign screen references are recorded.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; customer/staff/private-storage and lifecycle verification is the active Phase 2 gate. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.
 
 ## Review verdict and changes
 
@@ -16,7 +16,7 @@ Deliverables: consolidated README with unchanged original audit appendix; revise
 
 Review work covers the actual current-site evidence, the two chats' requirements, official Next.js/Clerk/InsForge guidance and bounded GitHub research. Two Luna extra-high workers handle independent architecture/tooling research; root integrates. The main model follows the chat setting; no tool changed it.
 
-Historical Phase 0 exit: local links/decisions/source preservation passed before app/Git/provider setup. Initialization and application checks are now tracked separately in docs/phase-progress.md; no live provider integration has been verified.
+Historical Phase 0 exit: local links/decisions/source preservation passed before app/Git/provider setup. Initialization, the verified Clerk–InsForge identity bridge and subsequent access checks are tracked separately in docs/phase-progress.md.
 
 ## Initialization checkpoint — before Phase 1
 
@@ -43,6 +43,8 @@ Backend/contracts work:
 Exit: minimal written contracts for the next slice, a compatible visual handoff for components about to be built, and a testable identity/data integration approach. Backend foundations may proceed while unrelated visual polish continues; do not prematurely implement unapproved page appearance.
 
 ## Phase 2 — application, identity and data foundation
+
+Visual handoff: the owner selected [homepage v17](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba) and the matching Superdesign layouts for each screen. The official CLI confirmed 39 drafts; use the [route-level screen inventory](docs/design-delivery.md) and [design contract](design.md). Fetch and record the current relevant version at implementation time. Selection does not turn simulated prototype actions into backend features or expand the production Agent scope.
 
 **Dependencies:** implementation authorization and Phase 1 foundation decisions. Git/publication remain subject to the user's scope; do not assume a coding instruction permits publishing a repository.
 

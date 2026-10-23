@@ -146,4 +146,4 @@ Unpublish first revokes the database public projection. Completion also requires
 - **Content:** real team identities, contact values, sourced product corrections, public resource/video links and publication approval. Use empty states until supplied.
 - **Capacity:** expected traffic/request mix, service region, response targets and budget. Existing proposed load/performance targets are test planning values, not guarantees.
 
-Until these are resolved at their gates, this document authorizes no provider setup, schema application, live API, Clerk/InsForge integration, payment flow or fabricated seed data.
+The latest user authorization has resumed development provider setup and Phase 2 access work; see [backend setup](backend-setup.md) and [access contracts](phase-2-access.md) for current implementation and verification. Remaining owner decisions apply at their dependent phase gates. This contract does not authorize payments, fabricated seed data, production provisioning or deployment.

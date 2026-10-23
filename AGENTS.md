@@ -6,6 +6,8 @@
 
 The user's latest instructions override this file. Do not ask again for actions already authorized within a resumed phase. Do not treat the full roadmap as blanket authorization to perform later phases.
 
+Phase 2 customer/staff/private-file implementation is explicitly authorized, including two disposable development Clerk users and temporary fixture-only grants for isolation tests. Preserve the owner’s normal customer permissions. The owner selected [Superdesign homepage v17](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba) and matching screen layouts; use [the verified reference snapshot](docs/verification/design-reference.json) and retrieve current relevant drafts through the authenticated official CLI. No connected Superdesign MCP was discovered.
+
 ## Read first
 
 1. `README.md`: single active context, confirmed scope, architecture, findings and phase boundaries.
