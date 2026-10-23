@@ -30,3 +30,6 @@ Thumbs.db
 .bootstrap/
 .superpowers/
 *.tsbuildinfo
+
+# InsForge CLI linkage can contain privileged project credentials
+.insforge/
