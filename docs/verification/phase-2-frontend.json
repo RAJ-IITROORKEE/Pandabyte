@@ -1,0 +1,320 @@
+{
+  "date": "2026-10-24",
+  "timezone": "Asia/Calcutta",
+  "scope": "Phase 2 shared navbar/footer/theme and frontend route boundaries",
+  "reference": {
+    "draftId": "011e75c8-d90c-40ed-aac8-bc39b8e2f1ba",
+    "version": 17,
+    "tool": "Authenticated official Superdesign CLI",
+    "newGenerations": 0,
+    "creditsSpent": 0
+  },
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "tasks": [
+      "navbar",
+      "footer",
+      "theme"
+    ],
+    "ownership": "Separate component/CSS files; root owns config, integration, routes and commits"
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed after final account streaming correction",
+    "unit": {
+      "passed": 10
+    },
+    "authHttp": {
+      "passed": 4
+    },
+    "shellHttp": {
+      "passed": 3,
+      "knownPlaceholderRoutes": 23,
+      "unknownRouteStatus": 404
+    },
+    "dependencyAudit": "npm install reported 0 vulnerabilities",
+    "documentation": {
+      "auditPreservedExactly": true,
+      "localMarkdownLinksChecked": 185
+    }
+  },
+  "browser": {
+    "surface": "Built-in in-app browser at localhost:3000",
+    "homeWidths": [
+      320,
+      768,
+      1024,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "checks": [
+      "Desktop ArrowDown opens menu and focuses first link",
+      "Nested Enter opens hardware; Escape closes nested then parent and returns focus",
+      "Mobile menu opens, scrolls, dismisses and returns focus on Escape",
+      "All header actions including user menu have 44px targets on narrow layout",
+      "Same-path category query navigation closes menus",
+      "Skip link focuses main",
+      "Footer privacy link reaches real policy section anchor",
+      "Saved theme survives reload and new tabs; cross-tab changes synchronize",
+      "Signed-in account connection and profile/file loaded states remain usable in both themes",
+      "Sign-in form both themes at four widths; signup entry at320px",
+      "Real Google signout/signin from staff return path lands at staff; normal customer remainsForbidden",
+      "Staff page excludes storefront header/footer",
+      "Fresh home → Account navigation shows authenticated connecting state, then verified connection, loaded profile and private-file empty state"
+    ],
+    "knownWarnings": [
+      "Clerk development-key notice is expected for this development app"
+    ],
+    "layouts": {
+      "finalHome": [
+        {
+          "client": 305,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 305,
+          "theme": "light",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 753,
+          "theme": "light",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 1009,
+          "theme": "light",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 1425,
+          "theme": "light",
+          "width": 1440
+        },
+        {
+          "client": 305,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 305,
+          "theme": "dark",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 753,
+          "theme": "dark",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 1009,
+          "theme": "dark",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "footers": 1,
+          "headers": 1,
+          "mainPadding": "24px",
+          "mainTargets": 1,
+          "scroll": 1425,
+          "theme": "dark",
+          "width": 1440
+        }
+      ],
+      "account": [
+        {
+          "client": 305,
+          "footers": 1,
+          "headers": 1,
+          "mainTargets": 1,
+          "path": "/account",
+          "scroll": 305,
+          "theme": "light",
+          "width": 320
+        },
+        {
+          "client": 1425,
+          "footers": 1,
+          "headers": 1,
+          "mainTargets": 1,
+          "path": "/account",
+          "scroll": 1425,
+          "theme": "light",
+          "width": 1440
+        },
+        {
+          "client": 305,
+          "footers": 1,
+          "headers": 1,
+          "mainTargets": 1,
+          "path": "/account",
+          "scroll": 305,
+          "theme": "dark",
+          "width": 320
+        },
+        {
+          "client": 1425,
+          "footers": 1,
+          "headers": 1,
+          "mainTargets": 1,
+          "path": "/account",
+          "scroll": 1425,
+          "theme": "dark",
+          "width": 1440
+        }
+      ],
+      "signIn": [
+        {
+          "client": 305,
+          "scroll": 305,
+          "theme": "dark",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "scroll": 753,
+          "theme": "dark",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "scroll": 1009,
+          "theme": "dark",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "scroll": 1425,
+          "theme": "dark",
+          "width": 1440
+        },
+        {
+          "client": 305,
+          "scroll": 305,
+          "theme": "light",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "scroll": 753,
+          "theme": "light",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "scroll": 1009,
+          "theme": "light",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "scroll": 1425,
+          "theme": "light",
+          "width": 1440
+        }
+      ]
+    },
+    "finalProduction": {
+      "status": "passed",
+      "userButtonSize": [
+        44,
+        44
+      ],
+      "menu": "two columns on desktop, one column on mobile",
+      "mainGutters": "24px retained on all tested home widths",
+      "newErrors": 0,
+      "warnings": "Only Clerk development-key notice after fresh production load",
+      "accountNavigation": {
+        "progressVisibleAfterClickMs": 681,
+        "progress": "Connecting to your account…",
+        "final": "Identity verified, Profile loaded, private-file empty state",
+        "scope": "Single local production observation; not a capacity or latency guarantee"
+      }
+    },
+    "screenshots": [
+      ".bootstrap/phase2-shell-desktop-dark.png",
+      ".bootstrap/phase2-shell-footer-light.png",
+      ".bootstrap/phase2-shell-mobile-dark.png"
+    ]
+  },
+  "fixedIssues": [
+    {
+      "issue": "Global loading streamed before auth redirects/not-found HTTP status",
+      "fix": "Scoped loading to finite public placeholder route with generateStaticParams/dynamicParamsfalse",
+      "evidence": "Auth tests restored307; unknown routes404"
+    },
+    {
+      "issue": "Clerk internal generic tokens collided with app accent/foreground",
+      "fix": "Namespaced root aliases plus supported appearance elements",
+      "evidence": "Dark primary rgb(114, 227, 173) with rgb(11, 33, 22) text; light rgb(20, 108, 67) with white text"
+    },
+    {
+      "issue": "Narrow header targets needed more room",
+      "fix": "Separate brand/action rows below371px and44pxcontrols including supported Clerk appearanceelement"
+    },
+    {
+      "issue": "Signed-out staff entry returned to customer account",
+      "fix": "Explicit account/staff return allowlist and staff destination; capability stillrechecked",
+      "evidence": "Real Google login returned to/staff; normalcustomerdenied"
+    },
+    {
+      "issue": "Raw root script emitted React development HMR warning",
+      "fix": "Next Script beforeInteractive"
+    },
+    {
+      "issue": "Old main-content shorthand removed mobile gutters after duplicatedshellremoved",
+      "fix": "Specific foundation contentselector retains24pxinlinegutter"
+    },
+    {
+      "issue": "Clerk flagged structural user-button CSS",
+      "fix": "Use supported appearance.elements.userButtonTrigger sizing; remove structuralselector",
+      "evidence": "Production target measured44x44; warning absent from fresh productionrun"
+    },
+    {
+      "issue": "Signed-in Account navigation waited for backend identity verification without visible feedback",
+      "fix": "Stream AccountData inside a local Suspense boundary after the active-session gate",
+      "evidence": "Built-in browser saw connecting state after681ms, then real verified data; signed-out HTTP307 regression passes"
+    }
+  ],
+  "review": "Independent Luna reviews cleared account streaming, route/auth and theme/header boundaries after findings fixed",
+  "skipped": [
+    "No new public catalog/admin/CMS/commerce/Agent implementation; placeholder bodies remain",
+    "No production deployment, load test or full accessibility/screen-reader audit",
+    "OS reduced-motion browser emulation unavailable; static reduced-motion CSS reviewed",
+    "Error retry boundary was not fault-injected through a public test endpoint",
+    "Previous privileged multi-user backend harness not repeated; no schema/RLS/service configuration changed"
+  ],
+  "phase3Started": false
+}

@@ -1,6 +1,6 @@
 # PandaByte.in — single project context
 
-Updated 23 October 2026, Asia/Calcutta. **Current work: Phase 2 customer, staff and private-storage verification, with owner-selected Superdesign layouts for implementation.** This file consolidates decisions, architecture, source findings and the complete original audit. Read it first; [design.md](design.md) specifies page/content behavior, [plan.md](plan.md) defines implementation phases, and [AGENTS.md](AGENTS.md) governs agent work.
+Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 2 shared navbar, footer and theme implemented and verified, following the customer/staff/private-storage checkpoint.** This file consolidates decisions, architecture, source findings and the complete original audit. Shared frontend contracts are recorded in [Phase 2 frontend](docs/phase-2-frontend.md). Read it first; [design.md](design.md) specifies page/content behavior, [plan.md](plan.md) defines implementation phases, and [AGENTS.md](AGENTS.md) governs agent work.
 
 ## Local development
 
@@ -19,7 +19,7 @@ Copy .env.example to ignored .env.local when the owner supplies the selected tes
 - Design retains the exact panda logo, light/dark, Supabase-inspired neutral/emerald styling, restrained animation and current hero direction. Supabase is a visual reference; InsForge remains the backend. Selected previews/versions and final polish remain the UI chat's work.
 - ChatGPT/Codex assists development and planning. The Agent workspace and future desktop software page are prototypes/Coming soon; production AI/model calls/autonomous tools are not part of this release.
 - Two Luna extra-high workers researched architecture and tools for this review. Sol 6.1 is the user's requested main coordinator model; the app controls the current model and no tool changed or independently verified it.
-- The user has now authorized Next.js initialization, local Git commits, Phase 1 work and Luna xhigh implementation workers. Verify/review each phase, test available flows on localhost in the built-in app browser and commit before the next dependent phase. Clerk keys and InsForge CLI access are now supplied; the user-token identity bridge passes; customer/staff/private-storage verification is the active Phase 2 gate. GitHub publication, production provisioning and deployment remain separate.
+- The user has now authorized Next.js initialization, local Git commits, Phase 1 work and Luna xhigh implementation workers. Verify/review each phase, test available flows on localhost in the built-in app browser and commit before the next dependent phase. Clerk keys and InsForge CLI access are now supplied; the user-token identity bridge passes; customer/staff/private-storage checks and the shared frontend pass. Public publication/media models and production operating policies remain separate gates before dependent work. GitHub publication, production provisioning and deployment remain separate.
 
 ## 2. Required product and operating scope
 
@@ -127,7 +127,7 @@ Draft edits do not overwrite the published revision. Staff preview is private/no
 
 Contact submissions persist before a receipt. Notifications retry separately, so email failure cannot lose an inquiry. Validate and privately store optional attachments with authorized access/retention and abuse limits. Team identities are owner-supplied; avatars are replaceable admin media. Add approved YouTube IDs/URLs with controlled embeds, not pasted executable iframe scripts.
 
-The required acceptance example is concrete: create product 45+, add a category, edit its sale price, publish a blog/FAQ/team change and see correct public pages update without code or a new deployment. The Next.js foundation is being initialized; no live database/admin integration exists yet. This remains the implementation contract.
+The required acceptance example is concrete: create product 45+, add a category, edit its sale price, publish a blog/FAQ/team change and see correct public pages update without code or a new deployment. The Next.js/Clerk/InsForge foundation and private account operations are verified; editable catalog/content administration is not implemented yet. This remains the implementation contract.
 
 ## 8. Search, rendering and scale
 
@@ -178,7 +178,7 @@ Read relevant skills only when needed: Ponytail; InsForge CLI/SDK/integrations; 
 
 At foundation: customer/staff data permissions, private storage, staff capabilities/bootstrap, regions/traffic/budget. At content import: corrected facts, originals/rights, real team data, videos/resources, approved product/software names/claims and retention/editorial rules. At commerce: minimum basis/boundary, merchant/shipping/tax/invoices, discount/coupon policies and refund/late-payment/notification ownership. At release: migration permissions, analytics/consent, recovery objectives, tested capacity and explicit production instruction.
 
-These do not block planning. Never fabricate secrets, identities, stock, provider connections or successful tests. The original audit did not inspect private Wix systems and Firecrawl did not complete; those limits remain true. Latest visual work has not been re-tested in this planning chat. See [phase progress](docs/phase-progress.md) for current build/typecheck/browser evidence; the signed-out checks and authenticated browser → Clerk → InsForge identity round trip pass; customer-row/staff/storage permissions still require separate implementation and tests.
+These do not block planning. Never fabricate secrets, identities, stock, provider connections or successful tests. The original audit did not inspect private Wix systems and Firecrawl did not complete; those limits remain true. Shared frontend browser checks are recorded in [the frontend evidence](docs/verification/phase-2-frontend.json); full selected screen bodies are still future work. See [phase progress](docs/phase-progress.md) for current build/typecheck/browser evidence; the signed-out checks and authenticated browser → Clerk → InsForge identity round trip pass; customer-row/staff/private-storage permissions passed their separate live API/SDK/browser checks.
 
 ## 13. Repository map and verification
 

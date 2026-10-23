@@ -1,10 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { AccountProfile } from "@/components/account-profile";
 import { AccountFiles } from "@/components/account-files";
-import { AuthControls } from "@/components/auth-controls";
-import Link from "next/link";
 
 export default async function AccountPage() {
   const { isAuthenticated, sessionStatus, userId } = await auth();
@@ -13,6 +12,18 @@ export default async function AccountPage() {
     redirect("/sign-in?redirect_url=%2Faccount");
   }
 
+  return (
+    <main id="main" className="auth-page account-layout" tabIndex={-1}>
+      <p className="section-kicker">Account</p>
+      <h1 className="auth-title">You’re signed in.</h1>
+      <Suspense fallback={<p className="auth-description" role="status">Connecting to your account…</p>}>
+        <AccountData userId={userId} />
+      </Suspense>
+    </main>
+  );
+}
+
+async function AccountData({ userId }: { userId: string }) {
   let identityVerified = false;
 
   try {
@@ -27,13 +38,7 @@ export default async function AccountPage() {
   }
 
   return (
-    <main className="auth-page account-layout">
-      <div className="account-navigation">
-        <Link href="/">PandaByte.in home</Link>
-        <AuthControls />
-      </div>
-      <p className="section-kicker">Account</p>
-      <h1 className="auth-title">You’re signed in.</h1>
+    <>
       <p className="auth-description">
         {identityVerified
           ? "Your account connection is verified."
@@ -45,6 +50,6 @@ export default async function AccountPage() {
           <AccountFiles />
         </div>
       )}
-    </main>
+    </>
   );
 }

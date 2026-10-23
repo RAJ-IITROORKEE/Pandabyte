@@ -10,9 +10,6 @@ export function AuthControls() {
           <Link className="auth-link" href="/sign-in">
             Login
           </Link>
-          <Link className="auth-link" href="/sign-up">
-            Sign up
-          </Link>
         </Show>
         <Show when="signed-in">
           <Link className="auth-link" href="/account">

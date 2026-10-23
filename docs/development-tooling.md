@@ -89,3 +89,7 @@ I fetched GitHub's global [daily Trending](https://github.com/trending?since=dai
 - Playwright [CLI and MCP comparison](https://github.com/microsoft/playwright-cli#playwright-cli-vs-playwright-mcp) and [Playwright Test docs](https://playwright.dev/docs/intro).
 - shadcn [official source/CLI page](https://ui.shadcn.com/docs/official) and [MCP guide](https://ui.shadcn.com/docs/mcp); Context7 [MCP source](https://github.com/upstash/context7).
 - skills.sh [registry documentation](https://www.skills.sh/docs), [React Best Practices listing](https://www.skills.sh/vercel-labs/agent-skills/vercel-react-best-practices), and [Web Design Guidelines listing](https://www.skills.sh/vercel-labs/agent-skills/web-design-guidelines).
+
+## Phase 2 frontend adoption — 24 October 2026
+
+Installed exact lucide-react 1.61.0 for selected line icons after checking official npm metadata and compatibility. Named imports only. The original ISC notice and applicable Feather MIT notice are retained in [the package license](licenses/lucide-react.txt). No new theme, animation, design registry, MCP or paid component dependency was introduced for the shared shell.

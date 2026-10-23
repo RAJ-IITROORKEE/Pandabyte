@@ -1,6 +1,3 @@
-import Image from "next/image";
-import Link from "next/link";
-import { AuthControls } from "@/components/auth-controls";
 
 const statuses = [
   {
@@ -11,8 +8,8 @@ const statuses = [
   },
   {
     title: "Visual design handoff",
-    detail: "The owner selected the Superdesign homepage and matching screen layouts for implementation.",
-    status: "Reference selected",
+    detail: "The selected Superdesign navbar, footer and persistent theme form the shared site shell.",
+    status: "Shell implemented",
     state: "active",
   },
   {
@@ -31,43 +28,14 @@ const statuses = [
 
 export default function Home() {
   return (
-    <>
-      <a className="skip-link" href="#main">
-        Skip to main content
-      </a>
-      <div className="site-shell">
-        <header className="site-header">
-          <Link className="brand" href="/" aria-label="PandaByte.in development preview home">
-            <span className="brand-mark">
-              <Image
-                src="/brand/pandabyte-logo.png"
-                alt=""
-                width={558}
-                height={564}
-                priority
-              />
-            </span>
-            <span className="brand-name">PandaByte.in</span>
-          </Link>
-          <a
-            className="site-link"
-            href="https://www.pandabyte.in/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Current live site <span aria-hidden="true">↗</span>
-          </a>
-          <AuthControls />
-        </header>
-
-        <main id="main" className="main-content" tabIndex={-1}>
+        <main id="main" className="main-content foundation-content" tabIndex={-1}>
           <section className="intro" aria-labelledby="page-title">
             <p className="eyebrow">Phase 2 <span aria-hidden="true">/</span> Access foundation</p>
             <h1 id="page-title">The PandaByte app foundation is initialized.</h1>
             <p className="intro-copy">
               This local preview tracks the foundation work and its handoffs. The
               product and data contracts are recorded while the visual design is
-              being prepared for implementation.
+              selected for implementation.
             </p>
           </section>
 
@@ -100,12 +68,5 @@ export default function Home() {
             workflows remain under development.
           </p>
         </main>
-
-        <footer className="site-footer">
-          <span>Local development preview</span>
-          <span>Phase 2 · Access foundation</span>
-        </footer>
-      </div>
-    </>
   );
 }

@@ -8,13 +8,13 @@ type SignUpPageProps = {
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const { redirect_url: redirectUrl } = await searchParams;
 
-  if (redirectUrl !== undefined && redirectUrl !== "/account") {
+  if (redirectUrl !== undefined && redirectUrl !== "/account" && redirectUrl !== "/staff") {
     redirect("/sign-up?redirect_url=%2Faccount");
   }
 
   return (
-    <main className="auth-page">
-      <SignUp fallbackRedirectUrl="/account" signInUrl="/sign-in" />
+    <main id="main" className="auth-page" tabIndex={-1}>
+      <SignUp fallbackRedirectUrl={redirectUrl ?? "/account"} signInUrl="/sign-in" />
     </main>
   );
 }

@@ -1,28 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: light dark;
-  --background: #fafafa;
-  --surface: #ffffff;
-  --foreground: #171717;
-  --muted: #525252;
-  --accent: #146c43;
-  --border: #d4d4d4;
-  --status-soft: #e8f5ed;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #141414;
-    --surface: #1c1c1c;
-    --foreground: #fafafa;
-    --muted: #b4b4b4;
-    --accent: #72e3ad;
-    --border: #383838;
-    --status-soft: #143223;
-  }
-}
-
 * {
   box-sizing: border-box;
 }
@@ -31,6 +8,7 @@ html {
   min-width: 0;
   min-height: 100%;
   background: var(--background);
+  scroll-padding-top: 88px;
 }
 
 body {
@@ -40,6 +18,44 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.pb-site-frame {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pb-page-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-content.foundation-content,
+.foundation-content {
+  width: min(100%, 960px);
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.route-state {
+  padding-block: 72px;
+  min-height: 45vh;
+}
+
+.route-state p + p { margin-top: 16px; }
+.route-state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin-top: 24px; }
+.policy-states { margin-top: 32px; }
+.policy-states section { scroll-margin-top: 100px; padding-block: 20px; border-top: 1px solid var(--divider); }
+.policy-states h2 { font-size: 22px; }
+.policy-states p { color: var(--muted); }
+.shell-button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--accent); color: var(--action-text); cursor: pointer; font: inherit; }
+.shell-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+main { scroll-margin-top: 88px; }
+main:focus { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation: none !important; }
 }
 
 a {
@@ -54,7 +70,7 @@ a:focus-visible {
 
 .skip-link {
   position: absolute;
-  z-index: 1;
+  z-index: 100;
   top: 12px;
   left: 12px;
   padding: 10px 14px;

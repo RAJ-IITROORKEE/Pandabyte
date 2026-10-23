@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import Script from "next/script";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteFrame } from "@/components/site-frame";
+import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
+import "./theme.css";
 
 export const metadata: Metadata = {
   title: "Development Preview | PandaByte.in",
@@ -13,9 +19,38 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script id="pandabyte-theme" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider appearance={{
+          variables: {
+            colorPrimary: "var(--pb-accent)",
+            colorPrimaryForeground: "var(--pb-action-text)",
+            colorBackground: "var(--pb-surface)",
+            colorForeground: "var(--pb-foreground)",
+            colorMutedForeground: "var(--pb-muted)",
+            colorInput: "var(--pb-background)",
+            colorInputForeground: "var(--pb-foreground)",
+            colorBorder: "var(--pb-border)",
+          },
+          elements: {
+            rootBox: { maxWidth: "100%" },
+            cardBox: { maxWidth: "100%" },
+            userButtonTrigger: { width: "44px", height: "44px" },
+            formButtonPrimary: {
+              backgroundColor: "var(--pb-accent)",
+              backgroundImage: "none",
+              color: "var(--pb-action-text)",
+              minHeight: "44px",
+            },
+          },
+        }}>
+          <SiteFrame header={<SiteHeader />} footer={<SiteFooter />}>
+            {children}
+          </SiteFrame>
+        </ClerkProvider>
       </body>
     </html>
   );

@@ -4,7 +4,7 @@ Updated 23 October 2026. The owner selected the existing [Superdesign homepage](
 
 ## Current implementation boundary
 
-The root-app Next.js foundation has working Clerk sign-in and account identity verification. Customer profiles, staff access and private file controls are under live Phase 2 security verification; the public storefront and full admin workflows are still later work. Do not mistake the development account form for the selected final account layout.
+The root-app Next.js foundation has working Clerk sign-in and account identity verification. Customer profiles, staff access and private file controls passed live Phase 2 verification; the public storefront and full admin workflows are still later work. Do not mistake the development account form for the selected final account layout.
 
 The authenticated official Superdesign CLI confirmed 39 remote drafts and retrieved homepage v17. No connected Superdesign MCP was discovered, so use the official CLI. No new generation or credits were needed.
 
@@ -17,7 +17,7 @@ The authenticated official Superdesign CLI confirmed 39 remote drafts and retrie
 - Learn includes owner-approved YouTube entries, product specifications, kit guides, and embedded-systems resources. Contact, About/team, FAQs, blogs, catalog categories and pricing must be editable through the admin, with draft/preview/publication for content.
 - Clerk is the sole identity provider and login is required before checkout. The ₹5,000 minimum appears only in checkout, before payment; its qualifying subtotal and boundary remain unresolved. Preview actions must not imply a real session, order, or payment.
 - Use real team identities or omit team cards from public content. Neutral temporary avatars are allowed only in private previews or unpublished drafts unless the owner approves publication.
-- The latest user preference is Aceternity-styled navigation, hero, cards, admin panels, and FAQ, with **Lucide** icons (ISC). This supersedes the older Heroicons-only preference and the design-system sentence that treats Aceternity as motion reference only. Keep PandaByte’s approved tokens and structure; do not import Aceternity’s default look wholesale. Lucide is not yet installed.
+- The latest user preference is Aceternity-styled navigation, hero, cards, admin panels, and FAQ, with **Lucide** icons (ISC). This supersedes the older Heroicons-only preference and the design-system sentence that treats Aceternity as motion reference only. Keep PandaByte’s approved tokens and structure; do not import Aceternity’s default look wholesale. Lucide 1.61.0 is installed for the shared frontend, with original ISC/Feather MIT notices retained.
 
 ## Visual and interaction contract
 
@@ -61,6 +61,6 @@ The design chat records 312 local layout/DOM checks across 39 screens, four widt
 2. UI chat chooses the Aceternity variants for navbar, hero, shared cards, admin panels, and FAQ; confirm Lucide dependency/source notice and any Aceternity component terms before adding code.
 3. Keep the Agent experience out of homepage highlights; review whether the existing standalone prototype draft should be retired or moved into the allowed Solutions/About Coming soon context. Do not adopt its draft title as a product name.
 4. Confirm real team identities and publication permission, owner-approved public Skills/CLI entries, YouTube IDs, product-spec documents, blog/FAQ/Contact content, and office details. Missing content gets honest empty states.
-5. Clerk development login and the InsForge identity bridge are verified. Phase 2 customer/staff/storage checks remain the active security gate. Checkout subtotal basis and shipping/tax policy remain unresolved; design selection does not resolve business policy.
+5. Clerk development login and the InsForge identity bridge are verified. Phase 2 access checks passed; shared-shell results are tracked in [frontend contracts](phase-2-frontend.md). Checkout subtotal basis and shipping/tax policy remain unresolved; design selection does not resolve business policy.
 
-The handoff covers design structure and component proposals only. Production storefront, admin, authentication, data connections, and capacity claims require their separate phase gates and evidence.
+The handoff covers design structure and component proposals. Development authentication, private data and the shared frontend have separate verification evidence; production storefront/admin workflows and capacity claims still require their phase gates.

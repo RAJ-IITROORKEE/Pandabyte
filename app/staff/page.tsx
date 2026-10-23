@@ -5,7 +5,7 @@ export default async function StaffPage() {
   const access = await requireCapability("content.edit");
 
   if (!access.allowed && access.status === 401) {
-    redirect("/sign-in?redirect_url=%2Faccount");
+    redirect("/sign-in?redirect_url=%2Fstaff");
   }
 
   if (!access.allowed && access.status === 403) {

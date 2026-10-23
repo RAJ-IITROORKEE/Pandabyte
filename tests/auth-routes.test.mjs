@@ -24,6 +24,13 @@ test("account content requires a session", async () => {
   assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Faccount");
 });
 
+test("signed-out staff entry preserves the guarded staff destination", async () => {
+  const response = await request("/staff");
+  assert.equal(response.status, 307);
+  assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Fstaff");
+  assert.equal((await request("/sign-in?redirect_url=%2Fstaff")).status, 200);
+});
+
 test("auth return paths reject external and duplicate redirect parameters", async () => {
   for (const route of ["sign-in", "sign-up"]) {
     for (const value of [

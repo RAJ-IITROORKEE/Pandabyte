@@ -8,6 +8,8 @@ The user's latest instructions override this file. Do not ask again for actions 
 
 Phase 2 customer/staff/private-file implementation is explicitly authorized, including two disposable development Clerk users and temporary fixture-only grants for isolation tests. Preserve the owner’s normal customer permissions. The owner selected [Superdesign homepage v17](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba) and matching screen layouts; use [the verified reference snapshot](docs/verification/design-reference.json) and retrieve current relevant drafts through the authenticated official CLI. No connected Superdesign MCP was discovered.
 
+The owner authorized the remaining Phase 2 shared navbar/footer/theme on 24 October 2026 using Luna xhigh workers, built-in-browser verification, fixes and a local commit before Phase 3. Keep unfinished destinations honest; do not claim full screen bodies or backend publication from shared-shell work. See [frontend contracts](docs/phase-2-frontend.md).
+
 ## Read first
 
 1. `README.md`: single active context, confirmed scope, architecture, findings and phase boundaries.
