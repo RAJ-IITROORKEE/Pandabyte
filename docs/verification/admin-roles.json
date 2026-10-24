@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-24",
+  "status": "Role-based admin and scoped non-commerce hardening verified in development; production release not claimed",
+  "target": "http://localhost:3000",
+  "backendProjectId": "988b987b-f809-4cd5-94b2-c1d1e5cc9120",
+  "precedingCommit": "e5bed38",
+  "scope": "Checkout/payment implementation and configuration explicitly deferred by owner",
+  "owner": {
+    "email": "rajrabidas001@gmail.com",
+    "resolution": "One existing uniquely matched verified Clerk identity in the verified development instance; persisted opaque subject",
+    "role": "ADMIN",
+    "protected": true,
+    "capabilities": 7,
+    "runtimeEmailBypass": false,
+    "bootstrap": "Explicit owner authorization; project-admin-only setup RPC; no identity/session replacement"
+  },
+  "workers": "Luna xhigh API implementation, UI implementation and independent security review; root migrations/bootstrap/integration/browser verification",
+  "migration": "20261024115158_staff-roles.sql",
+  "roles": [
+    "ADMIN",
+    "EDITOR",
+    "CATALOG",
+    "SUPPORT",
+    "CUSTOMER"
+  ],
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "unitTests": 54,
+    "authHttpTests": 7,
+    "shellHttpTests": 3,
+    "securityHeaderHttpTests": 1,
+    "backendTokenTests": 3,
+    "roleIntegration": "Clean npm run test:roles passed; fixture users/memberships/events/grants removed",
+    "privateAccountIntegration": "npm run test:access passed customer profile RLS/API, staff authorization/metadata isolation, private-file RLS/API and genuine expired-token rejection; cleaned fixtures",
+    "npmAuditVulnerabilities": 0,
+    "clientSecretScan": "Existing privileged editorial key absent from all 36 client build files",
+    "independentCleanup": "Passed: protected owner ADMIN, seven capabilities and bootstrap audit preserved; no disposable role/user/content/cart/storage fixtures remain"
+  },
+  "roleRuntimeCoverage": [
+    "Anonymous/customer role listing denied; forged unsafe metadata cannot grant access",
+    "Verified existing Clerk email required; unknown identity and selected-subject mismatch denied",
+    "Editor, Catalog and Support map exactly to current capability rows and has_capability checks",
+    "Actual pages/pricing/inventory/inquiries APIs honor each role's permissions",
+    "CUSTOMER revocation removes staff access immediately for subsequent requests",
+    "Owner-only/manager role RLS and denied direct role/capability table insert/update/delete",
+    "Private bootstrap/apply RPCs and role audit rows denied to anonymous/customer clients",
+    "Manual capability setter rejects role-managed memberships",
+    "Protected owner and Admin self-role changes rejected without mutating owner's row/version",
+    "Stale updates rejected; concurrent same-version updates have one winner",
+    "Closed query/body inputs, forged protected flag, same-origin, JSON type and 4096-byte request bound",
+    "Actor/target/reason role audit persisted; fixture events removed separately from owner audit"
+  ],
+  "browser": {
+    "tool": "Codex built-in browser",
+    "bundle": "Production build on localhost",
+    "journeys": [
+      "Owner Google session opens real Admin workspace with all seven capabilities",
+      "Navbar account dropdown exposes Admin workspace from the guarded access API and navigates correctly",
+      "Role matrix, protected owner membership and disabled protected/self controls render",
+      "Unknown-identity form submission returns safe error and preserves typed values",
+      "Role form and bounded horizontal table fit 320/768/1024/1440 widths in light/dark",
+      "Keyboard reaches role selector; mobile navigation Escape returns focus to trigger",
+      "Final role manager contains only the protected owner; owner Google session retained"
+    ],
+    "consoleErrorsAtFinalInspection": 0,
+    "viewportOverride": "reset",
+    "proofFile": ".bootstrap/admin-roles-preview.png",
+    "finalPreview": "/admin/users"
+  },
+  "remainingLimits": [
+    "Contact global quota can be exhausted through rotating emails/direct anonymous RPC; trusted edge plus backend abuse controls remain a launch gate",
+    "CSP implements base/object/framing directives, not script-source/nonce enforcement",
+    "Last-admin branch source-reviewed; rollback-only CLI claim-setup test rejected before execution because InsForge forbids session configuration",
+    "100-member quota and multi-page UI not exercised with large real fixtures; parser/API bounds tested",
+    "Browser role-grant success not exercised; actual grant/revoke/concurrency flows were tested through genuine Clerk-authenticated API/SDK requests",
+    "No production provisioning/deployment, workload/capacity/restore drill, full assistive-technology audit or reduced-motion emulation",
+    "Inquiry notifications unconfigured; existing broad server-only media credential and vendor-range Zod override remain documented risks",
+    "Checkout, payment setup/calls, order/reservation/fulfillment/refund implementation remain deferred"
+  ]
+}

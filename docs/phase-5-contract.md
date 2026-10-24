@@ -1,5 +1,7 @@
 # Phase 5 — commerce implementation contract
 
+**Latest scope correction:** the owner explicitly deferred checkout/payments. The cart checkpoint remains available. Work now covers non-commerce security and role-based admin under [the new contract](admin-roles.md); do not resume provider/order development until explicitly requested.
+
 Started 24 October 2026 after Phase 4 commit `80c8685`, explicitly authorized by the owner with Luna xhigh workers, browser checks, fixes and a local commit before advancing. Phase 5 is in progress; Phase 6, deployment, live charges and GitHub publication are not authorized.
 
 ## Confirmed decisions and gates

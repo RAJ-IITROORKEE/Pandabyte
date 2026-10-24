@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, LayoutDashboard, LogOut, Settings, ShoppingBag } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogOut, Settings, ShieldCheck, ShoppingBag } from "lucide-react";
 import styles from "@/components/account-menu.module.css";
 
 export function AccountMenu() {
@@ -20,8 +20,25 @@ function AccountMenuContent() {
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
+  const [staffAccess, setStaffAccess] = useState<{ userId: string; allowed: boolean } | null>(null);
+  const userId = user?.id;
 
   const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open || !userId) return;
+    const controller = new AbortController();
+    void fetch("/api/admin/access", { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        const body: unknown = response.ok ? await response.json() : null;
+        const allowed = !!body && typeof body === "object" && "capabilities" in body &&
+          Array.isArray(body.capabilities) && body.capabilities.length > 0;
+        if (!controller.signal.aborted) setStaffAccess({ userId, allowed });
+      }).catch(() => {
+        if (!controller.signal.aborted) setStaffAccess({ userId, allowed: false });
+      });
+    return () => controller.abort();
+  }, [open, userId]);
 
   useEffect(() => {
     if (!open) return;
@@ -92,6 +109,10 @@ function AccountMenuContent() {
             {email && <span className={styles.identityEmail}>{email}</span>}
           </div>
           <nav className={styles.items} aria-label="Account">
+            {staffAccess?.userId === user.id && staffAccess.allowed && <Link className={styles.item} href="/admin" onClick={close}>
+              <ShieldCheck aria-hidden="true" />
+              <span>Admin workspace</span>
+            </Link>}
             <Link className={styles.item} href="/account" onClick={close}>
               <LayoutDashboard aria-hidden="true" />
               <span>Dashboard</span>

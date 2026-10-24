@@ -112,6 +112,8 @@ Exit: create/edit/publish in admin drives the actual storefront; prices agree ac
 
 ## Phase 5 — authenticated commerce and operations
 
+Latest instruction: checkout/payments are explicitly deferred; continue only the authorized non-commerce backend security and [role-based administration](docs/admin-roles.md). Owner `rajrabidas001@gmail.com` is the verified protected default ADMIN. Do not resume provider configuration or payment/order implementation merely because credentials become available.
+
 Status: authorized and in progress after 80c8685. The private/guest cart checkpoint is implemented and verified; see [evidence](docs/verification/phase-5-cart.json). Full checkout/payment/operations gates remain pending test keys/webhook and merchant GST/shipping settings. See [contract](docs/phase-5-contract.md).
 
 **Dependencies:** identity, catalog/pricing/inventory and merchant/business policies. Complete account and staff operational views with the domain services they use.
