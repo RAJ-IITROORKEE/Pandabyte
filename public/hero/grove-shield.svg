@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="370" viewBox="0 0 300 370" fill="none">
+<defs>
+ <linearGradient id="pcb" x1="0" y1="0" x2="300" y2="370" gradientUnits="userSpaceOnUse"><stop stop-color="#343A38"/><stop offset=".45" stop-color="#252B29"/><stop offset="1" stop-color="#202624"/></linearGradient>
+ <linearGradient id="socket" x1="0" y1="0" x2="46" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#F4F1E6"/><stop offset=".5" stop-color="#DBDACF"/><stop offset="1" stop-color="#A8ACA2"/></linearGradient>
+ <linearGradient id="metal"><stop stop-color="#B4A77A"/><stop offset=".5" stop-color="#E8DDB3"/><stop offset="1" stop-color="#796D47"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-35%" width="160%" height="180%"><feDropShadow dy="3" stdDeviation="2" flood-color="#090D0B" flood-opacity=".6"/></filter>
+ <g id="port">
+  <rect x="-17" y="-23" width="37" height="46" rx="3" fill="#171D1A" opacity=".7"/>
+  <g filter="url(#shadow)">
+   <path d="M-20-22H17L21-17V17L17 22H-20Z" fill="url(#socket)" stroke="#F7F6ED" stroke-width=".7"/>
+   <path d="M-20-16H7V16H-20" fill="#686E65"/>
+   <path d="M-20-14H4V14H-20" fill="#373E36"/>
+   <path d="M-20-22H-14V-16H-20M-20 16H-14V22H-20" fill="#F8F7EC"/>
+   <path d="M11-17V17M15-16V16" stroke="#ABAEA4" stroke-width="1"/>
+   <path d="M-18-10H0M-18-3.3H0M-18 3.3H0M-18 10H0" stroke="url(#metal)" stroke-width="2.3"/>
+   <path d="M17-10H26M17-3.3H26M17 3.3H26M17 10H26" stroke="url(#metal)" stroke-width="2.7"/>
+   <path d="M-18-21H15M-18 21H15" stroke="#FFFFFF" stroke-opacity=".5"/>
+  </g>
+ </g>
+</defs>
+<!-- Presentation concept carrier; central module is supplied by the application. -->
+<path d="M20 1H91V29Q91 36 98 36H202Q209 36 209 29V1H280Q299 1 299 20V350Q299 369 280 369H20Q1 369 1 350V20Q1 1 20 1Z" fill="url(#pcb)" stroke="#56605A" stroke-width="1.3"/>
+<path d="M25 7H85M215 7H275M7 39V331M293 39V331M23 362H277" stroke="#737D74" stroke-opacity=".13"/>
+<!-- Muted copper routing stays outside the module footprint. -->
+<g stroke="#85765B" stroke-opacity=".42" stroke-width="1.1" stroke-linejoin="round">
+ <path d="M37 110H48L60 122V308L81 329H116"/><path d="M37 117H44L54 127V316L74 336H127"/>
+ <path d="M37 270H44L49 275V327L65 343H139"/><path d="M37 280H40L43 283V334L59 350H149"/>
+ <path d="M263 110H251L239 122V308L218 329H184"/><path d="M263 117H255L245 127V316L225 336H173"/>
+ <path d="M263 270H256L251 275V327L235 343H161"/><path d="M263 280H260L257 283V334L241 350H151"/>
+ <path d="M50 71V53L66 37H83M250 71V53L234 37H217"/>
+</g>
+<g fill="#9A8762" opacity=".65"><circle cx="60" cy="161" r="2"/><circle cx="54" cy="191" r="2"/><circle cx="239" cy="161" r="2"/><circle cx="245" cy="191" r="2"/><circle cx="81" cy="329" r="2"/><circle cx="218" cy="329" r="2"/></g>
+<!-- Plated mounting holes. -->
+<g fill="#151B18" stroke="#818474" stroke-width="3"><circle cx="22" cy="24" r="6"/><circle cx="278" cy="24" r="6"/><circle cx="22" cy="346" r="6"/><circle cx="278" cy="346" r="6"/></g>
+<g stroke="#B8BAA7" stroke-opacity=".36"><circle cx="22" cy="24" r="9"/><circle cx="278" cy="24" r="9"/><circle cx="22" cy="346" r="9"/><circle cx="278" cy="346" r="9"/></g>
+<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#C4C9BA" font-size="8.5" letter-spacing=".3">
+ <text x="33" y="87">I²C A</text><text x="33" y="242">I²C B</text><text x="267" y="87">D18</text><text x="267" y="242">A0</text>
+</g>
+<use href="#port" transform="translate(12 120)"/><use href="#port" transform="translate(12 275)"/>
+<use href="#port" transform="translate(288 120) scale(-1 1)"/><use href="#port" transform="translate(288 275) scale(-1 1)"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#A7AF9F" font-size="6" text-anchor="middle"><text x="34" y="155">+3V3 / GND</text><text x="266" y="155">+3V3 / GND</text><text x="34" y="310">+3V3 / GND</text><text x="266" y="310">+3V3 / GND</text></g>
+<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle"><text x="150" y="320" fill="#DBDFD4" font-size="10.5" letter-spacing=".4">PandaByte Grove</text><text x="150" y="357" fill="#899385" font-size="6.5" letter-spacing="1">Concept</text></g>
+</svg>

@@ -1,6 +1,6 @@
 # PandaByte.in — phased delivery plan
 
-Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 3 editable administration and publishing is implemented and verified in development.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; customer/staff/private-storage checks and the shared frontend pass. Development publication/media models pass runtime verification; compatible dependency remediation and production operating policies remain gates. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.
+Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 4 published storefront, catalog search and company/editorial pages are implemented and verified in development.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; customer/staff/private-storage checks and the shared frontend pass. Development publication/media models pass runtime verification; dependency remediation is committed and Phase 4 is now authorized. Production operating policies remain commerce/release gates. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.
 
 ## Review verdict and changes
 
@@ -68,7 +68,7 @@ References: [InsForge Clerk integration](https://insforge.dev/integrations/clerk
 
 ## Phase 3 — editable administration and publishing
 
-Status: the development checkpoint passes lint, type checks, production build, focused unit/API/SDK tests and built-in-browser journeys. See [verification evidence](docs/verification/phase-3.json). Dependency remediation and production operating policies remain gates before advancing. See [implementation contract](docs/phase-3-contract.md) and [data operations](docs/phase-3-operations.md). Phase 4 has not started.
+Status: Phase 3 is committed as `8ec7285`; the account extension is committed as `7d6938e`. The dependency gate subsequently passed and was committed as `be2fb66` with [compatibility limits](docs/dependency-remediation.md). See [Phase 3 verification](docs/verification/phase-3.json), [implementation contract](docs/phase-3-contract.md) and [data operations](docs/phase-3-operations.md). The owner's latest instruction resumes Phase 4 development. Production operating policies remain commerce/release gates.
 
 **Dependencies:** working identity/RLS and agreed models. This phase establishes the data source before completing the public storefront.
 
@@ -91,7 +91,9 @@ Exit evidence: authorized staff creates a new product and category beyond the se
 
 ## Phase 4 — published storefront, discovery and company pages
 
-Current separately authorized account extension: [dashboard/address contracts](docs/account-dashboard.md) and [verification](docs/verification/account-dashboard.json) cover Clerk identity/settings, the account dropdown, private contact phone and shipping/billing address book, auth returns and Agent presentation. This extension follows Phase 3 commit `8ec7285`; it does not resume the broader Phase 4 gate. Clerk phone verification is deferred, with contact phone stored unverified in the private profile.
+Status: implemented and verified in development after dependency commit `be2fb66`. Bounded Luna xhigh workers used the frozen selected screen handoff; root applied and verified the development migrations, browser flows and clean integration run. See [the implementation contract](docs/phase-4-contract.md), [operations and limits](docs/phase-4-operations.md) and [verification](docs/verification/phase-4.json). This checkpoint is committed before Phase 5; checkout/payments and deployment remain outside this phase.
+
+The account extension completed before this Phase 4 authorization: [dashboard/address contracts](docs/account-dashboard.md) and [verification](docs/verification/account-dashboard.json) cover Clerk identity/settings, the account dropdown, private contact phone and shipping/billing address book, auth returns and Agent presentation. Clerk phone verification is deferred, with contact phone stored unverified in the private profile.
 
 **Dependencies:** publishable admin data and the corresponding approved design handoff.
 
@@ -104,7 +106,7 @@ Frontend:
 Backend:
 - Implement exact normalized SKU/model matches ahead of indexed text relevance; retain important suffixes. Add bounded facets, allowlisted sort and stable tie-breakers. Never fetch the entire catalog to filter in the browser.
 - Verify query plans/indexes against realistic catalog size. Consider pg_trgm only after extension availability and typo-relevance need are established; no embeddings/search service by default.
-- Define public cache tags/freshness and invalidation for product/category/page/nav/blog changes. Dynamic account/admin/cart/checkout reads remain outside shared caches. Revalidate live prices/stock at checkout regardless of displayed cache.
+- Public product/category/page/nav/blog reads use `no-store` with request-scoped deduplication, so publication, withdrawal and operational price/stock changes appear on the next request. Introduce shared caches/tags only for a measured need. Account/admin/cart/checkout reads remain private. Revalidate live prices/stock at checkout.
 
 Exit: create/edit/publish in admin drives the actual storefront; prices agree across cards/PDP; search handles SKU punctuation, combined filters, pagination and no results; unpublished content cannot leak through alternate routes/search/metadata; Contact persists and staff can process the inquiry. Verify 320/768/1024/1440px, light/dark, keyboard/focus, zoom and reduced motion. Record performance baselines before tuning.
 

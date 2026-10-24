@@ -79,7 +79,7 @@ function AccountMenuContent() {
         onClick={() => setOpen((current) => !current)}
       >
         <span className={styles.avatar} aria-hidden="true">
-          <UserAvatar rounded />
+          <UserAvatar rounded appearance={{ elements: { avatarBox: styles.avatarBox, avatarImage: styles.avatarImage } }} />
         </span>
         <span className={styles.name}>{displayName}</span>
         <ChevronDown aria-hidden="true" className={styles.chevron} />

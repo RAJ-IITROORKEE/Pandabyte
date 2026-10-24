@@ -14,17 +14,18 @@ function DocumentBlock({ block }: { block: ContentBlock }) {
   }
 }
 
-export function PublishedDocument({ document }: { document: AdminDocument }) {
+export function PublishedDocument({ document, hideTitle = false }: { document: AdminDocument; hideTitle?: boolean }) {
   return (
     <article className="published-document">
-      <h1 className="auth-title">{document.title}</h1>
+      {!hideTitle && <h1 className="auth-title">{document.title}</h1>}
       {document.summary && <p className="document-summary">{document.summary}</p>}
       {"author" in document && document.author && <p>By {document.author}</p>}
       {"mediaIds" in document && document.mediaIds.map((id) => <Image unoptimized key={id} src={`/api/media/${id}`} alt={document.title} width={1000} height={700} style={{ objectFit: "contain", height: "auto", maxWidth: "100%" }} />)}
       {document.blocks.map((block, index) => <DocumentBlock key={index} block={block} />)}
-      {"answer" in document && <p>{document.answer}</p>}
+      {"answer" in document && document.blocks.length === 0 && <p>{document.answer}</p>}
       {"name" in document && <section><h2>{document.name}</h2><p>{document.role}</p><p>{document.bio}</p></section>}
       {"email" in document && <address><p>{document.email}</p><p>{document.phone}</p><p>{document.address}</p><p>{document.hours} {document.timezone}</p></address>}
+      {"socialLinks" in document && document.socialLinks.length > 0 && <nav aria-label="PandaByte social links"><ul>{document.socialLinks.map((link,index)=><li key={index}><a href={link.url} rel="noopener noreferrer">{link.label}</a></li>)}</ul></nav>}
       {"specifications" in document && document.specifications.length > 0 && <dl>{document.specifications.map((spec, index) => <div key={index}><dt>{spec.name}</dt><dd>{spec.value}</dd></div>)}</dl>}
       {"compatibility" in document && document.compatibility.length > 0 && <section><h2>Compatibility</h2><ul>{document.compatibility.map((item, index) => <li key={index}>{item}</li>)}</ul></section>}
       {"kitContents" in document && document.kitContents.length > 0 && <section><h2>Kit contents</h2><ul>{document.kitContents.map((item, index) => <li key={index}>{item.title} × {item.quantity}</li>)}</ul></section>}

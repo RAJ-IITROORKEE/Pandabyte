@@ -1,25 +1,50 @@
-import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
+import { ProductDetails } from "@/components/catalog/product-details";
+import { ProductGallery } from "@/components/catalog/product-gallery";
+import { ProductVariantPanel } from "@/components/catalog/product-variant-panel";
+import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { getPublishedRecord } from "@/lib/editorial/published";
-import { PublishedDocument } from "@/components/published-document";
-import { foundationPages } from "@/lib/site-navigation";
+import { publicMetadata } from "@/lib/editorial/seo";
+import styles from "@/components/catalog/catalog.module.css";
+import { upcomingLinks } from "@/lib/site-navigation";
 
 export const dynamic = "force-dynamic";
 
-type PublicVariant = { id: string; sku: string; label: string; regularPricePaise: number; effectivePricePaise: number; availability: string };
+type ProductPageProps = { params: Promise<{ slug: string }> };
+const upcomingTitle = (slug:string) => slug==="pando" ? "Future PandaByte Agent" : upcomingLinks.find((link)=>link.href===`/products/${slug}`)?.label;
 
-export default async function ProductDetail({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const record = await getPublishedRecord("products", slug);
-  if (!record) {
-    const title = foundationPages[`/products/${slug}`];
-    if (!title) notFound();
-    return <main id="main" className="foundation-content route-state" tabIndex={-1}><h1 className="auth-title">{title}</h1><p>This section is being prepared. Its content and business workflows are not connected in this development build.</p><p>Coming soon. No release date or availability is announced.</p></main>;
+  const product = await getPublishedRecord("products", slug);
+  if (!product) return { title: upcomingTitle(slug) ? `${upcomingTitle(slug)} · Coming soon` : "Product not found", robots: { index: false, follow: false } };
+  if ("redirectTo" in product) {
+    const canonical = await getPublishedRecord("products", product.redirectTo);
+    if (!canonical || "redirectTo" in canonical) return { title: "Product not found", robots: { index: false, follow: false } };
+    return publicMetadata(canonical.document, `/products/${canonical.slug}`);
   }
-  if ("redirectTo" in record) redirect(`/products/${record.redirectTo}`);
-  const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
-  return <main id="main" className="foundation-content route-state" tabIndex={-1}>
-    <PublishedDocument document={record.document} />
-    <section><h2>Variants</h2>{record.variants.map((variant: PublicVariant) => <div key={variant.id}><h3>{variant.label}</h3><p>SKU: {variant.sku}</p><p>{money.format(variant.effectivePricePaise / 100)}{variant.effectivePricePaise < variant.regularPricePaise && <> <del>{money.format(variant.regularPricePaise / 100)}</del></>}</p><p>{variant.availability === "available" ? "Available" : "Unavailable"}</p></div>)}</section>
-    <p>Development preview. Checkout is not connected.</p>
-  </main>;
+  return publicMetadata(product.document, `/products/${product.slug}`);
+}
+
+export default async function ProductDetail({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = await getPublishedRecord("products", slug);
+  if (!product) {
+    const title = upcomingTitle(slug);
+    if (!title) notFound();
+    return <PublicPage eyebrow="Upcoming" title={title}><EmptyState title="Coming soon">No release date or availability is announced.</EmptyState></PublicPage>;
+  }
+  if ("redirectTo" in product) permanentRedirect(`/products/${encodeURIComponent(product.redirectTo)}`);
+  const images = product.document.mediaIds.map((id) => {
+    const block = product.document.blocks.find((item) => item.type === "image" && item.mediaId === id);
+    return { id, alt: block?.type === "image" ? block.alt : product.title };
+  });
+
+  return <PublicPage eyebrow="Product" title={product.title} description={product.summary} wide>
+    <div className={styles.productHero}>
+      <ProductGallery key={product.id} images={images} />
+      <ProductVariantPanel key={product.id} variants={product.variants} />
+    </div>
+    <ProductDetails product={product} />
+  </PublicPage>;
 }

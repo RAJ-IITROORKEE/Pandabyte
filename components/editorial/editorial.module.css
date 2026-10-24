@@ -1,0 +1,434 @@
+.stack {
+  display: grid;
+  gap: clamp(32px, 6vw, 72px);
+  width: 100%;
+}
+
+.section {
+  display: grid;
+  gap: 20px;
+  padding-top: clamp(32px, 6vw, 64px);
+  border-top: 1px solid var(--divider);
+}
+
+.sectionHeading {
+  display: grid;
+  gap: 8px;
+  max-width: 720px;
+}
+
+.sectionHeading h2,
+.sectionHeading p {
+  margin: 0;
+}
+
+.sectionHeading h2 {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.sectionHeading p,
+.muted {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(20px, 3vw, 28px);
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.card:hover {
+  background: var(--status-soft);
+  border-color: var(--accent);
+}
+
+.card:focus-visible,
+.inlineLink:focus-visible,
+.filterLink:focus-visible,
+.pagination a:focus-visible,
+.form button:focus-visible,
+.videoButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.card h2,
+.card h3,
+.card p {
+  margin: 0;
+}
+
+.card h2,
+.card h3 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.35;
+}
+
+.card p,
+.card time {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.cardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cardTags li {
+  padding: 4px 9px;
+  color: var(--foreground);
+  background: var(--status-soft);
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.cardArrow {
+  margin-top: auto;
+  padding-top: 8px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 7px 12px;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.filterLink[aria-current="page"] {
+  color: var(--action-text);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.searchForm {
+  display: flex;
+  max-width: 640px;
+  align-items: end;
+  gap: 10px;
+}
+
+.searchForm label,
+.form label {
+  display: grid;
+  flex: 1;
+  gap: 7px;
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.searchForm input,
+.searchForm select,
+.form input,
+.form textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.form textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.searchForm input:focus-visible,
+.searchForm select:focus-visible,
+.form input:focus-visible,
+.form textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.searchForm button,
+.form button,
+.videoButton {
+  min-height: 46px;
+  padding: 10px 16px;
+  color: var(--action-text);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 680px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.formStatus {
+  min-height: 24px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.formStatus[data-state="error"] {
+  color: #a32626;
+}
+
+:global([data-theme="dark"]) .formStatus[data-state="error"] {
+  color: #ff9b9b;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--divider);
+}
+
+.pagination a,
+.inlineLink {
+  color: var(--accent);
+  font-weight: 600;
+  text-underline-offset: 4px;
+}
+
+.pagination a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.pagination span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.teamCard {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+}
+
+.teamCard h3,
+.teamCard p {
+  margin: 0;
+}
+
+.teamCard h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.teamCard p {
+  margin-top: 6px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.avatar {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  overflow: hidden;
+  color: var(--foreground);
+  background: var(--status-soft);
+  border: 1px solid var(--divider);
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.faqList {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.faqItem {
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+}
+
+.faqItem summary {
+  padding: 18px 20px;
+  color: var(--foreground);
+  font-weight: 600;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.faqItem summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.faqAnswer {
+  padding: 0 20px 18px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.faqAnswer p:first-child {
+  margin-top: 0;
+}
+
+.policySection {
+  display: grid;
+  gap: 8px;
+  padding-top: 28px;
+  border-top: 1px solid var(--divider);
+  scroll-margin-top: 100px;
+}
+
+.policySection h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.videoFrame {
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #101010;
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+}
+
+.videoFrame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.videoPoster {
+  display: grid;
+  min-height: 100%;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 24px;
+  color: #fff;
+  text-align: center;
+}
+
+.videoPoster p {
+  max-width: 34rem;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.videoNote {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .searchForm,
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .searchForm {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .teamCard {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+}

@@ -1,6 +1,6 @@
 # PandaByte.in — editable website and design contract
 
-Updated 23 October 2026. This defines behavior, editable content and structural blocks for the upgraded company/storefront. Visual refinements remain in the running **Pandabyte.in UI design — OpenDesign…** chat; coordination with that chat is now authorized. Next.js initialization is verified and committed; Phase 1 contracts/handoff are in progress. The current localhost page is only a development preview. Read [README.md](README.md) for decisions and [plan.md](plan.md) for the delivery sequence.
+Updated 24 October 2026. This defines behavior, editable content and structural blocks for the upgraded company/storefront. The separate UI chat owns Superdesign generation and delivery records. Phase 3 and the account extension are committed; dependency remediation passed as `be2fb66`. Phase 4 is implemented and verified in development with Luna xhigh workers using the selected screens; [verification](docs/verification/phase-4.json) records browser flows and limits. Read [README.md](README.md), [plan.md](plan.md) and [Phase 4 contracts](docs/phase-4-contract.md). Localhost remains a development preview; checkout and deployment are later phases.
 
 ## Scope and content rules
 
@@ -12,7 +12,7 @@ Clerk is the sole identity provider; login is required before checkout. InsForge
 
 ## Coordination and current design direction
 
-**Selected implementation reference, 23 October 2026:** the owner selected the [Superdesign homepage](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba) and its corresponding screen layouts. The authenticated official CLI retrieved homepage **v17** and confirmed **39 existing drafts** in project `680c1b73-1ffe-4278-a414-af8c74620e28`. Use each route's matching layout from the [screen inventory](docs/design-delivery.md), rather than extrapolating every page from the homepage. Preserve the exact logo, shared tokens, responsive navigation and reusable page families. Retrieve the current draft before implementing its route and record the version used. This selects the visual references; prototype controls, prices and local data still require real application validation. Future Agent behavior remains separate scope.
+**Current Phase 4 implementation reference, 24 October 2026:** the selected [Superdesign homepage](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba) is frozen at **v24**, with each page family's actual version and draft ID in [Phase 4 references](docs/verification/phase-4-reference.json). The earlier v17/39-draft inventory was a historical retrieval checkpoint. Preserve the exact logo, shared tokens, responsive navigation and reusable page families. The UI chat's [screen inventory](docs/design-delivery.md) can evolve independently; do not silently replace the frozen implementation references. Prototype controls, prices and local data require real application validation. Future Agent behavior remains separate scope.
 
 No connected Superdesign MCP capability was found in this session. The Superdesign skill's authenticated official CLI is the supported retrieval path; no new draft generation or design credits were needed for this selection.
 

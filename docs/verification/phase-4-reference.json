@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-24",
+  "projectId": "680c1b73-1ffe-4278-a414-af8c74620e28",
+  "surface": "Authenticated official Superdesign CLI and local selected handoffs; no dedicated MCP discovered",
+  "frozenReferences": {
+    "home": {"version":24,"draftId":"011e75c8-d90c-40ed-aac8-bc39b8e2f1ba"},
+    "shop": {"version":9,"draftId":"3e6f0e8f-4075-4527-8140-1a969c87ea67"},
+    "pandaPulseProduct": {"version":9,"draftId":"e5d5055d-1779-4480-bc8f-f94e5c9e5897"},
+    "xc6Product": {"version":7,"draftId":"fe0c53a1-1bf4-4a2e-8a72-a6dc5ca00626"},
+    "about": {"version":8,"draftId":"7338e138-5c6c-442e-8c24-71f89d06c05d"},
+    "contact": {"version":9,"draftId":"67fead89-2de5-435a-9872-bba495f82742"},
+    "help": {"version":8,"draftId":"57f80ca0-9641-477d-9c2b-839ad964a2ff"},
+    "policies": {"version":8,"draftId":"f3b1bc5b-0061-4f6f-8721-d23969189a9e"},
+    "solutions": {"version":8,"draftId":"f0193ec1-e264-4c54-a117-c600a626f24e"},
+    "learn": {"version":7,"draftId":"bb845f58-6546-4c96-bd67-c54109ae4704"},
+    "blog": {"version":8,"draftId":"a1fd2040-3910-4a28-b93a-c4ae9d3d481e"},
+    "youtube": {"version":6,"draftId":"8b2f8668-4f48-44de-9d16-8a584bb94d65"}
+  },
+  "notes": [
+    "Versions are frozen for this implementation; the UI chat may independently evolve its drafts.",
+    "Historical design-reference.json retained v17/v5 information; it is not the current screen inventory.",
+    "Mock content is replaced by published CMS records or honest empty states.",
+    "Circuit imagery is AI-enhanced owner material; shield routing and readings are illustrative and unverified."
+  ]
+}

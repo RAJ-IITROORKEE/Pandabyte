@@ -73,7 +73,7 @@ const META: Record<AdminModule, ModuleMeta> = {
 function freshDocument(module: AdminModule): AdminDocument {
   const common = { title: "", slug: "", summary: "", blocks: [] as ContentBlock[], seoTitle: "", seoDescription: "" };
   switch (module) {
-    case "products": return { ...common, categoryIds: [], variants: [], specifications: [], compatibility: [], kitContents: [], resources: [], mediaIds: [] };
+    case "products": return { ...common, categoryIds: [], modelNumbers: [], variants: [], specifications: [], compatibility: [], kitContents: [], resources: [], mediaIds: [] };
     case "categories": return { ...common, parentId: null, position: 0, mediaIds: [] };
     case "blog": return { ...common, author: "", tags: [], mediaIds: [] };
     case "pages": case "solutions": return common;
@@ -81,7 +81,8 @@ function freshDocument(module: AdminModule): AdminDocument {
     case "team": return { ...common, name: "", role: "", bio: "", mediaIds: [], links: [], position: 0 };
     case "navigation": return { ...common, links: [] };
     case "contact": return { ...common, email: "", phone: "", address: "", hours: "", timezone: "", socialLinks: [] };
-    case "learn": case "videos": return { ...common, url: "", productIds: [], position: 0 };
+    case "learn": return { ...common, url: "", productIds: [], position: 0, collection: "embedded-systems" };
+    case "videos": return { ...common, url: "", productIds: [], position: 0 };
   }
 }
 
@@ -370,6 +371,7 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
         {module === "products" && <>
           <RowEditor label="Variants" addLabel="Add variant" rows={rows("variants")} columns={[{ key: "sku", label: "SKU", immutableWhenExisting: true }, { key: "label", label: "Variant label" }]} onChange={(value) => set("variants", value)} />
           <RowEditor label="Specifications" addLabel="Add specification" rows={rows("specifications")} columns={[{ key: "name", label: "Name" }, { key: "value", label: "Value" }]} onChange={(value) => set("specifications", value)} />
+          <TokenInput label="Model numbers" values={arr("modelNumbers")} onChange={(value) => set("modelNumbers", value)} />
           <TokenInput label="Compatibility" values={arr("compatibility")} onChange={(value) => set("compatibility", value)} />
           <RowEditor label="Kit contents" addLabel="Add item" rows={rows("kitContents")} columns={[{ key: "title", label: "Item title" }, { key: "quantity", label: "Quantity", type: "number" }]} onChange={(value) => set("kitContents", value)} />
           <RowEditor label="Resources" addLabel="Add link" rows={rows("resources")} columns={[{ key: "label", label: "Link title" }, { key: "url", label: "URL" }]} onChange={(value) => set("resources", value)} />
@@ -384,6 +386,7 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
     {module === "contact" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Public contact details</h2><p>Only publish details approved for the public site.</p></div></div><div className={styles.formGrid}><Field label="Email"><TextInput type="email" value={str("email")} onChange={(value) => set("email", value)} /></Field><Field label="Phone"><TextInput value={str("phone")} onChange={(value) => set("phone", value)} /></Field><Field label="Address" className={styles.spanTwo}><TextArea value={str("address")} onChange={(value) => set("address", value)} rows={3} /></Field><Field label="Hours"><TextInput value={str("hours")} onChange={(value) => set("hours", value)} /></Field><Field label="Timezone"><TextInput value={str("timezone")} onChange={(value) => set("timezone", value)} placeholder="Asia/Kolkata" /></Field><RowEditor label="Social links" addLabel="Add link" rows={rows("socialLinks")} columns={[{ key: "label", label: "Platform" }, { key: "url", label: "HTTPS URL" }]} onChange={(value) => set("socialLinks", value)} /></div></section>}
     {(module === "learn" || module === "videos") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "learn" ? "Resource details" : "Video details"}</h2></div></div><div className={styles.formGrid}><Field label={module === "learn" ? "Resource URL" : "YouTube URL or ID"}><TextInput value={str("url")} onChange={(value) => set("url", value)} placeholder={module === "learn" ? "https://… or /learn/…" : "https://youtube.com/watch?v=…"} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><RelationPicker label="Related products" module="products" values={arr("productIds")} onChange={(value) => set("productIds", value)} /></div></section>}
 
+    {module === "learn" && <Field label="Learning collection"><select className={styles.input} value={str("collection") || "embedded-systems"} onChange={(event) => set("collection", event.target.value)}><option value="embedded-systems">Embedded systems resources</option><option value="product-specs">Product specifications</option><option value="kit-guides">PandaByte kit guides</option></select></Field>}
     {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Media</h2><p>Only published media can appear on public pages.</p></div></div><RelationPicker label="Media assets" module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} /></section>}
 
     <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />

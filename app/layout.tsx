@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import Script from "next/script";
+import { Suspense } from "react";
+import { PublishedHeader, PublishedFooter } from "@/components/published-site-shell";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteFrame } from "@/components/site-frame";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 import "./theme.css";
+
+// Public publication and private identity both require current request data.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Development Preview | PandaByte.in",
@@ -47,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             },
           },
         }}>
-          <SiteFrame header={<SiteHeader />} footer={<SiteFooter />}>
+          <SiteFrame header={<Suspense fallback={<SiteHeader />}><PublishedHeader /></Suspense>} footer={<Suspense fallback={<SiteFooter />}><PublishedFooter /></Suspense>}>
             {children}
           </SiteFrame>
         </ClerkProvider>

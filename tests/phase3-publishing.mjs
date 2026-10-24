@@ -748,7 +748,7 @@ export async function verifyInquiryBoundary(context, state, auth) {
   await grantCapability(context, state.staffUserId, "inquiries.manage", true, state.runId);
 }
 
-async function ensureOwnedCleanup(context, state) {
+export async function ensureOwnedCleanup(context, state) {
   const userIds = state.users.map((fixture) => fixture.userId);
   const staffId = state.staffUserId;
   const runId = state.runId;

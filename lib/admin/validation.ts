@@ -36,6 +36,7 @@ export type DocumentLink = { label: string; url: string };
 export type AdminDocumentByModule = {
   products: CommonDocument & {
     categoryIds: string[];
+    modelNumbers: string[];
     variants: { id?: string; sku: string; label: string }[];
     specifications: { name: string; value: string }[];
     compatibility: string[];
@@ -51,7 +52,7 @@ export type AdminDocumentByModule = {
   navigation: CommonDocument & { links: { label: string; href: string; group: "header" | "footer"; position: number; visible: boolean }[] };
   contact: CommonDocument & { email: string; phone: string; address: string; hours: string; timezone: string; socialLinks: DocumentLink[] };
   solutions: CommonDocument;
-  learn: CommonDocument & { url: string; productIds: string[]; position: number };
+  learn: CommonDocument & { url: string; productIds: string[]; position: number; collection: "product-specs" | "embedded-systems" | "kit-guides" };
   videos: CommonDocument & { url: string; productIds: string[]; position: number };
 };
 export type AdminDocument<M extends AdminModule = AdminModule> = AdminDocumentByModule[M];
@@ -69,7 +70,7 @@ const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDescription"] as const;
 
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
-  products: ["categoryIds", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds"],
+  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds"],
   categories: ["parentId", "position", "mediaIds"],
   blog: ["author", "tags", "mediaIds"],
   pages: [],
@@ -78,7 +79,7 @@ const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
   navigation: ["links"],
   contact: ["email", "phone", "address", "hours", "timezone", "socialLinks"],
   solutions: [],
-  learn: ["url", "productIds", "position"],
+  learn: ["url", "productIds", "position", "collection"],
   videos: ["url", "productIds", "position"],
 };
 
@@ -438,13 +439,15 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
 
   if (module === "products") {
     const categoryIds = uuidArray(value.categoryIds, "document.categoryIds", fields);
+    const modelNumbers = textArray(value.modelNumbers, "document.modelNumbers", fields, 20, 80);
+    if (modelNumbers && (new Set(modelNumbers.map((model) => model.toLowerCase())).size !== modelNumbers.length || modelNumbers.some((model) => !/[a-z0-9]/i.test(model) || /[\u0000-\u001f\u007f]/u.test(model)))) add(fields, "document.modelNumbers", "invalid", "Use distinct model identifiers containing letters or numbers.");
     const variants = parseVariantRows(value.variants, fields);
     const specifications = parseSpecifications(value.specifications, fields);
     const compatibility = textArray(value.compatibility, "document.compatibility", fields, 50, 240);
     const kitContents = parseKitContents(value.kitContents, fields);
     const resources = parseResourceLinks(value.resources, fields);
     const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields);
-    Object.assign(document, { categoryIds, variants, specifications, compatibility, kitContents, resources, mediaIds });
+    Object.assign(document, { categoryIds, modelNumbers, variants, specifications, compatibility, kitContents, resources, mediaIds });
   } else if (module === "categories") {
     const parentId = value.parentId === undefined ? null : uuidValue(value.parentId, "document.parentId", fields, true);
     const position = parsePosition(value, fields);
@@ -488,6 +491,11 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     if (url && module === "videos" && !youtubeId(url)) add(fields, "document.url", "invalid", "Use a valid YouTube video URL or ID.");
     else if (url && module === "learn" && !safeHref(url)) add(fields, "document.url", "invalid", "Use an internal path or HTTPS link.");
     Object.assign(document, { url, productIds, position });
+    if (module === "learn") {
+      const collection = value.collection === undefined ? "embedded-systems" : value.collection;
+      if (!["product-specs", "embedded-systems", "kit-guides"].includes(String(collection))) add(fields, "document.collection", "invalid", "Choose a supported learning collection.");
+      Object.assign(document, { collection });
+    }
   }
 
   const serializedLength = new TextEncoder().encode(JSON.stringify(document)).byteLength;

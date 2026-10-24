@@ -67,6 +67,7 @@ body {
 .shell-button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--accent); color: var(--action-text); cursor: pointer; font: inherit; }
 .shell-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 main { scroll-margin-top: 88px; }
+.navigation-status { padding: 8px 24px; color: var(--muted); font-size: 13px; }
 main:focus { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -52,8 +52,8 @@
   white-space: nowrap;
 }
 
-.avatar :global(.cl-avatarBox) { width: 100%; height: 100%; }
-.avatar :global(.cl-avatarImage) { object-fit: cover; }
+.avatarBox { width: 100%; height: 100%; }
+.avatarImage { object-fit: cover; }
 
 .chevron {
   width: 15px;

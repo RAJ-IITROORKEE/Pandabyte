@@ -32,18 +32,19 @@ import {
   hardwareLinks,
   learnLinks,
   upcomingLinks,
+  type SiteLink,
 } from "@/lib/site-navigation";
 import "@/components/site-header.css";
 
 type MainMenu = "solutions" | "learn" | "about";
 type Disclosure = "hardware" | "upcoming" | null;
 
-export function SiteHeader() {
+export function SiteHeader({ additionalLinks = [] }: { additionalLinks?: SiteLink[] }) {
   const pathname = usePathname();
-  return <SiteHeaderContent key={pathname} />;
+  return <SiteHeaderContent key={pathname} additionalLinks={additionalLinks} />;
 }
 
-function SiteHeaderContent() {
+function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] }) {
   const headerRef = useRef<HTMLElement>(null);
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const triggerRefs = useRef<Record<MainMenu, HTMLButtonElement | null>>({
@@ -395,7 +396,7 @@ function SiteHeaderContent() {
               </div>
               <div className="pb-menu" id="pb-about-menu" data-menu-panel="about" hidden={openMenu !== "about"}>
                 <p className="pb-menu-intro">PandaByte</p>
-                {renderMenuItems(aboutLinks)}
+                {renderMenuItems([...aboutLinks, ...additionalLinks.filter((link)=>!aboutLinks.some((current)=>current.href===link.href))])}
               </div>
             </li>
 

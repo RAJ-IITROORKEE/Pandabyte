@@ -17,8 +17,12 @@ export function LoginLink() {
         );
         if (!authRoute) {
           event.preventDefault();
+          const rootMatch = pathname.length <= 162 ? /^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/.exec(pathname) : null;
+          const currentRootPage = rootMatch && rootMatch[1].length <= 160 ? `/${rootMatch[1]}` : null;
           window.location.assign(
-            authEntryHref("sign-in", `${pathname}${search}${hash}`, Object.keys(foundationPages)),
+            authEntryHref("sign-in", `${pathname}${search}${hash}`, currentRootPage
+              ? [...Object.keys(foundationPages), currentRootPage]
+              : Object.keys(foundationPages)),
           );
         }
       }}

@@ -27,7 +27,7 @@ export function AccountDashboard() {
       <div className={styles.dashboardHeader}>
         <div className={styles.identity}>
           <span className={styles.avatar} aria-hidden="true">
-            <UserAvatar rounded />
+            <UserAvatar rounded appearance={{ elements: { avatarBox: styles.avatarBox, avatarImage: styles.avatarImage } }} />
           </span>
           <div>
             <p className={styles.eyebrow}>My account</p>

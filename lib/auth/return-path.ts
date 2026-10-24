@@ -1,6 +1,6 @@
 const RETURN_ORIGIN = "https://auth-return.invalid";
 const MAX_RETURN_PATH_LENGTH = 2048;
-const DYNAMIC_PUBLIC_PATH = /^\/(?:products|blog)\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const DYNAMIC_PUBLIC_PATH = /^\/(?:products|blog|solutions|shop)\/([a-z0-9]+(?:-[a-z0-9]+)*)$|^\/learn\/(?:resources|youtube)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 const ALTERNATE_REDIRECT_KEYS = new Set([
   "redirect",
   "redirecturl",
@@ -53,10 +53,12 @@ export function safeAuthReturnPath(value: unknown, publicPaths: readonly string[
 
   const pathname = target.pathname === "/" ? "/" : target.pathname.replace(/\/$/, "");
   const publicPathSet = registeredPaths(publicPaths);
+  const dynamicPathMatch = DYNAMIC_PUBLIC_PATH.exec(pathname);
+  const dynamicPathAllowed = !!dynamicPathMatch && (dynamicPathMatch[1] ?? dynamicPathMatch[2]).length <= 160;
   const allowed =
     pathname === "/" ||
     publicPathSet.has(pathname) ||
-    DYNAMIC_PUBLIC_PATH.test(pathname) ||
+    dynamicPathAllowed ||
     /^\/account(?:\/[^/]+)*$/.test(pathname) ||
     /^\/admin(?:\/[^/]+)*$/.test(pathname) ||
     ["/staff", "/checkout", "/agent"].includes(pathname);

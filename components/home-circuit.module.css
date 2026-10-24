@@ -1,0 +1,359 @@
+.figure {
+  min-width: 0;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 900 / 680;
+  overflow: hidden;
+  perspective: 1500px;
+  touch-action: pan-y;
+  user-select: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--border) 30%, transparent) 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+  background-position: center;
+  mask-image: radial-gradient(ellipse at center, #000 40%, transparent 95%);
+}
+
+.stage:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+
+.world {
+  position: absolute;
+  inset: 4% 0 5%;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  transition: transform 120ms ease-out;
+}
+
+.wires {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: translateZ(4px);
+  pointer-events: none;
+}
+
+.wires path:not(.wifiPath) {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.72;
+}
+
+.wires g path:nth-child(1) { opacity: 0.42; }
+.wires g path:nth-child(2) { opacity: 0.82; }
+.wires g path:nth-child(3) { opacity: 0.82; }
+.wires g path:nth-child(4) { opacity: 0.95; }
+
+.activeWire path:not(.wifiPath) {
+  stroke-dasharray: 5 25;
+  animation: signalFlow 1.3s linear infinite;
+}
+
+.wifiPath {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 7;
+  opacity: 0.45;
+  vector-effect: non-scaling-stroke;
+}
+
+.carrier {
+  position: absolute;
+  z-index: 1;
+  left: 35%;
+  top: 25%;
+  width: 28%;
+  height: 55%;
+  transform: translateZ(8px);
+  pointer-events: none;
+  filter: drop-shadow(0 12px 10px #0006);
+}
+
+.carrier img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.board {
+  position: absolute;
+  z-index: 2;
+  left: 48.9%;
+  top: 49%;
+  width: 18.9%;
+  height: 55%;
+  transform: translate(-50%, -50%) translateZ(24px);
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.board img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(1px 7px 4px #0005);
+}
+
+.board:focus-visible,
+.sensor:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+}
+
+.boardActive img { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 55%, transparent)); }
+
+.led {
+  position: absolute;
+  left: 47%;
+  top: 88%;
+  width: 7px;
+  height: 5px;
+  border-radius: 2px;
+  background: #638664;
+}
+
+.boardActive .led {
+  background: #b4ffd4;
+  box-shadow: 0 0 3px 2px #4de397, 0 0 16px 7px #4de39777;
+}
+
+.boardLabel,
+.sensorLabel {
+  position: absolute;
+  left: 50%;
+  z-index: 5;
+  width: max-content;
+  max-width: 32vw;
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--divider);
+  border-radius: 7px;
+  box-shadow: 0 4px 12px #0002;
+  font-size: clamp(9px, 0.8vw, 12px);
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.boardLabel { top: calc(100% + 8px); }
+.boardLabel small,
+.sensorLabel small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.78em;
+  font-weight: 400;
+}
+
+.sensor {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, -50%) translateZ(18px);
+}
+
+.sensor:active { cursor: grabbing; }
+.sensor img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 7px #0005);
+  transition: filter 150ms ease, transform 150ms ease;
+  pointer-events: none;
+}
+
+.sensorActive img {
+  transform: translateZ(12px) scale(1.035);
+  filter: drop-shadow(0 12px 10px #0007);
+}
+
+.sensorLabel { top: calc(100% + 8px); }
+.sensorAir .sensorLabel { top: auto; bottom: calc(100% + 8px); }
+
+.oledScreen {
+  position: absolute;
+  z-index: 4;
+  top: 17%;
+  left: 4.4%;
+  display: block;
+  width: 91%;
+  height: 54.5%;
+  overflow: hidden;
+  padding: 6% 5%;
+  color: #b9f3e3;
+  background: #051116;
+  border: 1px solid #254148;
+  border-radius: 2px;
+  box-shadow: inset 0 0 15px #000;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  line-height: 1.2;
+  text-align: left;
+  pointer-events: none;
+}
+
+.oledHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  overflow: hidden;
+  color: #e8d18e;
+  font-size: clamp(5px, 0.58vw, 8px);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.oledHeading i {
+  width: 4px;
+  height: 4px;
+  flex: 0 0 4px;
+  border-radius: 50%;
+  background: #6df2be;
+}
+
+.oledValue {
+  display: block;
+  margin-top: 7%;
+  overflow: hidden;
+  color: #b9f3e3;
+  font-size: clamp(12px, 1.7vw, 25px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.oledValue small { margin-left: 3px; font-size: 0.45em; font-weight: 400; letter-spacing: 0; }
+.oledDetail { display: block; overflow: hidden; margin-top: 2px; color: #89c8d2; font-size: clamp(4px, 0.55vw, 8px); white-space: nowrap; }
+.oledBars { position: absolute; right: 7%; bottom: 9%; display: flex; align-items: end; gap: 3px; height: 12%; }
+.oledBars i { width: 3px; height: 30%; background: #5eac9b; opacity: 0.75; }
+.oledBars i:nth-child(2), .oledBars i:nth-child(6) { height: 70%; }
+.oledBars i:nth-child(3), .oledBars i:nth-child(5) { height: 50%; }
+.oledBars i:nth-child(4), .oledBars i:nth-child(7) { height: 90%; }
+
+.cloudRoute {
+  position: absolute;
+  z-index: 2;
+  top: 10%;
+  left: 64%;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 5px 8px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  font-size: clamp(8px, 0.7vw, 10px);
+  white-space: nowrap;
+  transform: translateZ(12px);
+  pointer-events: none;
+}
+
+.cloudRoute span { opacity: 0.65; }
+
+.controlCaption,
+.readout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.controlCaption {
+  flex-wrap: wrap;
+  padding: 4px 3px 12px;
+  border-bottom: 1px solid var(--divider);
+  font-size: 11px;
+}
+
+.readout { min-height: 68px; padding: 13px 3px; }
+.readoutTitle { margin: 0 0 4px; color: var(--foreground); font-size: 13px; font-weight: 650; }
+.readoutCopy { max-width: 48ch; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+.legend {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  list-style: none;
+}
+
+.legend li { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.legend i { width: 6px; height: 6px; border-radius: 50%; }
+.signal { background: #e8bb51; }.data { background: #d8dace; }.power { background: #d9655a; }.ground { background: #777; }
+.sampleCue { margin: 0; padding: 0 3px 8px; color: var(--muted); font-size: 11px; font-weight: 600; line-height: 1.5; }
+.provenance { display: block; padding: 0 3px; color: var(--muted); font-size: 11px; line-height: 1.65; }
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes signalFlow { to { stroke-dashoffset: -60; } }
+
+@media (max-width: 1023px) {
+  .stage { aspect-ratio: 900 / 620; }
+  .world { inset: 0; }
+  .boardLabel,
+  .sensorLabel { font-size: clamp(9px, 1.4vw, 12px); }
+  .oledHeading { font-size: clamp(5px, 1vw, 8px); }
+  .oledValue { font-size: clamp(12px, 3vw, 25px); }
+  .oledDetail { font-size: clamp(5px, 1vw, 8px); }
+}
+
+@media (max-width: 520px) {
+  .controlCaption { font-size: 10px; }
+  .controlCaption span:last-child { margin-left: auto; text-align: right; }
+  .readout { display: block; }
+  .legend { margin-top: 10px; }
+  .cloudRoute { left: 62%; }
+  .sensorLabel small,
+  .boardLabel small { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world,
+  .sensor img { transition: none; }
+  .activeWire path { animation: none; stroke-dasharray: none; }
+}

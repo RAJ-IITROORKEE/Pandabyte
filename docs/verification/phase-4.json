@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-24",
+  "status": "Implemented and verified in development",
+  "target": "http://localhost:3000",
+  "backendProjectId": "988b987b-f809-4cd5-94b2-c1d1e5cc9120",
+  "dependencyCommit": "be2fb66",
+  "workers": "Bounded Luna xhigh implementation and review subagents; root integration and verification",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "unitTests": 41,
+    "authHttpTests": 7,
+    "shellHttpTests": 3,
+    "backendTokenTests": 3,
+    "storefrontIntegration": "Clean complete npm run test:storefront passed and removed its fixtures",
+    "clientSecretScan": "Privileged editorial key absent from all 34 client build files",
+    "npmAuditVulnerabilities": 0
+  },
+  "integrationCoverage": [
+    "published-only search; normalized exact SKU/model ranking and partial hyphenated models",
+    "category OR facets combined with same-variant price and availability predicates",
+    "allowlisted sorting, stable pagination, totals, invalid queries and empty results",
+    "blank optional price fields from the actual GET form",
+    "anonymous table/helper/admin denials and customer pricing/inventory denials",
+    "draft saves remain private; publication refreshes search; republish changes model/slug; withdrawal removes search/detail",
+    "published blog topics exclude draft topics and filter before pagination",
+    "published product gallery media, authoritative card/detail sale prices and availability",
+    "home, Help, About/team, blog, resources, videos, Contact and published navigation render from records",
+    "canonical metadata, legacy category redirects and published-only sitemap RPC/XML",
+    "contact receipt persistence, identical retry, conflicting retry, staff processing and customer denial"
+  ],
+  "browser": {
+    "tool": "Codex built-in browser",
+    "bundle": "Production build on localhost",
+    "journeys": [
+      "home circuit click, pointer drag, arrow-key movement, Home reset and Escape selection clear",
+      "catalog normalized SKU search, blank prices, combined filters and correction of invalid price input",
+      "mobile filter collapse and keyboard expansion; mobile-to-desktop recovery after collapse",
+      "product variant selection updates price and availability without inventing checkout",
+      "two published synthetic image files load and gallery selection changes the active image",
+      "published FAQ expands by keyboard; About displays the actual published test team record",
+      "blog topic selection, public article body and canonical metadata",
+      "resource collection renders published records; video iframe is absent until Play and receives keyboard focus",
+      "mobile Learn dropdown opens and Escape returns focus to its trigger",
+      "contact form returns a saved receipt; disposable staff reads that exact message and saves resolved status plus a note",
+      "admin-created solution is hidden as a draft, appears after Publish and returns not-found after Unpublish",
+      "owner Google customer session restored and admin access denied",
+      "Clerk avatars retain their sizes using appearance elements; no new structural-CSS warning after reload"
+    ],
+    "homeAndPopulatedCatalogWidths": [320, 768, 1024, 1440],
+    "homeAndCatalogThemes": ["light", "dark"],
+    "productWidths": [320, 768, 1024, 1440],
+    "horizontalOverflow": "None observed in those checks",
+    "reducedMotion": "CSS rules reviewed; preference emulation not performed",
+    "zoom": "Narrow-width reflow checked; browser zoom emulation not performed",
+    "videoPlayback": "Click-to-load/focus verified with a deliberately synthetic ID; real video playback not asserted",
+    "viewportOverride": "Reset",
+    "preview": "Homepage proof captured locally; kept ignored because the owner's identity appears in the header"
+  },
+  "migrations": [
+    "20261024002013_phase4-storefront.sql",
+    "20261024002427_phase4-public-sitemap.sql",
+    "20261024003118_phase4-blog-topics.sql",
+    "20261024004612_phase4-search-tokenization.sql",
+    "20261024005646_phase4-search-separators.sql",
+    "20261024010135_phase4-catalog-page-projection.sql"
+  ],
+  "cleanup": {
+    "independentInventory": "17 business/capability/search tables empty, both file buckets empty, no disposable Clerk users, no Phase 4 fixture state",
+    "diagnosticRecordsAndSearchRows": 0,
+    "ownerDataOrGrantsChanged": false
+  },
+  "performance": {
+    "analyzedFixtureProducts": 1000,
+    "identifierCandidateMilliseconds": 5.998,
+    "textCandidateMilliseconds": 10.588,
+    "combinedFilteredRpcMilliseconds": 47.7,
+    "searchGinIndexesObserved": true,
+    "largerDiagnostic": "10,000-row un-analyzed baseline recorded; analyzed attempt timed out at the provider's 30-second limit and rolled back",
+    "capacityClaim": false
+  },
+  "limits": [
+    "The scoped Zod 4 override is outside InsForge's declared dependency range; retain its compatibility guard and removal condition.",
+    "The existing server-only editorial storage read credential has broad project scope.",
+    "Inquiry notification delivery remains unconfigured.",
+    "No production load/concurrency, Web Vitals, database-plus-storage restore or exhaustive assistive-technology audit is claimed.",
+    "Phase 5 checkout/payments, Clerk phone verification, GitHub publication and deployment were not started."
+  ]
+}

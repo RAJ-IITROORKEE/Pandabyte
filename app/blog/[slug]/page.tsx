@@ -1,13 +1,28 @@
-import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
+import { PublicPage } from "@/components/storefront/page-frame";
 import { getPublishedRecord } from "@/lib/editorial/published";
 import { PublishedDocument } from "@/components/published-document";
+import { publicMetadata } from "@/lib/editorial/seo";
 
 export const dynamic = "force-dynamic";
 
-export default async function BlogArticle({ params }: { params: Promise<{ slug: string }> }) {
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const record = await getPublishedRecord("blog", slug);
+  if (!record) return { title: "Page not found | PandaByte.in", robots: { index: false, follow: false } };
+  const canonicalSlug = record && "redirectTo" in record ? record.redirectTo : slug;
+  return publicMetadata(record && !("redirectTo" in record) ? record.document : null, `/blog/${canonicalSlug}`);
+}
+
+export default async function BlogArticle({ params }: Props) {
   const { slug } = await params;
   const record = await getPublishedRecord("blog", slug);
   if (!record) notFound();
-  if ("redirectTo" in record) redirect(`/blog/${record.redirectTo}`);
-  return <main id="main" className="foundation-content route-state" tabIndex={-1}><PublishedDocument document={record.document} /></main>;
+  if ("redirectTo" in record) permanentRedirect(`/blog/${record.redirectTo}`);
+  return <PublicPage eyebrow="Blog" title={record.title}>
+    <PublishedDocument document={record.document} hideTitle />
+  </PublicPage>;
 }
