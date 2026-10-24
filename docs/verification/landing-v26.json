@@ -1,0 +1,187 @@
+{
+  "date": "2026-10-24",
+  "status": "Selected landing v26 implemented and verified locally",
+  "precedingCommit": "99ffc22",
+  "reference": {
+    "url": "https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba",
+    "draftId": "011e75c8-d90c-40ed-aac8-bc39b8e2f1ba",
+    "version": 26,
+    "surface": "Authenticated official Superdesign CLI; no connected Superdesign MCP",
+    "htmlSha256": "364718b7227d8d491f97edf9c18934ec72f087221f430eb13a764d599cb5acd2"
+  },
+  "workers": "Luna xhigh circuit implementation, reference extraction/connected review and next-task review; root integration/browser/gates/commit",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "unitTests": 56,
+    "authHttpTests": 7,
+    "shellHttpTests": 3,
+    "storefrontIntegration": "All catalog/publication/blog/gallery/contact/sitemap API and render assertions passed; disposable fixtures then used for populated browser checks and cleaned",
+    "independentCleanup": "Protected owner ADMIN/seven capabilities/bootstrap audit preserved; no disposable user/content/cart/storage fixtures remain",
+    "clientSecretScan": "Existing privileged editorial key absent from all 36 client build files"
+  },
+  "browser": {
+    "responsive": [
+      {
+        "width": 320,
+        "theme": "light",
+        "overflow": false,
+        "illustrationFirst": true,
+        "actionsSameRow": true
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "overflow": false,
+        "illustrationFirst": true,
+        "actionsSameRow": true
+      },
+      {
+        "width": 1024,
+        "theme": "light",
+        "overflow": false,
+        "illustrationFirst": null,
+        "actionsSameRow": true
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "overflow": false,
+        "illustrationFirst": null,
+        "actionsSameRow": true
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "overflow": false,
+        "illustrationFirst": true
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "overflow": false,
+        "illustrationFirst": true
+      },
+      {
+        "width": 1024,
+        "theme": "dark",
+        "overflow": false,
+        "illustrationFirst": null
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "overflow": false,
+        "illustrationFirst": null
+      }
+    ],
+    "populated": [
+      {
+        "availability": [
+          "unavailable",
+          "available"
+        ],
+        "cards": 2,
+        "overflow": false,
+        "productColumns": "273px",
+        "width": 320
+      },
+      {
+        "availability": [
+          "unavailable",
+          "available"
+        ],
+        "cards": 2,
+        "overflow": false,
+        "productColumns": "721px",
+        "width": 768
+      },
+      {
+        "availability": [
+          "unavailable",
+          "available"
+        ],
+        "cards": 2,
+        "overflow": false,
+        "productColumns": "508.875px 376.125px",
+        "width": 1024
+      },
+      {
+        "availability": [
+          "unavailable",
+          "available"
+        ],
+        "cards": 2,
+        "overflow": false,
+        "productColumns": "664.688px 491.312px",
+        "width": 1440
+      }
+    ],
+    "interactions": [
+      "device click updates sample OLED",
+      "sensor arrow-key movement",
+      "Escape clears selection",
+      "pointer sensor drag updates position/cables",
+      "pointer background drag rotates scene",
+      "cable Enter shows sample ADC reading",
+      "Home restores device positions and scene rotation",
+      "keyboard logo-animation pause",
+      "published FAQ Enter opens answer"
+    ],
+    "reducedMotion": "Source reviewed; preference emulation unavailable",
+    "consoleErrors": []
+  },
+  "assets": [
+    {
+      "path": "public/brand/industry/seeed-color.png",
+      "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/content-assets/seeed-transparent-color/seeed-color.png",
+      "sha256": "0d62e5e375dea9952471953e98f53d4258ad0210379185de3746be43169ebc8c",
+      "bytes": 55273
+    },
+    {
+      "path": "public/brand/industry/seeed-white.png",
+      "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/content-assets/seeed-transparent-white/seeed-white.png",
+      "sha256": "ee24452e29848c996089a8ce872e79697e12b2b6dd83199b623c0b0d153089cf",
+      "bytes": 44776
+    },
+    {
+      "path": "public/brand/industry/m5stack-color.png",
+      "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/content-assets/m5stack-transparent-color/m5stack-color.png",
+      "sha256": "83205e786a71926c73fec0d53916dd6911607b4475dd64e077dad38cbb78f5ad",
+      "bytes": 37299
+    },
+    {
+      "path": "public/brand/industry/m5stack-white.png",
+      "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/content-assets/m5stack-transparent-white/m5stack-white.png",
+      "sha256": "cbafb4d9f50e65aeae0ed3fd38de5cbc1a35316662eecee281648392a8635cc8",
+      "bytes": 35512
+    },
+    {
+      "path": "public/brand/industry/waveshare-site-logo.png",
+      "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/content-assets/waveshare-transparent-original/waveshare-site-logo.png",
+      "sha256": "92e0211f65f06d9a2417a1b4b2253b6c9ae9031b2b5c36aafb294fc7d3a0f8c8",
+      "bytes": 14958
+    },
+    {
+      "path": "public/brand/industry/espressif-drone.png",
+      "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/680c1b73-1ffe-4278-a414-af8c74620e28/content-assets/espressif-transparent-original/espressif-drone.png",
+      "sha256": "a6db225fbe15956150e265bdf211196f5833b4f8e740aa1b0f70a7c8b2e4a0ff",
+      "bytes": 41273
+    }
+  ],
+  "differences": [
+    "Clerk active identity and latest themed Agent button retained",
+    "Real published CMS data and empty states replace prototype mock products/prices/contact/FAQ",
+    "Newest published records labeled Latest products; actual availability remains visible",
+    "Persistent pause control added for logo animation"
+  ],
+  "limits": [
+    "No new native Superdesign generation or MCP connection",
+    "No uniform pixel-diff claim: live content/auth and browser scrollbar metrics differ",
+    "No full accessibility/assistive-technology audit, reduced-motion preference emulation or production load/restore/deployment",
+    "Checkout/payments remain explicitly deferred"
+  ],
+  "proof": ".bootstrap/landing-v26/desktop-dark.png",
+  "nextAuthorizedTask": "Scoped local strict nonce CSP hardening, separate verified commit; no Phase 6/deployment or commerce resumption"
+}

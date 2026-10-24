@@ -91,6 +91,26 @@
 .productCardContent h2 { margin: 0; font-size: 18px; font-weight: 650; line-height: 1.35; }
 .productCardSummary { display: -webkit-box; overflow: hidden; margin: 8px 0 16px; color: var(--muted); font-size: 14px; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .productCardPrice { margin: auto 0 0; padding-top: 4px; font-size: 17px; font-weight: 650; }
+
+.featuredCard .productCardImage { aspect-ratio: auto; height: 320px; padding: 20px; }
+.featuredCard .productCardContent { gap: 12px; padding: 28px; }
+.featuredCard .productCardContent h3 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4; }
+.featuredCard .productCardTags { margin-bottom: 0; }
+.featuredSku { margin: 0; color: var(--muted); font: 14px/1.5 ui-monospace, Consolas, monospace; }
+.featuredCard .productCardPrice { margin-top: 0; font-size: 20px; }
+.featuredAction { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; margin-top: auto; padding: 12px 24px; border-radius: 8px; background: var(--accent); color: var(--action-text); font-size: 16px; font-weight: 500; }
+@media (min-width: 640px) {
+  .featuredCard:first-child .productCardContent { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: center; column-gap: 20px; }
+  .featuredCard:first-child .productCardTags { grid-column: 1 / -1; grid-row: 1; }
+  .featuredCard:first-child h3 { grid-column: 1; grid-row: 2; }
+  .featuredCard:first-child .featuredSku { grid-column: 1; grid-row: 3; }
+  .featuredCard:first-child .productCardPrice { grid-column: 2; grid-row: 2; text-align: right; }
+  .featuredCard:first-child .featuredAction { grid-column: 2; grid-row: 3; }
+}
+@media (max-width: 767px) {
+  .featuredCard .productCardImage { height: 260px; }
+  .featuredCard .productCardContent { padding: 20px; }
+}
 .pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 28px; }
 .paginationStatus { color: var(--muted); font-size: 14px; }
 .paginationLink { min-height: 44px; padding-inline: 14px; }

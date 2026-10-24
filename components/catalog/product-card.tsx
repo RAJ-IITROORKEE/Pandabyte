@@ -21,14 +21,14 @@ function productImage(product: PublishedRecord<"products">) {
   return { mediaId, alt: block?.type === "image" ? block.alt : product.title };
 }
 
-export function ProductCard({ product }: { product: PublishedRecord<"products"> }) {
+export function ProductCard({ product, featured = false }: { product: PublishedRecord<"products">; featured?: boolean }) {
   const image = productImage(product);
   const available = product.variants.some((variant) => variant.availability === "available");
   const availabilityLabel = product.variants.length === 0 ? "Availability unavailable" : available ? "Available" : "Unavailable";
   const onSale = product.variants.some((variant) => variant.isOnSale);
 
   return (
-    <article className={styles.productCard}>
+    <article className={`${styles.productCard} ${featured ? styles.featuredCard : ""}`}>
       <Link className={styles.productCardLink} href={`/products/${encodeURIComponent(product.slug)}`}>
         <div className={styles.productCardImage}>
           {image ? <Image
@@ -45,9 +45,11 @@ export function ProductCard({ product }: { product: PublishedRecord<"products"> 
             <span className={available ? styles.available : styles.unavailable}>{availabilityLabel}</span>
             {onSale && <span className={styles.saleTag}>Sale</span>}
           </div>
-          <h2>{product.title}</h2>
-          {product.summary && <p className={styles.productCardSummary}>{product.summary}</p>}
+          {featured ? <h3>{product.title}</h3> : <h2>{product.title}</h2>}
+          {featured && product.variants.length === 1 && <p className={styles.featuredSku}>SKU: {product.variants[0].sku}</p>}
+          {!featured && product.summary && <p className={styles.productCardSummary}>{product.summary}</p>}
           <p className={styles.productCardPrice}>{cardPrice(product)}</p>
+          {featured && <span className={styles.featuredAction}>View details</span>}
         </div>
       </Link>
     </article>
