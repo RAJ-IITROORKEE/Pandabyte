@@ -1,6 +1,6 @@
 # PandaByte.in — phased delivery plan
 
-Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 4 published storefront, catalog search and company/editorial pages are implemented and verified in development.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; customer/staff/private-storage checks and the shared frontend pass. Development publication/media models pass runtime verification; dependency remediation is committed and Phase 4 is now authorized. Production operating policies remain commerce/release gates. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.
+Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 4 is committed as 80c8685; Phase 5 commerce has started with an independent cart slice.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; customer/staff/private-storage checks and the shared frontend pass. Development publication/media models pass runtime verification; dependency remediation and Phase 4 are committed; Phase 5 is now authorized under [its contract](docs/phase-5-contract.md). Production operating policies remain commerce/release gates. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.
 
 ## Review verdict and changes
 
@@ -37,7 +37,7 @@ Frontend/design work:
 Backend/contracts work:
 - Agree product/variant/category fields, publication revisions, regular/sale price semantics and which records need translations only if selected. Define permissions and validation before parallel work.
 - Choose Clerk sign-in methods and staging project; confirm InsForge staging, regions, limits and protected key handling. Decide the staff bootstrap procedure and user lifecycle behavior.
-- Confirm minimum checkout subtotal/boundary, shipping/tax/invoice and payment merchant requirements before commerce code depends on them. Login before checkout is already decided; guest checkout is excluded.
+- Confirm shipping/tax/invoice and payment merchant requirements before commerce code depends on them. Login before checkout is already decided; guest checkout is excluded.
 - Choose content approval roles, contact notification recipient/provider, upload limits/retention, real team content and migration exports. Define initial traffic expectations and budget before claiming capacity.
 
 Exit: minimal written contracts for the next slice, a compatible visual handoff for components about to be built, and a testable identity/data integration approach. Backend foundations may proceed while unrelated visual polish continues; do not prematurely implement unapproved page appearance.
@@ -112,21 +112,23 @@ Exit: create/edit/publish in admin drives the actual storefront; prices agree ac
 
 ## Phase 5 — authenticated commerce and operations
 
+Status: authorized and in progress after 80c8685. The private/guest cart checkpoint is implemented and verified; see [evidence](docs/verification/phase-5-cart.json). Full checkout/payment/operations gates remain pending test keys/webhook and merchant GST/shipping settings. See [contract](docs/phase-5-contract.md).
+
 **Dependencies:** identity, catalog/pricing/inventory and merchant/business policies. Complete account and staff operational views with the domain services they use.
 
 Frontend:
-- Cart updates, sign-in-before-checkout, addresses, shipping/totals and clear price/availability changes. Display the ₹5,000 requirement only inside checkout before payment, never in header/catalog/PDP/cart.
+- Cart updates, sign-in-before-checkout, addresses, shipping/totals and clear price/availability changes. The owner removed the ₹5,000 minimum for Razorpay; omit the historical notice.
 - Payment pending/success/failure/cancel/retry, order confirmation, own order history/detail and status. Success is server-confirmed, not inferred from a redirect.
 - Staff order detail/history, fulfillment/tracking, permitted cancellation/refunds, inventory adjustments and support lookup; authentic review submission/moderation only under the selected eligibility policy. Preserve immutable order facts.
 
 Backend:
-- Re-read authoritative SKU prices/availability, compute integer-paise totals and qualifying minimum, validate quantities/address/shipping, snapshot order lines/prices/tax/address and reserve stock in an atomic transaction.
+- Re-read authoritative SKU prices/availability, compute integer-paise totals, validate quantities/address/shipping, snapshot order lines/prices/tax/address and reserve stock in an atomic transaction.
 - Commit reservations before calling the provider. Evaluate the official InsForge Razorpay path against custom webhook/authorization needs; select exactly one event owner. No competing handlers update paid status.
 - Verify signatures/provider state, enforce unique event/payment keys, accept duplicate/out-of-order delivery safely and reconcile unknown/late outcomes. Separate payment, order and fulfillment lifecycles.
 - Use durable reservation expiry/retry/reconciliation and documented late-payment policy. Recheck price and eligibility before creating a new payment attempt. Prevent double fulfillment/refund and overselling; don't release stock twice.
 - Enforce customer ownership and staff capabilities for every operation. Audit financial/stock/role changes. Persist retryable notification events separately from purchase success.
 
-Exit: tests cover below/at/above the approved minimum, price/sale changes, multiple buyers on the last unit, failed/cancelled/retried payments, forged/duplicate/out-of-order events, expired reservations/late success, partial/provider-failed refunds where supported, and customer/staff denial. Complete test-mode purchase → verified payment → fulfillment → support/refund with actual staging data. Provider sandbox calls and load tests respect quotas; no real purchases during validation without explicit instruction.
+Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/cancelled/retried payments, forged/duplicate/out-of-order events, expired reservations/late success, partial/provider-failed refunds where supported, and customer/staff denial. Complete test-mode purchase → verified payment → fulfillment → support/refund with actual staging data. Provider sandbox calls and load tests respect quotas; no real purchases during validation without explicit instruction.
 
 ## Phase 6 — migration, capacity and launch readiness
 
@@ -195,7 +197,7 @@ Use InsForge CLI/integration skills for staging/data, Next/React guidance for re
 
 - Foundation: Clerk methods/test keys, chosen staging projects, staff capabilities/bootstrap, traffic profile/region/budget.
 - Content: exports/original assets, corrected specs, real team names/roles/bios, approved solution/software name and claims, YouTube videos/resources, review/publication policy and contact upload/retention rules.
-- Commerce: minimum qualifying subtotal and exact boundary, merchant, shipping/GST/invoices, sale/coupon policy, return/refund/late-payment rules, notification provider and webhook/retry owner.
+- Commerce: merchant, shipping/GST/invoices, sale/coupon policy, return/refund/late-payment rules, notification provider and webhook/retry owner.
 - Release: migration permissions, real-user analytics/consent choices, recovery objectives, verified capacity and explicit production instruction.
 
 These do not block planning. Do not substitute fabricated records, permissive authorization or placeholder secrets when implementation reaches a required decision.

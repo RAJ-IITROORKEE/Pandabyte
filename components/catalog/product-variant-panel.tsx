@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PublicVariant } from "@/lib/editorial/published";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import styles from "./catalog.module.css";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
@@ -39,8 +40,12 @@ export function ProductVariantPanel({ variants }: { variants: PublicVariant[] })
     {selected && <p className={styles.availabilityLine}>
       {selected.availability === "available" ? "Currently available" : "Currently unavailable"}
     </p>}
+    {selected && <AddToCartButton
+      variantId={selected.id}
+      available={selected.availability === "available" && selected.effectivePricePaise !== null}
+    />}
     <p className={styles.purchaseNotice}>
-      Purchasing is not available in this development preview.
+      Cart totals use current catalog prices. Shipping, GST, final availability checks, and order placement are not configured yet.
     </p>
   </section>;
 }

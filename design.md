@@ -8,7 +8,7 @@ The current site is a migration starting point, not a feature or catalog limit. 
 
 Use the exact existing logo. Existing facts/images remain traceable to the [audit](current_pandabyte_findings.in) and [content inventory](docs/content-inventory.md); new owner-authored/admin-approved material is allowed. Missing factual data stays unknown. Never fabricate people, affiliations, stock, reviews, certifications or launch dates. Neutral temporary team avatars are explicitly allowed in design previews and unpublished drafts; replace or omit them before public launch unless the owner approves their public use.
 
-Clerk is the sole identity provider; login is required before checkout. InsForge remains database/storage. The Supabase-inspired neutral/emerald visual direction is an appearance reference, not a database change. The ₹5,000 rule remains checkout-only, before payment, with its qualifying subtotal/boundary still to be confirmed.
+Clerk is the sole identity provider; login is required before checkout. InsForge remains database/storage. The Supabase-inspired neutral/emerald visual direction is an appearance reference, not a database change. The owner removed the ₹5,000 minimum for Razorpay and selected test mode. Historical screen notices are superseded; omit them. GST/product tax classification, inclusive/exclusive prices, merchant details and shipping settings must be approved before checkout payment is enabled. See [Phase 5 contract](docs/phase-5-contract.md).
 
 ## Coordination and current design direction
 

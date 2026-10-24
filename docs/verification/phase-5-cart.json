@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-24",
+  "status": "Cart checkpoint implemented and verified in development; full Phase 5 remains in progress",
+  "target": "http://localhost:3000",
+  "backendProjectId": "988b987b-f809-4cd5-94b2-c1d1e5cc9120",
+  "precedingPhaseCommit": "80c8685",
+  "workers": "Luna xhigh API, UI and independent review; root migrations, integration and browser checks",
+  "reference": {
+    "cart": "https://p.superdesign.dev/draft/7141b0f5-50eb-41df-963b-9f43c8dc6d0c",
+    "version": 7,
+    "scope": "Cart layout within existing shell/tokens. Other commerce drafts are handoffs, not implemented or payment-verified screens."
+  },
+  "migration": "20261024020444_phase5-carts.sql",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "unitTests": 51,
+    "authHttpTests": 7,
+    "shellHttpTests": 3,
+    "backendTokenTests": 3,
+    "cartIntegration": "npm run test:cart passed including binary availability changes; normal run removed its fixtures",
+    "independentCleanup": "19 business/capability/search/cart tables, both storage buckets, disposable Clerk users and fixture files empty",
+    "npmAuditVulnerabilities": 0,
+    "clientSecretScan": "Existing privileged media key absent from all 36 client build files"
+  },
+  "integrationCoverage": [
+    "Guest quote uses current published revision metadata and authoritative regular/sale prices",
+    "Unknown and draft variants have identical unavailable metadata shape; draft edits remain private until publication",
+    "Unpublished saved lines become unavailable and can be retained or removed",
+    "Only binary public stock availability is exposed; requests up to 99 do not reveal exact stock thresholds",
+    "Zero-stock and restored-stock quotes use current binary availability with coherent totals",
+    "Private GET creates no cart; first replacement creates version 1",
+    "Owner-only SELECT RLS; customer and privileged fixture staff cannot read each other's carts",
+    "Anonymous reads/private RPCs denied; direct customer insert/update/delete denied",
+    "Two concurrent same-version replacements yield exactly one success and one conflict",
+    "Closed fields, duplicate IDs, bounds, same-origin, route body limit and direct-RPC payload bound",
+    "Forged caller owner fields rejected; identity derived from the verified Clerk subject"
+  ],
+  "browser": {
+    "tool": "Codex built-in browser",
+    "bundle": "Production build on localhost",
+    "journeys": [
+      "Guest PDP add, cart quantity edit, reload persistence and removal to empty state",
+      "Checkout redirects to Clerk and returns to the intended checkout page after disposable customer sign-in",
+      "Guest cart survives sign-in, remains separate, then explicitly merges into private cart",
+      "Guest copy is empty after merge/logout; signed-in customer cart is not exposed to the guest",
+      "Guest and customer keyboard Enter updates retain focus on the quantity input",
+      "Two customer browser tabs reject stale writes, lock further edits, and reload the saved winner without overwrite",
+      "Cart fits requested 320/768/1024/1440 widths in light and dark; screenshots inspected at desktop and narrow width",
+      "Owner Google session restored, private cart empty, admin workspace still denies owner access"
+    ],
+    "viewportOverride": "reset",
+    "finalPreview": "/cart",
+    "proofFile": ".bootstrap/phase5-cart-preview.png"
+  },
+  "fixedDuringReview": [
+    "Removed requested-quantity-dependent public stock responses to avoid inferring stock counts",
+    "Prevented guest merge cleanup from deleting changed local data",
+    "Locked stale quoted guest views and checked captured state before saves",
+    "Preserved malformed/oversized stored data until explicit user clearing",
+    "Kept memory-only edits through storage failures and external events; refreshed persisted carts when resubscribing",
+    "Required cart review after ambiguous signed-in add/write outcomes",
+    "Preserved quantity editor identity and keyboard focus during writes and quote refresh"
+  ],
+  "pendingPhase5": [
+    "Razorpay test connection and manual managed-webhook setup are unconfigured; no provider calls or charges tested",
+    "Approved HSN/rates, tax-inclusive/exclusive prices, merchant GSTIN/dispatch state and shipping coverage/rates",
+    "Verified managed payment subject/amount authorization, immutable orders, atomic reservations and address/tax/shipping snapshots",
+    "Verified-event settlement, expiry/late capture, durable reconciliation, fulfillment, cancellations/refunds and customer order history"
+  ],
+  "limits": [
+    "Guest localStorage compare-then-write is best effort across truly simultaneous writers; strict cross-tab serialization would require Web Locks or equivalent",
+    "Exact requested stock is not guaranteed by a cart and must be validated atomically at checkout",
+    "Storage failure paths and malformed data were exercised with unit stubs; browser storage denial was not emulated",
+    "No reduced-motion browser emulation, full assistive-technology audit, production load or restore test",
+    "Existing vendor-range Zod workaround and broad server-only editorial media credential remain documented risks",
+    "No Phase 6, deployment, production provisioning, live payments or repository publication"
+  ]
+}
