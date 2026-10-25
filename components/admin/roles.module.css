@@ -55,12 +55,6 @@
   overflow-wrap: anywhere;
 }
 
-.roleCapabilities code,
-.selectedSubject {
-  color: inherit;
-  font-family: ui-monospace, Consolas, monospace;
-}
-
 .noCapabilities {
   margin: 0;
   color: var(--muted);
@@ -73,7 +67,7 @@
 }
 
 .roleTable {
-  min-width: 740px;
+  min-width: 640px;
 }
 
 .memberIdentity {
@@ -83,10 +77,21 @@
   gap: 5px;
 }
 
-.memberIdentity code {
-  max-width: 320px;
+.memberIdentityDetails {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.memberIdentityDetails strong {
   color: var(--foreground);
-  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.memberIdentityDetails span {
+  color: var(--muted);
   font-size: 11px;
   overflow-wrap: anywhere;
 }
@@ -178,10 +183,6 @@
   color: var(--foreground);
   font-size: 12px;
   line-height: 1.55;
-}
-
-.selectedSubject {
-  overflow-wrap: anywhere;
 }
 
 .formActions {

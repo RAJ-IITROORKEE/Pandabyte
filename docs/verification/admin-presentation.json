@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-25",
+  "result": "passed-development-checkpoint",
+  "workers": "Luna xhigh admin cleanup and customer account audit; root integration/browser checks",
+  "changes": ["Admin role names and verified emails replace raw Clerk subjects", "No selected-subject ID or staff-note actor ID labels", "Readable relation/media/category fallbacks", "Internal version numbers removed from routine record/pricing/stock/role labels", "Capability descriptions use plain language", "Contact success omits database receipt UUID", "Focused abuse test fixtures use readable names/subjects"],
+  "security": ["Role directory authorizes staff.manage before one bounded Clerk lookup", "Only name and verified email added to the private DTO", "Role mutation still re-resolves verified email and checks opaque subject/version", "Owner protection and database audit remain intact"],
+  "tests": {
+    "lintTypecheckBuild": "passed",
+    "unitTests": 60,
+    "roleIsolation": "passed including identity projection, permissions, protected owner, self-change/metadata denial, RLS, optimistic conflicts and cleanup",
+    "publishingRegression": "final full run passed",
+    "browser": ["Users & roles displays actual account name/email and protected Admin status", "No raw subject/session/UUID text at all eight role-list theme/breakpoint combinations", "Customer dashboard, expanded private files, Clerk profile settings and Security/active devices checked without identity mutation", "No raw identifiers visible on those account screens", "No document overflow at 320/768/1024/1440 in light/dark role-list checks", "No console errors observed"],
+    "cleanup": "Protected owner session/Admin role preserved; all disposable records/users/files removed"
+  },
+  "limits": ["Identifiers remain internal in API state/resource paths and audit records", "No full assistive-technology or every vendor dialog audit", "No new deployment or commerce work"],
+  "proof": "Admin screenshot is kept in ignored local artifacts because it contains the owner account identity"
+}

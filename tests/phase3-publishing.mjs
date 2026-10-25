@@ -669,6 +669,10 @@ export async function verifyMediaBoundary(context, state, auth, created) {
   ensure(directPublishedDownload.error?.statusCode === 403 || (!directPublishedDownload.error && directPublishedDownload.data?.size > 0),
     "published_media_storage_gate_unexpected");
   const publicDownload = await request(context, `/api/media/${publicImage.id}`, null);
+  if (publicDownload.status !== 200) {
+    const problem = await publicDownload.clone().json().catch(() => null);
+    ensure(false, `published_media_download_failed_${publicDownload.status}_${problem?.error?.code ?? "unknown"}`);
+  }
   checkStatus(publicDownload, 200, "published_media_download_failed");
   ensure(publicDownload.headers.get("content-type") === "image/webp" && publicDownload.headers.get("cache-control")?.includes("no-store"),
     "published_media_download_headers_invalid");
@@ -710,7 +714,7 @@ export async function verifyInquiryBoundary(context, state, auth) {
   const submissions = [];
   for (let index = 0; index < 5; index += 1) {
     const idempotencyKey = randomUUID();
-    const input = { name: `Phase3 ${index}`, email, phone: "", subject: `Fixture ${state.runId} ${index}`, message: `Private fixture message ${state.runId} #${index}`, idempotencyKey };
+    const input = { challengeToken: "XXXX.DUMMY.TOKEN.XXXX", name: `Phase3 ${index}`, email, phone: "", subject: `Fixture ${state.runId} ${index}`, message: `Private fixture message ${state.runId} #${index}`, idempotencyKey };
     const response = await request(context, "/api/contact", null, { method: "POST", json: input });
     const body = await checkJsonResponse(response, 201, "contact_submission_failed");
     ensure(body.receipt && body.notificationStatus === "unconfigured", "contact_receipt_missing");

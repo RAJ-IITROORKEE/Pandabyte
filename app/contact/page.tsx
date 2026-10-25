@@ -5,6 +5,8 @@ import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { PublishedDocument } from "@/components/published-document";
 import { getPublishedRecord } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
+import { headers } from "next/headers";
+import { contactProtection } from "@/lib/contact/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
+  const protection = contactProtection(process.env);
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const contact = await getPublishedRecord("contact", "contact");
   const document = contact && !("redirectTo" in contact) ? contact.document : null;
   return <PublicPage eyebrow="Contact" title={document?.title ?? "Contact PandaByte"}>
@@ -26,7 +30,7 @@ export default async function ContactPage() {
           <h2>Send a message</h2>
           <p>Your message is saved for the team to review. This form does not confirm email delivery.</p>
         </div>
-        <ContactForm />
+        <ContactForm challengeConfig={{ enabled: !!protection, siteKey: protection?.siteKey ?? null, testMode: protection?.testMode ?? false }} nonce={nonce} />
       </section>
     </div>
   </PublicPage>;

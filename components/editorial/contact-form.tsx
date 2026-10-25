@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import { ContactChallenge, type ContactChallengeConfig } from "./contact-challenge";
 import styles from "./editorial.module.css";
 
 type FormState = { kind: "idle" | "sending" | "success" | "error"; message: string };
@@ -12,9 +13,11 @@ function inquiryReceipt(value: unknown): string | null {
   return value.receipt;
 }
 
-export function ContactForm() {
+export function ContactForm({ challengeConfig, nonce }: { challengeConfig: ContactChallengeConfig; nonce?: string }) {
   const requestId = useRef<string | null>(null);
   const [state, setState] = useState<FormState>({ kind: "idle", message: "" });
+  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  const [challengeReset, setChallengeReset] = useState(0);
 
   function resetRequestId() {
     requestId.current = null;
@@ -24,6 +27,10 @@ export function ContactForm() {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
+    if (!challengeConfig.enabled || !challengeConfig.siteKey || !challengeToken) {
+      setState({ kind: "error", message: "Complete verification before sending your message." });
+      return;
+    }
     requestId.current ??= crypto.randomUUID();
     setState({ kind: "sending", message: "Sending your message…" });
     try {
@@ -37,6 +44,7 @@ export function ContactForm() {
           subject: formData.get("subject"),
           message: formData.get("message"),
           idempotencyKey: requestId.current,
+          challengeToken,
         }),
       });
       if (response.ok) {
@@ -47,15 +55,19 @@ export function ContactForm() {
         }
         form.reset();
         requestId.current = null;
-        setState({ kind: "success", message: `Your message was saved. Keep this reference for any follow-up: ${receipt}` });
+        setState({ kind: "success", message: "Your message was saved for the team to review." });
         return;
       }
       const message = response.status === 400 ? "Review the fields and try again."
-        : response.status === 429 ? "Too many messages were submitted. Wait a moment, then retry."
+        : response.status === 403 ? "Verification failed. Complete a new verification, then retry."
+        : response.status === 429 ? "Too many messages were submitted. Wait a moment, complete verification again, then retry."
           : "We could not save your message. You can retry safely.";
       setState({ kind: "error", message });
     } catch {
       setState({ kind: "error", message: "We could not reach the inquiry service. Retry to reuse this submission safely." });
+    } finally {
+      setChallengeToken(null);
+      setChallengeReset((value) => value + 1);
     }
   }
 
@@ -70,7 +82,15 @@ export function ContactForm() {
       <label>Subject<input name="subject" maxLength={200} required disabled={sending} /></label>
     </div>
     <label>Message<textarea name="message" maxLength={5000} required rows={6} disabled={sending} /></label>
-    <button type="submit" disabled={sending}>{sending ? "Sending…" : "Send message"}</button>
+    <ContactChallenge
+      config={challengeConfig}
+      nonce={nonce}
+      resetVersion={challengeReset}
+      onToken={setChallengeToken}
+    />
+    <button type="submit" disabled={sending || !challengeConfig.enabled || !challengeConfig.siteKey || !challengeToken}>
+      {sending ? "Sending…" : "Send message"}
+    </button>
     <p className={styles.formStatus} data-state={state.kind} role={state.kind === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p>
   </form>;
 }

@@ -67,7 +67,7 @@ function statusOf(reason: unknown) {
 
 const ROLE_DETAILS: Record<StaffRole, { description: string; capabilities: readonly string[] }> = {
   ADMIN: {
-    description: "All seven current staff capabilities.",
+    description: "Full access to the admin workspace.",
     capabilities: ["catalog.edit", "content.edit", "content.publish", "orders.manage", "media.manage", "inquiries.manage", "staff.manage"],
   },
   EDITOR: {
@@ -75,7 +75,7 @@ const ROLE_DETAILS: Record<StaffRole, { description: string; capabilities: reado
     capabilities: ["content.edit", "content.publish", "media.manage"],
   },
   CATALOG: {
-    description: "Edit the catalog and media, with the current orders.manage capability.",
+    description: "Edit the catalog and media, and adjust inventory.",
     capabilities: ["catalog.edit", "media.manage", "orders.manage"],
   },
   SUPPORT: {
@@ -83,9 +83,19 @@ const ROLE_DETAILS: Record<StaffRole, { description: string; capabilities: reado
     capabilities: ["inquiries.manage"],
   },
   CUSTOMER: {
-    description: "No staff capabilities. This removes staff access while retaining a versioned membership.",
+    description: "Access to the storefront and personal account.",
     capabilities: [],
   },
+};
+
+const CAPABILITY_LABELS: Record<string, string> = {
+  "catalog.edit": "Catalog editing",
+  "content.edit": "Content editing",
+  "content.publish": "Content publishing",
+  "orders.manage": "Orders and inventory",
+  "media.manage": "Media library",
+  "inquiries.manage": "Customer inquiries",
+  "staff.manage": "Staff access",
 };
 
 function formatDate(value: string) {
@@ -97,8 +107,8 @@ function formatDate(value: string) {
 
 export function RolesScreen() {
   const { user, isLoaded } = useUser();
-  if (!isLoaded) return <div className={ui.screen}><p className={ui.loadingState} role="status">Loading your staff identity…</p></div>;
-  if (!user) return <div className={ui.screen}><p className={ui.inlineError} role="alert">Your signed-in account could not be loaded. Refresh and sign in again.</p></div>;
+  if (!isLoaded) return <div className={ui.screen}><p className={ui.loadingState} role="status">Loading staff access…</p></div>;
+  if (!user) return <div className={ui.screen}><p className={ui.inlineError} role="alert">Your account could not be loaded. Refresh the page and try again.</p></div>;
   return <RoleSession key={user.id} user={user} />;
 }
 
@@ -180,7 +190,7 @@ function RoleSession({ user }: { user: SignedInUser }) {
       setTargetUserId(membership.userId);
       setExpectedVersion(membership.version);
       setSubmitError("");
-      setNotice("Latest membership version selected. Confirm the email, requested role, and reason before saving.");
+      setNotice("Latest role selected. Confirm the account email and change details before saving.");
       setConflictPending(false);
       setConflictReloaded(false);
       conflictPendingRef.current = false;
@@ -190,7 +200,7 @@ function RoleSession({ user }: { user: SignedInUser }) {
     if (targetUserId === membership.userId) return;
     setTargetUserId(membership.userId);
     setExpectedVersion(membership.version);
-    setEmail("");
+    setEmail(membership.identity?.email ?? "");
     setRole(membership.role);
     setReason("");
     setSubmitError("");
@@ -272,7 +282,7 @@ function RoleSession({ user }: { user: SignedInUser }) {
     return <div className={ui.screen}><section className={ui.panel}>
       <p className={ui.eyebrow}>Access control</p>
       <h1 className={styles.deniedTitle}>Access denied</h1>
-      <p className={ui.lede}>You need the staff.manage capability to view or change role memberships.</p>
+      <p className={ui.lede}>Your role does not allow you to view or change staff access.</p>
     </section></div>;
   }
 
@@ -280,17 +290,17 @@ function RoleSession({ user }: { user: SignedInUser }) {
     <div className={ui.pageHeading}><div>
       <p className={ui.eyebrow}>Access control</p>
       <h1>Users &amp; roles</h1>
-      <p className={ui.lede}>Assign one fixed role to an existing verified account. This page does not show a Clerk user directory.</p>
+      <p className={ui.lede}>Assign one role to an existing verified account.</p>
     </div></div>
 
     <section className={ui.panel} aria-labelledby="role-matrix-title">
-      <div className={ui.sectionHeading}><div><h2 id="role-matrix-title">Role capabilities</h2><p>Each role replaces that person’s manual staff capability grants.</p></div></div>
+      <div className={ui.sectionHeading}><div><h2 id="role-matrix-title">What each role can do</h2><p>Each role replaces the person’s current staff permissions.</p></div></div>
       <div className={styles.roleGrid}>
         {STAFF_ROLES.map((staffRole) => <article className={styles.roleCard} key={staffRole}>
           <div className={styles.roleHeading}><h3>{staffRole}</h3><p>{ROLE_DETAILS[staffRole].description}</p></div>
           {ROLE_DETAILS[staffRole].capabilities.length
-            ? <ul className={styles.roleCapabilities}>{ROLE_DETAILS[staffRole].capabilities.map((capability) => <li key={capability}><code>{capability}</code></li>)}</ul>
-            : <p className={styles.noCapabilities}>No staff capabilities</p>}
+            ? <ul className={styles.roleCapabilities}>{ROLE_DETAILS[staffRole].capabilities.map((capability) => <li key={capability}>{CAPABILITY_LABELS[capability]}</li>)}</ul>
+            : <p className={styles.noCapabilities}>No staff access</p>}
         </article>)}
       </div>
     </section>
@@ -298,32 +308,34 @@ function RoleSession({ user }: { user: SignedInUser }) {
     <section className={ui.panel} aria-labelledby="memberships-title">
       <div className={ui.sectionHeading}><div>
         <h2 id="memberships-title">Role memberships</h2>
-        <p>{loading ? "Loading memberships…" : total === null ? "Membership count unavailable." : `${total} membership ${total === 1 ? "record" : "records"}. Emails are not displayed.`}</p>
+        <p>{loading ? "Loading memberships…" : total === null ? "Membership count unavailable." : `${total} role ${total === 1 ? "membership" : "memberships"}.`}</p>
       </div></div>
       {loadError !== null && <div className={ui.errorBanner} role="alert"><p>{messageFor(loadError)}</p><button className={ui.secondaryButton} type="button" onClick={reloadRoles} disabled={loading}>Reload roles</button></div>}
       {conflictPending && <div className={ui.errorBanner} role="alert"><p>{conflictReloaded
-        ? "The list is current. Review the latest role and select the intended row to use its current version; your email, requested role, and reason are preserved."
+        ? "The list is current. Select the intended role again to confirm the change; your email, requested role, and reason are preserved."
         : "This membership changed after it was loaded. Reload and review the latest row before retrying; your form is preserved."}</p>{!conflictReloaded && <button className={ui.secondaryButton} type="button" onClick={reloadRoles} disabled={loading}>Reload roles</button>}</div>}
       <div className={`${ui.tableFrame} ${styles.roleTableFrame}`} role="region" aria-label="Role memberships" tabIndex={0}>
         <table className={`${ui.table} ${styles.roleTable}`}>
-          <thead><tr><th scope="col">Clerk user ID</th><th scope="col">Role</th><th scope="col">Version</th><th scope="col">Last updated</th><th scope="col">Protection</th></tr></thead>
+          <thead><tr><th scope="col">Account</th><th scope="col">Role</th><th scope="col">Last updated</th><th scope="col">Protection</th></tr></thead>
           <tbody>
-            {loading && <tr><td colSpan={5} className={ui.tableMessage}>Loading role memberships…</td></tr>}
-            {!loading && loadError !== null && <tr><td colSpan={5} className={ui.tableMessage}>Role memberships could not be loaded.</td></tr>}
-            {!loading && !loadError && memberships.length === 0 && <tr><td colSpan={5} className={ui.tableMessage}>No role memberships yet. Enter a verified account email below to assign a role.</td></tr>}
+            {loading && <tr><td colSpan={4} className={ui.tableMessage}>Loading role memberships…</td></tr>}
+            {!loading && loadError !== null && <tr><td colSpan={4} className={ui.tableMessage}>Role memberships could not be loaded.</td></tr>}
+            {!loading && !loadError && memberships.length === 0 && <tr><td colSpan={4} className={ui.tableMessage}>No role memberships yet. Enter a verified account email below to assign a role.</td></tr>}
             {!loading && !loadError && memberships.map((membership) => {
               const isSelf = membership.userId === user.id;
               const locked = membership.protected || isSelf;
               const reviewWait = conflictPending && !conflictReloaded;
+              const accountEmail = membership.identity?.email?.trim() || "";
+              const accountName = membership.identity?.name?.trim() || accountEmail || "Account unavailable";
+              const accountLabel = accountEmail && accountEmail !== accountName ? `${accountName}, ${accountEmail}` : accountName;
               return <tr className={targetUserId === membership.userId ? ui.selectedRow : ui.selectableRow} key={membership.userId}>
                 <td><div className={styles.memberIdentity}>
-                  <code>{membership.userId}</code>
-                  {locked ? <span>{membership.protected ? "Protected membership" : "Your account"}</span> : <button className={styles.membershipSelect} type="button" onClick={() => selectMembership(membership)} disabled={busy || loading || Boolean(loadError) || reviewWait} aria-label={`${conflictPending ? "Review" : "Select"} ${membership.role} membership, version ${membership.version}, user ${membership.userId}`}>
-                    {conflictPending ? "Review latest version" : targetUserId === membership.userId ? "Selected" : "Select membership"}
+                  <div className={styles.memberIdentityDetails}><strong>{accountName}</strong>{accountEmail && accountEmail !== accountName && <span>{accountEmail}</span>}</div>
+                  {locked ? <span>{membership.protected ? "Protected admin" : "Your account"}</span> : <button className={styles.membershipSelect} type="button" onClick={() => selectMembership(membership)} disabled={busy || loading || Boolean(loadError) || reviewWait} aria-label={`${conflictPending ? "Review" : "Select"} ${membership.role} membership for ${accountLabel}`}>
+                    {conflictPending ? "Review latest role" : targetUserId === membership.userId ? "Selected" : "Select membership"}
                   </button>}
                 </div></td>
                 <td><span className={ui.statusPill}>{membership.role}</span></td>
-                <td>{membership.version}</td>
                 <td>{formatDate(membership.updatedAt)}</td>
                 <td>{membership.protected ? <span className={styles.protectedLabel}>Protected</span> : isSelf ? "You" : "—"}</td>
               </tr>;
@@ -341,20 +353,20 @@ function RoleSession({ user }: { user: SignedInUser }) {
     </section>
 
     <section className={ui.panel} aria-labelledby="assign-role-title">
-      <div className={ui.sectionHeading}><div><h2 id="assign-role-title">Assign or change a role</h2><p>Enter the exact verified email yourself; for an existing membership, select its row first.</p></div></div>
+      <div className={ui.sectionHeading}><div><h2 id="assign-role-title">Assign or change a role</h2><p>Select a membership above, or enter a verified email for a new assignment.</p></div></div>
       {conflictPending && <p className={styles.reviewHint} role="status">{conflictReloaded
-        ? "Select the intended membership above to attach its current version. The email, requested role, and reason below will stay filled."
+        ? "Select the intended role above to continue. Your email, requested role, and reason will stay filled."
         : "Reload and review the membership list above before selecting the target again."}</p>}
       <form className={styles.roleForm} onSubmit={submit}>
         <fieldset className={styles.roleFieldset} disabled={busy || accessBlocked}>
           <legend className={ui.visuallyHidden}>Role membership change details</legend>
           <div className={styles.roleFormFields}>
-            <label className={ui.field} htmlFor="role-target-email"><span className={ui.fieldLabel}>Verified account email</span><input className={ui.input} id="role-target-email" type="email" autoComplete="off" required maxLength={254} value={email} onChange={(event) => { setEmail(event.target.value); setSubmitError(""); setNotice(""); }} aria-describedby="role-email-hint" /><span className={ui.fieldHint} id="role-email-hint">For an existing row, type the email that resolves to that same Clerk user ID.</span></label>
+            <label className={ui.field} htmlFor="role-target-email"><span className={ui.fieldLabel}>Verified account email</span><input className={ui.input} id="role-target-email" type="email" autoComplete="off" required maxLength={254} value={email} onChange={(event) => { setEmail(event.target.value); setSubmitError(""); setNotice(""); }} aria-describedby="role-email-hint" /><span className={ui.fieldHint} id="role-email-hint">For an existing role, confirm the verified email shown in its row.</span></label>
             <label className={ui.field} htmlFor="role-choice"><span className={ui.fieldLabel}>Role</span><select className={`${ui.input} ${styles.roleSelect}`} id="role-choice" value={role} onChange={(event) => { setRole(event.target.value as StaffRole | ""); setSubmitError(""); setNotice(""); }} required><option value="">Choose a role</option>{STAFF_ROLES.map((staffRole) => <option value={staffRole} key={staffRole}>{staffRole}</option>)}</select><span className={ui.fieldHint}>{role ? ROLE_DETAILS[role].description : "Choose one of the five fixed roles."}</span></label>
             <label className={`${ui.field} ${styles.reasonField}`} htmlFor="role-reason"><span className={ui.fieldLabel}>Reason</span><textarea className={ui.textarea} id="role-reason" rows={3} maxLength={500} required value={reason} onChange={(event) => { setReason(event.target.value); setSubmitError(""); setNotice(""); }} aria-describedby="role-reason-hint" /><span className={ui.fieldHint} id="role-reason-hint">Required audit reason, up to 500 characters.</span></label>
           </div>
-          <p className={styles.replacementNotice}>Assigning a role replaces all manual staff capability grants for this person. CUSTOMER removes staff access.</p>
-          {targetUserId && <p className={ui.fieldHint}>Selected subject: <code className={styles.selectedSubject}>{targetUserId}</code> · current version {expectedVersion}. Type its verified email to confirm the target.</p>}
+          <p className={styles.replacementNotice}>This replaces the person’s current staff permissions. CUSTOMER removes staff access.</p>
+          {targetUserId && <p className={ui.fieldHint}>Selected account. Confirm the verified email above before saving.</p>}
           {isSelfEmail && <p className={ui.inlineError} role="status">This verified email belongs to your signed-in account. Self role changes are unavailable.</p>}
           {submitError && !conflictPending && <div className={ui.errorBanner} role="alert"><p>{submitError}</p></div>}
           {notice && <p className={ui.successBanner} role="status">{notice}</p>}

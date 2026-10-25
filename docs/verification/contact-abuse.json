@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-25",
+  "environment": "Linked InsForge development project and localhost Next.js production build",
+  "result": "passed-development-checkpoint",
+  "workers": "Luna xhigh: contact UI and independent boundary/integration review",
+  "checks": {
+    "lintTypecheckBuild": "passed",
+    "unitTests": { "passed": 60, "failed": 0 },
+    "securityHttpTests": { "passed": 2, "failed": 0 },
+    "contactIntegration": ["missing challenge 400", "invalid challenge 403", "client proof injection 400", "legacy anonymous RPC 42501", "private config read 42501", "wrong scoped proof rejected", "five distinct concurrent submissions", "concurrent duplicate returns one receipt", "unchanged replay returns original receipt", "changed replay 409", "sixth same-email submission 429", "receipt-only response projection", "fixture cleanup verified"],
+    "databaseAcl": { "anonLegacyExecute": false, "authenticatedLegacyExecute": false, "authenticatedConfigRead": false, "scopedWrapperExecute": true, "privateConfigRows": 1 },
+    "publishingRegression": "Final full run passed including media, inquiry processing and cleanup",
+    "earlierAttempts": ["Initial full publishing run stopped at public-media download; fixtures removed", "Second run stopped at capability revocation; exact disposable fixtures removed with official harness cleanup", "Separate read-key storage probe and capability-revocation probe passed; earlier causes were not established"],
+    "clientSecretScan": { "javascriptFiles": 32, "serverSecretsFound": 0 },
+    "independentCleanup": "Passed: protected owner Admin and seven capabilities preserved; no disposable business/user/file fixtures remain"
+  },
+  "browser": {
+    "surface": "Built-in browser",
+    "challenge": "Official dummy widget loaded and auto-passed; trusted nonce attribute present; no CSP console errors",
+    "success": "Synthetic message saved, fields reset, plain confirmation without receipt UUID; staff queue/detail showed the saved message",
+    "failure": "429 kept all entered fields and reset verification for retry",
+    "widths": [320, 768, 1024, 1440],
+    "themes": ["light", "dark"],
+    "documentOverflow": false,
+    "keyboard": "Form-to-widget keyboard navigation checked",
+    "proof": "Saved only in ignored local artifacts because the surrounding header contains the active account identity"
+  },
+  "limits": ["Official local test keys only; no real production-domain challenge verification", "Shared 100/hour emergency quota can still be exhausted", "No trusted edge IP limiter or load/restore test", "Notification delivery unconfigured", "Checkout and payments deferred", "No deployment or next phase started"]
+}

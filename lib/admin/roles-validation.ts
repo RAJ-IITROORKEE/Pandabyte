@@ -7,6 +7,7 @@ export type StaffRoleMembership = {
   version: number;
   protected: boolean;
   updatedAt: string;
+  identity?: { name: string | null; email: string | null };
 };
 
 export type StaffRoleList = { items: StaffRoleMembership[]; total: number };
@@ -89,13 +90,21 @@ export function parseRoleChangeInput(value: unknown): StaffRoleChange | null {
 }
 
 export function parseStaffRoleMembership(value: unknown): StaffRoleMembership | null {
-  if (!isObject(value) || !hasOnlyKeys(value, ["userId", "role", "version", "protected", "updatedAt"])) return null;
+  if (!isObject(value) || !hasOnlyKeys(value, ["userId", "role", "version", "protected", "updatedAt", "identity"])) return null;
   const { userId, role, version, protected: isProtected, updatedAt } = value;
   if (typeof userId !== "string" || !userId || userId.length > 256 || userId !== userId.trim() || CONTROL_CHARS.test(userId) ||
       typeof role !== "string" || !ROLE_SET.has(role) || parseBoundedInteger(version, 1, Number.MAX_SAFE_INTEGER) === null ||
       typeof isProtected !== "boolean" || (isProtected && role !== "ADMIN") || typeof updatedAt !== "string" ||
       !isTimestamp(updatedAt)) return null;
-  return { userId, role: role as StaffRole, version: version as number, protected: isProtected, updatedAt };
+  let identity: StaffRoleMembership["identity"];
+  if (Object.hasOwn(value, "identity")) {
+    if (!isObject(value.identity) || !hasOnlyKeys(value.identity, ["name", "email"])) return null;
+    const { name, email } = value.identity;
+    if (!(name === null || (typeof name === "string" && name.length > 0 && name.length <= 240 && name === name.trim() && !CONTROL_CHARS.test(name))) ||
+        !(email === null || (typeof email === "string" && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !CONTROL_CHARS.test(email)))) return null;
+    identity = { name, email };
+  }
+  return { userId, role: role as StaffRole, version: version as number, protected: isProtected, updatedAt, ...(identity ? { identity } : {}) };
 }
 
 export function parseStaffRoleList(value: unknown): StaffRoleList | null {

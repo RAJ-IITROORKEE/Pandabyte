@@ -55,7 +55,10 @@ async function run(c, state, auth) {
   ensure(!!forged.error, "metadata_granted_admin");
   const boot = await rpc(c.admin, "project_admin_set_staff_role", { p_user_id: actor.userId, p_role: "ADMIN", p_protected: false, p_reason: `Disposable role tests ${state.runId}` });
   ensure(!boot.error && boot.data.role === "ADMIN", "fixture_admin_bootstrap_failed");
-  await json(await request(c, "/api/admin/roles?limit=10&offset=0", auth.staff.appToken), 200, "admin_list");
+  const directory = await json(await request(c, "/api/admin/roles?limit=10&offset=0", auth.staff.appToken), 200, "admin_list");
+  const actorRow = directory.items.find((item) => item.userId === actor.userId);
+  ensure(actorRow?.identity?.email?.toLowerCase() === actor.email.toLowerCase(), "role_identity_must_match_verified_clerk_subject");
+  ensure(directory.items.every((item) => item.identity && Object.keys(item.identity).sort().join(",") === "email,name"), "role_identity_projection_invalid");
   for (const query of ["limit=51", "limit=1&limit=2", "offset=5001", "other=x"]) {
     await json(await request(c, `/api/admin/roles?${query}`, auth.staff.appToken), 400, "invalid_list_query");
   }

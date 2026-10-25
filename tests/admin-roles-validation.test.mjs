@@ -80,4 +80,10 @@ test("RPC membership output is strict and list DTOs reject malformed or duplicat
   assert.equal(parseStaffRoleList({ items: [membership], total: -1 }), null);
   assert.equal(parseStaffRoleList({ items: [membership], total: 0 }), null);
   assert.equal(parseStaffRoleList({ items: [membership], total: 1, emails: [] }), null);
+  const named = { ...membership, identity: { name: "Test Editor", email: "editor@example.com" } };
+  assert.deepEqual(parseStaffRoleMembership(named), named);
+  assert.deepEqual(parseStaffRoleMembership({ ...membership, identity: { name: null, email: null } }).identity, { name: null, email: null });
+  for (const identity of [{ name: "Editor", email: "not-email" }, { name: "x".repeat(241), email: null }, { name: "Editor\u0000", email: null }, { name: null }, { name: null, email: null, role: "ADMIN" }]) {
+    assert.equal(parseStaffRoleMembership({ ...membership, identity }), null);
+  }
 });

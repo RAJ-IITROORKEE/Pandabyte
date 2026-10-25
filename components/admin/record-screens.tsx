@@ -57,7 +57,7 @@ type Option = { id: string; label: string };
 type ModuleMeta = { title: string; description: string; singular: string };
 
 const META: Record<AdminModule, ModuleMeta> = {
-  products: { title: "Products", singular: "product", description: "Manage product copy, catalog relationships, and technical details.", },
+  products: { title: "Products", singular: "product", description: "Manage product descriptions, categories, and specifications.", },
   categories: { title: "Categories", singular: "category", description: "Organize the catalog with clear, searchable category records.", },
   blog: { title: "Blog", singular: "article", description: "Edit sourced editorial content and its publication status.", },
   pages: { title: "Pages", singular: "page", description: "Manage published site pages with structured content blocks.", },
@@ -95,7 +95,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const body = await response.json().catch(() => null) as T | ApiError | null;
   if (!response.ok) {
     const error = body && typeof body === "object" && "error" in body ? body.error : undefined;
-    const message = error?.message || (response.status === 409 ? "This record changed. Reload the current version before saving." : `The request failed (${response.status}).`);
+    const message = error?.message || (response.status === 409 ? "This record changed. Reload the latest version before saving." : "The request could not be completed. Try again.");
     throw Object.assign(new Error(message), { status: response.status, fields: error?.fields });
   }
   return body as T;
@@ -190,7 +190,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
             {!loading && items.map((item) => {
               const status = item.archived ? "Archived" : item.publishedRevisionId ? "Published" : "Draft";
               return <tr key={item.id}>
-                <td><Link className={styles.recordTitle} href={`/admin/${module}/${item.id}`}>{item.title || "Untitled"}</Link><span className={styles.rowSubtext}>v{item.version}</span></td>
+                <td><Link className={styles.recordTitle} href={`/admin/${module}/${item.id}`}>{item.title || `Untitled ${meta.singular}`}</Link></td>
                 <td><code className={styles.slug}>{item.slug}</code></td>
                 <td><span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span></td>
                 <td className={styles.dateCell}>{formatDate(item.updatedAt)}</td>
@@ -254,7 +254,7 @@ function RelationPicker({ label, module, values, onChange }: { label: string; mo
     return () => { alive = false; };
   }, [module]);
   return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span>
-    {options.length > 0 ? <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...values, option.id] : values.filter((id) => id !== option.id))} /><span>{option.label || option.id}</span></label>)}</div> : <p className={styles.fieldHint}>{loadError || "No selectable records are available yet."}</p>}
+    {options.length > 0 ? <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...values, option.id] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div> : <p className={styles.fieldHint}>{loadError || "No selectable records are available yet."}</p>}
   </div>;
 }
 
@@ -264,7 +264,7 @@ function MediaPicker({ value, onChange, label = "Media asset" }: { value: string
   useEffect(() => {
     let alive = true;
     void api<{ items: { id: string; filename: string; archived: boolean; published: boolean }[] }>("/api/admin/media?limit=50&offset=0")
-      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived); setOptions(available.map((item) => ({ id: item.id, label: item.filename }))); setMessage(available.length ? "" : "No published media assets are available."); } })
+      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived); setOptions(available.map((item) => ({ id: item.id, label: item.filename || "Unnamed media asset" }))); setMessage(available.length ? "" : "No published media assets are available."); } })
       .catch((error) => { if (alive) setMessage(error instanceof Error ? error.message : "Media could not be loaded."); });
     return () => { alive = false; };
   }, []);
@@ -277,7 +277,7 @@ function ParentCategoryPicker({ value, currentId, onChange }: { value: string | 
   useEffect(() => {
     let alive = true;
     void api<{ items: RecordListItem[] }>("/api/admin/categories?limit=100&offset=0")
-      .then((result) => { if (alive) { const available = result.items.filter((item) => !item.archived && item.id !== currentId); setOptions(available.map((item) => ({ id: item.id, label: item.title }))); setMessage(available.length ? "" : "No other categories are available."); } })
+      .then((result) => { if (alive) { const available = result.items.filter((item) => !item.archived && item.id !== currentId); setOptions(available.map((item) => ({ id: item.id, label: item.title || "Untitled category" }))); setMessage(available.length ? "" : "No other categories are available."); } })
       .catch((error) => { if (alive) setMessage(error instanceof Error ? error.message : "Categories could not be loaded."); });
     return () => { alive = false; };
   }, [currentId]);
@@ -339,7 +339,7 @@ function DraftPreview({ document }: { document: AdminDocument }) {
   return <section className={styles.previewPanel} aria-label="Private draft preview">
     <p className={styles.eyebrow}>Private draft preview</p>
     <PublishedDocument document={document} />
-    <p className={styles.previewPrivacy}>This preview is visible in your authenticated admin session only.</p>
+    <p className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
   </section>;
 }
 
@@ -522,14 +522,14 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 
   return <div className={styles.screen}>
     <div className={styles.editorHeading}>
-      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><p className={styles.eyebrow}>{isNew ? "New draft" : `Record · v${record?.version}`}</p><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
+      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><p className={styles.eyebrow}>{isNew ? "New draft" : "Edit content"}</p><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
       <div className={styles.editorActions}>
         <button className={styles.secondaryButton} type="button" onClick={() => setPreviewOpen((value) => !value)}><Eye size={16} aria-hidden="true" /> {previewOpen ? "Hide preview" : "Preview draft"}</button>
         <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
       </div>
     </div>
     {previewOpen && <DraftPreview document={draft} />}
-    {!canEdit && <div className={styles.errorBanner} role="status"><p>You can view this record, but your current staff capabilities do not allow editing it.</p></div>}
+    {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
     {error && <div className={styles.errorBanner} role="alert"><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
     {notice && <p className={styles.successBanner} role="status"><Check size={16} aria-hidden="true" /> {notice}</p>}
     <form className={styles.editorForm} onSubmit={save} aria-busy={busy}>
@@ -538,13 +538,13 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       </fieldset>
       <div className={styles.bottomActions}><span>{dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
     </form>
-    {record && <section className={styles.panel} aria-labelledby="publishing-heading"><div className={styles.sectionHeading}><div><h2 id="publishing-heading">Publishing</h2><p>Publication is a separate action and requires content publishing access.</p></div></div>
+    {record && <section className={styles.panel} aria-labelledby="publishing-heading"><div className={styles.sectionHeading}><div><h2 id="publishing-heading">Publishing</h2><p>Publishing is a separate action and requires the right access.</p></div></div>
       <div className={styles.lifecycleActions}>
         <button className={styles.primaryButton} type="button" onClick={() => void transition("publish")} disabled={!canPublish || busy || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
         {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || record.archived}>Unpublish</button>}
         {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy}>Archive</button>}
       </div>
-      {!canPublish && <p className={styles.fieldHint}>You need content.publish for publishing, unpublishing, or archiving.</p>}
+      {!canPublish && <p className={styles.fieldHint}>Your role does not include publishing, unpublishing, or archiving.</p>}
       {record.revisions && record.revisions.length > 0 && <div className={styles.revisionPicker}><label className={styles.field}><span className={styles.fieldLabel}>Restore a published revision as a draft</span><select className={styles.input} value={restoreId} onChange={(event) => setRestoreId(event.target.value)}><option value="">Select a revision</option>{record.revisions.map((revision) => <option value={revision.id} key={revision.id}>Revision {revision.revisionNumber} · {revision.title} · {formatDate(revision.publishedAt)}</option>)}</select></label><button className={styles.secondaryButton} type="button" disabled={!restoreId || !canEdit || busy} onClick={() => void transition("restore", restoreId)}>Restore draft</button></div>}
       {record.archived && (!record.revisions || record.revisions.length === 0) && <p className={styles.fieldHint}>No published revision is available to restore.</p>}
       {record.publishedRevisionId && <p className={styles.fieldHint}>Published record slug: <code>{record.slug}</code></p>}
@@ -553,9 +553,9 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 }
 
 export function AdminUnavailableScreen({ title, description }: { title: string; description: string }) {
-  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1><p className={styles.lede}>{description}</p></div></div><div className={styles.emptyPanel}><p>This area does not have an operational API in this phase.</p><Link className={styles.secondaryButton} href="/admin">Return to dashboard</Link></div></div>;
+  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1><p className={styles.lede}>{description}</p></div></div><div className={styles.emptyPanel}><p>This section is not available yet.</p><Link className={styles.secondaryButton} href="/admin">Return to dashboard</Link></div></div>;
 }
 
 export function AdminAccessDeniedScreen({ title }: { title: string }) {
-  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1></div></div><div className={styles.errorBanner} role="status"><p>Your current staff capabilities do not allow access to this area.</p></div></div>;
+  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1></div></div><div className={styles.errorBanner} role="status"><p>Your role does not allow access to this area.</p></div></div>;
 }

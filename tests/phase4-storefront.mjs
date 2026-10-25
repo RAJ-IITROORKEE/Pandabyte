@@ -857,6 +857,7 @@ async function verifyStorefrontPages(context, state, setup, editorial, slugChang
 async function verifyInquiryFlow(context, state, auth) {
   const requestId = randomUUID();
   const inquiry = {
+    challengeToken: "XXXX.DUMMY.TOKEN.XXXX",
     name: titleFor(state.runId, "contact sender"),
     email: `${state.runId}@phase3-test.example`,
     phone: "+91 00000 00000",

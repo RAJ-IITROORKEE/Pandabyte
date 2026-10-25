@@ -36,7 +36,7 @@ function directives(policy) {
 
 test("production documents use fresh trusted nonces on framework, theme and Clerk scripts", async () => {
   const nonces = new Set();
-  for (const route of ["/", "/", "/sign-in", "/account", "/admin/users"]) {
+  for (const route of ["/", "/", "/contact", "/sign-in", "/account", "/admin/users"]) {
     // Empty development handshake token lets Clerk render its genuine signed-out branch.
     const response = await fetch(`http://localhost:3000${route}?__clerk_db_jwt=`, {
       redirect: "manual", signal: AbortSignal.timeout(20_000),

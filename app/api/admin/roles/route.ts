@@ -70,7 +70,18 @@ export async function GET(request: Request) {
     });
     if (rpcError) return databaseError(rpcError);
     const result = parseStaffRoleList(data);
-    return result ? json(result) : error("backend_unavailable", 503);
+    if (!result) return error("backend_unavailable", 503);
+    if (!result.items.length) return json(result);
+    const clerk = await clerkClient();
+    const users = await clerk.users.getUserList({ userId: result.items.map((item) => item.userId), limit: 50, offset: 0 });
+    const identities = new Map(users.data.map((user) => {
+      const name = [user.firstName, user.lastName].filter(Boolean).join(" ").replace(/[\u0000-\u001f\u007f]/g, " ").slice(0, 240).trim() || null;
+      const email = user.emailAddresses.find((address) => address.id === user.primaryEmailAddressId && address.verification?.status === "verified")?.emailAddress
+        ?? user.emailAddresses.find((address) => address.verification?.status === "verified")?.emailAddress ?? null;
+      return [user.id, { name, email }] as const;
+    }));
+    const directory = parseStaffRoleList({ ...result, items: result.items.map((item) => ({ ...item, identity: identities.get(item.userId) ?? { name: null, email: null } })) });
+    return directory ? json(directory) : error("backend_unavailable", 503);
   } catch {
     return error("backend_unavailable", 503);
   }

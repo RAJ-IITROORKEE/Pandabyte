@@ -2,6 +2,8 @@
 
 ## Current authorization
 
+**Latest follow-up, 25 October 2026:** contact abuse protection with Luna xhigh workers, built-in-browser verification, fixes and a local commit. The owner selected official Turnstile test keys locally; real production protection remains unverified. See [contact contract](docs/contact-abuse.md). The owner additionally requested clean minimalist Admin/account screens without visible database IDs, Clerk subjects or session IDs; keep those internal and preserve authorization, role/version guards and audit data. See [presentation contract](docs/admin-presentation.md). Checkout/payments remain deferred.
+
 **Latest landing instruction:** match the selected Superdesign homepage v26, including its animated interactive circuit, using Luna xhigh workers; verify in the built-in browser and commit before continuing authorized non-commerce hardening. Preserve the UI chat’s design artifacts and current Clerk account controls. Checkout/payments remain explicitly deferred. See [landing contract](docs/landing-v26.md).
 
 **Latest correction: checkout and payment work are explicitly deferred. The owner authorized non-commerce backend security hardening and role-based administration, with the verified Clerk account `rajrabidas001@gmail.com` assigned protected default ADMIN access.** This supersedes earlier instructions to preserve the owner's normal customer permissions. Bind the verified opaque Clerk subject in InsForge; no email/metadata login bypass. Follow [admin role contracts](docs/admin-roles.md). Retain Luna xhigh workers, development checks/browser verification and local commits. No production deployment or Phase 6 scope is added.

@@ -1,4 +1,4 @@
-> Latest frontend checkpoint: implement selected Superdesign Home v26, verify the real circuit and published-data layouts, then commit before continuing authorized non-commerce security work. Checkout/payments remain deferred. See [landing contract](docs/landing-v26.md).
+> Latest checkpoint: Home v26 and strict CSP are committed. Continue authorized [contact abuse protection](docs/contact-abuse.md), then the requested [minimalist Admin/account cleanup](docs/admin-presentation.md), with Luna xhigh workers and verification/local commits. Official Turnstile test keys are selected locally; real deployment protection remains a gate. Checkout/payments remain deferred. See [landing contract](docs/landing-v26.md).
 
 # PandaByte.in — phased delivery plan
 
