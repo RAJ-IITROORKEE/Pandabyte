@@ -331,6 +331,7 @@ function scanProductJsonFiles(root, limits, diagnostics) {
     }
     entries.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
     for (const entry of entries) {
+      if (entry.name.toLowerCase() === "3d") continue;
       const entryPath = path.join(directory, entry.name);
       const rel = relativePath(root, entryPath);
       if (entry.isSymbolicLink()) {

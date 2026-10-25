@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     ".agents/**",
     ".superdesign/**",
     ".firecrawl/**",
+    // Independently maintained source archives and CAD experiments are not app source.
+    "products/**",
+    "experiments/**",
   ]),
 ]);
 

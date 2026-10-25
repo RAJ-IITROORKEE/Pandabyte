@@ -43,7 +43,7 @@ export default async function ProductDetail({ params }: ProductPageProps) {
   return <PublicPage eyebrow="Product" title={product.title} description={product.summary} wide>
     <div className={styles.productHero}>
       <ProductGallery key={product.id} images={images} />
-      <ProductVariantPanel key={product.id} variants={product.variants} />
+      <ProductVariantPanel key={product.id} variants={product.variants} observation={product.document.sourceObservation} />
     </div>
     <ProductDetails product={product} />
   </PublicPage>;

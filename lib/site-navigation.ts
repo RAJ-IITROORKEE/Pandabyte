@@ -2,12 +2,11 @@ export type SiteLink = { label: string; href: string };
 
 export const hardwareLinks: SiteLink[] = [
   { label: "All hardware", href: "/shop" },
-  { label: "IoT kits", href: "/shop?category=kit" },
-  { label: "Boards", href: "/shop?category=board" },
-  { label: "Components", href: "/shop?category=component" },
-  { label: "Sensors", href: "/shop?category=sensor" },
-  { label: "Shields", href: "/shop?category=shield" },
-  { label: "Accessories", href: "/shop?category=accessory" },
+  { label: "IoT kits", href: "/shop?category=iot-kits" },
+  { label: "Dev Boards", href: "/shop?category=microcontroller" },
+  { label: "Sensors", href: "/shop?category=sensors" },
+  { label: "Shields", href: "/shop?category=shields" },
+  { label: "Accessories", href: "/shop?category=accessories" },
 ];
 
 export const upcomingLinks: SiteLink[] = [

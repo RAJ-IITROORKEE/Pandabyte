@@ -199,6 +199,16 @@ test("hashes exact product JSON bytes and returns deterministic reports", (t) =>
   assert.deepEqual(first, second);
 });
 
+test("ignores independently maintained 3d product directories", (t) => {
+  const root = createFixtureRoot(t);
+  writeRecord(root, "sensors/item-1", sourceRecord());
+  fs.mkdirSync(path.join(root, "sensors/item-1/3d"));
+  fs.writeFileSync(path.join(root, "sensors/item-1/3d/product.json"), "not catalog JSON");
+  const report = inspectArchive(root);
+  assert.equal(report.counts.productRecords, 1);
+  assert.equal(report.counts.errors, 0);
+});
+
 test("enforces entry and JSON byte limits", (t) => {
   const root = createFixtureRoot(t);
   writeRecord(root, "sensors/item-1", sourceRecord());

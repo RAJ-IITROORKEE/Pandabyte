@@ -219,8 +219,8 @@ function TextInput({ value, onChange, placeholder, type = "text", maxLength }: {
   return <input className={styles.input} type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} maxLength={maxLength} />;
 }
 
-function TextArea({ value, onChange, rows = 4, placeholder }: { value: string; onChange: (value: string) => void; rows?: number; placeholder?: string }) {
-  return <textarea className={styles.textarea} value={value} onChange={(event) => onChange(event.target.value)} rows={rows} placeholder={placeholder} />;
+function TextArea({ value, onChange, rows = 4, placeholder, maxLength }: { value: string; onChange: (value: string) => void; rows?: number; placeholder?: string; maxLength?: number }) {
+  return <textarea className={styles.textarea} value={value} onChange={(event) => onChange(event.target.value)} rows={rows} placeholder={placeholder} maxLength={maxLength} />;
 }
 
 function TokenInput({ label, values, onChange, hint }: { label: string; values: string[]; onChange: (next: string[]) => void; hint?: string }) {
@@ -237,38 +237,58 @@ function TokenInput({ label, values, onChange, hint }: { label: string; values: 
 }
 
 function RelationPicker({ label, module, values, onChange }: { label: string; module: "categories" | "products" | "media"; values: string[]; onChange: (next: string[]) => void }) {
-  const [options, setOptions] = useState<Option[]>([]);
+  const [loaded, setLoaded] = useState<{ module: string; options: Option[] }>({ module, options: [] });
+  const options = loaded.module === module ? loaded.options : [];
+  const [page, setPage] = useState({ module, offset: 0 });
+  const offset = page.module === module ? page.offset : 0;
+  const limit = module === "media" ? 50 : 100;
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [loadError, setLoadError] = useState("");
   useEffect(() => {
     let alive = true;
     async function load() {
       try {
-        const limit = module === "media" ? 50 : 100;
-        const result = await api<{ items: (RecordListItem & { filename?: string; published?: boolean })[] }>(`/api/admin/${module}?limit=${limit}&offset=0`);
-        if (alive) setOptions(result.items.filter((item) => !item.archived && (module !== "media" || item.published === true)).map((item) => ({ id: item.id, label: module === "media" ? item.filename || item.title : item.title })));
+        const result = await api<{ items: (RecordListItem & { filename?: string; published?: boolean })[]; total: number }>(`/api/admin/${module}?limit=${limit}&offset=${offset}`);
+        if (alive) {
+          const incoming = result.items.filter((item) => !item.archived && (module !== "media" || item.published === true)).map((item) => ({ id: item.id, label: module === "media" ? item.filename || item.title : item.title }));
+          setLoaded(previous => ({ module, options: [...new Map([...(offset > 0 && previous.module === module ? previous.options : []), ...incoming].map(item => [item.id, item])).values()] }));
+          setHasMore(offset + result.items.length < result.total); setLoadError("");
+        }
       } catch (error) {
         if (alive) setLoadError(error instanceof Error ? error.message : "Options could not be loaded.");
+      } finally {
+        if (alive) setLoading(false);
       }
     }
     void load();
     return () => { alive = false; };
-  }, [module]);
+  }, [module, offset, limit, retry]);
   return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span>
-    {options.length > 0 ? <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...values, option.id] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div> : <p className={styles.fieldHint}>{loadError || "No selectable records are available yet."}</p>}
+    {options.length > 0 ? <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div> : <p className={styles.fieldHint}>{loadError || "No selectable records are available yet."}</p>}
+    {options.length > 0 && loadError && <p className={styles.fieldHint} role="status">{loadError}</p>}
+    {((loaded.module === module && hasMore) || loading || loadError) && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); if (loadError) setRetry(n => n + 1); else setPage({ module, offset: offset + limit }); }}>{loading ? "Loading options…" : loadError ? "Retry loading options" : `Load more ${module === "media" ? "media assets" : module}`}</button>}
   </div>;
 }
 
 function MediaPicker({ value, onChange, label = "Media asset" }: { value: string; onChange: (next: string) => void; label?: string }) {
   const [options, setOptions] = useState<Option[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [message, setMessage] = useState("Loading media…");
   useEffect(() => {
     let alive = true;
-    void api<{ items: { id: string; filename: string; archived: boolean; published: boolean }[] }>("/api/admin/media?limit=50&offset=0")
-      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived); setOptions(available.map((item) => ({ id: item.id, label: item.filename || "Unnamed media asset" }))); setMessage(available.length ? "" : "No published media assets are available."); } })
-      .catch((error) => { if (alive) setMessage(error instanceof Error ? error.message : "Media could not be loaded."); });
+    void api<{ items: { id: string; filename: string; archived: boolean; published: boolean }[]; total: number }>(`/api/admin/media?limit=50&offset=${offset}`)
+      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived).map(item => ({ id: item.id, label: item.filename || "Unnamed media asset" })); setOptions(previous => [...new Map([...(offset > 0 ? previous : []), ...available].map(item => [item.id, item])).values()]); setHasMore(offset + result.items.length < result.total); setLoadFailed(false); setMessage(available.length || offset > 0 ? "" : "No published media assets are available."); } })
+      .catch((error) => { if (alive) { setLoadFailed(true); setMessage(error instanceof Error ? error.message : "Media could not be loaded."); } })
+      .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, []);
-  return <label className={styles.field}><span className={styles.fieldLabel}>{label}</span><select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}><option value="">Select an asset</option>{options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select>{message && <span className={styles.fieldHint}>{message}</span>}</label>;
+  }, [offset, retry]);
+  return <div className={styles.field}><label><span className={styles.fieldLabel}>{label}</span><select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}><option value="">Select an asset</option>{value && !options.some(option => option.id === value) && <option value={value}>Current assigned asset</option>}{options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>{message && <span className={styles.fieldHint}>{message}</span>}{(hasMore || loadFailed) && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); if (loadFailed) setRetry(n => n + 1); else setOffset(offset + 50); }}>{loading ? "Loading assets…" : loadFailed ? "Retry loading assets" : "Load more media assets"}</button>}</div>;
 }
 
 function ParentCategoryPicker({ value, currentId, onChange }: { value: string | null; currentId?: string; onChange: (next: string | null) => void }) {
@@ -370,6 +390,26 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
         </>}
         {module === "products" && <>
           <RowEditor label="Variants" addLabel="Add variant" rows={rows("variants")} columns={[{ key: "sku", label: "SKU", immutableWhenExisting: true }, { key: "label", label: "Variant label" }]} onChange={(value) => set("variants", value)} />
+          <section className={styles.panel} aria-label="Source observation">
+            <label className={styles.inlineCheck}><input type="checkbox" checked={doc.sourceObservation !== undefined} onChange={(event) => {
+              if (event.target.checked) set("sourceObservation", { priceText: "", capturedAt: "", sourceUrl: "" });
+              else {
+                const next = { ...doc };
+                delete next.sourceObservation;
+                delete next.sourceReview;
+                setDocument(next as AdminDocument);
+              }
+            }} /><span>Publish as a non-purchasable source observation</span></label>
+            {doc.sourceObservation !== undefined && <div className={styles.formGrid}>
+              <p className={styles.fieldHint}>This records dated source wording, not an active price or availability claim.</p>
+              <Field label="Exact source price text"><TextInput value={String((doc.sourceObservation as Record<string, unknown>)?.priceText ?? "")} maxLength={160} onChange={(priceText) => set("sourceObservation", { ...(doc.sourceObservation as Record<string, unknown>), priceText })} /></Field>
+              <Field label="Archive capture time (ISO date and time)"><TextInput value={String((doc.sourceObservation as Record<string, unknown>)?.capturedAt ?? "")} maxLength={35} placeholder="2026-10-25T14:26:46.928Z" onChange={(capturedAt) => set("sourceObservation", { ...(doc.sourceObservation as Record<string, unknown>), capturedAt })} /></Field>
+              <Field label="Source URL"><TextInput type="url" value={String((doc.sourceObservation as Record<string, unknown>)?.sourceUrl ?? "")} maxLength={2048} placeholder="https://…" onChange={(sourceUrl) => set("sourceObservation", { ...(doc.sourceObservation as Record<string, unknown>), sourceUrl })} /></Field>
+              <Field label="Staff-only source review notes" hint="One note per line. Up to 64 notes, 2,000 characters each." className={styles.spanTwo}>
+                <TextArea value={arr("sourceReview").join("\n")} onChange={(value) => set("sourceReview", value.split("\n").filter((note) => note.trim()))} rows={5} maxLength={128_063} />
+              </Field>
+            </div>}
+          </section>
           <RowEditor label="Specifications" addLabel="Add specification" rows={rows("specifications")} columns={[{ key: "name", label: "Name" }, { key: "value", label: "Value" }]} onChange={(value) => set("specifications", value)} />
           <TokenInput label="Model numbers" values={arr("modelNumbers")} onChange={(value) => set("modelNumbers", value)} />
           <TokenInput label="Compatibility" values={arr("compatibility")} onChange={(value) => set("compatibility", value)} />

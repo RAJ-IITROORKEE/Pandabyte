@@ -23,12 +23,13 @@ function productImage(product: PublishedRecord<"products">) {
 
 export function ProductCard({ product, featured = false }: { product: PublishedRecord<"products">; featured?: boolean }) {
   const image = productImage(product);
+  const sourceObservation = product.document.sourceObservation;
   const available = product.variants.some((variant) => variant.availability === "available");
   const availabilityLabel = product.variants.length === 0 ? "Availability unavailable" : available ? "Available" : "Unavailable";
   const onSale = product.variants.some((variant) => variant.isOnSale);
 
   return (
-    <article className={`${styles.productCard} ${featured ? styles.featuredCard : ""}`}>
+    <article className={`${styles.productCard} ${featured ? styles.featuredCard : ""} ${sourceObservation ? styles.sourceObservationCard : ""}`}>
       <Link className={styles.productCardLink} href={`/products/${encodeURIComponent(product.slug)}`}>
         <div className={styles.productCardImage}>
           {image ? <Image
@@ -41,15 +42,23 @@ export function ProductCard({ product, featured = false }: { product: PublishedR
           /> : <span>No product image published</span>}
         </div>
         <div className={styles.productCardContent}>
-          <div className={styles.productCardTags}>
-            <span className={available ? styles.available : styles.unavailable}>{availabilityLabel}</span>
-            {onSale && <span className={styles.saleTag}>Sale</span>}
-          </div>
           {featured ? <h3>{product.title}</h3> : <h2>{product.title}</h2>}
           {featured && product.variants.length === 1 && <p className={styles.featuredSku}>SKU: {product.variants[0].sku}</p>}
           {!featured && product.summary && <p className={styles.productCardSummary}>{product.summary}</p>}
-          <p className={styles.productCardPrice}>{cardPrice(product)}</p>
-          {featured && <span className={styles.featuredAction}>View details</span>}
+          {sourceObservation ? <div className={styles.sourceObservation}>
+            <p className={styles.sourceObservationLabel}>Source observation · not a current offer</p>
+            <p className={styles.sourceObservationPrice}>{sourceObservation.priceText.trim() || "No source price recorded"}</p>
+            <p className={styles.sourceObservationCapture}>
+              Capture date: {sourceObservation.capturedAt.slice(0, 10)}. Timing is unverified and may reflect scrape job start.
+            </p>
+          </div> : <>
+            <div className={styles.productCardTags}>
+              <span className={available ? styles.available : styles.unavailable}>{availabilityLabel}</span>
+              {onSale && <span className={styles.saleTag}>Sale</span>}
+            </div>
+            <p className={styles.productCardPrice}>{cardPrice(product)}</p>
+          </>}
+          <span className={styles.productCardAction}><span>View product</span></span>
         </div>
       </Link>
     </article>

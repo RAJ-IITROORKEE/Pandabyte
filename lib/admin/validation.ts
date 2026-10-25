@@ -33,6 +33,7 @@ export type ContentBlock =
   | { type: "table"; headers: string[]; rows: string[][] };
 
 export type DocumentLink = { label: string; url: string };
+export type SourceObservation = { priceText: string; capturedAt: string; sourceUrl: string };
 export type AdminDocumentByModule = {
   products: CommonDocument & {
     categoryIds: string[];
@@ -43,6 +44,8 @@ export type AdminDocumentByModule = {
     kitContents: { productId?: string; title: string; quantity: number }[];
     resources: DocumentLink[];
     mediaIds: string[];
+    sourceObservation?: SourceObservation;
+    sourceReview?: string[];
   };
   categories: CommonDocument & { parentId: string | null; position: number; mediaIds: string[] };
   blog: CommonDocument & { author: string; tags: string[]; mediaIds: string[] };
@@ -70,7 +73,7 @@ const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDescription"] as const;
 
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
-  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds"],
+  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "sourceObservation", "sourceReview"],
   categories: ["parentId", "position", "mediaIds"],
   blog: ["author", "tags", "mediaIds"],
   pages: [],
@@ -328,6 +331,41 @@ function parseVariantRows(value: unknown, fields: FieldError[]) {
   return variants;
 }
 
+function parseSourceObservation(value: unknown, fields: FieldError[]): SourceObservation | undefined {
+  if (!isObject(value)) {
+    add(fields, "document.sourceObservation", "invalid", "Enter a source observation.");
+    return undefined;
+  }
+  hasOnlyKeys(value, ["priceText", "capturedAt", "sourceUrl"], "document.sourceObservation", fields);
+  const isoDateTime = (value: unknown): value is string => {
+    if (typeof value !== "string" || value.startsWith("0000") || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value))) return false;
+    const local = value.slice(0, 19);
+    return new Date(`${local}Z`).toISOString().slice(0, 19) === local;
+  };
+  const priceText = value.priceText;
+  const validPriceText = typeof priceText === "string" && Array.from(priceText).length <= 160 && !/[\u0000-\u001f\u007f]/.test(priceText);
+  if (!validPriceText) {
+    add(fields, "document.sourceObservation.priceText", "invalid", "Use at most 160 characters without control characters.");
+  }
+  const capturedAt = value.capturedAt;
+  const validCapturedAt = isoDateTime(capturedAt);
+  if (!validCapturedAt) {
+    add(fields, "document.sourceObservation.capturedAt", "invalid", "Enter a valid ISO date and time with a timezone.");
+  }
+  const sourceUrl = value.sourceUrl;
+  let safeSourceUrl = false;
+  if (typeof sourceUrl === "string" && sourceUrl.length <= 2048 && sourceUrl.startsWith("https://") && !/[\\\s\u0000-\u001f\u007f]/.test(sourceUrl)) {
+    try {
+      const parsed = new URL(sourceUrl);
+      safeSourceUrl = parsed.protocol === "https:" && !!parsed.hostname && !parsed.username && !parsed.password;
+    } catch { /* invalid URL */ }
+  }
+  if (!safeSourceUrl) add(fields, "document.sourceObservation.sourceUrl", "invalid", "Use an HTTPS source URL without credentials.");
+  return validPriceText && validCapturedAt && safeSourceUrl
+    ? { priceText: priceText as string, capturedAt: capturedAt as string, sourceUrl: sourceUrl as string }
+    : undefined;
+}
+
 function parseSpecifications(value: unknown, fields: FieldError[]) {
   return objectArray(value, "specifications", fields, 100, (item, path, errors) => {
     hasOnlyKeys(item, ["name", "value"], path, errors);
@@ -447,7 +485,12 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const kitContents = parseKitContents(value.kitContents, fields);
     const resources = parseResourceLinks(value.resources, fields);
     const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields);
+    const sourceObservation = value.sourceObservation === undefined ? undefined : parseSourceObservation(value.sourceObservation, fields);
+    const sourceReview = value.sourceReview === undefined ? undefined : textArray(value.sourceReview, "document.sourceReview", fields, 64, 2000);
+    if (sourceReview !== undefined && sourceObservation === undefined) add(fields, "document.sourceReview", "invalid", "Staff review notes require a source observation.");
     Object.assign(document, { categoryIds, modelNumbers, variants, specifications, compatibility, kitContents, resources, mediaIds });
+    if (sourceObservation !== undefined) Object.assign(document, { sourceObservation });
+    if (sourceReview !== undefined) Object.assign(document, { sourceReview });
   } else if (module === "categories") {
     const parentId = value.parentId === undefined ? null : uuidValue(value.parentId, "document.parentId", fields, true);
     const position = parsePosition(value, fields);

@@ -1,6 +1,6 @@
 import "server-only";
 import sharp from "sharp";
-import { MAX_MEDIA_BYTES } from "./validation";
+import { MAX_MEDIA_BYTES } from "./validation.ts";
 
 export async function prepareEditorialFile(file: File) {
   if (!/^[\p{L}\p{N}][\p{L}\p{N} ._()-]{0,119}$/u.test(file.name) || file.size < 1 || file.size > MAX_MEDIA_BYTES) return null;

@@ -2,7 +2,7 @@ import { ADMIN_MODULES, parseDocument, parseRecordId, type AdminDocument, type A
 
 export type PublicVariant = {
   id: string; sku: string; label: string; regularPricePaise: number | null; effectivePricePaise: number | null;
-  isOnSale: boolean; saleEndsAt: string | null; availability: "available" | "unavailable";
+  isOnSale: boolean; saleEndsAt: string | null; availability: "available" | "unavailable"; purchasable?: boolean;
 };
 export type PublishedRecord<M extends AdminModule = AdminModule> = {
   id: string; title: string; slug: string; summary: string; document: AdminDocument<M>;
@@ -30,10 +30,15 @@ export function parsePublicVariant(value: unknown): PublicVariant {
 export function parsePublishedRecord<M extends AdminModule>(module: M, value: unknown): PublishedRecord<M> {
   if (!object(value) || value.kind !== ADMIN_MODULES[module].kind || typeof value.id !== "string" || !parseRecordId(value.id) ||
     typeof value.revisionId !== "string" || !parseRecordId(value.revisionId) || !date(value.publishedAt)) throw new Error("Published content could not be rendered.");
+  if ("sourceReview" in value || (object(value.document) && "sourceReview" in value.document)) throw new Error("Published content could not be rendered.");
   const parsed = parseDocument(module, value.document);
   if (!parsed.ok) throw new Error("Published content could not be rendered.");
   if (module === "products" && (!Array.isArray(value.variants) || value.variants.length > 100)) throw new Error("Published pricing could not be rendered.");
-  const variants = module === "products" ? (value.variants as unknown[]).map(parsePublicVariant) : [];
+  const sourceObservation = module === "products" && "sourceObservation" in parsed.value;
+  const variants = module === "products" ? (value.variants as unknown[]).map((variant) => {
+    const parsedVariant = parsePublicVariant(variant);
+    return sourceObservation ? { ...parsedVariant, purchasable: false } : parsedVariant;
+  }) : [];
   return { id: value.id, title: parsed.value.title, slug: parsed.value.slug, summary: parsed.value.summary,
     document: parsed.value, variants, publishedAt: value.publishedAt, revisionId: value.revisionId };
 }

@@ -2,6 +2,8 @@
 
 > Current follow-up after readiness commit `eb2be19`: [media delivery and offline preflight](docs/phase-6-media-followup.md), current access checks and [100-visitor capacity planning](docs/phase-6-capacity-profile.md). Recovery objectives remain undecided. The source archive is being updated separately; use the new preflight's exact snapshot instead of treating earlier audit counts as current approval.
 
+> Current catalog checkpoint, 26 October 2026: the owner authorized development-only integration of 42 SKU-bearing source products with dated source-price observations and reviewed 2D galleries. Two missing-SKU products remain outside CMS. Source observations are explicitly non-purchasable; operational prices/stock remain unset. See the [integration contract](docs/catalog-source-integration.md). Owner factual/production publication review remains pending; preserve the archive and other-chat artifacts.
+
 > The owner explicitly deferred restore testing during this follow-up. No backup/export/restore or recovery-target provisioning is performed; recovery remains a release gate.
 
 # PandaByte.in — single project context

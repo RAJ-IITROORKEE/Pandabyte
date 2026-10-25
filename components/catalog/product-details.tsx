@@ -3,8 +3,6 @@ import type { ContentBlock } from "@/lib/admin/validation";
 import type { PublishedRecord } from "@/lib/editorial/published";
 import styles from "./catalog.module.css";
 
-type ProductDocument = PublishedRecord<"products">["document"] & { modelNumbers?: string[] };
-
 function ContentBlockView({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case "paragraph": return <p>{block.text}</p>;
@@ -22,13 +20,14 @@ function ContentBlockView({ block }: { block: ContentBlock }) {
 }
 
 export function ProductDetails({ product }: { product: PublishedRecord<"products"> }) {
-  const document = product.document as ProductDocument;
+  const document = product.document;
   const hasSpecs = document.specifications.length > 0;
   const hasModels = Array.isArray(document.modelNumbers) && document.modelNumbers.length > 0;
   const hasCompatibility = document.compatibility.length > 0;
   const hasKitContents = document.kitContents.length > 0;
   const hasResources = document.resources.length > 0;
-  const hasBlocks = document.blocks.length > 0;
+  const blocks = document.sourceObservation ? document.blocks.filter(block => block.type !== "image" || !document.mediaIds.includes(block.mediaId)) : document.blocks;
+  const hasBlocks = blocks.length > 0;
 
   if (!hasSpecs && !hasModels && !hasCompatibility && !hasKitContents && !hasResources && !hasBlocks) return null;
 
@@ -56,7 +55,7 @@ export function ProductDetails({ product }: { product: PublishedRecord<"products
     </section>}
     {hasBlocks && <section className={styles.productSection}>
       <h2>About this product</h2>
-      <article className={styles.contentBlock}>{document.blocks.map((block, index) => <ContentBlockView block={block} key={index} />)}</article>
+      <article className={styles.contentBlock}>{blocks.map((block, index) => <ContentBlockView block={block} key={index} />)}</article>
     </section>}
   </div>;
 }

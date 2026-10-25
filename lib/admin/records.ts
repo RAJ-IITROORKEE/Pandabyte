@@ -282,7 +282,8 @@ function parsePublishedRecord(value: unknown, module: AdminModule, includeBlocks
     document: document.value,
     revisionId,
     publishedAt: value.publishedAt,
-    ...(variants ? { variants } : {}),
+    ...(variants ? { variants: module === "products" && "sourceObservation" in document.value
+      ? variants.map(variant => ({ ...variant, purchasable: false })) : variants } : {}),
   };
 }
 

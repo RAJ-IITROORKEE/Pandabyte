@@ -4,6 +4,8 @@ Updated 24 October 2026. This defines behavior, editable content and structural 
 
 ## Scope and content rules
 
+The 26 October catalog integration retains the selected screen families and adds CSS-only Aceternity-inspired card actions, full-photo contain framing, responsive galleries and reduced-motion fallbacks. Development source-price observations are dated and explicitly non-purchasable, with no sale/availability claims or cart controls. Conflicting source clauses remain staff-only; see [the integration contract](docs/catalog-source-integration.md).
+
 The current site is a migration starting point, not a feature or catalog limit. Staff must be able to add new products, categories, prices, discounts, FAQs, blog posts, team members and company content through the admin without a developer changing ordinary content. Publishing updates public pages automatically through the application’s data and cache workflow. This does not mean autonomous AI publication.
 
 Use the exact existing logo. Existing facts/images remain traceable to the [audit](current_pandabyte_findings.in) and [content inventory](docs/content-inventory.md); new owner-authored/admin-approved material is allowed. Missing factual data stays unknown. Never fabricate people, affiliations, stock, reviews, certifications or launch dates. Neutral temporary team avatars are explicitly allowed in design previews and unpublished drafts; replace or omit them before public launch unless the owner approves their public use.
