@@ -140,6 +140,10 @@ Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/c
 
 Status, 25 October 2026: authorized and in progress. The [non-commerce audit checkpoint](docs/phase-6-readiness.md) is implemented and verified after `315c3c3`; [evidence](docs/verification/phase-6-readiness.json) records the scoped checks. Content approval/import, representative capacity, isolated database/file restore and production operating decisions remain exit gates. Checkout/payments and live email remain deferred; this does not dispatch Phase 7.
 
+After `eb2be19`, the owner resumed the remaining work: [original-byte media delivery and offline preflight](docs/phase-6-media-followup.md), renewed access checks and a [bounded capacity profile](docs/phase-6-capacity-profile.md). The owner confirmed 100 simultaneous visitors, mostly browsing; detailed workload/provider scope and measurements remain gates. RPO/RTO are undecided.
+
+Latest decision: **restore is explicitly deferred**. Keep the runbook and open release gate; no backup/export/restore or recovery-target provisioning is part of this checkpoint.
+
 - Reconcile source exports with actual variants, original media, rights and corrected technical claims. Fix the broken RGB Matrix route; do not import contradictions as verified specifications. Owner-approved new catalog content is valid beyond the audit snapshot.
 - Dry-run idempotent imports; record row/error counts and rollback approach. Resolve whether/how old customers/orders migrate. Never invent transferable Wix passwords or expose private exports in Git.
 - Review grants/RLS/private media, rich-content safety, input limits, staff bootstrap/revocation, webhook replay and logging. Check all public/private cache boundaries.
@@ -188,7 +192,7 @@ This supplies automatic rendering/publication from authorized admin changes. It 
 
 Proposed targets, not measured claims:
 - Aim for p75 LCP <=2.5s, INP <=200ms and CLS <=0.1 on representative public routes, separated by mobile/desktop. Use lab baselines before launch and real-user measurement when traffic exists. [Web Vitals thresholds](https://web.dev/articles/defining-core-web-vitals-thresholds).
-- Establish a representative 10,000-SKU synthetic staging fixture and a provisional 100-concurrent-browser workload; agree request mix/rate, duration, devices, network and region first. These are planning test sizes, not promises of supported production traffic.
+- Establish a representative 10,000-SKU synthetic staging fixture. On 25 October the owner selected a target of 100 simultaneous visitors, mostly browsing; the [capacity profile](docs/phase-6-capacity-profile.md) separates that target from request throughput and real-browser coverage. Confirm request mix/rate, duration, devices, network, region and provider limits before load generation. These are planning test sizes, not measured production capacity.
 - Proposed search API p95 <=500ms under the agreed workload with <1% unexpected server errors; measure cached and uncached paths separately and review query plans. Correctness and authorization errors are evaluated separately, not hidden by the error percentage.
 - Test checkout concurrency with controlled provider stubs plus separate real sandbox integration cases. Never send an uncontrolled load test to Clerk/payment/production services. Set final peak checkout throughput, budget and acceptable latency once business traffic and service limits are known.
 - Measure Aceternity/Motion client bundle and animation cost alongside editor/admin isolation, responsive image bytes, hydration cost and cold/warm response behavior. Verify static text, keyboard/touch and reduced-motion fallbacks for selected effects. Document limiting resources, scaling/cost triggers and recovery rather than saying “unlimited users.”

@@ -1,5 +1,7 @@
 # Phase 6 — content readiness audit
 
+> Historical snapshot at checkpoint `eb2be19`. The separate content chat has since completed its Stage 1 source/image review. The later [offline preflight](phase-6-media-followup.md) reads the actual current archive; its follow-up evidence records 87 image-manifest assets marked passed and 11 preserved unchanged, with owner approval and application mappings still missing. Earlier zero-processed-image and resource-access counts below describe the original audit only; do not treat them as current.
+
 **Checked:** 25 October 2026. **Status:** the local archive is useful source evidence, but it is not ready for a safe application import dry run. No drafts, media, or backend records were created or changed. This is a content/import-readiness finding, not a Phase 6 exit claim.
 
 ## What the source counts mean

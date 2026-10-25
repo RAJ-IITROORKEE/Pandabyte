@@ -644,6 +644,10 @@ export async function verifyMediaBoundary(context, state, auth, created) {
   ensure(staffGet.headers.get("content-type") === "image/webp" && staffGet.headers.get("cache-control")?.includes("no-store"), "media_download_headers_unsafe");
 
   const staffDb = auth.staff.database;
+  const storedObject = await staffDb.storage.from(mediaBucketName).download(publicKey);
+  ensure(!storedObject.error && storedObject.data, "stored_normalized_media_unavailable");
+  const storedBytes = Buffer.from(await storedObject.data.arrayBuffer());
+  ensure(Buffer.from(await staffGet.arrayBuffer()).equals(storedBytes), "staff_media_reencoded_on_read");
   const imageBytes = await webpFixture();
   const directOverwrite = await staffDb.storage.from(mediaBucketName).upload(publicKey, new File([imageBytes], "overwrite.webp", { type: "image/webp" }));
   ensure(Boolean(directOverwrite.error), "media_object_overwrite_allowed");
@@ -677,6 +681,7 @@ export async function verifyMediaBoundary(context, state, auth, created) {
   ensure(publicDownload.headers.get("content-type") === "image/webp" && publicDownload.headers.get("cache-control")?.includes("no-store"),
     "published_media_download_headers_invalid");
   const publicBytes = Buffer.from(await publicDownload.arrayBuffer());
+  ensure(publicBytes.equals(storedBytes), "public_media_reencoded_on_read");
   const publicImageMetadata = await sharp(publicBytes).metadata();
   ensure(publicBytes.byteLength > 0 && publicImageMetadata.format === "webp" && publicImageMetadata.width === 2 && publicImageMetadata.height === 2,
     "published_media_download_bytes_invalid");

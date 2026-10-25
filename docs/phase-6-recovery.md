@@ -2,6 +2,8 @@
 
 Audit date: 25 October 2026. This is a read-only recovery assessment and operator runbook for the existing Clerk + InsForge non-commerce application. It does not provision production, create a backup, export customer data, change billing, create a branch, restore data, send mail, or deploy. Checkout and payment recovery remain out of scope.
 
+Latest owner decision during the subsequent Phase 6 follow-up: **defer restore**. The runbook is preparatory; no restore or recovery-target provisioning is dispatched. RPO/RTO remain undecided. This deferral does not establish recovery readiness.
+
 ## Findings and current limits
 
 - The linked InsForge project is the development project recorded by the phase evidence. A read-only `backups list` against the linked Pandabyte project returned an empty inventory. No backup was created or restored during this audit. This confirms only that the CLI inventory showed no backups; it does not prove the absence of every provider-managed recovery point.

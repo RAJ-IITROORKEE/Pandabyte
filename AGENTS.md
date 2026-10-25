@@ -1,5 +1,9 @@
 **Latest authorization, 25 October 2026:** the owner resumed Phase 6 after `315c3c3`. Execute the bounded [non-commerce readiness contract](docs/phase-6-contract.md) with Luna xhigh workers, local/browser checks, fixes and a local commit. Earlier exclusions of Phase 6 below are historical. Preserve other-chat artifacts; no unapproved content import/publication, billing changes, live email, checkout/payments or Phase 7 deployment.
 
+**Remaining Phase 6 follow-up:** after `eb2be19`, the owner requested continuation. Implement and verify original-byte media delivery, the offline archive preflight and current access checks; see [follow-up contract](docs/phase-6-media-followup.md). The owner selected **100 simultaneous visitors, mostly browsing** for capacity planning. Recovery targets remain undecided; the request to explain RPO/RTO was not approval of proposed values. No destructive restore or production scope is added.
+
+**Latest recovery decision:** the owner explicitly replied **defer restore**. Do not create a backup/export/copy/restore or provision a recovery target in this checkpoint. Keep recovery as an open release gate and continue independent non-commerce work.
+
 # Instructions for agents working on Pandabyte.in
 
 ## Current authorization

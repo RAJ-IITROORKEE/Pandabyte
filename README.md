@@ -1,5 +1,9 @@
 > Current authorization, 25 October 2026: Phase 6 non-commerce readiness is resumed after `315c3c3`; see [its contract](docs/phase-6-contract.md). Historical Phase 6 exclusions below are superseded. Checkout/payments, real email and production deployment remain deferred.
 
+> Current follow-up after readiness commit `eb2be19`: [media delivery and offline preflight](docs/phase-6-media-followup.md), current access checks and [100-visitor capacity planning](docs/phase-6-capacity-profile.md). Recovery objectives remain undecided. The source archive is being updated separately; use the new preflight's exact snapshot instead of treating earlier audit counts as current approval.
+
+> The owner explicitly deferred restore testing during this follow-up. No backup/export/restore or recovery-target provisioning is performed; recovery remains a release gate.
+
 # PandaByte.in — single project context
 
 Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 4 is committed as `80c8685`; Phase 5 guest/private carts are implemented and verified, with checkout/payment operations explicitly deferred.** See [cart evidence and remaining gates](docs/verification/phase-5-cart.json). This file consolidates decisions, architecture, source findings and the complete original audit. Shared frontend contracts are recorded in [Phase 2 frontend](docs/phase-2-frontend.md); current publishing contracts are in [Phase 3](docs/phase-3-contract.md), [admin frontend](docs/phase-3-frontend.md) and [data operations](docs/phase-3-operations.md). Phase 4 [operations](docs/phase-4-operations.md) and [verification](docs/verification/phase-4.json) record the storefront, search and remaining release limits. Read it first; [design.md](design.md) specifies page/content behavior, [plan.md](plan.md) defines implementation phases, and [AGENTS.md](AGENTS.md) governs agent work.

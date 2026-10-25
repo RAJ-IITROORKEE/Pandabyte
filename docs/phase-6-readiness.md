@@ -2,6 +2,8 @@
 
 25 October 2026. The owner authorized the [non-commerce Phase 6 audit](phase-6-contract.md) after `315c3c3`. Three Luna xhigh workers reviewed content, frontend source and recovery independently; root integrated the fix and verified the application. This checkpoint is complete; the full Phase 6 exit is **not met**.
 
+Subsequent work after `eb2be19` is tracked in [the media/preflight follow-up](phase-6-media-followup.md). It replaces repeated image encoding with validated original-byte delivery and adds an executable offline preflight. The separate source archive now reports 87 processed assets passed; the zero-image finding below is historical. The owner selected [100 simultaneous browsing visitors](phase-6-capacity-profile.md); recovery objectives are still undecided. Preserve this checkpoint's original timing/evidence as a baseline.
+
 ## Findings and disposition
 
 | Area | Actual result | Remaining gate |

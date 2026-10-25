@@ -1,0 +1,436 @@
+{
+  "date": "2026-10-25",
+  "timezone": "Asia/Calcutta",
+  "baselineCommit": "eb2be19",
+  "scope": "Phase 6 original-byte media, archive preflight and access follow-up; not full phase exit",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "count": 3
+  },
+  "decisions": {
+    "capacityTarget": "100 simultaneous visitors, mostly browsing",
+    "restore": "explicitly deferred by owner",
+    "recoveryTargets": "undecided",
+    "commerce": "deferred",
+    "realEmail": "disabled; Free plan retained",
+    "deployment": "not authorized"
+  },
+  "checks": {
+    "lintTypecheckBuild": "passed; final application source",
+    "unitTests": 93,
+    "importPreflightFocusedTests": 11,
+    "mediaDeliveryFocusedTests": 4,
+    "npmAuditVulnerabilities": 0,
+    "securityHttpTests": 2,
+    "authHttpTests": 7,
+    "backendIdentityTests": 3,
+    "diagnosticsHttpTests": 1,
+    "customerIsolation": "passed; profiles, capabilities, private files and genuine token expiry",
+    "addressIsolation": "passed; contact phone, ownership, stale edits and concurrent cap",
+    "roleIsolation": "passed; capabilities, metadata escalation, protected owner, revocation, concurrency and audit",
+    "publishing": "passed; draft/publication/media/inquiry and exact original stored bytes for staff/public GET",
+    "storefront": "passed; search, publication, galleries, editorial, inquiry and sitemap",
+    "fixtureCleanup": "passed; retained Phase 4 fixtures removed with ownership checks",
+    "independentCleanup": "passed; protected owner Admin, seven capabilities and audit preserved; no disposable users/content/cart/files",
+    "clientSecrets": "passed across 32 client JavaScript files",
+    "cleanupInvocationNote": "Initial read-only probe lacked local env and stopped at preflight; corrected env-file invocation passed after cleanup"
+  },
+  "imageBenchmark": {
+    "scope": "Synthetic local CPU comparison only, default Sharp settings, not HTTP latency or capacity",
+    "fixture": {
+      "width": 1200,
+      "height": 900,
+      "bytes": 908090,
+      "seed": 1337
+    },
+    "iterations": 5,
+    "legacyDecodeAndReencodeMs": [
+      292,
+      281,
+      282,
+      290,
+      315
+    ],
+    "validatedOriginalWithStatsMs": [
+      102,
+      96,
+      98,
+      104,
+      115
+    ],
+    "legacyMedianMs": 290,
+    "currentMedianMs": 102,
+    "medianReductionPercent": 65,
+    "output": "original normalized bytes preserved exactly"
+  },
+  "archivePreflight": {
+    "scope": {
+      "mode": "archive-only-read-only-preflight",
+      "applicationMappingProvided": false,
+      "shapeProbe": "parseDocument(products) receives only archived identity.title and slug; shape validity does not establish import readiness.",
+      "sourceHashes": "productJsonSha256 is computed from file bytes; claimedSourceSha256 is copied from archive metadata and is not verified against transcript bytes.",
+      "imageCounts": "processedStatusCounts are copied from manifests; image bytes are not checked and no application media mappings are created.",
+      "resourceChecks": "Recorded reachability is not product/content relevance; contentVerified flags preserve true, false, or missing as unknown."
+    },
+    "status": "blocked",
+    "exitCode": 2,
+    "counts": {
+      "productJsonFiles": 44,
+      "filesystemEntriesScanned": 864,
+      "maximumDirectoryDepth": 4,
+      "productRecords": 44,
+      "ownerApproved": 0,
+      "ownerReviewPending": 44,
+      "ownerReviewUnknown": 0,
+      "missingSourceKeys": 0,
+      "duplicateSourceKeyGroups": 0,
+      "duplicateSourceKeyRecords": 0,
+      "duplicateSlugGroups": 0,
+      "duplicateSlugRecords": 0,
+      "missingSkus": 2,
+      "duplicateSkuGroups": 0,
+      "duplicateSkuRecords": 0,
+      "sourceCaptureNotObserved": 0,
+      "claimedSourceHashesMissingOrInvalid": 0,
+      "sourceEvidenceReferencesMissing": 0,
+      "categoryAssignmentsNotApproved": 44,
+      "productsWithSourceClaimConflicts": 5,
+      "productsWithResourceVerificationGaps": 10,
+      "resources": 14,
+      "resourcesNeedingRelevanceReview": 14,
+      "resourceContentVerifiedFlags": {
+        "true": 0,
+        "false": 14,
+        "unknown": 0
+      },
+      "imageManifestsUnreadable": 0,
+      "archiveImageAssets": 98,
+      "archiveImageProcessedStatusCounts": {
+        "passed": 87,
+        "preserve-original": 11
+      },
+      "applicationCategoryMappings": 0,
+      "applicationVariantMappings": 0,
+      "applicationMediaMappings": 0,
+      "applicationMappingBlockedProducts": 44,
+      "appShapeValid": 44,
+      "appShapeInvalid": 0,
+      "malformedRecords": 0,
+      "errors": 0
+    },
+    "reportSha256": "db859279c13e13018792011914c2e1faf8fc838a63f934a1f74d5256cddbf226",
+    "fingerprints": [
+      {
+        "archivePath": "accessories/18650-battery-holder-with-switch/product.json",
+        "productJsonSha256": "f1446b7f876629f2211b119e5541a4d0d6a59bd044e35c722c9a30ccf868a68d",
+        "manifestJsonSha256": "5c0e9dcf8bb38e4f1f0c2bf4f9e6a6295fbd46cb0f95f085abfe5674bdc74dce"
+      },
+      {
+        "archivePath": "accessories/2-4a-type-c-data-charging-usb-cable/product.json",
+        "productJsonSha256": "e167356eaa35e704e6b667ed81849ed7738a4f2152e3ca91d9e61891600f0296",
+        "manifestJsonSha256": "803b38d36406d0fdd834aebe1aac42f25fc7a7ddc68b3a4e2fe6d20d0d80d2b8"
+      },
+      {
+        "archivePath": "accessories/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm/product.json",
+        "productJsonSha256": "0cf319e28449f3b0b3fc8fef3b6ce46c01c9c2d6907f7389a579bc4d78293b70",
+        "manifestJsonSha256": "87561706580ea9fa34331f41926aae6cbdeb7ac7f40f9ec3f0abcb454ec7dd5b"
+      },
+      {
+        "archivePath": "accessories/grove-female-header-smd-90-degree-10-units/product.json",
+        "productJsonSha256": "1cd91cf734d3d2941c270b1433f96dbe462a067e701dcbcd0e7f4e2ed635a591",
+        "manifestJsonSha256": "505a8a3e0f77a7c02326b4d748bd43821a392c29c7afd122d92fb025f7a31194"
+      },
+      {
+        "archivePath": "accessories/grove-female-header-smd-regular-10-units/product.json",
+        "productJsonSha256": "082e29e1b3755b2a8f6852fbf1b17d5f75786a5b37c64480f26eb1769c5c7421",
+        "manifestJsonSha256": "58ae725bb6352ebbf46aada5a30e8253eb7696acdfd84c1b91387c67499122ba"
+      },
+      {
+        "archivePath": "accessories/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack/product.json",
+        "productJsonSha256": "50bd9739df3441d3d3373453e5a1cb575b945ca2740c563a6b01428ca59ba1e0",
+        "manifestJsonSha256": "71ce443eeef0d5703e9399fe7d4852cca6fe2bda274c2a566347429c69dcb5bc"
+      },
+      {
+        "archivePath": "development-boards/atoms3-lite-esp32s3-dev-kit/product.json",
+        "productJsonSha256": "753b73d265c1cc9b401158e69259abc957cebbb944dd0de2a07141d07a5fefa3",
+        "manifestJsonSha256": "75cc4bb29210282a1f0f6bb91b7cc33416d50903ac852ff791971ffc43ba433e"
+      },
+      {
+        "archivePath": "development-boards/esp32-x32-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "4c9cd5ee5b5767c7d6628506b785a98922cdc84b4ae2cea4d5fe84b8bd48d27d",
+        "manifestJsonSha256": "f24184e7d6c740d252d0e66beec569ca69c74982031ec7a51087a98bd78dfb3f"
+      },
+      {
+        "archivePath": "development-boards/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6/product.json",
+        "productJsonSha256": "cd81bacfcc1efb9fbdae4542992fde1a6a2915329d1c560abf987c6cfcebc606",
+        "manifestJsonSha256": "46ca72d1d1292485d9e5cb82cfe78cc467a37708bcd0e487154f19be4b20d596"
+      },
+      {
+        "archivePath": "development-boards/maker-uno-simplifying-arduino-for-education/product.json",
+        "productJsonSha256": "dd82adda47e7ba2ec487a31357fb92556880935be88e280798fece8537b49ea1",
+        "manifestJsonSha256": "f8008972ddfc886ae1f0a37ad53247746239c12d5de7207ec9f0a72a039d66bb"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-x8266-wifi-development-board/product.json",
+        "productJsonSha256": "4622fa330d74e76757f1a3580f9bb500f6b8dc785cfc58664668fbbd471b89a3",
+        "manifestJsonSha256": "da77a3478c474e5c1c5ef369c22d8c7982dc45bf7d95ac9de79160a0e7bfa704"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "22e3dd265cf100ec62d2949631774c0c51d7b32229061dd64a82e54c46e50388",
+        "manifestJsonSha256": "ef6762cb48cd88a555c962163ca991005c37005e5f9a0fd5f7a7f61eb048bbb0"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "75eaf7718233dffc638d331396bad0328344442ffeb2bb7831cafbbc80d788cc",
+        "manifestJsonSha256": "4d1c07b41e12d718b53e5c4bf8594bc9375d43472ae306729f267701f5c80d4b"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "f0eba56aec9a968bf258bbcf0115fc317445daa448c4409ae6e3ed595e063193",
+        "manifestJsonSha256": "f18e618ec812c275601fb900703e1484d5a9500fc3ce7185b7096147322b103e"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "a6d2e6d3c3bf8ad9cf87a3f7c32e407dd69b2e06e7c6a673128f7e5a86913d3d",
+        "manifestJsonSha256": "a3aa0fecc540b1ad9aa9ac96a5a2a120edc8d0c0269ebe07f77530a629362512"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "8adb9f01c410eaf8a3a3366c8ee85b4ef6267c884586d4ac6cb44485cc124be4",
+        "manifestJsonSha256": "cf1c3de32a2e6ac2b6bf37634ec72e90ef958a19b5c2495d25a36fedc86ac5b0"
+      },
+      {
+        "archivePath": "development-boards/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible/product.json",
+        "productJsonSha256": "a54682f10bf79077d51c3146d3a826cd2961e72053be32732c44057e3dd95ac1",
+        "manifestJsonSha256": "8f85a4b6cf95b7fd8f9ab4af64326620c3553464f5f25295806caf0531339518"
+      },
+      {
+        "archivePath": "iot-kits/pandabyte-esp32c3-arduino-iot-kit/product.json",
+        "productJsonSha256": "1ec7080cac6a1fb0308c32e7a4668ba5e53433f446128060a6ce9083a0c9b903",
+        "manifestJsonSha256": "059160166a9094be08749cc5052174b4c897b9caeb0b47aeeb65a367bcd5a578"
+      },
+      {
+        "archivePath": "iot-kits/pandabyte-lorawan-kit-868-mhz/product.json",
+        "productJsonSha256": "7f687ef875cc4c2c2746d87bca47145d3ba6e291b4a82631a9d5e4aadc53685c",
+        "manifestJsonSha256": "048134393fabdde997ffdbb7f708982a7369fa8e95ef679c49a585a10de19444"
+      },
+      {
+        "archivePath": "sensors/accelerometer-adxl345-grove-compatible/product.json",
+        "productJsonSha256": "7e06902b37970544ac94a8aab7d329c1688b543cdcd5edbefd002eda1f4a9c6b",
+        "manifestJsonSha256": "70f222d1f446cdb322f8deac6031e4972724b70ce01217bef609f5f6a79aa159"
+      },
+      {
+        "archivePath": "sensors/active-buzzer-sensor-module/product.json",
+        "productJsonSha256": "855a1035025f4b5e47601f086aef2afea2007ed811076e5af9ba492959ab561b",
+        "manifestJsonSha256": "d6f3f7a0bcea829f68fe35e8636e86677d6d502fb06eb3584294f8c4aa0bcd09"
+      },
+      {
+        "archivePath": "sensors/barometric-pressure-sensor-bmp580-grove-compatible/product.json",
+        "productJsonSha256": "0e6e32cba384aaf6f6fd3845da43060dc3aa1727f0e7e2588cf01c4878590709",
+        "manifestJsonSha256": "f24e78e90d4687305333a0823f3dd83daa6ec5cf030b6b980043f45d1eeaf44b"
+      },
+      {
+        "archivePath": "sensors/led-switch-module/product.json",
+        "productJsonSha256": "332c1e06da0917061b008c8df16f317cd11767a5a966117ce62a9aafcb35e198",
+        "manifestJsonSha256": "9e4a9f6dbd8b0e34f74cb22d4d0ee8ee32c2ac0e1427a1203f56cbaa84a81bec"
+      },
+      {
+        "archivePath": "sensors/light-sensor-temt6000-grove-compatible/product.json",
+        "productJsonSha256": "c9b84c368248649a7cedd929081a34f0b65885e27ebe2004cd91d104b88fdd3c",
+        "manifestJsonSha256": "f3fe8219baf24803fe6ba0f4d10515e1747c5c97486ada86d6749705fda4cc43"
+      },
+      {
+        "archivePath": "sensors/m5stack-mini-scale-weighing-unit-hx711/product.json",
+        "productJsonSha256": "47ce610d8417ef32c7c0c97f1162d97de128582c44f356bfa09731e65e492d46",
+        "manifestJsonSha256": "263c0a3b7186da49c534ac4db0c7913ef37afa91db112b24cf1d82e044acc9a9"
+      },
+      {
+        "archivePath": "sensors/neo-6m-gps-grove-compatible/product.json",
+        "productJsonSha256": "5ea89261a368ab7d1bd4aa0d1022670c41d18e2c272aac70f42c5dfa0f3e6f23",
+        "manifestJsonSha256": "1abd0287e6c8f3839bf079a9c8e6adb1823e3f8fc543235fedb368d851eb2082"
+      },
+      {
+        "archivePath": "sensors/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor/product.json",
+        "productJsonSha256": "ef7252df4b0050470e152d48cb4f770cc6c66d6b1e5192de4f8241de4a81ea72",
+        "manifestJsonSha256": "f53216f7fb1c37005aa6a19419f142d5f37c2915c2a4d0eab3c4d0df3d6c9115"
+      },
+      {
+        "archivePath": "sensors/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor/product.json",
+        "productJsonSha256": "d371424d7f2e7ef7152941620cbe65605443481718554ba2c5108c67494d09e5",
+        "manifestJsonSha256": "56c163ea653b1396d86aec5647c5a30c4555e97203661131e5d869e7e12a2a4c"
+      },
+      {
+        "archivePath": "sensors/pandabyte-gp-02-gps-bds-gnss/product.json",
+        "productJsonSha256": "efb36c357e96b7fe04ec6a001c9d2eb0549a3dcc2e3653760d392589820634de",
+        "manifestJsonSha256": "53ca1fbfd21c8e11104f4b5661148620569b4252d7acde5cc5945bf594b0013e"
+      },
+      {
+        "archivePath": "sensors/pandabyte-max485-ttl-to-rs485-5v-12v/product.json",
+        "productJsonSha256": "b2358a67ff87847f0f61cd99561c96fccb5f473de928919e9a60aa42a7f4b020",
+        "manifestJsonSha256": "3995cdc02218ae4342e11d0550ca38f5dbff6790bcd1e8179d477a9682421a14"
+      },
+      {
+        "archivePath": "sensors/pandabyte-oled-screen-display-0-96-inch-grove/product.json",
+        "productJsonSha256": "5be954f6e92b3581d8a217a79d3e32522d282ffe4c835152934e347f3b979f75",
+        "manifestJsonSha256": "3131ae0bc96e26ed54057fd4a8649dc5d91899aaff0759a049bdc02512a0d64a"
+      },
+      {
+        "archivePath": "sensors/pandabyte-potentiometerv-10k-ohm/product.json",
+        "productJsonSha256": "654290075c6c5992e7efe208e8ad3171943468cea516dfb743aa7ca9877ebe74",
+        "manifestJsonSha256": "0fabd5e262d36e311c1874aa09b1e121c1fc345d76772098a8342a62f4032f7d"
+      },
+      {
+        "archivePath": "sensors/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch/product.json",
+        "productJsonSha256": "08bf6cc3d89df43c4c71d24941594fd951391cc5a2546b83f104be41e6b507ae",
+        "manifestJsonSha256": "4a7d23f6a7a3bf7ff61b24776133758cf71dd4457dfb0bb8df5204e29039b6b6"
+      },
+      {
+        "archivePath": "sensors/pandabyte-rgb-rgb-lcd-backlight-grove-module/product.json",
+        "productJsonSha256": "f1fe0a3d16bd07ea8eb34b7eb94a06fd30892e814ed7fa3190c55e9d92719e0e",
+        "manifestJsonSha256": "b747566c7819231cc3aec30ab32816794921cd07ef65ad61bf114d2da7352aeb"
+      },
+      {
+        "archivePath": "sensors/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor/product.json",
+        "productJsonSha256": "3d337312d921955491598814930a672f67a96f6926d017ebe54f00ce0770d041",
+        "manifestJsonSha256": "bd44a24e3625cca4a6949016d82007d3e041b8924917ff0b3d882359b854ed21"
+      },
+      {
+        "archivePath": "sensors/push-button-switch/product.json",
+        "productJsonSha256": "ec0464b44e9e2463c62c45baab77e23b7aeeff2862cc1b6abd73f5ad57f5fa02",
+        "manifestJsonSha256": "bf009f21ba62b2da4d8d7b470b3ffe258e2f9c6eece49ba716e4598f94f8faad"
+      },
+      {
+        "archivePath": "sensors/rgb-led-circular-ws2812b-wemos-d1-mini/product.json",
+        "productJsonSha256": "7ffca2918b9d5587aea937038dec29c9ea3b0385fcd5f984f3f0e6fb2252643c",
+        "manifestJsonSha256": "19c5dbdd7c627ed3918af5522f362e1be57c6940c4de7321a0c43e0662a2f42d"
+      },
+      {
+        "archivePath": "sensors/rgb-led-grove-compatible/product.json",
+        "productJsonSha256": "83f0b7c1c61eccbae0e0cd6d02f217ab97faab9debc58c6fa0fd47d2bd4b67ff",
+        "manifestJsonSha256": "e4ecdf1f6576de350bc506942a1bc1bb67031ce5456da828e0ad02269fb9bc6c"
+      },
+      {
+        "archivePath": "sensors/rgb-led-matrix-ws2812b-xiao-footprint/product.json",
+        "productJsonSha256": "aad25191cbcf78eec72952dbb0a4d76e0b63986c730f4d9f58950cb8ac994edb",
+        "manifestJsonSha256": "1fe5a136e07cba5310b903ef67830e4c2c9ffca5397e0c8cf15e81d80417e573"
+      },
+      {
+        "archivePath": "sensors/single-color-led-light-emitting-diode/product.json",
+        "productJsonSha256": "4277de805ad095f8961bcd153d8ba694e8321b4d042f40df8b1fded456352acf",
+        "manifestJsonSha256": "020110bf5c7a49b49bc5ce60fa5fb8fb0489c0988ebeb5d1bb446d44ed6cafd3"
+      },
+      {
+        "archivePath": "sensors/temperature-humidity-dht11-sensor/product.json",
+        "productJsonSha256": "0ab167711df08a684d9fff54b52d5e27c202232bcf1a101a384fd5a09e653bc2",
+        "manifestJsonSha256": "239d2e44b28d365d36e4d3ad269239570b29d335d1595e1abc9ba59257feae76"
+      },
+      {
+        "archivePath": "shields/nodemcu-grove-expansion-board-shield-hat/product.json",
+        "productJsonSha256": "4739a704ca094ec3a557b7d7cc141ad021148e65f7902ae9d9e0dabf88c397c3",
+        "manifestJsonSha256": "c29ac0c328efacbdb08b3515da03636734d661598520e0b781dcb4d3dd8a1bc6"
+      },
+      {
+        "archivePath": "shields/x32-xlora-grove-expansion-board-shield-hat/product.json",
+        "productJsonSha256": "748fd44a559ad375b90416b16d752a944fc6a755b05dc797346c4a5ad0808b6a",
+        "manifestJsonSha256": "3ffea6a31318d5e3b8f786bc04e0ee12afca6142a8eb367126ddabffc6058f35"
+      },
+      {
+        "archivePath": "shields/xc3m-grove-expansion-board-shield-hat/product.json",
+        "productJsonSha256": "5adcaa35d041f66ae3522f26bc90d3f23b4d8790d877eca7ed4423354e4d7e2d",
+        "manifestJsonSha256": "e90237d54175892a8ecd3bca8076f478a368277b019af002faf91bdeb0b0beb3"
+      }
+    ],
+    "limits": "Archive statuses/hashes are source claims unless computed for the JSON files; no image-byte or transcript-source-hash verification, complete document mapping or DB validation"
+  },
+  "browser": {
+    "publishedGallery": [
+      {
+        "requestedWidth": 320,
+        "brokenImages": 0,
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 305
+      },
+      {
+        "requestedWidth": 320,
+        "brokenImages": 0,
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 305
+      },
+      {
+        "requestedWidth": 768,
+        "brokenImages": 0,
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 753
+      },
+      {
+        "requestedWidth": 768,
+        "brokenImages": 0,
+        "scrollWidth": 753,
+        "theme": "light",
+        "width": 753
+      },
+      {
+        "requestedWidth": 1024,
+        "brokenImages": 0,
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1009
+      },
+      {
+        "requestedWidth": 1024,
+        "brokenImages": 0,
+        "scrollWidth": 1009,
+        "theme": "light",
+        "width": 1009
+      },
+      {
+        "requestedWidth": 1440,
+        "brokenImages": 0,
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1425
+      },
+      {
+        "requestedWidth": 1440,
+        "brokenImages": 0,
+        "scrollWidth": 1425,
+        "theme": "light",
+        "width": 1425
+      }
+    ],
+    "keyboard": "published gallery switched with Enter; images decoded at 8x6 synthetic fixture dimensions",
+    "sampledContrast": {
+      "scope": "Sampled opaque homepage text/background pairs only; gradients, translucent and hidden text skipped; not a full audit",
+      "results": [
+        {
+          "theme": "dark",
+          "checked": 32,
+          "failures": []
+        },
+        {
+          "theme": "light",
+          "checked": 32,
+          "failures": []
+        }
+      ]
+    },
+    "consoleErrorsObserved": 0,
+    "ownerSession": "confirmed signed-in private account and protected Admin role page; no raw IDs in role table",
+    "viewport": "reset"
+  },
+  "limits": [
+    "No real product import/publication or source archive edits",
+    "Tiny synthetic gallery fixtures are functional tests, not representative product-photo performance",
+    "Local image benchmark is processing elapsed time only; no network/Web Vitals/capacity guarantee",
+    "Native full pixel decoding and uncached storage/RPC reads remain; original-sized delivery unchanged",
+    "No 100-visitor load exercise, real screen reader or reduced-motion emulation",
+    "No backup/export/disaster restore/provisioning/deployment, real email or checkout/payments",
+    "Owner-approved content, application mappings, representative workload/provider constraints and operational release settings remain gates"
+  ],
+  "commitTitle": "fix: preserve normalized media and add import preflight"
+}

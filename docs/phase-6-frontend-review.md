@@ -10,7 +10,7 @@
 
 Public image components also opt out of Next's image optimizer: `components/catalog/product-card.tsx:34-40`, `components/catalog/product-gallery.tsx:16-35`, and `components/published-document.tsx:12,23`. `sizes` does not produce smaller responsive downloads while these images are unoptimized. The media validator permits images up to 4 MiB and 20 megapixels (`lib/editorial/validation.ts:2`; `lib/editorial/media.ts:14,17`), so image-heavy pages can repeat substantial storage, database, and CPU work.
 
-This is a source-level performance risk; no latency or bandwidth impact was measured here. Keep unpublished/staff media private and uncached. A future fix should separate a safely cacheable published-media path and avoid re-encoding already normalized files per request, then verify publication withdrawal/invalidation and private-media isolation.
+This was a source-level performance risk, not a measured browser-latency finding. The later [media follow-up](phase-6-media-followup.md) removes per-read encoding while keeping validation, publication withdrawal checks and private no-store responses. A shared cache/optimizer remains a separate withdrawal/security decision; no such cache was added. Gateway/storage reads, native decoding and original-size downloads still have costs that need representative measurement.
 
 ### P3 — Circuit live region announces a “selection cleared” message on initial render
 

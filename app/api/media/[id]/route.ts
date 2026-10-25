@@ -5,7 +5,7 @@ import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { getStaffAccess } from "@/lib/authorization";
 import { editorialError, editorialHeaders } from "@/lib/editorial/http";
 import { EDITORIAL_MEDIA_BUCKET, MAX_MEDIA_BYTES, UUID_PATTERN } from "@/lib/editorial/validation";
-import { prepareEditorialFile } from "@/lib/editorial/media";
+import { prepareEditorialDownload } from "@/lib/editorial/media-delivery";
 
 type DownloadMedia = { id: string; objectKey: string; filename: string; mimeType: string; byteSize: number; width: number | null; height: number | null };
 
@@ -36,8 +36,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     }) : client;
     const download = await storageClient.storage.from(EDITORIAL_MEDIA_BUCKET).download(media.objectKey);
     if (download.error || !download.data || download.data.size !== media.byteSize) return editorialError("media_unavailable", 503);
-    const prepared = await prepareEditorialFile(new File([download.data], media.filename, { type: media.mimeType }));
-    if (!prepared) return editorialError("media_unavailable", 503);
+    const prepared = await prepareEditorialDownload(Buffer.from(await download.data.arrayBuffer()), media);
+    if (!prepared || !media.objectKey.endsWith(`.${prepared.extension}`)) return editorialError("media_unavailable", 503);
     if (published) {
       const current = await client.database.schema("public").rpc("public_get_media", { p_id: id });
       if (current.error || current.data?.media?.objectKey !== media.objectKey) return editorialError("not_found", 404);
