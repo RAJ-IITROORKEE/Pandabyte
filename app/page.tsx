@@ -12,6 +12,7 @@ import { getPublishedRecord, listPublishedRecords } from "@/lib/editorial/publis
 import styles from "@/components/home.module.css";
 import { publicMetadata } from "@/lib/editorial/seo";
 import { permanentRedirect } from "next/navigation";
+import { getSiteCopy } from "@/lib/site-copy";
 
 const defaultTitle = "Incredible Products for all your IoT Experiments";
 const defaultSummary = "Development Boards · Sensors · Shields · Accessories · IoT Kits";
@@ -40,6 +41,7 @@ export default async function HomePage() {
   const title = home?.document.title || defaultTitle;
   const summary = home ? home.document.summary : defaultSummary;
   const contact = contactResult && "document" in contactResult ? contactResult.document : null;
+  const siteCopy = getSiteCopy(contact);
   const categories = [...categoryResult.items]
     .sort((left, right) => left.document.position - right.document.position || left.title.localeCompare(right.title) || left.id.localeCompare(right.id))
     .slice(0, 5);
@@ -119,8 +121,8 @@ export default async function HomePage() {
         <section className={styles.supportPanel} aria-labelledby="support-title">
           <div>
             <p className={styles.supportKicker}>Support</p>
-            <h2 id="support-title">Engineering Support</h2>
-            <p>Contact PandaByte for IoT development, setup, and troubleshooting support.</p>
+            <h2 id="support-title">{siteCopy.supportTitle}</h2>
+            <p>{siteCopy.supportText}</p>
             <Link className={styles.primaryAction} href="/contact"><Mail aria-hidden="true" />Contact Support</Link>
           </div>
           {contact && <address className={styles.supportContact}>

@@ -2,6 +2,8 @@
 
 Reviewed 26 October 2026 against application commit `4a71e23`, with two bounded Luna xhigh reviewers and root verification of the development site. This is a review and handoff, not permission to publish, import more products or implement the code backlog. Checkbox items below remain open until explicitly completed and approved.
 
+Subsequent owner authorization after `c84ea71` implemented the three code fixes; see [site controls and verification](site-content-controls.md). The factual/company-content checklist below remains open. No company/catalog content was published or product notes backfilled.
+
 ## Current published state
 
 Anonymous localhost API reads report **42 products, five categories, and zero published records** in each of: company pages, FAQs, team, navigation, contact, solutions, blog, learning resources and videos. The built-in browser confirms the corresponding empty states. Zero published records does **not** prove that no private drafts, source-site material or owner-authored content exists; this pass did not read private drafts.
@@ -42,13 +44,13 @@ The following are recorded source conflicts/questions, not assertions of the cor
 
 ## What can be fixed in code
 
-This is a proposed backlog; no runtime, schema or content changes were made by this checklist.
+These were the three gaps at review time. The later authorized code checkpoint implements them as described below; the checklist itself did not approve content or change data.
 
 | Item | Evidence / actual limitation | Smallest complete follow-up and verification |
 | --- | --- | --- |
-| C1 — Core menu editability | [Published shell](../components/published-site-shell.tsx) supplies additions; [header](../components/site-header.tsx) puts them in About and [footer](../components/site-footer.tsx) appends to Company & policies. Core links in [site navigation](../lib/site-navigation.ts) cannot be renamed/reordered/hidden through Admin, contrary to the supported editability brief. | Define the bounded CMS override/group contract, preserve safe fallbacks and existing route/auth rules; test draft/publish/withdraw plus keyboard/mobile menus. Do not replace the navigation system wholesale. |
-| C2 — Support/brand copy editability | [Home](../app/page.tsx) hardcodes Engineering Support and offer text; [contact schema](../lib/admin/validation.ts) has no dedicated support-text field. Footer tagline is also hardcoded. [Design contract](../design.md) calls for editable approved support/brand copy. | Reuse reviewed page/contact data where suitable; add only genuinely needed bounded fields with root-owned forward migration, validation, Admin controls and published projection. Test the same approved copy across Home/Contact. Keep the accurate development notice. |
-| C3 — Useful private source review notes | [sourceReviewNotes](../scripts/catalog-import-state.mjs) includes code/field/meaning/rationale, but omits recorded `detail` and held-item explanations, reducing the usefulness of Admin review notes. | Carry bounded, allowlisted explanations into private notes; test limits and public exclusion. Existing Admin edits/version guards must be preserved. Do not rerun an apply/import or overwrite staff notes automatically. |
+| C1 — Core menu editability | Previously additive-only. Matching exact destinations now override core labels/position/visibility within existing header/footer groups; safe hidden-core markers survive projection. | Defaults and auth/menu structure remain. Draft persistence, resolution/projection and keyboard/mobile checks pass; live publication/withdraw testing remains deferred. |
+| C2 — Support/brand copy editability | Four optional bounded Contact fields now supply Home support and footer text; Contact renders only supplied support copy. | Development function migration, Admin drafts, defaults, partial preview and validation checked. Existing company copy/production approvals remain open. |
+| C3 — Useful private source review notes | Formatter now carries bounded allowlisted `detail` and held-item explanations, with recognizable private references omitted. | Bounds, malformed input and public exclusion checked. No existing notes were overwritten/backfilled, and no importer apply/rerun occurred. |
 
 Routine approved copy, teams, FAQs, articles, resource links, category descriptions and product summaries use existing editors. They do not justify another CMS, AI-generated company facts, arbitrary HTML or a new page builder. Additional collection types/layout blocks would be separate development work only if requested.
 

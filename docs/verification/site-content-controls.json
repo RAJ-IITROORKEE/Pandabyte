@@ -1,0 +1,244 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Calcutta",
+  "priorCommit": "c84ea71",
+  "scope": "editable navigation, support/brand copy, private source-review formatting; development only",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "boundedTasks": [
+      "navigation resolver/header/footer",
+      "site copy helper/Home",
+      "private note formatter"
+    ],
+    "independentReview": "Found and fixed Contact fallback claim; verified partial draft preview"
+  },
+  "migration": {
+    "file": "20261025233325_editable-site-copy.sql",
+    "target": "existing linked development backend",
+    "applied": true,
+    "contentRowsModifiedByMigration": 0,
+    "roleOrRlsChanges": false,
+    "helperExecuteRestricted": true,
+    "defaultHiddenCoreMarkersOnly": true,
+    "hiddenCustomLabelsAndUrlsOmitted": true
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed after final Contact preview fix",
+    "unitTests": {
+      "passed": 125,
+      "failed": 0,
+      "skipped": 0
+    },
+    "securityHttp": {
+      "passed": 2
+    },
+    "authHttp": {
+      "passed": 7
+    },
+    "shellHttp": {
+      "passed": 3
+    },
+    "readOnlyDatabaseAssertions": "passed: old/new copy documents, bounds, invalid types/control chars, duplicate destinations, hidden-core/custom projection, private notes and helper ACLs",
+    "copyDraft": "real owner Admin create/save/reload and title-only preview passed",
+    "navigationDraft": "rename/position/hidden flags persisted; duplicate validation alert focused",
+    "anonymousDraftIsolation": [
+      {
+        "route": "/api/published/contact/contact",
+        "status": 404
+      },
+      {
+        "route": "/api/published/navigation/primary",
+        "status": 404
+      },
+      {
+        "route": "/",
+        "status": 200,
+        "draftTextAbsent": true,
+        "defaultCopyPresent": true
+      }
+    ],
+    "publicCustomPublicationTest": "not run; publication explicitly deferred"
+  },
+  "browser": {
+    "surface": "built-in app browser",
+    "contactCases": [
+      {
+        "page": "contact-draft",
+        "theme": "light",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 320
+      },
+      {
+        "page": "contact-draft",
+        "theme": "light",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 768
+      },
+      {
+        "page": "contact-draft",
+        "theme": "light",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 1024
+      },
+      {
+        "page": "contact-draft",
+        "theme": "light",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 1440
+      },
+      {
+        "page": "contact-draft",
+        "theme": "dark",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 320
+      },
+      {
+        "page": "contact-draft",
+        "theme": "dark",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 768
+      },
+      {
+        "page": "contact-draft",
+        "theme": "dark",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 1024
+      },
+      {
+        "page": "contact-draft",
+        "theme": "dark",
+        "fields": 4,
+        "overflow": false,
+        "rawIds": false,
+        "width": 1440
+      }
+    ],
+    "navigationCases": [
+      {
+        "theme": "light",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 320
+      },
+      {
+        "theme": "light",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 768
+      },
+      {
+        "theme": "light",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 1024
+      },
+      {
+        "theme": "light",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 1440
+      },
+      {
+        "theme": "dark",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 320
+      },
+      {
+        "theme": "dark",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 768
+      },
+      {
+        "theme": "dark",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 1024
+      },
+      {
+        "theme": "dark",
+        "defaultCopy": true,
+        "draftAbsent": true,
+        "expanded": "true",
+        "overflow": false,
+        "width": 1440
+      }
+    ],
+    "partialSupportPreview": {
+      "headingPresent": true,
+      "unconfiguredDefaultBodyAbsent": true
+    },
+    "keyboard": "ArrowDown opens Solutions and focuses first item; Escape closes and returns focus",
+    "iotKitDestination": "/shop?category=iot-kits",
+    "observedConsoleErrors": 0,
+    "ownerSessionPreserved": true,
+    "defaultViewportRestored": true,
+    "catalogTabRetained": true,
+    "screenshot": ".bootstrap/site-editability/settings-proof.png"
+  },
+  "cleanup": {
+    "disposableDraftsCreated": 2,
+    "publishedRevisionsCreated": 0,
+    "archivedThroughVersionGuardedAdminApi": 2,
+    "remainingFixtureRecords": 0,
+    "auditEventsPreserved": 5,
+    "finalCounts": {
+      "products": 42,
+      "categories": 5,
+      "publishedSettings": 0
+    },
+    "limitations": [
+      "Native browser Archive confirmation stalled; API archive used",
+      "Initial compound cleanup statement was rejected without mutation; exact guarded single-statement cleanup succeeded"
+    ]
+  },
+  "preserved": {
+    "existingProductNotes": true,
+    "sourceAndOtherChatArtifacts": true,
+    "ownerRolesAndRealContent": true,
+    "importerApplyOrBackfill": false,
+    "dependenciesAndLockfile": true
+  },
+  "notPerformed": [
+    "Content publication or live publish/withdraw cycle",
+    "Existing product note rewrite/importer apply",
+    "Full publishing/storefront mutation suites",
+    "Checkout/payments",
+    "Load tests/deployment",
+    "Live email/billing",
+    "Backup/export/restore",
+    "Production configuration/capacity/screen-reader certification"
+  ]
+}

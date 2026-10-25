@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { footerGroups, type SiteLink } from "@/lib/site-navigation";
+import { resolveSiteNavigation, type NavigationLink } from "@/lib/site-navigation";
 import "./site-footer.css";
 
-export function SiteFooter({ additionalLinks = [] }: { additionalLinks?: SiteLink[] }) {
-  const groups = footerGroups.map((group) => group.title === "Company & policies" ? {...group, links: [...group.links, ...additionalLinks.filter((link)=>!group.links.some((current)=>current.href===link.href))]} : group);
+export function SiteFooter({ navigationLinks = [], tagline = "Ideas into embedded innovation.", copyrightName = "PandaByte" }: {
+  navigationLinks?: NavigationLink[];
+  tagline?: string;
+  copyrightName?: string;
+}) {
+  const { footerGroups } = resolveSiteNavigation(navigationLinks);
   return (
     <footer className="pb-site-footer">
       <div className="pb-site-footer__inner">
@@ -21,10 +25,10 @@ export function SiteFooter({ additionalLinks = [] }: { additionalLinks?: SiteLin
               </span>
               <span>PandaByte.in</span>
             </Link>
-            <p className="pb-site-footer__tagline">Ideas into embedded innovation.</p>
+            <p className="pb-site-footer__tagline">{tagline}</p>
           </div>
 
-          {groups.map((group) => (
+          {footerGroups.map((group) => (
             <nav className="pb-site-footer__group" aria-label={group.title} key={group.title}>
               <h2>{group.title}</h2>
               <ul>
@@ -39,7 +43,7 @@ export function SiteFooter({ additionalLinks = [] }: { additionalLinks?: SiteLin
         </div>
 
         <div className="pb-site-footer__bottom">
-          <p>© {new Date().getFullYear()} PandaByte. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
           <p>Development preview · checkout is not available yet</p>
         </div>
       </div>

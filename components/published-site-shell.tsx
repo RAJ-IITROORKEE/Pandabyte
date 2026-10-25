@@ -1,25 +1,24 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getPublishedRecord } from "@/lib/editorial/published";
-import type { SiteLink } from "@/lib/site-navigation";
+import type { NavigationLink } from "@/lib/site-navigation";
+import { getSiteCopy } from "@/lib/site-copy";
 
-async function links(group: "header" | "footer"): Promise<SiteLink[]> {
+async function links(): Promise<NavigationLink[]> {
   const record = await getPublishedRecord("navigation", "primary");
   if (!record || "redirectTo" in record) return [];
-  return record.document.links.filter((link)=>link.visible && link.group===group)
-    .sort((a,b)=>a.position-b.position || a.label.localeCompare(b.label))
-    .map(({label,href})=>({label,href}));
+  return record.document.links;
 }
 export async function PublishedHeader() {
-  let additionalLinks: SiteLink[] = [];
+  let navigationLinks: NavigationLink[] = [];
   let unavailable = false;
-  try { additionalLinks = await links("header"); }
+  try { navigationLinks = await links(); }
   catch { unavailable = true; }
-  return <><SiteHeader additionalLinks={additionalLinks} />{unavailable && <p role="status" className="navigation-status">Additional navigation is temporarily unavailable.</p>}</>;
+  return <><SiteHeader navigationLinks={navigationLinks} />{unavailable && <p role="status" className="navigation-status">Navigation settings are temporarily unavailable.</p>}</>;
 }
 export async function PublishedFooter() {
-  let additionalLinks: SiteLink[] = [];
-  try { additionalLinks = await links("footer"); }
-  catch { /* Core footer links remain usable during a public-content outage. */ }
-  return <SiteFooter additionalLinks={additionalLinks} />;
+  const [navigation, contact] = await Promise.allSettled([links(), getPublishedRecord("contact", "contact")]);
+  const record = contact.status === "fulfilled" ? contact.value : null;
+  const copy = getSiteCopy(record && "document" in record ? record.document : null);
+  return <SiteFooter navigationLinks={navigation.status === "fulfilled" ? navigation.value : []} tagline={copy.footerTagline} copyrightName={copy.copyrightName} />;
 }

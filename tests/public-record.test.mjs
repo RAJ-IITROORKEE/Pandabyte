@@ -25,3 +25,12 @@ test("models and resource collections remain editable and backward compatible", 
   assert.equal(parseDocument("learn",{...resource,collection:"kit-guides"}).ok,true);
   for(const collection of ["private",null,3]) assert.equal(parseDocument("learn",{...resource,collection}).ok,false);
 });
+
+test("published copy and sanitized hidden core overrides survive typed projections", () => {
+  const base = {id,revisionId:id,publishedAt:"2026-10-26T00:00:00Z"};
+  const contact = parsePublishedRecord("contact", {...base,kind:"contact",document:{...doc,slug:"contact",supportTitle:"Support",supportText:"Reviewed text",footerTagline:"Brand text",copyrightName:"Company"}});
+  assert.equal(contact.document.supportText,"Reviewed text");
+  const nav = parsePublishedRecord("navigation", {...base,kind:"navigation",document:{...doc,slug:"primary",links:[{label:"Hidden navigation link",href:"/contact",group:"header",position:0,visible:false}]}});
+  assert.equal(nav.document.links[0].visible,false);
+  assert.throws(()=>parsePublishedRecord("contact", {...base,kind:"contact",document:{...contact.document,sourceReview:["Private review"]}}));
+});

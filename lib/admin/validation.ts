@@ -53,7 +53,7 @@ export type AdminDocumentByModule = {
   faqs: CommonDocument & { answer: string; topic: string; placements: string[]; position: number };
   team: CommonDocument & { name: string; role: string; bio: string; mediaIds: string[]; links: DocumentLink[]; position: number };
   navigation: CommonDocument & { links: { label: string; href: string; group: "header" | "footer"; position: number; visible: boolean }[] };
-  contact: CommonDocument & { email: string; phone: string; address: string; hours: string; timezone: string; socialLinks: DocumentLink[] };
+  contact: CommonDocument & { email: string; phone: string; address: string; hours: string; timezone: string; socialLinks: DocumentLink[]; supportTitle?: string; supportText?: string; footerTagline?: string; copyrightName?: string };
   solutions: CommonDocument;
   learn: CommonDocument & { url: string; productIds: string[]; position: number; collection: "product-specs" | "embedded-systems" | "kit-guides" };
   videos: CommonDocument & { url: string; productIds: string[]; position: number };
@@ -80,7 +80,7 @@ const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
   faqs: ["answer", "topic", "placements", "position"],
   team: ["name", "role", "bio", "mediaIds", "links", "position"],
   navigation: ["links"],
-  contact: ["email", "phone", "address", "hours", "timezone", "socialLinks"],
+  contact: ["email", "phone", "address", "hours", "timezone", "socialLinks", "supportTitle", "supportText", "footerTagline", "copyrightName"],
   solutions: [],
   learn: ["url", "productIds", "position", "collection"],
   videos: ["url", "productIds", "position"],
@@ -398,7 +398,7 @@ function parseResourceLinks(value: unknown, fields: FieldError[]) {
 }
 
 function parseNavigationLinks(value: unknown, fields: FieldError[]) {
-  return objectArray(value, "links", fields, 100, (item, path, errors) => {
+  const links = objectArray(value, "links", fields, 100, (item, path, errors) => {
     hasOnlyKeys(item, ["label", "href", "group", "position", "visible"], path, errors);
     const label = textValue(item, "label", `${path}.label`, errors, 120, { required: true, nonEmpty: true });
     const href = textValue(item, "href", `${path}.href`, errors, 2048, { required: true, nonEmpty: true });
@@ -411,6 +411,9 @@ function parseNavigationLinks(value: unknown, fields: FieldError[]) {
       ? { label, href, group, position, visible: item.visible }
       : undefined;
   });
+  const targets = (links ?? []).map((link) => `${link.group}:${link.href}`);
+  if (new Set(targets).size !== targets.length) add(fields, "document.links", "invalid", "Use one link per destination in each location.");
+  return links;
 }
 
 function parsePosition(object: ObjectValue, fields: FieldError[]) {
@@ -527,6 +530,9 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const socialLinks = parseLinks(value.socialLinks, "document.socialLinks", fields);
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) add(fields, "document.email", "invalid", "Enter a valid email address.");
     Object.assign(document, { email, phone, address, hours, timezone, socialLinks });
+    for (const [key, max] of [["supportTitle", 120], ["supportText", 1000], ["footerTagline", 160], ["copyrightName", 120]] as const) {
+      if (value[key] !== undefined) document[key] = textValue(value, key, `document.${key}`, fields, max) ?? "";
+    }
   } else if (module === "learn" || module === "videos") {
     const url = textValue(value, "url", "document.url", fields, 2048, { required: true, nonEmpty: true });
     const productIds = uuidArray(value.productIds, "document.productIds", fields);

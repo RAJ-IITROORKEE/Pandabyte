@@ -132,6 +132,78 @@ test("variant projection drops app IDs while preserving real SKU, label, and ord
   assert.deepEqual(document, before);
 });
 
+test("staff review notes include bounded issue detail and readable source-shaped held claims", () => {
+  const entry = {
+    reviewIssues: [
+      {
+        code: "source_voltage_claims",
+        field: "specifications",
+        detail: "Specification says Operating Voltage 3.2V-3.4V, while PRODUCT INFO says both 3.3V and 5V input.",
+        items: [{
+          name: "Operating Voltage",
+          value: "Operating Voltage 3.2V-3.4V",
+          sourceText: "unneeded raw source text",
+          evidence: ["section-1"],
+          verification: "conflicting",
+        }],
+      },
+      {
+        code: "source_claim_clauses_held",
+        field: "compatibility",
+        items: [{ text: "The xC3m Microcontroller Shield is a versatile expansion board.", sourceText: "raw copy", evidence: ["section-2"], verification: "conflicting" }],
+      },
+      {
+        code: "source_claim_collection_held_for_owner_review",
+        field: "kitContents",
+        items: [{ title: "Free LED-SWITCH Module", quantity: 1, quantityUnit: "Module", sourceText: "raw copy", evidence: ["section-1"], verification: "conflicting" }],
+      },
+    ],
+  };
+
+  const notes = sourceReviewNotes(entry);
+
+  assert.match(notes[1], /Specification says Operating Voltage 3\.2V-3\.4V/);
+  assert.match(notes[1], /Held source claims: Operating Voltage: Operating Voltage 3\.2V-3\.4V/);
+  assert.match(notes[2], /Held source claims: The xC3m Microcontroller Shield is a versatile expansion board\./);
+  assert.match(notes[3], /Held source claims: Free LED-SWITCH Module · 1 Module/);
+  assert.ok(notes.every((note) => !note.includes("raw source text") && !note.includes("raw copy")));
+});
+
+test("source review notes ignore malformed optional values and redact private-looking text", () => {
+  const privateValues = [
+    "private-db-record-id",
+    "https://source.invalid/private",
+    "C:\\private\\archive\\product.json",
+    "/private/archive/product.json",
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "d8e5f26f-8c9f-43be-a1c6-5b71026a905b",
+  ];
+  const notes = sourceReviewNotes({
+    sourceId: privateValues[0],
+    sourcePath: privateValues[2],
+    rawSha256: privateValues[4],
+    reviewIssues: [
+      null,
+      { code: { id: privateValues[0] }, field: ["compatibility"], detail: { path: privateValues[2] }, items: { text: privateValues[0] } },
+      {
+        code: "source_claim_clauses_held",
+        field: "compatibility",
+        detail: `Claim refs ${privateValues[5]} ${privateValues[4]} ${privateValues[1]} ${privateValues[2]} ${privateValues[3]}`,
+        items: ["malformed", { text: { id: privateValues[0] }, id: privateValues[0], path: privateValues[2], sha256: privateValues[4] }],
+      },
+    ],
+  });
+
+  assert.equal(sourceReviewNotes(null).length, 1);
+  assert.equal(sourceReviewNotes({ reviewIssues: "malformed" }).length, 1);
+  assert.equal(notes.length, 2);
+  assert.ok(notes.every((note) => privateValues.every((value) => !note.includes(value))));
+  assert.match(notes[1], /\[id omitted\]/);
+  assert.match(notes[1], /\[hash omitted\]/);
+  assert.match(notes[1], /\[link omitted\]/);
+  assert.match(notes[1], /\[path omitted\]/);
+});
+
 test("staff review notes are bounded, ignore opaque top-level source IDs, and stay out of public records", () => {
   const privateValues = ["legacy:opaque-source-id", "private-db-record-id", "https://source.invalid/private", "raw-sha-secret"];
   const entry = {

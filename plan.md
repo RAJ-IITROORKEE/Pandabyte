@@ -140,6 +140,8 @@ Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/c
 
 ## Phase 6 — migration, capacity and launch readiness
 
+26 October code follow-up after `c84ea71`: the [three content-control fixes](docs/site-content-controls.md) are implemented and development-tested with Luna xhigh workers. Matching navigation overrides, optional bounded support/brand fields and clearer private note formatting retain publication/privacy gates. No content publication or imported-note backfill occurred; owner content decisions remain the next gate. Checkout/payments, load tests, recovery operations and deployment stay deferred.
+
 26 October content-gap continuation after `4a71e23`: [owner handoff and code backlog](docs/content-gap-checklist.md), checked with two Luna xhigh reviewers, live anonymous published totals and 15 completed built-in-browser routes. This is documentation only: owner approvals, CMS content entry/publication and code fixes remain distinct next actions. Checkout/payments, load tests, recovery operations and deployment remain deferred.
 
 26 October populated-site continuation after `b531ee8`: [performance/accessibility review](docs/phase-6-populated-review.md) with Luna xhigh workers, fixed sequential localhost probes, built-in-browser checks and a local commit. Bounded previews keep original bytes and withdrawal/private access checks. No load test, checkout/payment, recovery operation or deployment is added; the full release gates below remain open.

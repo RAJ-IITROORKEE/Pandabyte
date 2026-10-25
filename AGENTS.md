@@ -10,6 +10,8 @@
 
 ## Current authorization
 
+**Latest content-control authorization, 26 October 2026:** after `c84ea71`, implement and test the three code fixes with Luna xhigh workers and a local commit: matching core navigation overrides, bounded support/brand copy and clearer private source-review formatting. See [site controls](docs/site-content-controls.md). Test only unpublished disposable drafts; content publication, importer reruns/backfill, checkout/payments, load tests, deployment, live email/billing and recovery operations remain deferred. Preserve other-chat/source artifacts and owner access.
+
 **Latest populated-site review authorization, 26 October 2026:** continue Phase 6 performance/accessibility review after `b531ee8`, with bounded Luna xhigh workers, sequential localhost measurements, built-in-browser checks, concrete fixes and a local commit. Preserve current content/owner session, original media delivery, private/no-store responses and publication withdrawal checks. Checkout, payments, load tests, deployment, recovery operations, live email and billing remain deferred. See [review contract and evidence](docs/phase-6-populated-review.md).
 
 **Latest operations checkpoint:** after notification preparation `019a6e5`, continue safe application error diagnostics with Luna xhigh workers, development/browser checks and a local commit. Keep bounded allowlisted server events and response-only correlation references; no raw customer/provider/error/request data or visible database/session IDs. See [operations contract](docs/operational-diagnostics.md). No external monitoring service, retention deletion, billing change, real email, scheduler, Phase 6, deployment or checkout/payment work is added.

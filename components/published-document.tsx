@@ -25,6 +25,7 @@ export function PublishedDocument({ document, hideTitle = false }: { document: A
       {"answer" in document && document.blocks.length === 0 && <p>{document.answer}</p>}
       {"name" in document && <section><h2>{document.name}</h2><p>{document.role}</p><p>{document.bio}</p></section>}
       {"email" in document && <address><p>{document.email}</p><p>{document.phone}</p><p>{document.address}</p><p>{document.hours} {document.timezone}</p></address>}
+      {"email" in document && (document.supportTitle || document.supportText) && <section>{document.supportTitle && <h2>{document.supportTitle}</h2>}{document.supportText && <p>{document.supportText}</p>}</section>}
       {"socialLinks" in document && document.socialLinks.length > 0 && <nav aria-label="PandaByte social links"><ul>{document.socialLinks.map((link,index)=><li key={index}><a href={link.url} rel="noopener noreferrer">{link.label}</a></li>)}</ul></nav>}
       {"specifications" in document && document.specifications.length > 0 && <dl>{document.specifications.map((spec, index) => <div key={index}><dt>{spec.name}</dt><dd>{spec.value}</dd></div>)}</dl>}
       {"compatibility" in document && document.compatibility.length > 0 && <section><h2>Compatibility</h2><ul>{document.compatibility.map((item, index) => <li key={index}>{item}</li>)}</ul></section>}

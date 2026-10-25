@@ -28,10 +28,8 @@ import {
 import { AuthControls } from "@/components/auth-controls";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
-  aboutLinks,
-  hardwareLinks,
-  learnLinks,
-  upcomingLinks,
+  resolveSiteNavigation,
+  type NavigationLink,
   type SiteLink,
 } from "@/lib/site-navigation";
 import "@/components/site-header.css";
@@ -39,12 +37,12 @@ import "@/components/site-header.css";
 type MainMenu = "solutions" | "learn" | "about";
 type Disclosure = "hardware" | "upcoming" | null;
 
-export function SiteHeader({ additionalLinks = [] }: { additionalLinks?: SiteLink[] }) {
+export function SiteHeader({ navigationLinks = [] }: { navigationLinks?: NavigationLink[] }) {
   const pathname = usePathname();
-  return <SiteHeaderContent key={pathname} additionalLinks={additionalLinks} />;
+  return <SiteHeaderContent key={pathname} navigationLinks={navigationLinks} />;
 }
 
-function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] }) {
+function SiteHeaderContent({ navigationLinks }: { navigationLinks: NavigationLink[] }) {
   const headerRef = useRef<HTMLElement>(null);
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const triggerRefs = useRef<Record<MainMenu, HTMLButtonElement | null>>({
@@ -56,6 +54,14 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
   const [openMenu, setOpenMenu] = useState<MainMenu | null>(null);
   const [openDisclosure, setOpenDisclosure] = useState<Disclosure>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigation = resolveSiteNavigation(navigationLinks);
+
+  function menuHasContent(menu: MainMenu) {
+    if (menu === "solutions") {
+      return navigation.header.hardwareHighlight.length + navigation.header.hardware.length + navigation.header.upcoming.length + navigation.header.tools.length + navigation.header.solutionsFooter.length > 0;
+    }
+    return menu === "learn" ? navigation.header.learn.length > 0 : navigation.header.about.length > 0;
+  }
 
   useEffect(() => {
     const breakpoint = window.matchMedia("(min-width: 980px)");
@@ -120,7 +126,7 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
   }
 
   function onMenuPointerEnter(menu: MainMenu) {
-    if (!window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 980px)").matches) return;
+    if (!menuHasContent(menu) || !window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 980px)").matches) return;
     hoverOpenedRef.current = menu;
     setOpenDisclosure(null);
     setOpenMenu(menu);
@@ -193,7 +199,7 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
     });
   }
 
-  function renderMenuItems(links: typeof learnLinks) {
+  function renderMenuItems(links: SiteLink[]) {
     return links.map(({ label, href }) => (
       <Link className="pb-menu-link" href={href} key={href} onClick={closeNavigation}>
         {label}
@@ -234,19 +240,21 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
 
         <nav className="pb-main-nav" id="pb-main-navigation" aria-label="Main navigation">
           <ul className="pb-nav-list">
-            <li
+            {navigation.header.primary.map((link) => {
+              if (link.href === "/solutions") return (
+            <li key={link.href}
               className="pb-nav-item"
               onPointerEnter={() => onMenuPointerEnter("solutions")}
               onPointerLeave={(event) => onMenuPointerLeave("solutions", event)}
               onBlurCapture={(event) => onMenuBlur("solutions", event)}
             >
               <div className="pb-nav-label">
-                <Link href="/solutions" onClick={closeNavigation}>Solutions</Link>
-                <button
+                <Link href={link.href} onClick={closeNavigation}>{link.label}</Link>
+                {menuHasContent("solutions") && <button
                   ref={(node) => { triggerRefs.current.solutions = node; }}
                   className="pb-disclose"
                   type="button"
-                  aria-label="Open Solutions menu"
+                  aria-label={`Open ${link.label} menu`}
                   aria-expanded={openMenu === "solutions"}
                   aria-controls="pb-solutions-menu"
                   onClick={() => onMenuTriggerClick("solutions")}
@@ -258,9 +266,9 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
                   }}
                 >
                   <ChevronDown aria-hidden="true" />
-                </button>
+                  </button>}
               </div>
-              <div
+              {menuHasContent("solutions") && <div
                 className="pb-menu pb-solutions-menu"
                 id="pb-solutions-menu"
                 data-menu-panel="solutions"
@@ -269,12 +277,12 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
                 <div className="pb-solution-grid">
                   <div className="pb-solution-column">
                     <p className="pb-menu-intro"><Layers aria-hidden="true" /> Hardware</p>
-                    <Link className="pb-icon-row" href="/shop?category=kit" onClick={closeNavigation}>
+                    {navigation.header.hardwareHighlight.map((highlight) => <Link className="pb-icon-row" href={highlight.href} key={highlight.href} onClick={closeNavigation}>
                       <Cpu aria-hidden="true" />
-                      <span><strong>IoT Kits</strong><small>Explore PandaByte kits</small></span>
+                      <span><strong>{highlight.label}</strong><small>Explore PandaByte kits</small></span>
                       <ArrowUpRight aria-hidden="true" />
-                    </Link>
-                    <details
+                    </Link>)}
+                    {navigation.header.hardware.length > 0 && <details
                       className="pb-nested"
                       open={openDisclosure === "hardware"}
                       onKeyDown={(event) => onDisclosureKeyDown(event, "hardware")}
@@ -289,13 +297,13 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
                         <ChevronDown aria-hidden="true" />
                       </summary>
                       <div className="pb-submenu" id="pb-hardware-links">
-                        {renderMenuItems(hardwareLinks)}
+                        {renderMenuItems(navigation.header.hardware)}
                       </div>
-                    </details>
+                    </details>}
                   </div>
                   <div className="pb-solution-column pb-solution-secondary">
                     <p className="pb-menu-intro"><Layers aria-hidden="true" /> Products &amp; tools</p>
-                    <details
+                    {navigation.header.upcoming.length > 0 && <details
                       className="pb-nested"
                       open={openDisclosure === "upcoming"}
                       onKeyDown={(event) => onDisclosureKeyDown(event, "upcoming")}
@@ -310,45 +318,46 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
                         <ChevronDown aria-hidden="true" />
                       </summary>
                       <div className="pb-submenu" id="pb-upcoming-links">
-                        {renderMenuItems(upcomingLinks)}
+                        {renderMenuItems(navigation.header.upcoming)}
                       </div>
-                    </details>
-                    <Link className="pb-icon-row" href="/solutions/skills-cli" onClick={closeNavigation}>
+                    </details>}
+                    {navigation.header.tools.map((tool) => tool.href === "/solutions/skills-cli" ? <Link className="pb-icon-row" href={tool.href} key={tool.href} onClick={closeNavigation}>
                       <Terminal aria-hidden="true" />
-                      <span><strong>Skills &amp; CLI tools</strong><small>For IoT &amp; embedded development</small></span>
+                      <span><strong>{tool.label}</strong><small>For IoT &amp; embedded development</small></span>
                       <ArrowUpRight aria-hidden="true" />
-                    </Link>
-                    <Link
+                    </Link> : <Link
                       className="pb-icon-row"
-                      href="/products/pando"
-                      aria-label="Future Agent, coming soon"
+                      href={tool.href}
+                      key={tool.href}
+                      aria-label={`${tool.label}, coming soon`}
                       onClick={closeNavigation}
                     >
                       <Bot aria-hidden="true" />
-                      <span><strong>Future Agent <span className="pb-coming-soon">Coming soon</span></strong><small>Future PandaByte Agent concept</small></span>
+                      <span><strong>{tool.label} <span className="pb-coming-soon">Coming soon</span></strong><small>Future PandaByte Agent concept</small></span>
                       <ArrowUpRight aria-hidden="true" />
-                    </Link>
+                    </Link>)}
                   </div>
                 </div>
                 <div className="pb-menu-footer">
-                  <Link href="/solutions" onClick={closeNavigation}>Explore all solutions <ArrowUpRight aria-hidden="true" /></Link>
+                  {navigation.header.solutionsFooter.map((footerLink) => <Link href={footerLink.href} key={footerLink.href} onClick={closeNavigation}>{footerLink.label} <ArrowUpRight aria-hidden="true" /></Link>)}
                 </div>
-              </div>
+              </div>}
             </li>
-
-            <li
+              );
+              if (link.href === "/learn") return (
+            <li key={link.href}
               className="pb-nav-item"
               onPointerEnter={() => onMenuPointerEnter("learn")}
               onPointerLeave={(event) => onMenuPointerLeave("learn", event)}
               onBlurCapture={(event) => onMenuBlur("learn", event)}
             >
               <div className="pb-nav-label">
-                <Link href="/learn" onClick={closeNavigation}>Learn</Link>
-                <button
+                <Link href={link.href} onClick={closeNavigation}>{link.label}</Link>
+                {menuHasContent("learn") && <button
                   ref={(node) => { triggerRefs.current.learn = node; }}
                   className="pb-disclose"
                   type="button"
-                  aria-label="Open Learn menu"
+                  aria-label={`Open ${link.label} menu`}
                   aria-expanded={openMenu === "learn"}
                   aria-controls="pb-learn-menu"
                   onClick={() => onMenuTriggerClick("learn")}
@@ -360,27 +369,28 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
                   }}
                 >
                   <ChevronDown aria-hidden="true" />
-                </button>
+                </button>}
               </div>
-              <div className="pb-menu" id="pb-learn-menu" data-menu-panel="learn" hidden={openMenu !== "learn"}>
+              {menuHasContent("learn") && <div className="pb-menu" id="pb-learn-menu" data-menu-panel="learn" hidden={openMenu !== "learn"}>
                 <p className="pb-menu-intro"><BookOpenText aria-hidden="true" /> Learn &amp; explore</p>
-                {renderMenuItems(learnLinks)}
-              </div>
+                {renderMenuItems(navigation.header.learn)}
+              </div>}
             </li>
-
-            <li
+              );
+              if (link.href === "/about") return (
+            <li key={link.href}
               className="pb-nav-item"
               onPointerEnter={() => onMenuPointerEnter("about")}
               onPointerLeave={(event) => onMenuPointerLeave("about", event)}
               onBlurCapture={(event) => onMenuBlur("about", event)}
             >
               <div className="pb-nav-label">
-                <Link href="/about" onClick={closeNavigation}>About</Link>
-                <button
+                <Link href={link.href} onClick={closeNavigation}>{link.label}</Link>
+                {menuHasContent("about") && <button
                   ref={(node) => { triggerRefs.current.about = node; }}
                   className="pb-disclose"
                   type="button"
-                  aria-label="Open About menu"
+                  aria-label={`Open ${link.label} menu`}
                   aria-expanded={openMenu === "about"}
                   aria-controls="pb-about-menu"
                   onClick={() => onMenuTriggerClick("about")}
@@ -392,15 +402,16 @@ function SiteHeaderContent({ additionalLinks }: { additionalLinks: SiteLink[] })
                   }}
                 >
                   <ChevronDown aria-hidden="true" />
-                </button>
+                </button>}
               </div>
-              <div className="pb-menu" id="pb-about-menu" data-menu-panel="about" hidden={openMenu !== "about"}>
+              {menuHasContent("about") && <div className="pb-menu" id="pb-about-menu" data-menu-panel="about" hidden={openMenu !== "about"}>
                 <p className="pb-menu-intro">PandaByte</p>
-                {renderMenuItems([...aboutLinks, ...additionalLinks.filter((link)=>!aboutLinks.some((current)=>current.href===link.href))])}
-              </div>
+                {renderMenuItems(navigation.header.about)}
+              </div>}
             </li>
-
-            <li className="pb-contact"><Link href="/contact" onClick={closeNavigation}>Contact</Link></li>
+              );
+              return <li className="pb-contact" key={link.href}><Link href={link.href} onClick={closeNavigation}>{link.label}</Link></li>;
+            })}
           </ul>
         </nav>
 

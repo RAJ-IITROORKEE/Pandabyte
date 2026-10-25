@@ -94,6 +94,24 @@ test("lists and record mutations reject unbounded or unknown input", () => {
   assert.equal(parseActionInput("publish", { expectedVersion: 0 }).ok, false);
 });
 
+test("contact copy is optional bounded text and navigation overrides have unique destinations", () => {
+  const contact = { ...common, slug: "contact" };
+  assert.equal(parseDocument("contact", contact).ok, true);
+  const copy = { supportTitle: "Support", supportText: "  Reviewed support copy  ", footerTagline: "Built with care", copyrightName: "Company" };
+  const parsed = parseDocument("contact", { ...contact, ...copy });
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.value.supportText, "Reviewed support copy");
+  for (const [key, max] of [["supportTitle",120],["supportText",1000],["footerTagline",160],["copyrightName",120]]) {
+    for (const invalid of [null, {}, "x".repeat(max+1), "bad\u0001copy"]) assert.equal(parseDocument("contact", { ...contact, [key]: invalid }).ok, false);
+    assert.equal(parseDocument("contact", { ...contact, [key]: "" }).ok, true);
+  }
+  assert.equal(parseDocument("pages", { ...common, supportTitle: "Not a site setting" }).ok, false);
+  const link = { label: "Company", href: "/about", group: "header", position: 0, visible: true };
+  for (const links of [null, {}, "invalid"]) assert.equal(parseDocument("navigation", { ...common, slug:"primary", links }).ok, false);
+  assert.equal(parseDocument("navigation", { ...common, slug:"primary", links:[link,{...link,visible:false}] }).ok, false);
+  assert.equal(parseDocument("navigation", { ...common, slug:"primary", links:[link,{...link,group:"footer"}] }).ok, true);
+});
+
 test("price updates enforce integer paise and coherent UTC sale windows", () => {
   const valid = parseVariantPriceUpdate({
     expectedVersion: 0,
