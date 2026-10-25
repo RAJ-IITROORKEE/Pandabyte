@@ -1,4 +1,6 @@
-> Latest checkpoint: notification preparation is committed as `019a6e5`, after contact/Admin cleanup `602add9`. Continue bounded [application error diagnostics](docs/operational-diagnostics.md) with Luna xhigh workers, verification and a local commit. The owner keeps the Free InsForge plan; no real email, billing change, external monitoring or retention deletion. Checkout/payments remain deferred. Phase 6 and production deployment are not dispatched.
+> Current authorization, 25 October 2026: proceed with the [Phase 6 non-commerce readiness audit](docs/phase-6-contract.md) after diagnostics commit `315c3c3`. Earlier dispatch exclusions are historical; full Phase 6 exit and Phase 7 remain gated. Keep commerce and live email deferred.
+
+> Prior checkpoint: notification preparation is committed as `019a6e5`, after contact/Admin cleanup `602add9`. Continue bounded [application error diagnostics](docs/operational-diagnostics.md) with Luna xhigh workers, verification and a local commit. The owner keeps the Free InsForge plan; no real email, billing change, external monitoring or retention deletion. Checkout/payments remain deferred. Phase 6 and production deployment are not dispatched.
 
 # PandaByte.in — phased delivery plan
 
@@ -135,6 +137,8 @@ Backend:
 Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/cancelled/retried payments, forged/duplicate/out-of-order events, expired reservations/late success, partial/provider-failed refunds where supported, and customer/staff denial. Complete test-mode purchase → verified payment → fulfillment → support/refund with actual staging data. Provider sandbox calls and load tests respect quotas; no real purchases during validation without explicit instruction.
 
 ## Phase 6 — migration, capacity and launch readiness
+
+Status, 25 October 2026: authorized and in progress. The [non-commerce audit checkpoint](docs/phase-6-readiness.md) is implemented and verified after `315c3c3`; [evidence](docs/verification/phase-6-readiness.json) records the scoped checks. Content approval/import, representative capacity, isolated database/file restore and production operating decisions remain exit gates. Checkout/payments and live email remain deferred; this does not dispatch Phase 7.
 
 - Reconcile source exports with actual variants, original media, rights and corrected technical claims. Fix the broken RGB Matrix route; do not import contradictions as verified specifications. Owner-approved new catalog content is valid beyond the audit snapshot.
 - Dry-run idempotent imports; record row/error counts and rollback approach. Resolve whether/how old customers/orders migrate. Never invent transferable Wix passwords or expose private exports in Git.

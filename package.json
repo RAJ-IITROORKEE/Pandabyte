@@ -22,7 +22,8 @@
     "test:security": "node --test tests/security-headers.test.mjs",
     "test:contact": "node --env-file=.env.local tests/contact-abuse-isolation.mjs",
     "test:notifications": "node --env-file=.env.local tests/inquiry-notifications.mjs",
-    "test:diagnostics": "node --test tests/operational-http.test.mjs"
+    "test:diagnostics": "node --test tests/operational-http.test.mjs",
+    "test:readiness": "node tests/phase6-readiness.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "7.9.20",

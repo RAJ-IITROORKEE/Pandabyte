@@ -149,6 +149,7 @@ export function HomeCircuit() {
   const [focused, setFocused] = useState<Selection>(null);
   const [gesture, setGesture] = useState<Gesture>(null);
   const [announcement, setAnnouncement] = useState("");
+  const hasActiveSelectionRef = useRef(false);
   const active = hovered ?? focused ?? selected;
   const screen = sampleFor(active);
 
@@ -173,6 +174,8 @@ export function HomeCircuit() {
   }, []);
 
   useEffect(() => {
+    if (active) hasActiveSelectionRef.current = true;
+    if (!hasActiveSelectionRef.current) return;
     const timer = window.setTimeout(() => setAnnouncement(announcementFor(active)), 180);
     return () => window.clearTimeout(timer);
   }, [active]);

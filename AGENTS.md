@@ -1,3 +1,5 @@
+**Latest authorization, 25 October 2026:** the owner resumed Phase 6 after `315c3c3`. Execute the bounded [non-commerce readiness contract](docs/phase-6-contract.md) with Luna xhigh workers, local/browser checks, fixes and a local commit. Earlier exclusions of Phase 6 below are historical. Preserve other-chat artifacts; no unapproved content import/publication, billing changes, live email, checkout/payments or Phase 7 deployment.
+
 # Instructions for agents working on Pandabyte.in
 
 ## Current authorization

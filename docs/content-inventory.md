@@ -27,7 +27,7 @@ Counts are a public snapshot and can change. An absent discovered page is not pr
 
 The site names Pandabyte Innovations Private Limited. Contact lists `pandabytehelp@gmail.com`, `+91-8380822931`, weekday 10:00–17:00 support, and an Uttarakhand address. Verify address spelling (the source repeats “Hardwar, Haridwar”), support timezone, and publication approval. [Contact source](https://www.pandabyte.in/contact)
 
-The current public header advertises a ₹5,000 minimum. **The new requirement differs:** retain the minimum but display it inside checkout only. Do not migrate the header banner literally.
+The historical public header advertised a ₹5,000 minimum. The owner's later decision removes this minimum for Razorpay; do not migrate the header banner or add a checkout threshold. Checkout/payments remain deferred.
 
 ## Selected asset references
 

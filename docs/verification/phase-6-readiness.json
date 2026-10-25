@@ -1,0 +1,496 @@
+{
+  "date": "2026-10-25",
+  "timezone": "Asia/Calcutta",
+  "scope": "Phase 6 non-commerce audit checkpoint, not full phase exit",
+  "baselineCommit": "315c3c3",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "count": 3
+  },
+  "checks": {
+    "check": "lint/typecheck/production build passed",
+    "unitTests": 78,
+    "npmAuditVulnerabilities": 0,
+    "securityHttpTests": 2,
+    "authHttpTests": 7,
+    "diagnosticHttpTests": 1,
+    "shellHttpTests": 3,
+    "clientSecrets": "passed",
+    "publicTables": 27,
+    "rlsEnabledPublicTables": 27,
+    "rlsLimit": "flags only; does not prove grants/policy correctness"
+  },
+  "httpBaseline": {
+    "scope": "16 sequential anonymous GETs; local production preview, empty development catalog; no concurrency or Web Vitals claim",
+    "observations": [
+      {
+        "path": "/",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 3239,
+        "totalMs": 3390,
+        "decodedBodyBytes": 86637
+      },
+      {
+        "path": "/",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 326,
+        "totalMs": 329,
+        "decodedBodyBytes": 86561
+      },
+      {
+        "path": "/shop",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 31,
+        "totalMs": 328,
+        "decodedBodyBytes": 67058
+      },
+      {
+        "path": "/shop",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 19,
+        "totalMs": 316,
+        "decodedBodyBytes": 67058
+      },
+      {
+        "path": "/about",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 935,
+        "totalMs": 936,
+        "decodedBodyBytes": 56546
+      },
+      {
+        "path": "/about",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 307,
+        "totalMs": 924,
+        "decodedBodyBytes": 56622
+      },
+      {
+        "path": "/contact",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 300,
+        "totalMs": 306,
+        "decodedBodyBytes": 58906
+      },
+      {
+        "path": "/contact",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 296,
+        "totalMs": 304,
+        "decodedBodyBytes": 58906
+      },
+      {
+        "path": "/blog",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 303,
+        "totalMs": 305,
+        "decodedBodyBytes": 57520
+      },
+      {
+        "path": "/blog",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 849,
+        "totalMs": 851,
+        "decodedBodyBytes": 57520
+      },
+      {
+        "path": "/learn",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 301,
+        "totalMs": 308,
+        "decodedBodyBytes": 57903
+      },
+      {
+        "path": "/learn",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 291,
+        "totalMs": 302,
+        "decodedBodyBytes": 57903
+      },
+      {
+        "path": "/help",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 308,
+        "totalMs": 309,
+        "decodedBodyBytes": 56648
+      },
+      {
+        "path": "/help",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 295,
+        "totalMs": 863,
+        "decodedBodyBytes": 56724
+      },
+      {
+        "path": "/policies",
+        "sample": 1,
+        "status": 200,
+        "headersMs": 1696,
+        "totalMs": 1700,
+        "decodedBodyBytes": 58291
+      },
+      {
+        "path": "/policies",
+        "sample": 2,
+        "status": 200,
+        "headersMs": 842,
+        "totalMs": 843,
+        "decodedBodyBytes": 58215
+      }
+    ]
+  },
+  "assets": {
+    "scope": "Entire build asset inventory, not per-route downloaded JS",
+    "jsFiles": 32,
+    "cssFiles": 5,
+    "jsBytes": 1145733,
+    "cssBytes": 138272,
+    "jsGzipBytes": 344993,
+    "privateClientConfigurationScan": "passed"
+  },
+  "browser": {
+    "matrix": [
+      {
+        "page": "home",
+        "requestedWidth": 320,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 305
+      },
+      {
+        "page": "home",
+        "requestedWidth": 320,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 305
+      },
+      {
+        "page": "home",
+        "requestedWidth": 768,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 753
+      },
+      {
+        "page": "home",
+        "requestedWidth": 768,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 753,
+        "theme": "light",
+        "width": 753
+      },
+      {
+        "page": "home",
+        "requestedWidth": 1024,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1009
+      },
+      {
+        "page": "home",
+        "requestedWidth": 1024,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1009,
+        "theme": "light",
+        "width": 1009
+      },
+      {
+        "page": "home",
+        "requestedWidth": 1440,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1425
+      },
+      {
+        "page": "home",
+        "requestedWidth": 1440,
+        "brokenImages": 0,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1425,
+        "theme": "light",
+        "width": 1425
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 320,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 305
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 320,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 305
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 768,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 753
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 768,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 753,
+        "theme": "light",
+        "width": 753
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 1024,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1009
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 1024,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1009,
+        "theme": "light",
+        "width": 1009
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 1440,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1425
+      },
+      {
+        "page": "contact",
+        "requestedWidth": 1440,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1425,
+        "theme": "light",
+        "width": 1425
+      },
+      {
+        "page": "account",
+        "requestedWidth": 320,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 305
+      },
+      {
+        "page": "account",
+        "requestedWidth": 320,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 305
+      },
+      {
+        "page": "account",
+        "requestedWidth": 768,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 753
+      },
+      {
+        "page": "account",
+        "requestedWidth": 768,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 753,
+        "theme": "light",
+        "width": 753
+      },
+      {
+        "page": "account",
+        "requestedWidth": 1024,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1009
+      },
+      {
+        "page": "account",
+        "requestedWidth": 1024,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1009,
+        "theme": "light",
+        "width": 1009
+      },
+      {
+        "page": "account",
+        "requestedWidth": 1440,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1425
+      },
+      {
+        "page": "account",
+        "requestedWidth": 1440,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1425,
+        "theme": "light",
+        "width": 1425
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 320,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 320,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 768,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 768,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 1024,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 1024,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 1440,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440
+      },
+      {
+        "page": "admin/inquiries",
+        "requestedWidth": 1440,
+        "h1Count": 1,
+        "mainCount": 1,
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440
+      }
+    ],
+    "consoleErrorsObserved": 0,
+    "keyboard": [
+      "desktop About Enter/Tab/Escape with trigger focus restored",
+      "mobile site navigation Enter/Escape",
+      "mobile Admin navigation focus entry and Escape return",
+      "OLED selection and Escape announcements"
+    ],
+    "circuitLiveRegion": {
+      "initial": "empty",
+      "selected": "sample reading announced",
+      "cleared": "selection cleared announced"
+    },
+    "ownerSession": "retained; account private sections and Admin inquiries read successfully",
+    "mutations": "no account/business/provider data changed"
+  },
+  "gates": {
+    "content": "0/44 source products owner-approved; two missing SKUs; accepted media blocked",
+    "import": "not run; no existing app mapper and unresolved approvals/relationships",
+    "performance": "local samples only; no Core Web Vitals, concurrency or capacity result; published-media transformation risk remains",
+    "recovery": "empty CLI backup inventory; no isolated database+storage restore proof",
+    "policies": "RPO/RTO, retention, workload/budget and production operators require approval",
+    "commerce": "checkout/payments deferred",
+    "email": "Free plan retained; no real send",
+    "deployment": "not authorized"
+  },
+  "limitations": [
+    "No new backend schema/migration, backup, export, storage copy or restore",
+    "No full private-account/customer/staff mutation suites repeated",
+    "No real screen reader, automated contrast audit or reduced-motion emulation",
+    "Other-chat untracked content/design archive preserved and excluded from this checkpoint commit"
+  ]
+}
