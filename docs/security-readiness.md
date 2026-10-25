@@ -4,6 +4,8 @@
 
 **25 October follow-up:** [strict nonce CSP hardening](csp-hardening.md) now passes production-build, HTTP and signed-in account/Admin browser checks. The earlier browser-setting blocker is resolved. Clerk vendor defaults and legacy fallback remain documented; this is not production certification.
 
+The subsequent [application diagnostics](operational-diagnostics.md) checkpoint adds allowlisted server events, response-only references for handled operational failures and a safe uncaught-error hook. It never logs raw application error/request/provider objects. This is local reporting, not external monitoring, alert delivery or a scrubber for framework/provider output. Production log access/volume/retention and inquiry/audit retention remain owner/release decisions; no existing records are purged.
+
 ## Implemented controls
 
 - Clerk is the sole identity source; InsForge uses verified opaque text subjects. The approved default owner is a protected ADMIN membership after a unique verified Clerk email lookup. No request-time email allowlist, editable metadata role, second identity provider, or public admin bypass.

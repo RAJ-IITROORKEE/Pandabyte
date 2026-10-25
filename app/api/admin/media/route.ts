@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { isSameOriginRequest, readBoundedBody } from "@/lib/storage/http";
+import { logOperationalFailure } from "@/lib/observability/events";
 import { editorialAccess, editorialError, editorialJson, editorialRpc, editorialDatabaseError } from "@/lib/editorial/http";
 import { prepareEditorialFile } from "@/lib/editorial/media";
 import { boundedText, EDITORIAL_MEDIA_BUCKET, MAX_MEDIA_REQUEST_BYTES, parseListQuery } from "@/lib/editorial/validation";
@@ -34,8 +35,8 @@ export async function POST(request: Request) {
     compensate = async () => {
       try {
         const cleanup = await bucket.remove(objectKey);
-        if (cleanup.error && cleanup.error.statusCode !== 404) console.error("[editorial-media] upload outcome requires reconciliation");
-      } catch { console.error("[editorial-media] upload outcome requires reconciliation"); }
+        if (cleanup.error && cleanup.error.statusCode !== 404) logOperationalFailure("editorial_cleanup_failure", "editorial", 503);
+      } catch { logOperationalFailure("editorial_cleanup_failure", "editorial", 503); }
     };
     const upload = await bucket.upload(objectKey, new File([new Uint8Array(prepared.bytes)], `${id}.${prepared.extension}`, { type: prepared.mimeType }));
     if (upload.error || !upload.data || upload.data.key !== objectKey) {

@@ -10,6 +10,8 @@ Copy .env.example to ignored .env.local when the owner supplies the selected tes
 
 ## 1. Latest decisions and authorization
 
+- The next non-commerce checkpoint adds [application error diagnostics](docs/operational-diagnostics.md): closed server-event fields, response-only error references and Next's uncaught-error hook. References stay out of visible UI and response bodies. It adds no external monitoring, data retention/deletion, billing changes, live email or deployment; provider/framework logs and production alert/retention policies remain separate gates. Notification preparation is committed as `019a6e5`.
+
 - 25 October: the owner authorized [inquiry notification preparation](docs/inquiry-notifications.md), selected InsForge if supported, supplied a temporary test recipient privately, then chose **keep the Free plan; prepare only**. Real email stays disabled. The checkpoint adds durable status, staff controls and bounded retry/unknown-outcome handling; no provider delivery, billing change, scheduler, Phase 6 or deployment is implied. Contact protection/Admin identity cleanup is committed as `602add9`.
 
 - 25 October: [strict nonce CSP](docs/csp-hardening.md) is verified with the real signed-in owner account/Admin and production HTTP checks. [Evidence](docs/verification/csp-hardening.json). Landing v26 is committed as dcce07e; checkout/payments remain deferred.

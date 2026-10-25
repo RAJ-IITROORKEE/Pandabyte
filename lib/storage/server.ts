@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { InsForgeClient } from "@insforge/sdk";
+import { logOperationalFailure } from "@/lib/observability/events";
 
 import {
   ACCOUNT_FILES_BUCKET,
@@ -27,7 +28,7 @@ export async function removeAccountFileObject(
     // Provider details and object keys stay out of application logs.
   }
 
-  console.error("[account-files] storage cleanup failed");
+  logOperationalFailure("storage_cleanup_failure", "account_files", 503);
   return false;
 }
 

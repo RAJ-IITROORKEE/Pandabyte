@@ -1,3 +1,5 @@
+import { operationalJson } from "../observability/events.ts";
+
 export const MAX_ACCOUNT_FILE_REQUEST_BYTES = 96 * 1024;
 
 const PRIVATE_HEADERS = {
@@ -9,7 +11,7 @@ export function accountFilesJson(
   body: unknown,
   status = 200,
 ): Response {
-  return Response.json(body, { status, headers: PRIVATE_HEADERS });
+  return operationalJson(body, status, PRIVATE_HEADERS, "account_files");
 }
 
 export function accountFilesError(

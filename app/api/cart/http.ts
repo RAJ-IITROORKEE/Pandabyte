@@ -1,4 +1,5 @@
 import "server-only";
+import { operationalJson } from "@/lib/observability/events";
 
 import { auth } from "@clerk/nextjs/server";
 import { createInsforgePublicClient } from "@/lib/insforge/public";
@@ -12,7 +13,7 @@ const HEADERS = {
 };
 
 export function cartJson(value: unknown, status = 200): Response {
-  return Response.json(value, { status, headers: HEADERS });
+  return operationalJson(value, status, HEADERS, "cart");
 }
 
 export function cartError(code: string, status: number): Response {

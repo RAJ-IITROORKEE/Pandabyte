@@ -2,10 +2,11 @@ import "server-only";
 import { requireCapability, type StaffCapability } from "@/lib/authorization";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { isSameOriginRequest, readBoundedBody } from "@/lib/storage/http";
+import { operationalJson } from "@/lib/observability/events";
 
 export const editorialHeaders = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
-export const editorialJson = (value: unknown, status = 200) => Response.json(value, { status, headers: editorialHeaders });
-export const editorialError = (code: string, status: number) => editorialJson({ error: { code, message: code.replaceAll("_", " ") } }, status);
+export const editorialJson = (value: unknown, status = 200) => operationalJson(value, status, editorialHeaders, "editorial");
+export const editorialError = (code: string, status: number) => operationalJson({ error: { code, message: code.replaceAll("_", " ") } }, status, editorialHeaders, "editorial", ["contact_unconfigured", "notification_unconfigured"].includes(code));
 
 export async function editorialAccess(capability: StaffCapability) {
   const access = await requireCapability(capability);

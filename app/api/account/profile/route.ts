@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
+import { operationalJson } from "@/lib/observability/events";
 import {
   isJsonContentType,
   isSameOrigin,
@@ -11,7 +12,7 @@ const profileFields = "display_name, phone, created_at";
 const privateHeaders = { "Cache-Control": "private, no-store" };
 
 function errorResponse(code: string, status: number) {
-  return Response.json({ error: code }, { status, headers: privateHeaders });
+  return operationalJson({ error: code }, status, privateHeaders, "account_profile");
 }
 
 async function activeUserId() {

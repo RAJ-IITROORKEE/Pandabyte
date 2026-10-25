@@ -1,4 +1,5 @@
 import "server-only";
+import { operationalJson } from "@/lib/observability/events";
 
 import { isJsonContentType, isSameOrigin } from "@/lib/account/profile";
 import { requireCapability, type StaffCapability } from "@/lib/authorization";
@@ -72,7 +73,7 @@ function isObject(value: unknown): value is JsonObject {
 }
 
 function json(body: unknown, status = 200, headers: Record<string, string> = PRIVATE_HEADERS) {
-  return Response.json(body, { status, headers });
+  return operationalJson(body, status, headers, "admin_records");
 }
 
 function errorResponse(code: string, status: number, fields?: unknown, headers = PRIVATE_HEADERS) {

@@ -1,4 +1,5 @@
 import "server-only";
+import { operationalJson } from "@/lib/observability/events";
 
 import { clerkClient } from "@clerk/nextjs/server";
 import { requireCapability } from "@/lib/authorization";
@@ -19,7 +20,7 @@ const ROLE_ERRORS = new Set([
 ]);
 
 function json(value: unknown, status = 200) {
-  return Response.json(value, { status, headers: HEADERS });
+  return operationalJson(value, status, HEADERS, "admin_roles");
 }
 
 function error(code: string, status: number) {

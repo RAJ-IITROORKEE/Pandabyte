@@ -3,6 +3,7 @@ import "server-only";
 import { auth } from "@clerk/nextjs/server";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { isSameOriginRequest, readBoundedBody } from "@/lib/storage/http";
+import { operationalJson } from "@/lib/observability/events";
 
 const PRIVATE_HEADERS = {
   "Cache-Control": "private, no-store",
@@ -11,7 +12,7 @@ const PRIVATE_HEADERS = {
 export const MAX_ADDRESS_REQUEST_BYTES = 8192;
 
 export function addressJson(value: unknown, status = 200): Response {
-  return Response.json(value, { status, headers: PRIVATE_HEADERS });
+  return operationalJson(value, status, PRIVATE_HEADERS, "account_addresses");
 }
 
 export function addressError(code: string, status: number): Response {

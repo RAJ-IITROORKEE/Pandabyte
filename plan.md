@@ -1,4 +1,4 @@
-> Latest checkpoint: contact abuse protection and minimalist Admin/account cleanup are committed as `602add9`. Continue [inquiry notification preparation](docs/inquiry-notifications.md) with Luna xhigh workers, verification and a local commit. The owner explicitly keeps the Free InsForge plan; no real email or billing change. Checkout/payments remain deferred. Phase 6 and production deployment are not dispatched.
+> Latest checkpoint: notification preparation is committed as `019a6e5`, after contact/Admin cleanup `602add9`. Continue bounded [application error diagnostics](docs/operational-diagnostics.md) with Luna xhigh workers, verification and a local commit. The owner keeps the Free InsForge plan; no real email, billing change, external monitoring or retention deletion. Checkout/payments remain deferred. Phase 6 and production deployment are not dispatched.
 
 # PandaByte.in — phased delivery plan
 

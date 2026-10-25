@@ -1,5 +1,6 @@
 import { listCatalogProducts } from "@/lib/catalog/published";
 import { parseCatalogQuery } from "@/lib/catalog/query";
+import { operationalJson } from "@/lib/observability/events";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,8 @@ export async function GET(request: Request) {
     const { items, total } = await listCatalogProducts(parsed.value);
     return Response.json({ items, total, page: parsed.value.page, limit: parsed.value.limit }, { headers: HEADERS });
   } catch {
-    return Response.json({
+    return operationalJson({
       error: { code: "catalog_unavailable", message: "The catalog is temporarily unavailable. Please try again later." },
-    }, { status: 503, headers: HEADERS });
+    }, 503, HEADERS, "catalog");
   }
 }

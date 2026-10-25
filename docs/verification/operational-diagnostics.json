@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-25",
+  "result": "passed-local-application-diagnostics-checkpoint",
+  "baseline": "019a6e5",
+  "workers": "Luna xhigh observability/security review, account helper integration and focused tests; root shared integration and verification",
+  "scope": {
+    "handledFailures": "One allowlisted api_failure event and matching fresh X-Error-Reference per operational JSON 5xx response",
+    "expectedFailures": "Success, routine 4xx and explicitly disabled Contact/email configuration stay silent",
+    "uncaughtFailures": "Next onRequestError logs only an allowlisted context type and independent reference; no raw exception/request serialization or response correlation claim",
+    "cleanup": "Distinct allowlisted cleanup failure events; a separately failed primary operation may also have its own event",
+    "ui": "No reference/body schema or visible identifier additions",
+    "databaseMigrations": 0,
+    "newDependencies": 0,
+    "externalMonitoring": false,
+    "retentionDeletes": false
+  },
+  "checks": {
+    "lintTypecheckProductionBuild": "passed",
+    "unitTests": { "passed": 78, "failed": 0, "newOperationalTests": 8 },
+    "operationalHttp": "Passed one test over eight real local API auth/validation paths; JSON/status/private-cache/security headers retained and supplied references not echoed",
+    "securityHttp": { "passed": 2, "failed": 0 },
+    "publishingMediaInquiryRegression": "passed, including disposable fixture cleanup",
+    "compiledInstrumentationArtifact": true,
+    "redactionFaultTests": ["closed schema and label allowlists", "hostile labels not coerced", "raw error/request/context fields not read", "body/provider/header sentinels absent from events", "one matching 5xx event/reference", "fresh references", "silent expected responses", "console failure preserves response", "cleanup categories"],
+    "privateConfigClientScan": { "javascriptFiles": 32, "privateServerValuesFound": 0 },
+    "browser": ["Genuine protected owner Admin identity loads", "Customer contact profile and address data load", "Expanded private file list loads", "Public catalog loads after cleanup", "No new raw references rendered", "No browser console errors observed"],
+    "cleanup": "Publishing harness removed its verified disposable fixtures; independent inspection preserves protected owner Admin and existing private configuration"
+  },
+  "limits": ["No production deployment, external alerts, retention policy/deletion or workload/recovery test", "No global request tracing", "No runtime unhandled exception or provider outage injected; helper/hook fault tests are isolated", "Framework/provider diagnostic output is not globally redacted", "Log storms/production access and retention need separate controls", "Live email remains disabled on the retained Free setup; checkout/payments remain deferred", "Unrelated complete account/cart/role mutation suites were not repeated"]
+}

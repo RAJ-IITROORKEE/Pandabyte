@@ -1,4 +1,5 @@
 import { requireCapability } from "@/lib/authorization";
+import { operationalJson } from "@/lib/observability/events";
 
 const privateHeaders = { "Cache-Control": "private, no-store" };
 
@@ -10,7 +11,7 @@ export async function GET() {
       : access.status === 403
         ? "forbidden"
         : "staff_access_unavailable";
-    return Response.json({ error }, { status: access.status, headers: privateHeaders });
+    return operationalJson({ error }, access.status, privateHeaders, "staff_access");
   }
 
   return Response.json(
