@@ -1,0 +1,182 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Calcutta",
+  "applicationCommit": "4a71e23",
+  "scope": "read-only development content-gap review; documentation only",
+  "workers": [
+    {
+      "task": "catalog source and existing product editor review",
+      "model": "gpt-6-luna",
+      "reasoning": "xhigh"
+    },
+    {
+      "task": "company route/schema and editability review",
+      "model": "gpt-6-luna",
+      "reasoning": "xhigh"
+    }
+  ],
+  "publishedCounts": [
+    {
+      "module": "products",
+      "total": 42
+    },
+    {
+      "module": "categories",
+      "total": 5
+    },
+    {
+      "module": "pages",
+      "total": 0
+    },
+    {
+      "module": "faqs",
+      "total": 0
+    },
+    {
+      "module": "team",
+      "total": 0
+    },
+    {
+      "module": "navigation",
+      "total": 0
+    },
+    {
+      "module": "contact",
+      "total": 0
+    },
+    {
+      "module": "solutions",
+      "total": 0
+    },
+    {
+      "module": "blog",
+      "total": 0
+    },
+    {
+      "module": "learn",
+      "total": 0
+    },
+    {
+      "module": "videos",
+      "total": 0
+    }
+  ],
+  "inventoryBoundary": "Published counts only; no private draft inventory or live source crawl",
+  "catalogSourceEvidence": {
+    "sourceProducts": 44,
+    "developmentProducts": 42,
+    "ownerApproved": 0,
+    "heldMissingSku": 2,
+    "integratedImages": 96,
+    "integratedVerifiedResources": 1,
+    "missingWikiDestinations": 13,
+    "unverifiedResourceCandidates": 13,
+    "countsMeaning": "Source-map issue counts may overlap products; imported source observations are not approved current facts/offers"
+  },
+  "browser": {
+    "surface": "built-in app browser",
+    "routes": [
+      {
+        "route": "/about",
+        "completed": true,
+        "observation": "Company page unpublished; no published team"
+      },
+      {
+        "route": "/contact",
+        "completed": true,
+        "observation": "Details unpublished; inquiry form available with local test protection and no email-delivery promise"
+      },
+      {
+        "route": "/help",
+        "completed": true,
+        "observation": "Help content/FAQs unpublished"
+      },
+      {
+        "route": "/policies",
+        "completed": true,
+        "observation": "Shipping/returns, terms and privacy copy unpublished"
+      },
+      {
+        "route": "/solutions",
+        "completed": true,
+        "observation": "No published solutions"
+      },
+      {
+        "route": "/learn",
+        "completed": true,
+        "observation": "No published embedded-systems resources"
+      },
+      {
+        "route": "/blog",
+        "completed": true,
+        "observation": "No published articles"
+      },
+      {
+        "route": "/learn/youtube",
+        "completed": true,
+        "observation": "No published videos"
+      },
+      {
+        "route": "/learn/product-specs",
+        "completed": true,
+        "observation": "Empty resource collection"
+      },
+      {
+        "route": "/learn/kit-guides",
+        "completed": true,
+        "observation": "Empty resource collection"
+      },
+      {
+        "route": "/learn/embedded-systems",
+        "completed": true,
+        "observation": "Empty resource collection"
+      },
+      {
+        "route": "/",
+        "completed": true,
+        "observation": "Fallback headline/support text, two source-observation products, empty FAQ section"
+      },
+      {
+        "route": "/products/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+        "completed": true,
+        "observation": "Published source-observation detail; purchase disabled; long source summary/compatibility requires editorial review"
+      },
+      {
+        "route": "/products/qr-logger",
+        "completed": true,
+        "observation": "Coming soon; no release date or availability claim"
+      },
+      {
+        "route": "/careers",
+        "completed": true,
+        "observation": "Honest unpublished section placeholder"
+      }
+    ],
+    "loadingStatesRechecked": true,
+    "mutations": 0,
+    "catalogTabRestored": true
+  },
+  "codeBacklog": [
+    "CMS navigation is additive and cannot override core menu label/order/visibility",
+    "Homepage support text and footer brand copy are hardcoded",
+    "Private source review notes omit recorded detail/held-item explanations"
+  ],
+  "rootCorrections": [
+    "skills-cli already reads the published solution before its Coming soon fallback; content entry needs no route implementation"
+  ],
+  "verification": [
+    "Eleven bounded anonymous published-list GETs with total/shape assertions",
+    "Fifteen completed page states in built-in browser",
+    "Read-only source mapping and recorded source conflicts reviewed",
+    "Documentation local-link, counts, scope and identifier checks"
+  ],
+  "notPerformed": [
+    "Private draft/account/inquiry read",
+    "Content or source/archive mutation/publication",
+    "Code/schema/dependency changes",
+    "New external crawl or engineering/rights/legal verification",
+    "Build/test rerun for unchanged runtime",
+    "Checkout/payments/load tests/deployment",
+    "Live email/billing/recovery operations"
+  ]
+}

@@ -1,5 +1,13 @@
 # PandaByte phase progress
 
+## 26 October 2026 — content-gap checklist
+
+- Followed `4a71e23` with two bounded Luna xhigh read-only reviewers for catalog source questions and company route/schema editability. Root reviewed actual callers, source reports, 11 anonymous localhost published-list totals and 15 completed built-in-browser page states. Published totals: 42 products, five categories; zero pages/FAQs/team/navigation/contact/solutions/blog/resources/videos. No private draft inventory was read; unpublished does not mean no source or draft exists.
+- [Owner checklist](content-gap-checklist.md) records two real-SKU holds, factual/rights approval for all products, eight recorded source-conflict questions plus summary/compatibility cleanup, 13 missing Wiki destinations and 13 unverified resource candidates. Company/contact/team/policy/editorial requirements are mapped to existing Admin routes. Ordinary approved copy requires content entry, not another CMS.
+- Confirmed code backlog: core navigation is only additive, support/brand copy is partly hardcoded, and private source review notes omit some conflict explanations. Root corrected a reviewer suggestion: `skills-cli` already consumes published solutions and needs no route change. None of these fixes or content changes is implemented by the checklist.
+- [Evidence](verification/content-gap-checklist.json) contains aggregate counts, completed route dispositions and scope limits without internal IDs. Documentation links/counts/scope and `git diff --check` pass. No runtime changed, so prior lint/build/domain results remain tied to `4a71e23`; no new build/test claim. Local checkpoint commit title: `docs: record catalog and company content gaps`; resolve its exact hash from Git history.
+- Owner approvals, engineering/rights/legal review and publication remain open. Source/CAD/design and other-chat artifacts are untouched. Checkout/payments, load tests, deployment, live email/billing and backup/export/restore remain deferred.
+
 ## 26 October 2026 — populated-site performance/accessibility checkpoint
 
 - Continued after `b531ee8` with three bounded Luna xhigh reviewers/implementers; root integrated and verified. Fixed URL/control disagreement without remounting result images or the Reset all link, excessive card-link names, full-size thumbnail/card delivery, dark error/warning contrast, address focus restoration, Admin field-specific validation, picker announcements/groups and media-detail focus.
