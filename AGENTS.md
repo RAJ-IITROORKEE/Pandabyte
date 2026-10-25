@@ -2,6 +2,8 @@
 
 ## Current authorization
 
+**Latest notification checkpoint, 25 October 2026:** prepare contact-inquiry notifications with Luna xhigh workers, browser checks, fixes and a local commit. The owner selected InsForge email if supported, supplied a temporary test recipient privately, then explicitly chose **keep Free; prepare notifications only**. No billing change or real email send. Build bounded durable status/staff controls and test with an injected fake sender only; no runtime fake-delivery mode. Unknown external outcomes cannot be blindly retried. See [notification contract](docs/inquiry-notifications.md). No scheduler, production deployment, Phase 6 or checkout/payments is added.
+
 **Latest follow-up, 25 October 2026:** contact abuse protection with Luna xhigh workers, built-in-browser verification, fixes and a local commit. The owner selected official Turnstile test keys locally; real production protection remains unverified. See [contact contract](docs/contact-abuse.md). The owner additionally requested clean minimalist Admin/account screens without visible database IDs, Clerk subjects or session IDs; keep those internal and preserve authorization, role/version guards and audit data. See [presentation contract](docs/admin-presentation.md). Checkout/payments remain deferred.
 
 **Latest landing instruction:** match the selected Superdesign homepage v26, including its animated interactive circuit, using Luna xhigh workers; verify in the built-in browser and commit before continuing authorized non-commerce hardening. Preserve the UI chat’s design artifacts and current Clerk account controls. Checkout/payments remain explicitly deferred. See [landing contract](docs/landing-v26.md).

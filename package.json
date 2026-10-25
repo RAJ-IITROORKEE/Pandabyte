@@ -10,7 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:auth": "node --test tests/auth-routes.test.mjs",
     "test:backend": "node --env-file=.env.local --test tests/insforge-access.test.mjs",
-    "test:unit": "node --test tests/account-profile.test.mjs tests/account-files-validation.test.mjs tests/theme.test.mjs tests/site-navigation.test.mjs tests/admin-validation.test.mjs tests/editorial-validation.test.mjs tests/auth-return-path.test.mjs tests/account-addresses.test.mjs tests/insforge-dependency.test.mjs tests/public-record.test.mjs tests/catalog-query.test.mjs tests/editorial-public.test.mjs tests/cart-validation.test.mjs components/cart/cart-utils.test.mjs components/cart/guest-cart-store.test.mjs tests/admin-roles-validation.test.mjs components/home-circuit-geometry.test.mjs tests/contact-protection.test.mjs",
+    "test:unit": "node --test tests/account-profile.test.mjs tests/account-files-validation.test.mjs tests/theme.test.mjs tests/site-navigation.test.mjs tests/admin-validation.test.mjs tests/editorial-validation.test.mjs tests/auth-return-path.test.mjs tests/account-addresses.test.mjs tests/insforge-dependency.test.mjs tests/public-record.test.mjs tests/catalog-query.test.mjs tests/editorial-public.test.mjs tests/cart-validation.test.mjs components/cart/cart-utils.test.mjs components/cart/guest-cart-store.test.mjs tests/admin-roles-validation.test.mjs components/home-circuit-geometry.test.mjs tests/contact-protection.test.mjs tests/inquiry-notifications.test.mjs",
     "test:access": "node --env-file=.env.local tests/phase2-isolation.mjs",
     "check": "npm run lint && npm run typecheck && npm run build",
     "test:shell": "node --test tests/site-shell-routes.test.mjs",
@@ -20,7 +20,8 @@
     "test:cart": "node --env-file=.env.local tests/phase5-cart.mjs",
     "test:roles": "node --env-file=.env.local tests/admin-roles-isolation.mjs",
     "test:security": "node --test tests/security-headers.test.mjs",
-    "test:contact": "node --env-file=.env.local tests/contact-abuse-isolation.mjs"
+    "test:contact": "node --env-file=.env.local tests/contact-abuse-isolation.mjs",
+    "test:notifications": "node --env-file=.env.local tests/inquiry-notifications.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "7.9.20",

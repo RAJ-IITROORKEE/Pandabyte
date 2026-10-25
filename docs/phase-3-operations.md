@@ -77,7 +77,7 @@ The attempted anon grants in the core migration and `20261023220441_phase3-edito
 
 ## Inquiries and notification state
 
-`inquiries`, `inquiry_notes`, and `inquiry_notifications` have RLS enabled and direct runtime table access revoked. `submit_inquiry(p_name,p_email,p_phone,p_subject,p_message,p_request_id)` is available to anonymous and signed-in callers; it validates bounded contact fields, makes a request UUID idempotent for an identical payload, rejects conflicting reuse, and applies database rate limits. It creates a durable receipt and notification row in one transaction. The stored notification state and response remain `unconfigured`; no provider, recipient, delivery attempt, or delivery guarantee is configured.
+`inquiries`, `inquiry_notes`, and `inquiry_notifications` have RLS enabled and direct runtime table access revoked. The original `submit_inquiry` function remains internal: the subsequent [contact abuse boundary](contact-abuse.md) revoked its anonymous/authenticated execution and requires server-verified Turnstile plus a scoped proof through `submit_verified_inquiry`. Inquiry and outbox creation remain atomic and idempotent, with bounded inputs and database quotas. The later [notification preparation](inquiry-notifications.md) adds durable state, capped attempts and staff controls. Real email remains disabled under the owner's Free-plan decision; no delivery guarantee is claimed.
 
 `admin_list_inquiries(p_query,p_status,p_limit,p_offset)`, `admin_get_inquiry(p_id)`, and `admin_update_inquiry(p_id,p_expected_version,p_status,p_note)` require `inquiries.manage`. Updates use optimistic versions, add a staff note with the actor subject, and update status atomically. Inquiry content and notes are private.
 

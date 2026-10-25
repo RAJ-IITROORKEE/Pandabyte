@@ -1,4 +1,4 @@
-> Latest checkpoint: Home v26 and strict CSP are committed. Continue authorized [contact abuse protection](docs/contact-abuse.md), then the requested [minimalist Admin/account cleanup](docs/admin-presentation.md), with Luna xhigh workers and verification/local commits. Official Turnstile test keys are selected locally; real deployment protection remains a gate. Checkout/payments remain deferred. See [landing contract](docs/landing-v26.md).
+> Latest checkpoint: contact abuse protection and minimalist Admin/account cleanup are committed as `602add9`. Continue [inquiry notification preparation](docs/inquiry-notifications.md) with Luna xhigh workers, verification and a local commit. The owner explicitly keeps the Free InsForge plan; no real email or billing change. Checkout/payments remain deferred. Phase 6 and production deployment are not dispatched.
 
 # PandaByte.in — phased delivery plan
 

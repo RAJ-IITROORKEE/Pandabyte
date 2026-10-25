@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-25",
+  "result": "passed-notification-preparation-checkpoint",
+  "authorization": "Keep the linked Free InsForge project; prepare only; no real email or billing change",
+  "workers": "Luna xhigh provider research, independent SQL review, admin controls and focused tests; root integration/migration/browser verification",
+  "migration": "20261025135221_inquiry-notification-outbox.sql applied to linked development only",
+  "provider": {
+    "planReadOnlyCheck": "free",
+    "realSendingEnabled": false,
+    "realEmailsSent": 0,
+    "testRecipient": "Owner-approved temporary recipient stored only in ignored server configuration",
+    "senderTests": "Injected fake transport only; the running app has no fake-delivery mode",
+    "liveDelivery": "not tested"
+  },
+  "checks": {
+    "lintTypecheckProductionBuild": "passed",
+    "unitTests": { "passed": 70, "failed": 0, "newNotificationTests": 10 },
+    "contactAbuseIntegration": "passed and cleaned",
+    "securityHttpTests": { "passed": 2, "failed": 0 },
+    "notificationIntegration": ["anonymous API 401 and RPC 42501", "customer API/RPC denied", "private configuration read denied", "wrong scoped proof denied", "same-origin and closed bounded body", "disabled configuration 503 before claim", "persisted fake acceptance", "definite rejection and one safe retry", "timeout becomes uncertain with no resend", "spam before claim and between lease/begin", "role revocation before begin blocks sending", "concurrent callers create one send attempt", "same completion replay is idempotent", "five-attempt limit", "expired pre-send lease can be reclaimed", "expired sending projects uncertain and cannot be reclaimed"],
+    "sdkSingleAttempt": "Fake-fetch tests prove installed SDK email POST is not retried on HTTP 500 or network loss",
+    "independentReview": "No unresolved blocking SQL/grant/lock issue; capability rechecked before send start; unknown remains terminal; stale detail-response guards reviewed in source",
+    "clientConfigurationScan": { "javascriptFiles": 32, "privateServerValuesFound": 0 },
+    "cleanup": "Passed: 11 disposable inquiries, notes/outbox rows and two Clerk users removed; owner protected Admin/seven capabilities preserved; both intended private configuration singleton rows remain"
+  },
+  "browser": {
+    "surface": "Built-in browser with genuine owner session",
+    "checks": ["Setup-disabled Send email is inactive", "Accepted label explicitly does not claim delivery", "Unknown outcome has no Retry action", "Five-attempt cap is explained", "Refresh preserves note and status drafts", "Email refresh does not silently advance inquiry edit version; simulated concurrent inquiry edit still returns conflict", "Previous note history clears on selection", "Refresh does not display a false inquiry-saving indicator", "No raw subject/session/UUID text in tested screen", "No console errors observed"],
+    "widths": [320, 768, 1024, 1440],
+    "themes": ["light", "dark"],
+    "documentOverflow": false,
+    "endState": "Owner session retained, temporary viewport reset, cleaned inquiry inbox",
+    "proof": "Saved only in ignored local screenshot artifacts"
+  },
+  "remainingGates": ["Live InsForge entitlement, sender, recipient acceptance and Clerk-token email compatibility", "Direct vendor email endpoint access by ordinary customer tokens", "Provider event correlation and manual reconciliation before live unknown-state recovery", "No scheduler/noninteractive sender identity", "No live email, full accessibility/load/restore drill, production deployment or deferred commerce work", "Unrelated full publishing/role/customer-isolation suites were not repeated"]
+}
