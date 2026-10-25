@@ -2,12 +2,14 @@
 
 24 October 2026. Checkout/payments are explicitly deferred. This checkpoint strengthens the existing development backend; it does not declare a production launch, capacity, incident response or restore guarantee.
 
+**25 October follow-up:** [strict nonce CSP hardening](csp-hardening.md) now passes production-build, HTTP and signed-in account/Admin browser checks. The earlier browser-setting blocker is resolved. Clerk vendor defaults and legacy fallback remain documented; this is not production certification.
+
 ## Implemented controls
 
 - Clerk is the sole identity source; InsForge uses verified opaque text subjects. The approved default owner is a protected ADMIN membership after a unique verified Clerk email lookup. No request-time email allowlist, editable metadata role, second identity provider, or public admin bypass.
 - [Fixed roles](admin-roles.md) atomically replace capability grants, preserving all existing SQL/API capability checks. No direct runtime role/capability DML, no self-role change or protected-owner demotion, optimistic versions, serialized writes and audit events. Project-admin bootstrap/recovery is a privileged operator boundary; no app runtime uses its key for roles.
 - Role APIs authorize before bounded Clerk lookup, require same-origin JSON for changes, validate closed fields and verified target identity, hide backend diagnostics, and return private no-store responses. Client sessions discard old-user role state and ignore/abort stale requests; successful responses are validated before rendering.
-- Browser baseline applies to pages/APIs: MIME sniffing protection, DENY framing plus CSP frame-ancestors, restrictive base/object directives, strict-origin referrers and disabled unused camera/microphone/location/payment permissions. The Next identifying header is disabled. These are tested response headers, not a full script-source CSP. Payment permissions must be reviewed when that deferred feature resumes.
+- Browser baseline applies to pages/APIs: MIME sniffing protection, DENY framing plus CSP frame-ancestors, restrictive base/object directives, strict-origin referrers and disabled unused camera/microphone/location/payment permissions. The Next identifying header is disabled. The subsequent nonce policy adds modern script execution controls; see the follow-up contract for vendor/legacy limits. Payment permissions must be reviewed when that deferred feature resumes.
 - Existing customer profile/address/upload RLS remains owner-only. Staff roles do not grant customer-private data access. Structured CMS content avoids arbitrary executable content, and public projections expose only current published revisions. Existing request/body/query/upload bounds and canonical price rules are retained.
 
 ## Review findings and remaining production gates

@@ -1,6 +1,17 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
-export default clerkMiddleware();
+export default clerkMiddleware({
+  contentSecurityPolicy: {
+    strict: true,
+    directives: {
+      "base-uri": ["'self'"],
+      "object-src": ["'none'"],
+      "frame-ancestors": ["'none'"],
+      "script-src-attr": ["'none'"],
+      "frame-src": ["https://www.youtube-nocookie.com"],
+    },
+  },
+});
 
 export const config = {
   matcher: [

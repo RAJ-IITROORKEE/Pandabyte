@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Script id="pandabyte-theme" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <ClerkProvider appearance={{
+        <ClerkProvider dynamic appearance={{
           variables: {
             colorPrimary: "var(--pb-accent)",
             colorPrimaryForeground: "var(--pb-action-text)",

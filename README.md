@@ -10,6 +10,8 @@ Copy .env.example to ignored .env.local when the owner supplies the selected tes
 
 ## 1. Latest decisions and authorization
 
+- 25 October: [strict nonce CSP](docs/csp-hardening.md) is verified with the real signed-in owner account/Admin and production HTTP checks. [Evidence](docs/verification/csp-hardening.json). Landing v26 is committed as dcce07e; checkout/payments remain deferred.
+
 - The latest landing-page selection is [Superdesign homepage v26](https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba), superseding the older frozen homepage version for this update. [Implementation and data boundaries](docs/landing-v26.md). The owner requests this frontend gate first, then continuation of authorized non-commerce hardening; checkout/payments remain deferred.
 
 - Latest instruction explicitly defers checkout/payments and authorizes the remaining non-commerce backend security and role-based administration. The uniquely verified Clerk identity for `rajrabidas001@gmail.com` is now the protected default ADMIN; runtime authorization uses its opaque subject and database grants, never an email bypass. This supersedes the earlier normal-customer requirement. [Role contract and security scope](docs/admin-roles.md).
