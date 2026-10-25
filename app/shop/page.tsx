@@ -61,6 +61,7 @@ function categoryHref(slug: string, query: CatalogQuery | null): string {
 
 export default async function ShopPage({ searchParams }: PageProps) {
   const raw = await searchParams;
+  const rawSearchKey = JSON.stringify(Object.keys(raw).sort().map((key) => [key, raw[key]]));
   const parsed = parseCatalogQuery(raw);
   const [categoryResult, products] = await Promise.all([
     listPublishedRecords("categories", { limit: 100, offset: 0 }),
@@ -109,7 +110,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
 
     <form action="/shop" method="get" className={styles.catalogControls}>
       <div className={styles.searchForm}>
-        <div className={styles.searchField}>
+        <div className={styles.searchField} key={rawSearchKey}>
           <label className={styles.fieldLabel} htmlFor="catalog-query">Search products</label>
           <input className={styles.input} id="catalog-query" name="q" type="search" maxLength={120} defaultValue={firstParam(raw.q)} placeholder="Search by product, SKU or model" />
         </div>
@@ -121,7 +122,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
       </div>
 
       <div className={styles.catalogLayout}>
-        <aside className={styles.filters} aria-label="Catalog filters">
+        <aside className={styles.filters} aria-label="Catalog filters" key={rawSearchKey}>
           <details className={styles.filterDisclosure} open>
             <summary className={styles.filterSummary}>Filters</summary>
           <div className={styles.filterContents} id="catalog-filter-controls">

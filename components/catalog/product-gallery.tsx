@@ -19,7 +19,7 @@ export function ProductGallery({ images }: { images: ProductGalleryImage[] }) {
           width={1200}
           height={1200}
           unoptimized
-          priority
+          preload
           sizes="(max-width: 900px) 100vw, 50vw"
         /> : <p className={styles.galleryEmpty}>No product images have been published.</p>}
       </div>
@@ -32,7 +32,7 @@ export function ProductGallery({ images }: { images: ProductGalleryImage[] }) {
           aria-pressed={selected?.id === image.id}
           onClick={() => setSelectedId(image.id)}
         >
-          <Image src={`/api/media/${image.id}`} alt="" width={96} height={96} unoptimized />
+          <Image src={`/api/media/${image.id}?w=96`} alt="" width={96} height={96} unoptimized />
         </button>)}
       </div>}
     </section>

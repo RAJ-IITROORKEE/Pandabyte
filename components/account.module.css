@@ -22,7 +22,7 @@
   width: min(100% - 32px, 760px);
   margin: clamp(48px, 10vh, 120px) auto;
   padding: 22px;
-  color: #b42318;
+  color: light-dark(#b42318, #fda29b);
   background: var(--surface);
   border: 1px solid var(--divider);
   border-radius: 12px;

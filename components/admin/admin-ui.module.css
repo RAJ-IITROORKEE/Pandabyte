@@ -131,8 +131,8 @@
 }
 
 .dangerButton {
-  border-color: color-mix(in srgb, #b42318 40%, var(--border));
-  color: #b42318;
+  border-color: color-mix(in srgb, light-dark(#b42318, #fda29b) 40%, var(--border));
+  color: light-dark(#b42318, #fda29b);
 }
 
 .iconButton,
@@ -147,7 +147,7 @@
 
 .primaryButton:hover:not(:disabled) { filter: brightness(.95); }
 .secondaryButton:hover:not(:disabled), .iconButton:hover:not(:disabled), .iconLink:hover { background: color-mix(in srgb, var(--foreground) 5%, var(--surface)); }
-.dangerButton:hover:not(:disabled) { background: color-mix(in srgb, #b42318 6%, var(--surface)); }
+.dangerButton:hover:not(:disabled) { background: color-mix(in srgb, currentColor 6%, var(--surface)); }
 .primaryButton:focus-visible, .secondaryButton:focus-visible, .dangerButton:focus-visible, .iconButton:focus-visible, .iconLink:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .primaryButton:disabled, .secondaryButton:disabled, .dangerButton:disabled { cursor: not-allowed; opacity: .56; }
 
@@ -242,7 +242,7 @@
 .editorHeading h1 { max-width: 780px; overflow-wrap: anywhere; }
 .editorActions { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .headingMeta { min-height: 27px; flex-wrap: wrap; gap: 11px; margin-top: 11px; color: var(--muted); font-size: 12px; }
-.unsaved { color: #a15c00; font-weight: 650; }
+.unsaved { color: light-dark(#a15c00, #f5c26b); font-weight: 650; }
 .backLink { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 18px; color: var(--muted); font-size: 13px; text-decoration: none; }
 .backLink:hover { color: var(--foreground); }
 .editorForm { display: grid; gap: 18px; }
@@ -366,7 +366,7 @@
 .sku { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
 .stockValue { color: var(--accent); font-size: 20px; white-space: nowrap; }
 .formSubmit { display: flex; justify-content: flex-end; margin-top: 16px; }
-.inlineError { margin: 12px 0 0; color: #b42318; font-size: 12px; line-height: 1.5; }
+.inlineError { margin: 12px 0 0; color: light-dark(#b42318, #fda29b); font-size: 12px; line-height: 1.5; }
 .inquiryLayout, .mediaLayout { display: grid; min-width: 0; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); align-items: start; gap: 14px; }
 .inquiryDetail, .mediaDetail { display: grid; min-width: 0; gap: 15px; padding: clamp(16px, 2vw, 22px); border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); }
 .inquiryDetail .sectionHeading, .mediaDetail .sectionHeading { align-items: flex-start; margin: 0; }

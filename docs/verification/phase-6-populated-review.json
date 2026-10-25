@@ -1,0 +1,972 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Calcutta",
+  "scope": "bounded Phase 6 populated-site performance/accessibility review; development only",
+  "priorCommit": "b531ee8",
+  "status": "checkpoint verified; full release gates remain open",
+  "findingsFixed": [
+    "URL-driven filter defaults could disagree with results after client navigation",
+    "Product-card accessible names included the whole description",
+    "Full original photos were used for small thumbnails/card previews",
+    "Dark-theme small error/warning text had insufficient contrast",
+    "Account address closure could lose keyboard focus",
+    "Admin validation lacked human field identity and summary focus",
+    "Picker grouping/loading/error status was not consistently exposed",
+    "Selected media did not expose state or focus its detail heading"
+  ],
+  "delivery": {
+    "sizes": [
+      96,
+      960
+    ],
+    "meaning": "maximum edge in pixels; fit inside, no enlargement, quality 85 WebP",
+    "originalBytesPreserved": true,
+    "privateNoStore": true,
+    "publicVisibilityChecksBeforeAndAfter": true,
+    "customerPrivateFilesUntouched": true,
+    "noDatabaseOrStorageMigration": true
+  },
+  "measurements": {
+    "localCorpus": {
+      "measuredOn": "2026-10-26",
+      "scope": "Local sequential processing of 96 prepared WebP buffers; no HTTP, storage RPC, browser, load test, archive writes, or capacity claim.",
+      "source": ".bootstrap/catalog-import/prepared.json and prepared WebP buffers",
+      "images": 96,
+      "inputBytes": {
+        "total": 10554386,
+        "medianPerImage": 81600,
+        "maximumPerImage": 402024
+      },
+      "outputBytes": {
+        "original": 10554386,
+        "w96": 198168,
+        "w96ReductionPercent": 98.12,
+        "w960": 4156650,
+        "w960ReductionPercent": 60.62
+      },
+      "processingMs": {
+        "scope": "Same 96 buffers through prepareEditorialDownload; file-read time excluded.",
+        "original": {
+          "total": 16664,
+          "medianPerImage": 169,
+          "minPerImage": 44,
+          "maxPerImage": 491
+        },
+        "w96": {
+          "total": 18330,
+          "medianPerImage": 174.6,
+          "minPerImage": 44,
+          "maxPerImage": 548
+        },
+        "w960": {
+          "total": 35845,
+          "medianPerImage": 365.2,
+          "minPerImage": 42,
+          "maxPerImage": 813
+        }
+      },
+      "cpuTradeoffPercentVsOriginal": {
+        "w96": 10,
+        "w960": 115.1
+      },
+      "limitations": [
+        "Local sequential CPU and byte counts only; no HTTP or storage/network cost.",
+        "Synthetic/local processing measurements do not establish production capacity or expected visitor workload.",
+        "No per-image output rows were retained from the first benchmark pass."
+      ]
+    },
+    "httpBefore": {
+      "scope": "18 sequential localhost GETs against populated development catalog; HTML/body/image timing only; no browser-network/Web Vitals, percentile or capacity claim",
+      "observations": [
+        {
+          "route": "/",
+          "repeat": 1,
+          "headersMs": 1881,
+          "totalMs": 1891,
+          "decodedBodyBytes": 92632
+        },
+        {
+          "route": "/",
+          "repeat": 2,
+          "headersMs": 419,
+          "totalMs": 422,
+          "decodedBodyBytes": 92632
+        },
+        {
+          "route": "/shop",
+          "repeat": 1,
+          "headersMs": 99,
+          "totalMs": 678,
+          "decodedBodyBytes": 106272
+        },
+        {
+          "route": "/shop",
+          "repeat": 2,
+          "headersMs": 40,
+          "totalMs": 380,
+          "decodedBodyBytes": 106272
+        },
+        {
+          "route": "/shop?category=microcontroller",
+          "repeat": 1,
+          "headersMs": 108,
+          "totalMs": 928,
+          "decodedBodyBytes": 106238
+        },
+        {
+          "route": "/shop?category=microcontroller",
+          "repeat": 2,
+          "headersMs": 34,
+          "totalMs": 620,
+          "decodedBodyBytes": 106238
+        },
+        {
+          "route": "/shop?q=XC3M",
+          "repeat": 1,
+          "headersMs": 34,
+          "totalMs": 335,
+          "decodedBodyBytes": 78489
+        },
+        {
+          "route": "/shop?q=XC3M",
+          "repeat": 2,
+          "headersMs": 19,
+          "totalMs": 327,
+          "decodedBodyBytes": 78489
+        },
+        {
+          "route": "/products/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+          "repeat": 1,
+          "headersMs": 37,
+          "totalMs": 346,
+          "decodedBodyBytes": 70121
+        },
+        {
+          "route": "/products/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+          "repeat": 2,
+          "headersMs": 101,
+          "totalMs": 375,
+          "decodedBodyBytes": 70121
+        },
+        {
+          "route": "/contact",
+          "repeat": 1,
+          "headersMs": 368,
+          "totalMs": 370,
+          "decodedBodyBytes": 58826
+        },
+        {
+          "route": "/contact",
+          "repeat": 2,
+          "headersMs": 330,
+          "totalMs": 350,
+          "decodedBodyBytes": 58826
+        }
+      ],
+      "images": [
+        {
+          "sample": "smallest",
+          "repeat": 1,
+          "bytes": 5290,
+          "headersMs": 1074,
+          "totalMs": 1075
+        },
+        {
+          "sample": "smallest",
+          "repeat": 2,
+          "bytes": 5290,
+          "headersMs": 1118,
+          "totalMs": 1118
+        },
+        {
+          "sample": "median",
+          "repeat": 1,
+          "bytes": 81600,
+          "headersMs": 1243,
+          "totalMs": 1244
+        },
+        {
+          "sample": "median",
+          "repeat": 2,
+          "bytes": 81600,
+          "headersMs": 1427,
+          "totalMs": 1427
+        },
+        {
+          "sample": "largest",
+          "repeat": 1,
+          "bytes": 402024,
+          "headersMs": 2025,
+          "totalMs": 2028
+        },
+        {
+          "sample": "largest",
+          "repeat": 2,
+          "bytes": 402024,
+          "headersMs": 1325,
+          "totalMs": 1327
+        }
+      ]
+    },
+    "httpAfterCleanDataset": {
+      "scope": "32 sequential localhost GETs against populated development catalog; HTML/body/image timing only; no browser-network/Web Vitals, percentile or capacity claim",
+      "productsBefore": 42,
+      "productsAfter": 42,
+      "observations": [
+        {
+          "route": "/",
+          "repeat": 1,
+          "headersMs": 1955,
+          "totalMs": 1961,
+          "decodedBodyBytes": 92780
+        },
+        {
+          "route": "/",
+          "repeat": 2,
+          "headersMs": 374,
+          "totalMs": 377,
+          "decodedBodyBytes": 92780
+        },
+        {
+          "route": "/shop",
+          "repeat": 1,
+          "headersMs": 49,
+          "totalMs": 603,
+          "decodedBodyBytes": 107024
+        },
+        {
+          "route": "/shop",
+          "repeat": 2,
+          "headersMs": 19,
+          "totalMs": 317,
+          "decodedBodyBytes": 107024
+        },
+        {
+          "route": "/shop?category=microcontroller",
+          "repeat": 1,
+          "headersMs": 26,
+          "totalMs": 867,
+          "decodedBodyBytes": 106979
+        },
+        {
+          "route": "/shop?category=microcontroller",
+          "repeat": 2,
+          "headersMs": 22,
+          "totalMs": 595,
+          "decodedBodyBytes": 106979
+        },
+        {
+          "route": "/shop?q=XC3M",
+          "repeat": 1,
+          "headersMs": 33,
+          "totalMs": 329,
+          "decodedBodyBytes": 78689
+        },
+        {
+          "route": "/shop?q=XC3M",
+          "repeat": 2,
+          "headersMs": 34,
+          "totalMs": 342,
+          "decodedBodyBytes": 78689
+        },
+        {
+          "route": "/products/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+          "repeat": 1,
+          "headersMs": 40,
+          "totalMs": 317,
+          "decodedBodyBytes": 70136
+        },
+        {
+          "route": "/products/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+          "repeat": 2,
+          "headersMs": 23,
+          "totalMs": 296,
+          "decodedBodyBytes": 70136
+        },
+        {
+          "route": "/contact",
+          "repeat": 1,
+          "headersMs": 308,
+          "totalMs": 310,
+          "decodedBodyBytes": 58826
+        },
+        {
+          "route": "/contact",
+          "repeat": 2,
+          "headersMs": 306,
+          "totalMs": 308,
+          "decodedBodyBytes": 58826
+        }
+      ],
+      "images": [
+        {
+          "sample": "smallest",
+          "variant": "original",
+          "repeat": 1,
+          "bytes": 5290,
+          "width": 589,
+          "height": 363,
+          "headersMs": 1101,
+          "totalMs": 1101
+        },
+        {
+          "sample": "smallest",
+          "variant": "original",
+          "repeat": 2,
+          "bytes": 5290,
+          "width": 589,
+          "height": 363,
+          "headersMs": 919,
+          "totalMs": 920
+        },
+        {
+          "sample": "smallest",
+          "variant": 96,
+          "repeat": 1,
+          "bytes": 360,
+          "width": 96,
+          "height": 59,
+          "headersMs": 913,
+          "totalMs": 913
+        },
+        {
+          "sample": "smallest",
+          "variant": 96,
+          "repeat": 2,
+          "bytes": 360,
+          "width": 96,
+          "height": 59,
+          "headersMs": 916,
+          "totalMs": 917
+        },
+        {
+          "sample": "smallest",
+          "variant": 960,
+          "repeat": 1,
+          "bytes": 5290,
+          "width": 589,
+          "height": 363,
+          "headersMs": 880,
+          "totalMs": 881
+        },
+        {
+          "sample": "smallest",
+          "variant": 960,
+          "repeat": 2,
+          "bytes": 5290,
+          "width": 589,
+          "height": 363,
+          "headersMs": 900,
+          "totalMs": 901
+        },
+        {
+          "sample": "median",
+          "variant": "original",
+          "repeat": 1,
+          "bytes": 81600,
+          "width": 1342,
+          "height": 960,
+          "headersMs": 1027,
+          "totalMs": 1029
+        },
+        {
+          "sample": "median",
+          "variant": "original",
+          "repeat": 2,
+          "bytes": 81600,
+          "width": 1342,
+          "height": 960,
+          "headersMs": 1002,
+          "totalMs": 1002
+        },
+        {
+          "sample": "median",
+          "variant": 96,
+          "repeat": 1,
+          "bytes": 1942,
+          "width": 96,
+          "height": 69,
+          "headersMs": 2381,
+          "totalMs": 2381
+        },
+        {
+          "sample": "median",
+          "variant": 96,
+          "repeat": 2,
+          "bytes": 1942,
+          "width": 96,
+          "height": 69,
+          "headersMs": 1020,
+          "totalMs": 1021
+        },
+        {
+          "sample": "median",
+          "variant": 960,
+          "repeat": 1,
+          "bytes": 49696,
+          "width": 960,
+          "height": 687,
+          "headersMs": 1147,
+          "totalMs": 1147
+        },
+        {
+          "sample": "median",
+          "variant": 960,
+          "repeat": 2,
+          "bytes": 49696,
+          "width": 960,
+          "height": 687,
+          "headersMs": 1178,
+          "totalMs": 1178
+        },
+        {
+          "sample": "largest",
+          "variant": "original",
+          "repeat": 1,
+          "bytes": 402024,
+          "width": 2048,
+          "height": 1964,
+          "headersMs": 1168,
+          "totalMs": 1171
+        },
+        {
+          "sample": "largest",
+          "variant": "original",
+          "repeat": 2,
+          "bytes": 402024,
+          "width": 2048,
+          "height": 1964,
+          "headersMs": 1200,
+          "totalMs": 1202
+        },
+        {
+          "sample": "largest",
+          "variant": 96,
+          "repeat": 1,
+          "bytes": 3856,
+          "width": 96,
+          "height": 92,
+          "headersMs": 1244,
+          "totalMs": 1244
+        },
+        {
+          "sample": "largest",
+          "variant": 96,
+          "repeat": 2,
+          "bytes": 3856,
+          "width": 96,
+          "height": 92,
+          "headersMs": 1216,
+          "totalMs": 1217
+        },
+        {
+          "sample": "largest",
+          "variant": 960,
+          "repeat": 1,
+          "bytes": 130280,
+          "width": 960,
+          "height": 921,
+          "headersMs": 1483,
+          "totalMs": 1483
+        },
+        {
+          "sample": "largest",
+          "variant": 960,
+          "repeat": 2,
+          "bytes": 130280,
+          "width": 960,
+          "height": 921,
+          "headersMs": 1434,
+          "totalMs": 1435
+        }
+      ]
+    },
+    "interpretation": "Representation bytes decrease; on-demand resize increases CPU. Sparse unthrottled localhost samples, with remote development backend and read-only regression activity, are not a controlled latency improvement, field Web Vitals, percentile or capacity result."
+  },
+  "browser": {
+    "surface": "built-in app browser",
+    "responsive": [
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "light",
+        "visibleDecoded": true,
+        "width": 320
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "light",
+        "visibleDecoded": true,
+        "width": 768
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "light",
+        "visibleDecoded": true,
+        "width": 1024
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "light",
+        "visibleDecoded": true,
+        "width": 1440
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "dark",
+        "visibleDecoded": true,
+        "width": 320
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "dark",
+        "visibleDecoded": true,
+        "width": 768
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "dark",
+        "visibleDecoded": true,
+        "width": 1024
+      },
+      {
+        "bounded": true,
+        "broken": 0,
+        "overflow": false,
+        "page": "catalog",
+        "theme": "dark",
+        "visibleDecoded": true,
+        "width": 1440
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "light",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 320
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "light",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 768
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "light",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 1024
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "light",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 1440
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "dark",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 320
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "dark",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 768
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "dark",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 1024
+      },
+      {
+        "main": {
+          "decoded": true,
+          "fits": true,
+          "original": true
+        },
+        "overflow": false,
+        "page": "gallery",
+        "theme": "dark",
+        "thumbs": [
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          },
+          {
+            "bounded": true,
+            "decoded": true
+          }
+        ],
+        "width": 1440
+      }
+    ],
+    "adminResponsive": [
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "dark",
+        "width": 320
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "dark",
+        "width": 768
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "dark",
+        "width": 1024
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "dark",
+        "width": 1440
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "light",
+        "width": 320
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "light",
+        "width": 768
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "light",
+        "width": 1024
+      },
+      {
+        "groups": [
+          "Categories",
+          "Media assets"
+        ],
+        "hasFieldErrors": true,
+        "overflow": false,
+        "page": "admin-form",
+        "theme": "light",
+        "width": 1440
+      }
+    ],
+    "interactions": {
+      "categoryLinkUpdatesCheckedState": true,
+      "searchAndSortSurviveCategoryNavigation": true,
+      "resetClearsSearchAndCategories": true,
+      "resetRetainsKeyboardFocus": true,
+      "conciseCardNames": true,
+      "galleryKeyboardSelectsSecondImage": true,
+      "accountAddFocus": "address-label",
+      "accountCancelFocus": "Add address",
+      "noSavedAddressMutation": true,
+      "validationFocusRole": "alert",
+      "humanValidationLabels": [
+        "Title",
+        "Slug"
+      ],
+      "namedPickerGroups": [
+        "Categories",
+        "Media assets"
+      ],
+      "mediaDetailFocusTag": "H2",
+      "mediaSelectedPressedState": true,
+      "addressSaveDeleteFocus": "source-reviewed only; no real address mutation"
+    },
+    "contrast": [
+      {
+        "background": "rgb(20, 20, 20)",
+        "foreground": "rgb(245, 194, 107)",
+        "theme": "dark",
+        "kind": "rendered unsaved warning",
+        "ratio": 11.24
+      },
+      {
+        "background": "rgb(250, 250, 250)",
+        "foreground": "rgb(161, 92, 0)",
+        "theme": "light",
+        "kind": "rendered unsaved warning",
+        "ratio": 4.97
+      },
+      {
+        "background": "rgb(255, 255, 255)",
+        "foreground": "rgb(180, 35, 24)",
+        "theme": "light",
+        "kind": "rendered logout action",
+        "ratio": 6.57
+      },
+      {
+        "background": "rgb(28, 28, 28)",
+        "foreground": "rgb(253, 164, 175)",
+        "theme": "dark",
+        "kind": "rendered logout action",
+        "ratio": 9.01
+      },
+      {
+        "kind": "source-reviewed error text on dark surface",
+        "theme": "dark",
+        "foreground": "rgb(253,162,155)",
+        "background": "rgb(28,28,28)",
+        "ratio": 8.78
+      },
+      {
+        "kind": "source-reviewed error text on light surface",
+        "theme": "light",
+        "foreground": "rgb(180,35,24)",
+        "background": "rgb(255,255,255)",
+        "ratio": 6.57
+      }
+    ],
+    "performanceApi": "Unavailable in the supported read-only page scope; no browser network/Web Vitals audit claimed",
+    "realScreenReaderAudit": false,
+    "reducedMotionPreferenceEmulation": false,
+    "cssReducedMotionReviewed": true,
+    "finalCheck": {
+      "consoleErrors": 0,
+      "documentOverflow": false,
+      "brokenImages": 0,
+      "rawIdsVisible": false,
+      "ownerSessionPreserved": true,
+      "defaultViewportRestored": true,
+      "screenshot": ".bootstrap/phase6-review/catalog-proof.png"
+    }
+  },
+  "verification": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "unit": {
+      "passed": 114,
+      "failed": 0,
+      "skipped": 0
+    },
+    "securityHttp": {
+      "passed": 2,
+      "failed": 0
+    },
+    "publishing": "passed with derivative/private/customer/withdrawal/archive/original-byte checks; fixtures cleaned",
+    "storefront": "passed; fixtures cleaned",
+    "catalog": "42 products, 2 holds, 5 categories, all public mapped fields and 96 original-byte deliveries reconciled",
+    "savedOwnerProfileOrAddressChanges": false
+  },
+  "preserved": [
+    "Original source/archive bytes, CAD and other-chat/design artifacts",
+    "Owner Google session and protected Admin role",
+    "Non-purchasable source observations and private staff review notes",
+    "Existing pricing/inventory/cart and publication version guards"
+  ],
+  "excluded": [
+    "Checkout/payments/order development",
+    "Load/concurrency tests or capacity certification",
+    "Deployment/GitHub publication/domain changes",
+    "Billing/live email/external monitoring",
+    "Backup/export/copy/restore or recovery provisioning",
+    "New content import or owner factual/rights approval"
+  ],
+  "remaining": [
+    "Approved content/resources/rights and two real source SKUs",
+    "Production provider/security/operating configuration",
+    "Separately scoped capacity budget/workload and measurements",
+    "Owner recovery objectives and deferred restore",
+    "Assistive-technology audit and runtime reduced-motion preference coverage"
+  ]
+}

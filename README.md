@@ -8,6 +8,8 @@
 
 # PandaByte.in — single project context
 
+26 October continuation: the populated-site [Phase 6 performance/accessibility review](docs/phase-6-populated-review.md) adds bounded image previews, URL-consistent filters and keyboard/contrast fixes. Original media and publication/privacy gates remain intact. Sequential measurements are not load tests or Web Vitals; checkout/payments, recovery and deployment stay deferred.
+
 Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 4 is committed as `80c8685`; Phase 5 guest/private carts are implemented and verified, with checkout/payment operations explicitly deferred.** See [cart evidence and remaining gates](docs/verification/phase-5-cart.json). This file consolidates decisions, architecture, source findings and the complete original audit. Shared frontend contracts are recorded in [Phase 2 frontend](docs/phase-2-frontend.md); current publishing contracts are in [Phase 3](docs/phase-3-contract.md), [admin frontend](docs/phase-3-frontend.md) and [data operations](docs/phase-3-operations.md). Phase 4 [operations](docs/phase-4-operations.md) and [verification](docs/verification/phase-4.json) record the storefront, search and remaining release limits. Read it first; [design.md](design.md) specifies page/content behavior, [plan.md](plan.md) defines implementation phases, and [AGENTS.md](AGENTS.md) governs agent work.
 
 ## Local development

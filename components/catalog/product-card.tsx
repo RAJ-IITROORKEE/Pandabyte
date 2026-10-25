@@ -14,15 +14,8 @@ function cardPrice(product: PublishedRecord<"products">): string {
   return min === max ? money.format(min / 100) : `From ${money.format(min / 100)}`;
 }
 
-function productImage(product: PublishedRecord<"products">) {
-  const mediaId = product.document.mediaIds[0];
-  if (!mediaId) return null;
-  const block = product.document.blocks.find((item) => item.type === "image" && item.mediaId === mediaId);
-  return { mediaId, alt: block?.type === "image" ? block.alt : product.title };
-}
-
 export function ProductCard({ product, featured = false }: { product: PublishedRecord<"products">; featured?: boolean }) {
-  const image = productImage(product);
+  const mediaId = product.document.mediaIds[0];
   const sourceObservation = product.document.sourceObservation;
   const available = product.variants.some((variant) => variant.availability === "available");
   const availabilityLabel = product.variants.length === 0 ? "Availability unavailable" : available ? "Available" : "Unavailable";
@@ -30,11 +23,11 @@ export function ProductCard({ product, featured = false }: { product: PublishedR
 
   return (
     <article className={`${styles.productCard} ${featured ? styles.featuredCard : ""} ${sourceObservation ? styles.sourceObservationCard : ""}`}>
-      <Link className={styles.productCardLink} href={`/products/${encodeURIComponent(product.slug)}`}>
+      <Link className={styles.productCardLink} href={`/products/${encodeURIComponent(product.slug)}`} aria-label={`View product: ${product.title}`}>
         <div className={styles.productCardImage}>
-          {image ? <Image
-            src={`/api/media/${image.mediaId}`}
-            alt={image.alt}
+          {mediaId ? <Image
+            src={`/api/media/${mediaId}?w=960`}
+            alt=""
             width={800}
             height={600}
             unoptimized

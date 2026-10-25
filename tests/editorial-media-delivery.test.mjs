@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import sharp from "sharp";
 import { MAX_MEDIA_BYTES } from "../lib/editorial/validation.ts";
-import { prepareEditorialDownload } from "../lib/editorial/media-delivery.ts";
+import { parseEditorialImageSize, prepareEditorialDownload } from "../lib/editorial/media-delivery.ts";
 
 const WIDTH = 48;
 const HEIGHT = 32;
 
-function pixels(channels = 3, offset = 0) {
-  const data = Buffer.alloc(WIDTH * HEIGHT * channels);
+function pixels(channels = 3, offset = 0, width = WIDTH, height = HEIGHT) {
+  const data = Buffer.alloc(width * height * channels);
   for (let index = 0; index < data.length; index += channels) {
     data[index] = (index * 13 + offset) % 256;
     data[index + 1] = (index * 7 + offset) % 256;
@@ -18,9 +18,9 @@ function pixels(channels = 3, offset = 0) {
   return data;
 }
 
-async function webp({ alpha = false, lossless = false, metadata = false } = {}) {
+async function webp({ alpha = false, lossless = false, metadata = false, width = WIDTH, height = HEIGHT } = {}) {
   const channels = alpha ? 4 : 3;
-  let image = sharp(pixels(channels), { raw: { width: WIDTH, height: HEIGHT, channels } });
+  let image = sharp(pixels(channels, 0, width, height), { raw: { width, height, channels } });
   if (metadata) image = image.withExif({ IFD0: { Artist: "synthetic test metadata" } });
   return image.webp({ quality: 90, lossless }).toBuffer();
 }
@@ -56,6 +56,60 @@ test("returns normalized lossy, alpha and lossless WebP bytes unchanged without 
   await assertDeliveredUnchanged(await webp());
   await assertDeliveredUnchanged(await webp({ alpha: true }));
   await assertDeliveredUnchanged(await webp({ lossless: true }));
+});
+
+test("accepts only one allowlisted image size and leaves a missing size unset", () => {
+  assert.equal(parseEditorialImageSize(new URLSearchParams()), undefined);
+  assert.equal(parseEditorialImageSize(new URLSearchParams("w=96")), 96);
+  assert.equal(parseEditorialImageSize(new URLSearchParams("w=960")), 960);
+  for (const value of ["", "95", "97", "961", "1200", "96.0"]) {
+    assert.equal(parseEditorialImageSize(new URLSearchParams(`w=${value}`)), null);
+  }
+  assert.equal(parseEditorialImageSize(new URLSearchParams("w=96&w=960")), null);
+});
+
+test("returns bounded clean WebP derivatives, preserving alpha and never enlarging", async () => {
+  const large = await webp({ alpha: true, width: 1200, height: 900 });
+  const largeMetadata = await record(large);
+  for (const [size, width, height] of [[96, 96, 72], [960, 960, 720]]) {
+    const prepared = await prepareEditorialDownload(large, largeMetadata, size);
+    assert.ok(prepared);
+    assert.equal(prepared.mimeType, "image/webp");
+    assert.equal(prepared.extension, "webp");
+    assert.equal(prepared.width, width);
+    assert.equal(prepared.height, height);
+    const metadata = await sharp(prepared.bytes).metadata();
+    assert.equal(metadata.format, "webp");
+    assert.equal(metadata.width, width);
+    assert.equal(metadata.height, height);
+    assert.equal(metadata.hasAlpha, true);
+    for (const field of ["exif", "icc", "iptc", "xmp", "tifftagPhotoshop", "comments"]) {
+      assert.equal(metadata[field], undefined, `derived WebP contains ${field}`);
+    }
+  }
+
+  const small = await webp({ alpha: true });
+  const smallMetadata = await record(small);
+  for (const size of [96, 960]) {
+    const prepared = await prepareEditorialDownload(small, smallMetadata, size);
+    assert.ok(prepared);
+    assert.equal(prepared.width, WIDTH);
+    assert.equal(prepared.height, HEIGHT);
+    assert.deepEqual(prepared.bytes, small);
+  }
+});
+
+test("rejects unsupported runtime sizes and derivative requests for PDFs", async () => {
+  const image = await webp();
+  const imageMetadata = await record(image);
+  for (const size of [0, 97, 961, NaN, "96", null]) {
+    assert.equal(await prepareEditorialDownload(image, imageMetadata, size), null);
+  }
+
+  const pdf = Buffer.from("%PDF-1.7\nsynthetic local test fixture\n");
+  assert.equal(await prepareEditorialDownload(pdf, {
+    mimeType: "application/pdf", byteSize: pdf.byteLength, width: null, height: null,
+  }, 96), null);
 });
 
 test("rejects malformed, mismatched, oversized, polyglot and truncated WebP inputs", async () => {

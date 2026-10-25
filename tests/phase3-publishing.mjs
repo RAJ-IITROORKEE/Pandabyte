@@ -636,6 +636,15 @@ export async function verifyMediaBoundary(context, state, auth, created) {
   const publicKey = `assets/${publicImage.id}.webp`;
   const privateGet = await request(context, `/api/media/${publicImage.id}`, null);
   checkStatus(privateGet, 404, "draft_media_downloadable_anonymously");
+  for (const size of [96, 960]) {
+    checkStatus(await request(context, `/api/media/${publicImage.id}?w=${size}`, null), 404, "draft_derivative_public");
+    checkStatus(await request(context, `/api/media/${publicImage.id}?w=${size}`, auth.customer.appToken), 404, "customer_draft_derivative_access");
+    const staffPreview = await request(context, `/api/media/${publicImage.id}?w=${size}`, auth.staff.appToken);
+    checkStatus(staffPreview, 200, "staff_derivative_denied");
+    ensure(staffPreview.headers.get("cache-control")?.includes("no-store"), "private_derivative_cached");
+    const preview = await sharp(Buffer.from(await staffPreview.arrayBuffer())).metadata();
+    ensure(preview.format === "webp" && preview.width <= size && preview.height <= size, "private_derivative_dimensions");
+  }
   const anonClient = createClient({ baseUrl: context.baseUrl, anonKey: process.env.INSFORGE_ANON_KEY.trim() });
   const draftStorageRead = await anonClient.storage.from(mediaBucketName).download(publicKey);
   ensure(Boolean(draftStorageRead.error) || !draftStorageRead.data, "draft_media_storage_readable_anonymously");
@@ -682,6 +691,16 @@ export async function verifyMediaBoundary(context, state, auth, created) {
     "published_media_download_headers_invalid");
   const publicBytes = Buffer.from(await publicDownload.arrayBuffer());
   ensure(publicBytes.equals(storedBytes), "public_media_reencoded_on_read");
+  for (const size of [96, 960]) {
+    const preview = await request(context, `/api/media/${publicImage.id}?w=${size}`, null);
+    checkStatus(preview, 200, "public_derivative_unavailable");
+    ensure(preview.headers.get("cache-control")?.includes("no-store") && preview.headers.get("content-type") === "image/webp", "public_derivative_headers");
+    const image = await sharp(Buffer.from(await preview.arrayBuffer())).metadata();
+    ensure(image.width <= size && image.height <= size, "public_derivative_unbounded");
+  }
+  for (const invalid of ["w=1", "w=99999", "w=96&w=960", "w="]) {
+    checkStatus(await request(context, `/api/media/${publicImage.id}?${invalid}`, null), 400, "invalid_derivative_size_accepted");
+  }
   const publicImageMetadata = await sharp(publicBytes).metadata();
   ensure(publicBytes.byteLength > 0 && publicImageMetadata.format === "webp" && publicImageMetadata.width === 2 && publicImageMetadata.height === 2,
     "published_media_download_bytes_invalid");
@@ -706,12 +725,14 @@ export async function verifyMediaBoundary(context, state, auth, created) {
   const withdrawn = await checkJsonResponse(withdrawResponse, 200, "media_withdraw_failed");
   ensure(withdrawn.media.version === 3 && !withdrawn.media.published, "media_withdraw_version_or_state_wrong");
   checkStatus(await request(context, `/api/media/${publicImage.id}`, null), 404, "withdrawn_media_still_public");
+  for (const size of [96, 960]) checkStatus(await request(context, `/api/media/${publicImage.id}?w=${size}`, null), 404, "withdrawn_derivative_public");
   const archiveUnreferenced = await request(context, `/api/admin/media/${publicImage.id}/archive`, auth.staff.appToken, {
     method: "POST", json: { expectedVersion: 3 },
   });
   const archived = await checkJsonResponse(archiveUnreferenced, 200, "unreferenced_media_archive_failed");
   ensure(archived.media.archived, "unreferenced_media_not_archived");
   checkStatus(await request(context, `/api/media/${publicImage.id}`, null), 404, "archived_media_still_public");
+  for (const size of [96, 960]) checkStatus(await request(context, `/api/media/${publicImage.id}?w=${size}`, null), 404, "archived_derivative_public");
 }
 
 export async function verifyInquiryBoundary(context, state, auth) {

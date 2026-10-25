@@ -167,7 +167,7 @@
 
 .signOutError {
   margin: 6px 10px 10px;
-  color: #b42318;
+  color: light-dark(#b42318, #fda29b);
   font-size: 12px;
   line-height: 1.45;
 }

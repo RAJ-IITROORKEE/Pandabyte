@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import type { CustomerAddress as Address } from "@/lib/account/addresses";
 import styles from "@/components/account.module.css";
@@ -107,6 +107,12 @@ export function AccountAddresses() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const addAddressRef = useRef<HTMLButtonElement>(null);
+  const addressLabelRef = useRef<HTMLInputElement>(null);
+  const editorTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const focusAfterCloseRef = useRef<HTMLElement | null>(null);
+  const focusAddAfterDeleteRef = useRef(false);
 
   const loadAddresses = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -134,7 +140,22 @@ export function AccountAddresses() {
     return () => controller.abort();
   }, [loadAddresses]);
 
-  function startNewAddress() {
+  useEffect(() => {
+    if (loading || saving) return;
+    if (focusAddAfterDeleteRef.current) {
+      focusAddAfterDeleteRef.current = false;
+      (addAddressRef.current ?? addressLabelRef.current)?.focus();
+      return;
+    }
+    const target = focusAfterCloseRef.current;
+    if (!target) return;
+    focusAfterCloseRef.current = null;
+    if (target.isConnected) target.focus();
+    else (addAddressRef.current ?? addressLabelRef.current)?.focus();
+  }, [confirmDeleteId, editing, loading, saving]);
+
+  function startNewAddress(trigger: HTMLButtonElement) {
+    editorTriggerRef.current = trigger;
     setError("");
     setStatus("");
     const first = addresses.length === 0;
@@ -144,7 +165,8 @@ export function AccountAddresses() {
     });
   }
 
-  function startEdit(address: Address) {
+  function startEdit(address: Address, trigger: HTMLButtonElement) {
+    editorTriggerRef.current = trigger;
     setError("");
     setStatus("");
     const fields: AddressFields = {
@@ -162,6 +184,12 @@ export function AccountAddresses() {
     };
     setEditing({ id: address.id, version: address.version, fields });
     setConfirmDeleteId(null);
+  }
+
+  function closeEditor() {
+    focusAfterCloseRef.current = editorTriggerRef.current;
+    editorTriggerRef.current = null;
+    setEditing(null);
   }
 
   function updateField<K extends keyof AddressFields>(field: K, value: AddressFields[K]) {
@@ -194,7 +222,7 @@ export function AccountAddresses() {
       setAddresses((currentAddresses) => editing.id
         ? currentAddresses.map((item) => item.id === address.id ? address : item)
         : [...currentAddresses, address]);
-      setEditing(null);
+      closeEditor();
       setStatus("Address saved.");
       await loadAddresses();
     } catch (cause) {
@@ -219,6 +247,8 @@ export function AccountAddresses() {
       if (!isRecord(body) || body.deleted !== true) throw new Error("The address could not be confirmed as deleted.");
       setAddresses((current) => current.filter((item) => item.id !== address.id));
       setConfirmDeleteId(null);
+      focusAddAfterDeleteRef.current = true;
+      deleteTriggerRef.current = null;
       setStatus("Address deleted.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "This address could not be deleted. Please try again.");
@@ -238,7 +268,7 @@ export function AccountAddresses() {
           <p>Save delivery details and choose separate shipping and billing defaults.</p>
         </div>
         {!editing && (
-          <button className={styles.primaryAction} type="button" onClick={startNewAddress} disabled={loading || saving}>
+          <button ref={addAddressRef} className={styles.primaryAction} type="button" onClick={(event) => startNewAddress(event.currentTarget)} disabled={loading || saving}>
             <Plus aria-hidden="true" size={17} /> Add address
           </button>
         )}
@@ -279,13 +309,14 @@ export function AccountAddresses() {
                   </div>
                 </div>
                 <div className={styles.addressCardActions}>
-                  <button className={styles.textAction} type="button" onClick={() => startEdit(address)} disabled={saving}>
+                  <button className={styles.textAction} type="button" onClick={(event) => startEdit(address, event.currentTarget)} disabled={saving}>
                     Edit
                   </button>
                   <button
                     className={styles.textAction}
                     type="button"
-                    onClick={() => {
+                    onClick={(event) => {
+                      deleteTriggerRef.current = event.currentTarget;
                       setError("");
                       setConfirmDeleteId(address.id);
                     }}
@@ -307,7 +338,11 @@ export function AccountAddresses() {
                     <button className={styles.dangerAction} type="button" onClick={() => void deleteAddress(address)} disabled={saving}>
                       {saving ? "Deleting…" : "Delete address"}
                     </button>
-                    <button className={styles.secondaryAction} type="button" onClick={() => setConfirmDeleteId(null)} disabled={saving}>
+                    <button className={styles.secondaryAction} type="button" onClick={() => {
+                      focusAfterCloseRef.current = deleteTriggerRef.current;
+                      deleteTriggerRef.current = null;
+                      setConfirmDeleteId(null);
+                    }} disabled={saving}>
                       Keep address
                     </button>
                   </div>
@@ -325,7 +360,7 @@ export function AccountAddresses() {
             <div className={styles.formGrid}>
               <div className={styles.field}>
                 <label htmlFor="address-label">Address label</label>
-                <input id="address-label" name="label" autoFocus={!editing.id} autoComplete="off" required maxLength={40} value={editing.fields.label} onChange={(event) => updateField("label", event.target.value)} />
+                <input ref={addressLabelRef} id="address-label" name="label" autoFocus={!editing.id} autoComplete="off" required maxLength={40} value={editing.fields.label} onChange={(event) => updateField("label", event.target.value)} />
               </div>
               <div className={styles.field}>
                 <label htmlFor="address-recipient">Recipient name</label>
@@ -376,7 +411,7 @@ export function AccountAddresses() {
             </fieldset>
 
             <div className={styles.formActions}>
-              <button className={styles.secondaryAction} type="button" onClick={() => setEditing(null)} disabled={saving}>
+              <button className={styles.secondaryAction} type="button" onClick={closeEditor} disabled={saving}>
                 Cancel
               </button>
               <button className={styles.primaryAction} type="submit" disabled={saving}>
@@ -390,7 +425,7 @@ export function AccountAddresses() {
                   className={styles.secondaryAction}
                   type="button"
                   onClick={() => {
-                    setEditing(null);
+                    closeEditor();
                     setConfirmDeleteId(null);
                     setStatus("");
                     void loadAddresses();

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   ADMIN_MODULES,
   parseDocument,
@@ -54,7 +54,42 @@ type AdminRecord = RecordListItem & {
 
 type ApiError = { error?: { code?: string; message?: string; fields?: { field: string; message: string }[] } };
 type Option = { id: string; label: string };
+type ValidationIssue = { field: string; message: string };
 type ModuleMeta = { title: string; description: string; singular: string };
+
+const FIELD_LABELS: Record<string, string> = {
+  title: "Title", slug: "Slug", summary: "Summary", seoTitle: "SEO title", seoDescription: "SEO description",
+  categoryIds: "Categories", modelNumbers: "Model numbers", variants: "Variants", sku: "SKU", label: "Label",
+  specifications: "Specifications", name: "Name", value: "Value", compatibility: "Compatibility", kitContents: "Kit contents",
+  resources: "Resources", mediaIds: "Media assets", sourceObservation: "Source observation", sourceReview: "Source review",
+  priceText: "Observed price", capturedAt: "Capture time", sourceUrl: "Source URL", author: "Author", tags: "Tags",
+  answer: "Answer", topic: "Topic", placements: "Placements", parentId: "Parent category", position: "Position",
+  role: "Role", bio: "Biography", links: "Links", href: "Destination URL", group: "Navigation location", visible: "Visibility",
+  email: "Email", phone: "Phone", address: "Address", hours: "Hours", timezone: "Time zone", url: "URL",
+  collection: "Collection", text: "Text", type: "Content type", level: "Heading level", items: "List items",
+  headers: "Table headings", rows: "Table rows", code: "Code", language: "Language", mediaId: "Media asset", alt: "Alternative text",
+  quantity: "Quantity", productId: "Product",
+};
+
+const ROW_LABELS: Record<string, string> = {
+  categoryIds: "Category", modelNumbers: "Model number", variants: "Variant", specifications: "Specification",
+  kitContents: "Kit item", resources: "Resource", mediaIds: "Media asset", links: "Link", blocks: "Content block",
+  tags: "Tag", items: "List item", headers: "Table heading", rows: "Table row",
+};
+
+function validationFieldLabel(field: string): string {
+  const parts = field.split(".").filter((part) => part && part !== "document");
+  const index = parts.findIndex((part) => /^\d+$/.test(part));
+  if (index < 0) return FIELD_LABELS[parts[parts.length - 1]] ?? "Record";
+
+  const collection = parts[index - 1];
+  const row = Number(parts[index]) + 1;
+  const key = parts[index + 1];
+  const rowLabel = ROW_LABELS[collection] ?? "Record";
+  if (!key || /^\d+$/.test(key)) return `${rowLabel} ${row}`;
+  const label = FIELD_LABELS[key];
+  return label ? `${rowLabel} ${row} · ${label}` : `${rowLabel} ${row}`;
+}
 
 const META: Record<AdminModule, ModuleMeta> = {
   products: { title: "Products", singular: "product", description: "Manage product descriptions, categories, and specifications.", },
@@ -243,9 +278,10 @@ function RelationPicker({ label, module, values, onChange }: { label: string; mo
   const offset = page.module === module ? page.offset : 0;
   const limit = module === "media" ? 50 : 100;
   const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [retry, setRetry] = useState(0);
   const [loadError, setLoadError] = useState("");
+  const loadingOptions = loading || loaded.module !== module;
   useEffect(() => {
     let alive = true;
     async function load() {
@@ -265,30 +301,32 @@ function RelationPicker({ label, module, values, onChange }: { label: string; mo
     void load();
     return () => { alive = false; };
   }, [module, offset, limit, retry]);
-  return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span>
-    {options.length > 0 ? <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div> : <p className={styles.fieldHint}>{loadError || "No selectable records are available yet."}</p>}
-    {options.length > 0 && loadError && <p className={styles.fieldHint} role="status">{loadError}</p>}
-    {((loaded.module === module && hasMore) || loading || loadError) && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); if (loadError) setRetry(n => n + 1); else setPage({ module, offset: offset + limit }); }}>{loading ? "Loading options…" : loadError ? "Retry loading options" : `Load more ${module === "media" ? "media assets" : module}`}</button>}
-  </div>;
+  const status = loadingOptions ? `Loading ${module === "media" ? "media assets" : module}…` : loadError || (!options.length ? "No selectable records are available yet." : "");
+  return <fieldset className={styles.field} style={{ border: 0, padding: 0, margin: 0 }} aria-busy={loadingOptions}>
+    <legend className={styles.fieldLabel}>{label}</legend>
+    {status && <p className={styles.fieldHint} role="status" aria-live="polite">{status}</p>}
+    {options.length > 0 && <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div>}
+    {((loaded.module === module && hasMore) || loadingOptions || loadError) && <button className={styles.secondaryButton} type="button" disabled={loadingOptions} onClick={() => { setLoading(true); if (loadError) setRetry(n => n + 1); else setPage({ module, offset: offset + limit }); }}>{loadingOptions ? "Loading options…" : loadError ? "Retry loading options" : `Load more ${module === "media" ? "media assets" : module}`}</button>}
+  </fieldset>;
 }
 
 function MediaPicker({ value, onChange, label = "Media asset" }: { value: string; onChange: (next: string) => void; label?: string }) {
   const [options, setOptions] = useState<Option[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [retry, setRetry] = useState(0);
   const [message, setMessage] = useState("Loading media…");
   useEffect(() => {
     let alive = true;
     void api<{ items: { id: string; filename: string; archived: boolean; published: boolean }[]; total: number }>(`/api/admin/media?limit=50&offset=${offset}`)
-      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived).map(item => ({ id: item.id, label: item.filename || "Unnamed media asset" })); setOptions(previous => [...new Map([...(offset > 0 ? previous : []), ...available].map(item => [item.id, item])).values()]); setHasMore(offset + result.items.length < result.total); setLoadFailed(false); setMessage(available.length || offset > 0 ? "" : "No published media assets are available."); } })
+      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived).map(item => ({ id: item.id, label: item.filename || "Unnamed media asset" })); setOptions(previous => [...new Map([...(offset > 0 ? previous : []), ...available].map(item => [item.id, item])).values()]); setHasMore(offset + result.items.length < result.total); setLoadFailed(false); setMessage(available.length ? "Published media assets loaded." : "No published media assets found on this page."); } })
       .catch((error) => { if (alive) { setLoadFailed(true); setMessage(error instanceof Error ? error.message : "Media could not be loaded."); } })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [offset, retry]);
-  return <div className={styles.field}><label><span className={styles.fieldLabel}>{label}</span><select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}><option value="">Select an asset</option>{value && !options.some(option => option.id === value) && <option value={value}>Current assigned asset</option>}{options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>{message && <span className={styles.fieldHint}>{message}</span>}{(hasMore || loadFailed) && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); if (loadFailed) setRetry(n => n + 1); else setOffset(offset + 50); }}>{loading ? "Loading assets…" : loadFailed ? "Retry loading assets" : "Load more media assets"}</button>}</div>;
+  return <div className={styles.field} aria-busy={loading}><label><span className={styles.fieldLabel}>{label}</span><select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}><option value="">Select an asset</option>{value && !options.some(option => option.id === value) && <option value={value}>Current assigned asset</option>}{options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>{message && <span className={styles.fieldHint} role="status" aria-live="polite">{loading ? "Loading media assets…" : message}</span>}{(hasMore || loadFailed) && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); if (loadFailed) setRetry(n => n + 1); else setOffset(offset + 50); }}>{loading ? "Loading assets…" : loadFailed ? "Retry loading assets" : "Load more media assets"}</button>}</div>;
 }
 
 function ParentCategoryPicker({ value, currentId, onChange }: { value: string | null; currentId?: string; onChange: (next: string | null) => void }) {
@@ -447,12 +485,18 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const [loading, setLoading] = useState(!isNew);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
+  const validationSummaryRef = useRef<HTMLDivElement>(null);
   const [notice, setNotice] = useState("");
   const [conflict, setConflict] = useState(false);
   const [restoreId, setRestoreId] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const serialized = useMemo(() => JSON.stringify(draft), [draft]);
   const dirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
+
+  useEffect(() => {
+    if (validationIssues.length) validationSummaryRef.current?.focus();
+  }, [validationIssues]);
 
   const load = useCallback(async () => {
     if (isNew) return;
@@ -500,10 +544,11 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     event?.preventDefault();
     setBusy(true);
     setError("");
+    setValidationIssues([]);
     setNotice("");
     const parsed = parseDocument(module, draft);
     if (!parsed.ok) {
-      setError(parsed.fields.map((field) => field.message).join(" "));
+      setValidationIssues(parsed.fields);
       setBusy(false);
       return null;
     }
@@ -520,8 +565,10 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       return result.record;
     } catch (reason) {
       const status = (reason as { status?: number }).status;
+      const fields = (reason as { fields?: ValidationIssue[] }).fields;
       setConflict(status === 409);
-      setError(reason instanceof Error ? reason.message : "The draft could not be saved.");
+      if (Array.isArray(fields) && fields.length) setValidationIssues(fields);
+      else setError(reason instanceof Error ? reason.message : "The draft could not be saved.");
       return null;
     } finally {
       setBusy(false);
@@ -570,6 +617,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     </div>
     {previewOpen && <DraftPreview document={draft} />}
     {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
+    {validationIssues.length > 0 && <div className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}
     {error && <div className={styles.errorBanner} role="alert"><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
     {notice && <p className={styles.successBanner} role="status"><Check size={16} aria-hidden="true" /> {notice}</p>}
     <form className={styles.editorForm} onSubmit={save} aria-busy={busy}>

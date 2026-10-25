@@ -140,6 +140,8 @@ Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/c
 
 ## Phase 6 — migration, capacity and launch readiness
 
+26 October populated-site continuation after `b531ee8`: [performance/accessibility review](docs/phase-6-populated-review.md) with Luna xhigh workers, fixed sequential localhost probes, built-in-browser checks and a local commit. Bounded previews keep original bytes and withdrawal/private access checks. No load test, checkout/payment, recovery operation or deployment is added; the full release gates below remain open.
+
 Status, 25 October 2026: authorized and in progress. The [non-commerce audit checkpoint](docs/phase-6-readiness.md) is implemented and verified after `315c3c3`; [evidence](docs/verification/phase-6-readiness.json) records the scoped checks. Content approval/import, representative capacity, isolated database/file restore and production operating decisions remain exit gates. Checkout/payments and live email remain deferred; this does not dispatch Phase 7.
 
 After `eb2be19`, the owner resumed the remaining work: [original-byte media delivery and offline preflight](docs/phase-6-media-followup.md), renewed access checks and a [bounded capacity profile](docs/phase-6-capacity-profile.md). The owner confirmed 100 simultaneous visitors, mostly browsing; detailed workload/provider scope and measurements remain gates. RPO/RTO are undecided.

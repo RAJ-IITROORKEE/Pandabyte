@@ -23,4 +23,4 @@ for (const path of pages) {
     observations.push({ path, sample, status: response.status, headersMs: Math.round(headersMs), totalMs: Math.round(performance.now() - started), decodedBodyBytes: bytes.length });
   }
 }
-console.log(JSON.stringify({ scope: "16 sequential anonymous GETs; local production preview, empty development catalog; no concurrency or Web Vitals claim", observations }, null, 2));
+console.log(JSON.stringify({ scope: "16 sequential anonymous GETs; local production preview with current published content; no concurrency or Web Vitals claim", observations }, null, 2));
