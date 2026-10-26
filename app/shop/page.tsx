@@ -7,6 +7,7 @@ import { listPublishedRecords } from "@/lib/editorial/published";
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { ProductCard } from "@/components/catalog/product-card";
 import styles from "@/components/catalog/catalog.module.css";
+import presentation from "@/components/catalog/catalog-presentation.module.css";
 import { publicMetadata } from "@/lib/editorial/seo";
 
 export const metadata = publicMetadata({
@@ -91,9 +92,10 @@ export default async function ShopPage({ searchParams }: PageProps) {
   const rawMax = firstParam(raw.max);
 
   return <PublicPage eyebrow="Shop" title="Catalog" description="Browse published IoT and embedded products." wide>
-    {categories.length > 0 && <nav className={styles.categorySection} aria-label="Browse product categories">
+    <div className={presentation.catalogPage}>
+    {categories.length > 0 && <nav className={`${styles.categorySection} ${presentation.categorySection}`} aria-label="Browse product categories">
       <h2 className={styles.categoryHeading}>Browse categories</h2>
-      <div className={styles.categoryCards}>
+      <div className={`${styles.categoryCards} ${presentation.categoryCards}`}>
         {categories.map((category) => <Link className={styles.categoryCard} href={categoryHref(category.slug, query)} key={category.id}>
           {category.title}
         </Link>)}
@@ -108,8 +110,8 @@ export default async function ShopPage({ searchParams }: PageProps) {
       <ul>{parsed.fields.map((field, index) => <li key={`${field.field}-${index}`}>{field.message}</li>)}</ul>
     </section>}
 
-    <form action="/shop" method="get" className={styles.catalogControls}>
-      <div className={styles.searchForm}>
+    <form action="/shop" method="get" className={`${styles.catalogControls} ${presentation.controls}`}>
+      <div className={`${styles.searchForm} ${presentation.searchRow}`}>
         <div className={styles.searchField} key={rawSearchKey}>
           <label className={styles.fieldLabel} htmlFor="catalog-query">Search products</label>
           <input className={styles.input} id="catalog-query" name="q" type="search" maxLength={120} defaultValue={firstParam(raw.q)} placeholder="Search by product, SKU or model" />
@@ -121,8 +123,8 @@ export default async function ShopPage({ searchParams }: PageProps) {
         <Link className={styles.clearLink} href="/shop">Reset all</Link>
       </div>
 
-      <div className={styles.catalogLayout}>
-        <aside className={styles.filters} aria-label="Catalog filters" key={rawSearchKey}>
+      <div className={`${styles.catalogLayout} ${presentation.layout}`}>
+        <aside className={`${styles.filters} ${presentation.filters}`} aria-label="Catalog filters" key={rawSearchKey}>
           <details className={styles.filterDisclosure} open>
             <summary className={styles.filterSummary}>Filters</summary>
           <div className={styles.filterContents} id="catalog-filter-controls">
@@ -172,7 +174,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
         </aside>
 
         {query ? <section aria-labelledby="catalog-results-heading">
-          <div className={styles.resultsHeader}>
+          <div className={`${styles.resultsHeader} ${presentation.resultsHeader}`}>
             <h2 className={styles.resultsCount} id="catalog-results-heading" aria-live="polite">
               {products.total} {products.total === 1 ? "published product" : "published products"}
             </h2>
@@ -180,7 +182,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
             <input type="hidden" name="page" value="1" />
           </div>
 
-          {products.items.length ? <div className={styles.productGrid}>
+          {products.items.length ? <div className={`${styles.productGrid} ${presentation.grid}`}>
             {products.items.map((product) => <ProductCard key={product.id} product={product} />)}
           </div> : <EmptyState
             title={query.q || query.categories.length || query.minPaise !== null || query.maxPaise !== null || query.availability !== "all" ? "No products match these filters" : "No products are published yet"}
@@ -204,5 +206,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
         </section>}
       </div>
     </form>
+    </div>
   </PublicPage>;
 }

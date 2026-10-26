@@ -1,8 +1,9 @@
 .dashboard {
   width: min(100%, 1100px);
   margin-inline: auto;
-  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 32px) 72px;
+  padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 32px) 64px;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .accountPage {
@@ -34,7 +35,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 26px;
+  margin-bottom: 24px;
 }
 
 .identity {
@@ -93,7 +94,7 @@
   gap: 8px;
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 8px;
   cursor: pointer;
   font: inherit;
   font-size: 14px;
@@ -108,14 +109,22 @@
 }
 
 .settingsLink:hover,
-.secondaryAction:hover {
+.secondaryAction:hover:not(:disabled) {
   background: var(--status-soft);
+}
+
+.settingsLink,
+.secondaryAction,
+.dangerAction,
+.textAction {
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
 
 .primaryAction {
   color: var(--action-text);
   background: var(--accent);
   border-color: var(--accent);
+  transition: filter 150ms ease;
 }
 
 .primaryAction:hover:not(:disabled) {
@@ -132,24 +141,28 @@
   background: rgb(180 35 24 / 7%);
 }
 
-.settingsLink:focus-visible,
-.secondaryAction:focus-visible,
-.primaryAction:focus-visible,
-.dangerAction:focus-visible,
-.addressForm input:focus-visible,
-.addressForm button:focus-visible,
-.addressForm select:focus-visible,
-.addressForm textarea:focus-visible,
-.contactForm input:focus-visible,
-.contactForm button:focus-visible,
-.moreDetails summary:focus-visible,
-.deleteConfirm button:focus-visible {
+.dashboard :is(a, button, input, select, textarea, summary):focus-visible,
+.settingsPage :is(a, button, input, select, textarea, summary):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
+.secondaryAction:disabled,
+.primaryAction:disabled,
+.dangerAction:disabled {
+  color: var(--muted);
+  background: var(--background);
+  border-color: var(--divider);
+  cursor: not-allowed;
+}
+
+.textAction:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
 .section {
-  margin-top: 36px;
+  margin-top: 32px;
 }
 
 .sectionHeading {
@@ -176,7 +189,7 @@
 
 .contactForm {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   padding: clamp(16px, 3vw, 24px);
   background: var(--surface);
   border: 1px solid var(--divider);
@@ -208,7 +221,7 @@
 .defaultGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .defaultCard,
@@ -260,7 +273,7 @@
 .addressList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
   margin-top: 18px;
 }
 
@@ -273,24 +286,25 @@
 
 .addressCardActions {
   display: flex;
+  flex-wrap: wrap;
   flex: 0 0 auto;
   gap: 8px;
 }
 
 .textAction {
-  min-height: 36px;
+  min-height: 44px;
   padding: 6px 8px;
   color: var(--accent);
   background: transparent;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   cursor: pointer;
   font: inherit;
   font-size: 13px;
   font-weight: 600;
 }
 
-.textAction:hover {
+.textAction:hover:not(:disabled) {
   background: var(--status-soft);
 }
 
@@ -312,7 +326,7 @@
 
 :global(:root[data-theme="dark"]) .errorState,
 :global(:root[data-theme="dark"]) .alert,
-:global(:root[data-theme="dark"]) .dangerAction {
+:global(:root[data-theme="dark"]) .dangerAction:not(:disabled) {
   color: #fda29b;
 }
 
@@ -338,7 +352,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .field {
@@ -432,7 +446,7 @@
   padding: 12px;
   background: var(--background);
   border: 1px solid var(--divider);
-  border-radius: 9px;
+  border-radius: 8px;
 }
 
 .deleteConfirm p {
@@ -449,7 +463,7 @@
 }
 
 .moreDetails {
-  margin-top: 38px;
+  margin-top: 32px;
   padding-top: 20px;
   border-top: 1px solid var(--divider);
 }
@@ -473,9 +487,11 @@
 }
 
 .settingsPage {
+  min-width: 0;
   width: min(100%, 1100px);
   margin-inline: auto;
-  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 32px) 72px;
+  padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 32px) 64px;
+  overflow-wrap: anywhere;
 }
 
 .settingsPage h1 {
@@ -508,7 +524,18 @@
 .avatarImage { object-fit: cover; }
 
 .clerkProfile {
+  min-width: 0;
   width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settingsLink,
+  .secondaryAction,
+  .primaryAction,
+  .dangerAction,
+  .textAction {
+    transition: none;
+  }
 }
 
 @media (max-width: 680px) {

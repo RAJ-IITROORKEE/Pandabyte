@@ -1,121 +1,73 @@
 # PandaByte UI migration handoff
 
-## Active execution — 26 October 2026
+Updated 26 October 2026. The owner resumed implementation after the planning checkpoint. C1–C5 are complete for the bounded UI migration, with the manual accessibility and content gates below. Read [the plan](ui-migrate-plan.md), [C1 evidence](docs/verification/ui-migrate-c1.json) and [final evidence](docs/verification/ui-migrate-final.json).
 
-The owner resumed implementation. Root is executing C1 before dependent UI page slices. All backend/data/commerce/publication/deployment holds remain. The original planning-only checkpoint below is historical.
+## Checkpoints
 
-- Existing `.agents/skills/frontend-a11y/SKILL.md` was found already installed by concurrent work; its Git blob exactly matches reviewed `a39419935900b1ac1003827d83c896610350b619`. Reused without overwrite. Existing `react-performance` and Impeccable copies are preserved.
-- A normal root `lightswind@3.2.5` install failed `ERESOLVE`: concurrent 3D work added `three@0.186.1`, outside Lightswind's optional peer range. No override/downgrade was used. Root package/lock changes belong to that other work and are excluded from UI commits.
-- Resolved the tooling boundary by installing the exact Lightswind tooling in isolated `.tools/lightswind/` with lifecycle scripts disabled. Install succeeded (8 packages added, isolated audit: 0 vulnerabilities). The app does not import this package or its plugin/global CSS. This is an explicit C1 plan adaptation to preserve concurrent dependencies.
-- A medium Sol 6.1 worker adapted only Card/CardTitle/CardDescription from the pinned public MIT source. Root integrated the pilot through existing `EmptyState`, preserving section/H2/body semantics; only shared non-hero title scale changed. Source/license provenance: [adaptation note](docs/ui-migrate-research/lightswind-card-adaptation.md).
-- C1 passed lint (two warnings in concurrent 3D tests, no errors), typecheck and production build. The Card pilot passed eight actual reflow/theme cases (320/768/1024/1440 × light/dark), preserving section/H2 semantics and no document overflow. Hero source hashes match HEAD; loaded desktop/mobile rendering and sensor selection/Home reset were checked. [C1 evidence](docs/verification/ui-migrate-c1.json). Root is committing this gate before dependent page dispatch. API/backend and CAD/3D viewer/gallery source changes are excluded from UI staging.
-
-**Updated 26 October 2026 · plan-only checkpoint · baseline HEAD `8178ce0`.**
-
-Read [ui-migrate-plan.md](ui-migrate-plan.md) before dispatching work. The latest human instruction requests the full plan **before actual migration/implementation**. This checkpoint creates documentation/research and a read-only browser baseline. It does not resume implementation automatically or authorize backend changes. “Admin panel backend” is scoped to administrative UI in this plan.
-
-## Current status
-
-| Checkpoint | Status | Evidence / next dependency |
+| Gate | Result | Evidence |
 | --- | --- | --- |
-| C0: source/reference/library research | Passed | Three bounded Sol 6.1 xhigh reviewers; [frontend inventory](docs/ui-migrate-research/frontend-inventory.md), [library/skills review](docs/ui-migrate-research/library-skills.md), [validation contract](docs/ui-migrate-research/validation-contract.md). |
-| C0: current reference retrieval | Passed | Authenticated official Superdesign CLI 0.14.0, six current drafts, versions/hash/local-match in [inventory](docs/ui-migrate-research/reference-inventory.json). Product anchor v9; protected Home v26. No generation/import/credit spending. |
-| C0: built-in-browser baseline | Passed, bounded | [Actual observations/captures](docs/ui-migrate-research/browser-baseline.md): selected reference + existing localhost Home, Catalog, SKU search, PandaPulse, Contact, About and guarded Admin. This is not migration QA. |
-| C0: final plan/handoff review | Passed, documentation scope | Sol 6.1 xhigh cross-review found no material blockers. Luna xhigh checked local links, reference versions/hashes, captures and whitespace; root corrected its capture-path/count wording finding. No runtime migration acceptance is implied. |
-| C1: pinned library/skill adoption and shared primitives | **Passed** | Isolated tooling installed, existing skill verified, Card pilot integrated; lint/type/build and eight browser cases passed. [Evidence](docs/verification/ui-migrate-c1.json). Local commit is recorded below after creation. |
-| C2: landing below hero, Contact/About, Catalog/PDP | **Not started** | Depends on C1 frozen shared contract. Three separate file-owner lanes. |
-| C3: remaining public/account/auth/cart states + Admin shell | **Not started** | Depends on shared contract and available slots; preserve real states/guards. |
-| C4: Admin workflows | **Not started** | Depends on frozen sidebar/shared Admin styles; one writer per shared file. |
-| C5: integrated verification / local migration commit | **Not started** | No migrated app exists to verify/commit. No release or production-readiness claim. |
+| C0 — research / reference freeze | Passed | Baseline 8178ce0; six primary and seven remaining current Superdesign versions/hashes match the saved HTML. Read-only official CLI 0.14.0; no canvas generation or credit spending. |
+| C1 — reviewed library / shared primitive pilot | Passed | Local commit **0b328f6**. Isolated Lightswind tooling, provenance, server Card primitives, shared EmptyState and non-hero PublicPage title scale. Eight pilot reflow/theme cases plus protected hero checks. |
+| C2 — priority pages | Passed | Lower homepage, Contact/About, catalog and product overview integrated. Real data and non-purchasable source observations preserved. |
+| C3 — remaining families / Admin shell | Passed | Editorial, account/cart CSS; Admin groups, collapse/reset, bounded pointer/keyboard width and local layout preferences. Two focused tests pass. |
+| C4 — Admin workflows | Passed, no-write scope | Existing workflow presentation retained; overflow fixed and record, pricing/inventory, inquiry and media tables have named focusable scrollers. Invalid editor validation, private preview, media keyboard selection, owner protection and unavailable Orders checked without saving. |
+| C5 — integration | Passed, bounded | Final lint/typecheck/production build; 143 shared unit + 2 sidebar + 13 read-only HTTP tests; 96 accepted reflow/theme cases across 12 families. Local commit recorded after the staging audit. |
 
-## Latest human constraints carried forward
+No Phase 6 exit, commerce completion, deployment or full accessibility certification is implied.
 
-- Primary visual anchor: [PandaPulse product v9](https://p.superdesign.dev/draft/e5d5055d-1779-4480-bc8f-f94e5c9e5897). Apply its theme/layout language to the actual current frontend and matching page references, not a second static site.
-- **Keep the current entire homepage hero** and original panda logo. Match lower-page/shared UI with light/dark and 320/768/1024/1440 reflow. Preserve the real account/Agent controls and accessibility corrections.
-- Priority: landing lower sections, Contact, About, product detail and Catalog; then remaining existing page families and Admin. Admin needs responsive layout, collapse/width resizing, useful groups/forms/tables and restrained feedback.
-- No backend/API/schema/RLS/storage/auth/provider/security-policy/data changes. Another chat may continue backend work; preserve its files and all source/CAD/design artifacts. No importer rerun/backfill/publication, checkout/payment, real email/billing, recovery/load testing or deployment.
-- Existing published records are authoritative. In the baseline, 42 source-observation products are non-purchasable; two missing-SKU items remain held. Keep source-price/capture caveats, no current-stock inference and actual empty About/Contact/FAQ states. No fabricated text/records to match prototypes.
-- Use Ponytail, UI/UX Pro Max and relevant existing skills; selective Lightswind + ECC research is recorded below. This request does not install anything yet.
+## Implemented presentation
 
-## Model / worker routing
+- Exact panda logo, existing tokens, Lucide icons and the **entire homepage hero** are preserved. Five protected file hashes and the homepage JSX/CSS prefixes match HEAD. No hero redraw or replacement.
+- Lower homepage has clearer category actions, section rhythm, support CTA and FAQ width.
+- Contact uses a responsive information/form split, breadcrumb and page-specific heading. Existing fields, challenge, nonce and submission handling are unchanged. Missing contact information stays explicit; no office address was fabricated.
+- About uses a split introduction and actions, published content, truthful company/team empty states and Contact CTA.
+- Catalog retains GET query/filter/sort/pagination behavior, with a 208px desktop rail, denser grid and additive presentation styles. Product detail has breadcrumb, side-by-side gallery/title/panel and specifications below.
+- Learn/YouTube/editorial cards, search wrapping, forms, account and cart use the same surfaces, spacing, focus and responsive language. Missing videos/posts/resources remain unpublished empty states.
+- Admin has a 272px default sidebar, 224–360px pointer/keyboard resizing, 80px compact rail with **persistent text labels**, collapse/reset, grouped navigation and versioned local layout preferences. Tablet forces the rail; mobile preserves the modal drawer and focus behavior. Storage contains layout fields only, never roles or content.
+- CSS transitions remain restrained and honor existing reduced-motion rules. No new animation runtime or global theme reset was introduced.
 
-| Task class | Configuration | Actual / next use |
-| --- | --- | --- |
-| Research, planning, QA/test design and deep review | `gpt-6.1-sol` / xhigh | Three research workers completed this checkpoint; final cross-review uses the same policy. |
-| Medium implementation | `gpt-6.1-sol` / medium | Planned only; no implementation workers dispatched. |
-| Light deterministic polish/document checks | `gpt-6-luna` / xhigh; Fast when supported | Use for final local link/state checks. This tool has no Fast/service-tier parameter; do not claim Fast was enabled. |
-| Orchestration/integration/browser/shared files | Current chat GPT-6.1 Sol | Root owns the integration sequence, file contracts, package/lockfiles and single browser operator. |
+## Tooling / provenance
 
-At most root + three workers. Explicit file ownership is mandatory. Catalog/PDP share catalog CSS and ProductCard; Contact/About share editorial CSS; Admin modules share record/operations source and styles. Do not assign concurrent edits to those files. Root handles shared tokens/layout/header/footer and serial CSS/dependency integration. Do not split architecture or add abstractions just for parallelism.
+Normal root Lightswind installation failed ERESOLVE because concurrent 3D work introduced Three 0.186.1 outside an optional peer range. No force/legacy resolution or downgrade was used. Exact lightswind@3.2.5 tooling is installed with lifecycle scripts disabled in private [.tools/lightswind](.tools/lightswind/package.json); its isolated audit reported zero vulnerabilities. The app imports only the adapted local server Card primitives, with pinned MIT source and notice in [the adaptation record](docs/ui-migrate-research/lightswind-card-adaptation.md). No package-wide CSS, plugin, CLI init, Pro component or runtime package import.
 
-## What changed in this planning checkpoint
+The already-installed frontend-a11y skill matched reviewed ECC blob a39419935900b1ac1003827d83c896610350b619 and was reused without overwrite. Existing ECC, react-performance and Impeccable copies are preserved. [.agents/skills/ui-migration-sources.json](.agents/skills/ui-migration-sources.json) records the UI source. Ponytail and UI/UX Pro Max guided implementation; Superdesign remained the visual reference.
 
-| File(s) | Change |
-| --- | --- |
-| `ui-migrate-plan.md` | Full scoped plan: references, preservation rules, tokens, icons/motion, skills/library gates, page contracts, Admin interaction specification, worker routing, execution sequence and verification/rollback. |
-| `ui-migrate-handoff.md` | This progress ledger, decisions, evidence and next checkpoint. |
-| `docs/ui-migrate-research/frontend-inventory.md` | Current actual routes, callers, styling/shared-file ownership, data boundaries, Admin behavior. |
-| `docs/ui-migrate-research/library-skills.md` | Primary-source Lightswind/ECC pins, terms, compatibility findings and future targeted install instructions. |
-| `docs/ui-migrate-research/validation-contract.md` | Meaningful checks, no-write default, command classification, responsive/accessibility evidence and failure policy. |
-| `docs/ui-migrate-research/reference-inventory.json` | Six read-only current Superdesign reference versions/hashes. |
-| `docs/ui-migrate-research/browser-baseline.md` and `docs/ui-migrate-research/screenshots/` | Current-state observations and six locally saved captures: one Superdesign reference plus five localhost views. |
+## Workers / ownership
 
-No net application component/style, package manifest/lockfile, backend/configuration or Superdesign artifact change was made by this plan checkpoint. The existing Next dev server was started only to inspect the current app on localhost. It temporarily regenerated the two `next-env.d.ts` imports to `.next/dev/types`; root restored those exact imports to their tracked `.next/types` baseline. No new app build/test suite was run merely for documentation.
+- Sol 6.1 medium workers: lower homepage, company pages, additive catalog presentation, editorial CSS and Admin shell, each with bounded files.
+- Luna 6 xhigh: account/cart CSS.
+- Sol 6.1 xhigh: integrated React/accessibility review and fixes review. No material findings remain in the scoped source review.
+- Root: shared integration, actual browser, builds, evidence, staging and commits.
+- Fast/service-tier control is not exposed by the tool and was not claimed.
 
-## Dependencies / decisions and exact open gates
+The separate active 3D/media task retains package/lockfile, API/lib/schema, gallery/card, model tooling and assets. Root made only four named-table wrapper attribute changes inside the shared Admin workflow files. Its other edits are retained. The UI commit stages those attributes against HEAD independently; it excludes the other task’s model props, Admin model controls, modelPreview CSS, packages and backend changes. No other-chat message was sent and no design/CAD artifact was regenerated, moved or deleted.
 
-| Item | Current disposition |
-| --- | --- |
-| Lightswind | **Not installed.** Owner-selected library retained in the plan. Public repo pin `53ef2ee…` declares 3.2.2; published tooling candidate is pinned 3.2.5. Proposed later package-only install and local Card/Badge pilot; no blanket `init`, live registry auto-install, peer bypass, global theme reset or Pro setup. Runtime/dependency/a11y integration remains unverified. |
-| ECC | **No new skill installed.** Reviewed current pin `25278e7…`; only `frontend-a11y` is proposed as a targeted documentation skill. Keep existing ECC backend copies/pins and untracked Impeccable intact. No collection/hooks/global config/executable reference tooling. |
-| Icons/animation | Existing Lucide 1.61.0 retained; CSS transitions first. No new Motion/GSAP/Three/AI package justified. Hero motion remains protected. |
-| Admin dragging | Planned as accessible docked-width resizing, collapse/reset and existing mobile drawer, not floating/reordered navigation or role persistence. Exact UI defaults are in the plan; implementation and tests pending. |
-| Missing company/support/editorial data | Preserve explicit empty states. Owner factual/content approval and publication are separate; no mock fallback. |
-| Contact attachments | Do not add a functioning upload when the current Contact API/form has no attachment contract. Record any future requirement as a separate backend dependency. |
-| Development hydration warning | Observed existing script nonce attribute mismatch before migration; preserve evidence and CSP. No suppression/config/backend fix in this planning scope. Reproduction/root cause/production behavior remain open. |
-| Accessibility manual gates | Actual zoom/text resizing, runtime reduced motion and real screen-reader speech remain unverified. Future viewport/DOM/source checks cannot close them. |
+## Verification actually performed
 
-No answer is required to finish the plan. C1 installation/implementation remains pending a later execution instruction. If the library gate fails later, record the exact blocker and seek the smallest decision needed; do not silently abandon Lightswind or force incompatible dependencies.
+- Final **npm run check** passed lint, typecheck and production build. An initial Admin implicit-any and direct effect state initialization were corrected; initial external preference/viewport synchronization now uses a cleanup-cancelled animation frame.
+- **npm run test:unit:** 143 passed, zero failed. This is the shared current suite, including concurrently added model tests; it is not 143 new UI tests.
+- **node --test components/admin/sidebar-layout.test.mjs:** 2 passed, zero failed; corrupt/stale preferences, allowlisted fields/groups, clamp and breakpoint behavior.
+- Anonymous localhost HTTP auth, shell, security-header and diagnostics tests: **13 passed**. A previous shell assertion counted local section headers as site banners; it now counts the stable site header/footer classes. Actual rendered public smoke checks confirm one site shell.
+- Built-in Codex browser, production localhost: **96 accepted cases** = 12 layout families × 320/768/1024/1440 actual CSS widths × light/dark. Each has one main/H1, no document overflow and no decoded broken visible image. Families: Home, Contact, About, catalog, product, Learn, YouTube, cart, account, Admin dashboard, Admin editor and Admin listing.
+- Retained initial streamed-loading rows are explicitly unaccepted. Final catalog captures are loaded; theme state is awaited after hydration. These timing observations are not represented as UI passes.
+- Contact required validation focused Name without sending. Exact SKU and combined category/sort returned the expected PandaPulse item; empty results, reset and browser history worked. DHT11 gallery image 2 selected with Enter, updating pressed state and descriptive alt.
+- Admin resize keyboard bounds, pointer 272→320, persistence, collapse/expand/reset, mobile drawer/focus/scroll/Escape and route focus passed. A 320px listing initially leaked document scrollWidth 811 against client 305 from an absolute hidden header; position:relative anchors it inside the scroller. Eight listing retests pass; keyboard scrolling moved the table 40/74px with a visible focus outline.
+- Invalid new-product fields stopped locally and focused the error summary; private draft preview opened without saving. Media Enter selected an existing image and focused the detail H2. Owner protection and no raw Clerk subject were observed.
+- Account Add/Cancel and opened private-files mobile disclosure were checked with no save/delete. Owner session and protected Admin access remain intact. Sidebar defaults were restored.
+- Ten computed Contact text/background contrast samples pass at least 4.5:1 (minimum **7.49:1**). This is bounded sampling, not a whole-site contrast audit.
+- Ignored local captures and raw sanitized matrix: [.bootstrap/ui-migrate/final](.bootstrap/ui-migrate/final/browser-results.json). Public preview captures can be shown; private account captures are not published.
 
-## Evidence and checks actually performed
+## Open gates / intentional differences
 
-| Check | Result / limit |
-| --- | --- |
-| Initial Git status / source baseline | Read. Existing untracked design/Impeccable/CAD/source artifacts were present; not staged/deleted/moved. Baseline commit `8178ce0`. The generated Next type-import change was restored; final tracked-source diff is empty. New files are the planning/research deliverables only. No commit or staging performed. |
-| CLI authentication / references | Passed: official CLI authenticated, six metadata/content hashes read, all match local design HTML. No Superdesign edit/generation. |
-| Localhost | Initially unavailable; existing `npm run dev` started and reported ready. Subsequent anonymous localhost GET returned 200. This was not a provider/configuration probe or production benchmark. |
-| Browser baseline | Completed bounded read-only navigation and exact-SKU search. Owner's existing identity/Admin dashboard remained available. No data mutation, contact submit, role action, purchase or logout. |
-| Library / skill source research | Source/manifest/license/CLI review completed by Sol xhigh worker; no package or upstream executable install/run. Findings are not runtime compatibility passes. |
-| Plan links / whitespace / cross-review | Passed: Sol xhigh document review, Luna direct link/hash/version/capture/whitespace checks, plus root final diff/scope review. `git diff --check` was clean; direct file checks also covered the untracked documents. One capture-path/count wording issue was corrected. |
-| App lint/typecheck/build/unit/integration | Not run for this documentation checkpoint; no app code changed. Required later at the relevant UI gates. |
-| Full responsive/theme/keyboard/zoom/motion/reader acceptance | Not run in this plan checkpoint. Future matrix and evidence methods are specified, not claimed complete. |
+- Actual browser zoom/text resizing, OS reduced-motion runtime switching and screen-reader speech were not exercised. Viewport/CSS/source checks do not close those gates.
+- Clerk’s unchanged Settings widget renders multiple H1 elements; mobile containment passed. Vendor heading semantics were not rewritten.
+- Authenticated save/upload/publish flows, customer data mutation, alternate staff/customer identities and accepted-upload behavior were not rerun for cosmetic work. No fixture budget was assumed.
+- Published company/team/contact/FAQ/learning/video content is sparse or absent. Reference examples are not approved facts; empty states are intentional.
+- Contact attachment upload still needs a separate API/storage contract. Future Agent software remains Coming soon; no new capability or launch date was invented.
+- No backend/config/schema/RLS/auth/provider change, importer/publication, checkout/payment, real email/billing, load/recovery operation or deployment was performed by this UI task. Concurrent authorized 3D/backend work is a separate change set.
+- No production performance/capacity claim or release approval. Local preview remains the review surface.
 
-## Required update after each later checkpoint
+## Local commits
 
-Copy this compact record into the next entry; replace every placeholder with evidence or `not-run`/`blocked` and a reason. Do not mark a checkpoint complete from source inspection alone.
-
-```text
-Checkpoint / status / date:
-Execution authorization and allowed operations:
-Baseline and tested source commit / build mode:
-Reference draft URL + version + hash:
-Root / workers (actual model + effort + owned files):
-Files changed; shared callers checked:
-Visual changes and intentional data/auth/state differences:
-Commands executed; exit/count/result and sanitized evidence path:
-Browser route/state/role; requested AND observed viewport; theme:
-Actions; expected/observed result; screenshot/evidence method:
-Actual zoom / OS reduced-motion / speech gates (separate results):
-Failures found → owned UI fix → bounded retest:
-Data/publication/customer/role/config changes (required zero by default):
-Owner session/access and preferences restored/retained:
-Library/skill/license/dependency provenance delta:
-Unresolved blockers/deviations and next dependent checkpoint:
-Exact local commit if authorized; staged scope verified:
-```
-
-Default implementation verification is no-write. A disposable draft/upload fixture budget must be explicitly authorized and ownership/cleanup established before that check; do not invoke publishing, source integration or isolation harnesses by habit. Known required-check regressions block dependent work. Roll back only the owned UI diff, preserving other-chat work; no hard resets, backend restore or content republish.
-
-## Next action when execution is resumed
-
-Re-read current Git status and these two documents, inspect any concurrent backend/source changes, recheck current reference/library pins, and begin **C1 only**. Root first freezes shared presentation contracts and the protected-hero baseline, then installs/reviews the pinned tooling and one non-hero component pilot. Do not dispatch C2 page writers until that dependency gate is reviewable and passes. Update this ledger before moving to the next slice.
+- C1 foundation: **0b328f6** — feat: establish reviewed UI migration foundation.
+- C2–C5 implementation: pending final scoped staging audit; recorded immediately after commit.

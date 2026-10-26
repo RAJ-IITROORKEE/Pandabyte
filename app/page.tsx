@@ -89,6 +89,7 @@ export default async function HomePage() {
               {categories.map((category) => (
                 <Link className={styles.categoryCard} href={categoryHref(category.slug)} key={category.id}>
                   <span className={styles.categoryCardTitle}>{category.title}</span>
+                  <ChevronRight aria-hidden="true" />
                 </Link>
               ))}
             </nav>
@@ -123,7 +124,7 @@ export default async function HomePage() {
             <p className={styles.supportKicker}>Support</p>
             <h2 id="support-title">{siteCopy.supportTitle}</h2>
             <p>{siteCopy.supportText}</p>
-            <Link className={styles.primaryAction} href="/contact"><Mail aria-hidden="true" />Contact Support</Link>
+            <Link className={`${styles.primaryAction} ${styles.supportAction}`} href="/contact"><Mail aria-hidden="true" />Contact Support</Link>
           </div>
           {contact && <address className={styles.supportContact}>
             {contact.phone && <p><span>Phone</span><a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`}>{contact.phone}</a></p>}
@@ -132,7 +133,7 @@ export default async function HomePage() {
           </address>}
         </section>
 
-        <section className={styles.contentSection} aria-labelledby="faq-title">
+        <section className={`${styles.contentSection} ${styles.faqSection}`} aria-labelledby="faq-title">
           <div className={styles.sectionHeading}>
             <div>
               <p className={styles.sectionKicker}>From the Help Center</p>

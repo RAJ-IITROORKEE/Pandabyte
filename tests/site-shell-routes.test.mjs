@@ -15,8 +15,8 @@ test("public route shell has one header/footer, a skip target and local navigati
     assert.equal(response.status, 200, route);
     // Streaming may contain both fallback and resolved shell HTML. The browser
     // replaces the fallback; rendered landmark counts are checked in the browser.
-    assert([1,2].includes((html.match(/<header\b/g) ?? []).length), route);
-    assert([1,2].includes((html.match(/<footer\b/g) ?? []).length), route);
+    assert([1,2].includes((html.match(/<header\b[^>]*class="pb-site-header"/g) ?? []).length), route);
+    assert([1,2].includes((html.match(/<footer\b[^>]*class="pb-site-footer"/g) ?? []).length), route);
     assert.match(html, /id="main"/);
     assert.match(html, /href="#main"/);
     assert.match(html, /Open Solutions menu/);

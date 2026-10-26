@@ -1,5 +1,7 @@
 # PandaByte UI migration plan
 
+Execution update, 26 October 2026: the owner resumed implementation. C1–C5 are complete for the bounded UI scope; actual evidence, adaptations, local commits and remaining manual/content gates are recorded in [ui-migrate-handoff.md](ui-migrate-handoff.md). The implementation sequence below is retained as the approved plan, not a new instruction to restart C1.
+
 > **Execution resumed, 26 October 2026:** the owner explicitly instructed implementation. C1–C5 UI work is now authorized under this plan's guards. The planning-only wording below records the earlier checkpoint; it is no longer a hold on UI implementation. Backend, publication, commerce and deployment exclusions remain active.
 
 **26 October 2026 · planning checkpoint · implementation not started.**

@@ -3,10 +3,10 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { ProductDetails } from "@/components/catalog/product-details";
 import { ProductGallery } from "@/components/catalog/product-gallery";
 import { ProductVariantPanel } from "@/components/catalog/product-variant-panel";
+import { ProductOverview } from "@/components/catalog/product-overview";
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { getPublishedRecord } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
-import styles from "@/components/catalog/catalog.module.css";
 import { upcomingLinks } from "@/lib/site-navigation";
 
 export const dynamic = "force-dynamic";
@@ -40,11 +40,11 @@ export default async function ProductDetail({ params }: ProductPageProps) {
     return { id, alt: block?.type === "image" ? block.alt : product.title };
   });
 
-  return <PublicPage eyebrow="Product" title={product.title} description={product.summary} wide>
-    <div className={styles.productHero}>
-      <ProductGallery key={product.id} images={images} />
-      <ProductVariantPanel key={product.id} variants={product.variants} observation={product.document.sourceObservation} />
-    </div>
+  return <ProductOverview
+    product={product}
+    gallery={<ProductGallery key={product.id} images={images} />}
+    panel={<ProductVariantPanel key={product.id} variants={product.variants} observation={product.document.sourceObservation} />}
+  >
     <ProductDetails product={product} />
-  </PublicPage>;
+  </ProductOverview>;
 }

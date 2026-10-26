@@ -3,6 +3,11 @@
 import { UserButton } from "@clerk/nextjs";
 import {
   BookOpen,
+  ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
+  RotateCcw,
+  ExternalLink,
   Boxes,
   CircleDollarSign,
   FileText,
@@ -23,8 +28,9 @@ import type { LucideIcon } from "lucide-react";
 import ImageComponent from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type CSSProperties } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SIDEBAR_STORAGE_KEY, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH, clampSidebarWidth, readSidebarLayout, sidebarMode } from "./sidebar-layout";
 import styles from "./admin-shell.module.css";
 
 type Capability = string;
@@ -99,6 +105,45 @@ export function AdminShell({ capabilities, children }: {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [viewport, setViewport] = useState(1440);
+  const [layout, setLayout] = useState(() => readSidebarLayout(null));
+  const [preferencesReady, setPreferencesReady] = useState(false);
+  const [resizing, setResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ pointer: number; start: number; width: number } | null>(null);
+  const mode = sidebarMode(viewport, layout.collapsed);
+  const rail = mode === "rail";
+
+  useEffect(() => {
+    const resizeElement = resizeRef.current;
+    const update = () => {
+      setViewport(window.innerWidth);
+      if (window.innerWidth < 1024 && drag.current) {
+        const pointer = drag.current.pointer;
+        drag.current = null;
+        if (resizeRef.current?.hasPointerCapture(pointer)) resizeRef.current.releasePointerCapture(pointer);
+        setResizing(false);
+      }
+    };
+    const frame = window.requestAnimationFrame(() => {
+      try { setLayout(readSidebarLayout(window.localStorage.getItem(SIDEBAR_STORAGE_KEY))); } catch { /* Storage can be disabled; keep usable defaults. */ }
+      setPreferencesReady(true);
+      update();
+    });
+    window.addEventListener("resize", update);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", update);
+      const pointer = drag.current?.pointer;
+      drag.current = null;
+      if (pointer !== undefined && resizeElement?.hasPointerCapture(pointer)) resizeElement.releasePointerCapture(pointer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!preferencesReady || resizing) return;
+    try { window.localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(layout)); } catch { /* Preferences are optional. */ }
+  }, [layout, preferencesReady, resizing]);
   const previousPathname = useRef(pathname);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -184,11 +229,12 @@ export function AdminShell({ capabilities, children }: {
             }}
           />
         )}
-        <div className={styles.layout}>
+        <div className={styles.layout} data-rail={rail} data-resizing={resizing} style={{ "--admin-sidebar-width": `${layout.width}px` } as CSSProperties}>
           <aside
             ref={sidebarRef}
             id="admin-navigation"
             className={`${styles.sidebar} ${isMobile && mobileOpen ? styles.sidebarOpen : ""}`}
+            data-rail={rail}
             aria-label="Admin navigation"
             aria-hidden={isMobile && !mobileOpen}
             aria-modal={isMobile && mobileOpen ? true : undefined}
@@ -224,6 +270,7 @@ export function AdminShell({ capabilities, children }: {
                 className={`${styles.navLink} ${pathname === "/admin" ? styles.activeLink : ""}`}
                 href="/admin"
                 aria-current={pathname === "/admin" ? "page" : undefined}
+                aria-label="Dashboard"
                 onClick={() => setMobileOpen(false)}
               >
                 <LayoutDashboard aria-hidden="true" />
@@ -234,7 +281,17 @@ export function AdminShell({ capabilities, children }: {
                 if (!visibleItems.length) return null;
                 return (
                   <section className={styles.navGroup} key={group.label}>
-                    <h2>{group.label}</h2>
+                    <h2>
+                      <button type="button" className={styles.groupToggle}
+                        aria-expanded={rail || !layout.closedGroups.includes(group.label)}
+                        aria-controls={`admin-group-${groups.indexOf(group)}`}
+                        onClick={() => setLayout((current) => ({ ...current, closedGroups: current.closedGroups.includes(group.label)
+                          ? current.closedGroups.filter((label) => label !== group.label) : [...current.closedGroups, group.label] }))}>
+                        {group.label}<ChevronDown aria-hidden="true" />
+                      </button>
+                    </h2>
+                    <div id={`admin-group-${groups.indexOf(group)}`} className={styles.groupItems}
+                      hidden={!rail && layout.closedGroups.includes(group.label)}>
                     {visibleItems.map((item) => {
                       const Icon = item.icon;
                       const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -244,6 +301,7 @@ export function AdminShell({ capabilities, children }: {
                           href={item.href}
                           key={item.href}
                           aria-current={active ? "page" : undefined}
+                          aria-label={item.label}
                           onClick={() => setMobileOpen(false)}
                         >
                           <Icon aria-hidden="true" />
@@ -251,16 +309,57 @@ export function AdminShell({ capabilities, children }: {
                         </Link>
                       );
                     })}
+                    </div>
                   </section>
                 );
               })}
             </nav>
 
             <div className={styles.sidebarFooter}>
-              <Link href="/" className={styles.storeLink}>Open storefront <span aria-hidden="true">↗</span></Link>
+              <Link href="/" className={`${styles.storeLink} ${styles.navLink}`} aria-label="Open storefront"><ExternalLink aria-hidden="true" /><span>Open storefront</span></Link>
             </div>
           </aside>
 
+          <div ref={resizeRef} className={styles.resizeHandle} role="separator" tabIndex={0}
+            aria-label="Admin sidebar width" aria-orientation="vertical" aria-valuemin={SIDEBAR_MIN_WIDTH}
+            aria-valuemax={SIDEBAR_MAX_WIDTH} aria-valuenow={layout.width} aria-controls="admin-navigation"
+            onKeyDown={(event) => {
+              let width: number | undefined;
+              if (event.key === "ArrowLeft") width = layout.width - (event.shiftKey ? 32 : 8);
+              if (event.key === "ArrowRight") width = layout.width + (event.shiftKey ? 32 : 8);
+              if (event.key === "Home") width = SIDEBAR_MIN_WIDTH;
+              if (event.key === "End") width = SIDEBAR_MAX_WIDTH;
+              if (event.key === "Enter") width = SIDEBAR_DEFAULT_WIDTH;
+              if (width === undefined) return;
+              event.preventDefault();
+              setLayout((current) => ({ ...current, width: clampSidebarWidth(width) }));
+            }}
+            onPointerDown={(event) => {
+              if (event.button !== 0 || mode !== "expanded") return;
+              event.preventDefault();
+              event.currentTarget.focus();
+              event.currentTarget.setPointerCapture(event.pointerId);
+              drag.current = { pointer: event.pointerId, start: event.clientX, width: layout.width };
+              setResizing(true);
+            }}
+            onPointerMove={(event) => {
+              if (!drag.current || drag.current.pointer !== event.pointerId) return;
+              const width = clampSidebarWidth(drag.current.width + event.clientX - drag.current.start);
+              setLayout((current) => ({ ...current, width }));
+            }}
+            onPointerUp={(event) => {
+              if (drag.current?.pointer !== event.pointerId) return;
+              drag.current = null;
+              setResizing(false);
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+            }}
+            onPointerCancel={(event) => {
+              drag.current = null;
+              setResizing(false);
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+            }}
+            onLostPointerCapture={() => { drag.current = null; setResizing(false); }}
+          />
           <div className={styles.workspace}>
             <header className={styles.topbar}>
               <div className={styles.topbarStart}>
@@ -275,6 +374,14 @@ export function AdminShell({ capabilities, children }: {
                 >
                   <Menu aria-hidden="true" />
                 </button>
+                <button type="button" className={styles.layoutButton}
+                  aria-label={layout.collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
+                  aria-expanded={!layout.collapsed} aria-controls="admin-navigation"
+                  onClick={() => setLayout((current) => ({ ...current, collapsed: !current.collapsed }))}>
+                  {layout.collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
+                </button>
+                <button type="button" className={styles.layoutButton} aria-label="Reset admin sidebar layout"
+                  onClick={() => setLayout(readSidebarLayout(null))}><RotateCcw aria-hidden="true" /></button>
                 <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
                   <span>Workspace</span>
                   <span aria-hidden="true">/</span>

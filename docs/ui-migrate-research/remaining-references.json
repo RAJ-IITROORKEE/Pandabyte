@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-26",
+  "method": "Authenticated official CLI; read-only",
+  "references": [
+    {
+      "designRoute": "/cart",
+      "draftId": "7141b0f5-50eb-41df-963b-9f43c8dc6d0c",
+      "version": 7,
+      "previewUrl": "https://p.superdesign.dev/draft/7141b0f5-50eb-41df-963b-9f43c8dc6d0c",
+      "sha256": "8d14538b4fcf2c0e75befbb95b1a7245402dcb1ab2b25ea5587334c1020451f1",
+      "matchesLocal": true
+    },
+    {
+      "designRoute": "/account",
+      "draftId": "e14fbb05-b2ab-4305-803f-2c7b28768732",
+      "version": 7,
+      "previewUrl": "https://p.superdesign.dev/draft/e14fbb05-b2ab-4305-803f-2c7b28768732",
+      "sha256": "da5f5c0bc3c6c43b4a2e3cbc3831ea29daacb1077a0efa4aa08e520ffd01dd29",
+      "matchesLocal": true
+    },
+    {
+      "designRoute": "/help",
+      "draftId": "57f80ca0-9641-477d-9c2b-839ad964a2ff",
+      "version": 8,
+      "previewUrl": "https://p.superdesign.dev/draft/57f80ca0-9641-477d-9c2b-839ad964a2ff",
+      "sha256": "1ff06e90f951a42d92b80e897176e549d7d21852b063c8b804a8edb0c1836945",
+      "matchesLocal": true
+    },
+    {
+      "designRoute": "/learn",
+      "draftId": "bb845f58-6546-4c96-bd67-c54109ae4704",
+      "version": 7,
+      "previewUrl": "https://p.superdesign.dev/draft/bb845f58-6546-4c96-bd67-c54109ae4704",
+      "sha256": "5176db0e1f36cd1ec6cfd760eb846295b0568180bce36ae65b4c0280349f30f7",
+      "matchesLocal": true
+    },
+    {
+      "designRoute": "/blog",
+      "draftId": "a1fd2040-3910-4a28-b93a-c4ae9d3d481e",
+      "version": 8,
+      "previewUrl": "https://p.superdesign.dev/draft/a1fd2040-3910-4a28-b93a-c4ae9d3d481e",
+      "sha256": "27449bceb16cd53f1238fbd1e8482c7c80abb1655ee400e2d0643a49dde02082",
+      "matchesLocal": true
+    },
+    {
+      "designRoute": "/login",
+      "draftId": "6558a5fd-c07f-40b0-8360-b254f5a4d6fd",
+      "version": 5,
+      "previewUrl": "https://p.superdesign.dev/draft/6558a5fd-c07f-40b0-8360-b254f5a4d6fd",
+      "sha256": "94495aaba553b7b95583bf8e69e36ad2ae8911cc7215441ecee3213cffb4806e",
+      "matchesLocal": true
+    },
+    {
+      "designRoute": "/learn/youtube",
+      "draftId": "8b2f8668-4f48-44de-9d16-8a584bb94d65",
+      "version": 6,
+      "previewUrl": "https://p.superdesign.dev/draft/8b2f8668-4f48-44de-9d16-8a584bb94d65",
+      "sha256": "4e2fe1e1ab2e32a8d5ae6965e4c4eb9e0daefb76a635534867ee09ad82421107",
+      "matchesLocal": true
+    }
+  ]
+}

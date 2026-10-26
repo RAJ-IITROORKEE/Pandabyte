@@ -2,6 +2,8 @@
   display: grid;
   gap: clamp(32px, 6vw, 72px);
   width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .section {
@@ -37,22 +39,26 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 24px;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .card {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 12px;
-  padding: clamp(20px, 3vw, 28px);
+  gap: 16px;
+  padding: clamp(24px, 3vw, 32px);
   color: var(--foreground);
   background: var(--surface);
   border: 1px solid var(--divider);
-  border-radius: 14px;
+  border-radius: 12px;
   text-decoration: none;
+  overflow-wrap: anywhere;
   transition: border-color 160ms ease, background-color 160ms ease;
 }
 
@@ -65,6 +71,7 @@
 .inlineLink:focus-visible,
 .filterLink:focus-visible,
 .pagination a:focus-visible,
+.searchForm button:focus-visible,
 .form button:focus-visible,
 .videoButton:focus-visible {
   outline: 2px solid var(--accent);
@@ -144,6 +151,13 @@
   border-radius: 999px;
   font-size: 14px;
   text-decoration: none;
+  background: var(--surface);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.filterLink:hover {
+  border-color: var(--accent);
+  background: var(--status-soft);
 }
 
 .filterLink[aria-current="page"] {
@@ -154,7 +168,8 @@
 
 .searchForm {
   display: flex;
-  max-width: 640px;
+  flex-wrap: wrap;
+  max-width: 900px;
   align-items: end;
   gap: 10px;
 }
@@ -170,6 +185,10 @@
   font-weight: 550;
 }
 
+.searchForm label {
+  flex-basis: 200px;
+}
+
 .searchForm input,
 .searchForm select,
 .form input,
@@ -182,6 +201,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   font: inherit;
+  transition: border-color 160ms ease;
 }
 
 .form textarea {
@@ -209,11 +229,31 @@
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.searchForm button:hover:not(:disabled),
+.form button:hover:not(:disabled),
+.videoButton:hover {
+  opacity: .9;
+}
+
+.form input:disabled,
+.form textarea:disabled,
+.form button:disabled {
+  color: var(--muted);
+  background: var(--background);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.form[aria-busy="true"] button:disabled {
+  cursor: progress;
 }
 
 .form {
   display: grid;
-  gap: 16px;
+  gap: 24px;
   width: 100%;
   max-width: 680px;
 }
@@ -233,6 +273,10 @@
 
 .formStatus[data-state="error"] {
   color: #a32626;
+}
+
+.formStatus[data-state="success"] {
+  color: var(--accent);
 }
 
 :global([data-theme="dark"]) .formStatus[data-state="error"] {
@@ -276,7 +320,8 @@
   padding: 22px;
   background: var(--surface);
   border: 1px solid var(--divider);
-  border-radius: 14px;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
 }
 
 .teamCard h3,
@@ -312,23 +357,34 @@
 .avatar img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .faqList {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
 }
 
 .faqItem {
   background: var(--surface);
   border: 1px solid var(--divider);
-  border-radius: 10px;
+  border-radius: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  transition: border-color 160ms ease;
+}
+
+.faqItem[open] {
+  border-color: var(--border);
+}
+
+.faqItem summary:hover {
+  color: var(--accent);
 }
 
 .faqItem summary {
-  padding: 18px 20px;
+  padding: 20px 24px;
   color: var(--foreground);
   font-weight: 600;
   line-height: 1.45;
@@ -342,13 +398,36 @@
 }
 
 .faqAnswer {
-  padding: 0 20px 18px;
+  padding: 0 24px 24px;
   color: var(--muted);
   line-height: 1.7;
 }
 
 .faqAnswer p:first-child {
   margin-top: 0;
+}
+
+.faqAnswer :global(.published-document) > :last-child {
+  margin-bottom: 0;
+}
+
+.stack :global(.document-table),
+.faqAnswer :global(.document-table) {
+  margin-block: 24px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+}
+
+.stack :global(.document-table) table,
+.faqAnswer :global(.document-table) table {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.stack :global(.document-table) th,
+.faqAnswer :global(.document-table) th {
+  background: var(--surface);
+  font-weight: 600;
 }
 
 .policySection {
@@ -370,9 +449,13 @@
   max-width: 900px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #101010;
+  background: var(--surface);
   border: 1px solid var(--divider);
-  border-radius: 14px;
+  border-radius: 12px;
+}
+
+.videoFrame:has(.videoPoster) {
+  aspect-ratio: auto;
 }
 
 .videoFrame iframe {
@@ -384,13 +467,14 @@
 
 .videoPoster {
   display: grid;
-  min-height: 100%;
+  min-height: clamp(260px, 45vw, 506px);
   place-content: center;
   justify-items: center;
   gap: 16px;
   padding: 24px;
-  color: #fff;
+  color: var(--foreground);
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .videoPoster p {
@@ -414,6 +498,18 @@
   .searchForm {
     display: grid;
     align-items: stretch;
+  }
+
+  .searchForm label {
+    width: 100%;
+  }
+
+  .faqItem summary {
+    padding: 18px 20px;
+  }
+
+  .faqAnswer {
+    padding: 0 20px 20px;
   }
 
   .teamCard {

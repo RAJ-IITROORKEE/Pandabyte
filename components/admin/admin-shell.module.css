@@ -360,3 +360,97 @@
     transition: none;
   }
 }
+/* Layout controls affect this workspace only; global theme and content remain shared. */
+.layout { grid-template-columns: var(--admin-sidebar-width, 272px) minmax(0, 1fr); }
+.navGroup { flex-shrink: 0; }
+.navGroup h2 { padding: 0; }
+.groupToggle {
+  display: flex;
+  width: 100%;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.groupToggle svg { width: 14px; height: 14px; flex-shrink: 0; }
+.groupToggle[aria-expanded="false"] svg { transform: rotate(-90deg); }
+.groupItems { display: grid; gap: 2px; }
+.groupItems[hidden] { display: none; }
+.groupToggle:hover { background: color-mix(in srgb, var(--foreground) 6%, var(--surface)); }
+.layoutButton {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.layoutButton svg { width: 18px; height: 18px; }
+.layoutButton:focus-visible,
+.groupToggle:focus-visible,
+.resizeHandle:focus-visible,
+.navLink:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.resizeHandle {
+  position: fixed;
+  z-index: 30;
+  top: 0;
+  left: var(--admin-sidebar-width, 272px);
+  width: 10px;
+  height: 100vh;
+  height: 100dvh;
+  transform: translateX(-50%);
+  touch-action: none;
+  cursor: col-resize;
+}
+.resizeHandle::after { position: absolute; inset: 0 4px; background: transparent; content: ""; }
+.resizeHandle:hover::after,
+.resizeHandle:focus-visible::after,
+.layout[data-resizing="true"] .resizeHandle::after { background: var(--accent); }
+.layout[data-resizing="true"] { user-select: none; cursor: col-resize; }
+@media (min-width: 768px) {
+  .layout[data-rail="true"] { grid-template-columns: 80px minmax(0, 1fr); }
+  .layout[data-rail="true"] .resizeHandle { display: none; }
+  .sidebar[data-rail="true"] { padding-inline: 10px; gap: 14px; }
+  .sidebar[data-rail="true"] .sidebarHeader { justify-content: center; }
+  .sidebar[data-rail="true"] .brandText,
+  .sidebar[data-rail="true"] .navGroup h2 { display: none; }
+  .sidebar[data-rail="true"] .nav { gap: 12px; }
+  .sidebar[data-rail="true"] .navGroup + .navGroup { border-top: 1px solid var(--divider); padding-top: 12px; }
+  .sidebar[data-rail="true"] .navLink { flex-direction: column; justify-content: center; gap: 4px; min-height: 60px; padding: 8px 4px; }
+  .sidebar[data-rail="true"] .navLink span {
+    display: block;
+    width: 100%;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .sidebar[data-rail="true"] .activeLink::before { position: absolute; left: 2px; margin-left: 0; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .layout { grid-template-columns: 80px minmax(0, 1fr); }
+  .resizeHandle, .layoutButton { display: none; }
+}
+@media (max-width: 767px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .resizeHandle, .layoutButton { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .groupToggle svg, .layout, .sidebar { transition: none; }
+}

@@ -217,7 +217,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
       </form>
 
       {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} onClick={() => { setLoading(true); setError(""); void load(offset); }} type="button"><RefreshCw size={15} aria-hidden="true" /> Try again</button></div>}
-      <div className={styles.tableFrame}>
+      <div className={styles.tableFrame} role="region" aria-label={`${meta.title} records`} tabIndex={0}>
         <table className={styles.table}>
           <thead><tr><th scope="col">Title</th><th scope="col">Slug</th><th scope="col">Status</th><th scope="col">Updated</th><th scope="col"><span className={styles.visuallyHidden}>Open</span></th></tr></thead>
           <tbody>

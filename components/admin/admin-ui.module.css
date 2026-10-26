@@ -152,6 +152,7 @@
 .primaryButton:disabled, .secondaryButton:disabled, .dangerButton:disabled { cursor: not-allowed; opacity: .56; }
 
 .tableFrame {
+  position: relative;
   width: 100%;
   min-width: 0;
   overflow-x: auto;
@@ -165,6 +166,7 @@
   border-collapse: collapse;
   text-align: left;
 }
+.tableFrame:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 .table th,
 .table td {
