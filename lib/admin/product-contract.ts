@@ -13,10 +13,18 @@ export type ProductPriceWrite = {
   sku: string;
   expectedPriceVersion: number;
   regularPricePaise: number;
+  actualPricePaise?: number;
   salePricePaise: number | null;
   saleStartsAt: string | null;
   saleEndsAt: string | null;
   reason: string;
+};
+
+export type ProductTableStats = {
+  totalProducts: number;
+  unpricedProducts: number;
+  categories: { id: string; title: string; count: number }[];
+  prices: { minPaise: number; maxPaise: number; avgPaise: number; pricedProducts: number } | null;
 };
 
 const STATUSES = new Set(["all", "draft", "published", "archived"]);
@@ -24,7 +32,7 @@ const SORTS = new Set(["updated_desc", "updated_asc", "title_asc", "title_desc",
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u;
 const PRODUCT_TABLE_KEYS = new Set(["q", "status", "categoryId", "sort", "limit", "offset"]);
-const PRICE_KEYS = new Set(["sku", "expectedPriceVersion", "regularPricePaise", "salePricePaise", "saleStartsAt", "saleEndsAt", "reason"]);
+const PRICE_KEYS = new Set(["sku", "expectedPriceVersion", "regularPricePaise", "actualPricePaise", "salePricePaise", "saleStartsAt", "saleEndsAt", "reason"]);
 
 function fail(fields: FieldError[]): ValidationResult<never> {
   return { ok: false, fields };
@@ -93,6 +101,11 @@ export function parseProductPriceWrites(value: unknown): ValidationResult<Produc
     const regularPricePaise = item.regularPricePaise;
     if (!Number.isSafeInteger(regularPricePaise) || (regularPricePaise as number) < 0 || (regularPricePaise as number) > 10_000_000_000) fields.push({ field: `${path}.regularPricePaise`, code: "invalid", message: "Enter a valid amount in paise." });
 
+    const hasActualPrice = Object.prototype.hasOwnProperty.call(item, "actualPricePaise");
+    const actualPricePaise = item.actualPricePaise;
+    if (hasActualPrice && (!Number.isSafeInteger(actualPricePaise) || (actualPricePaise as number) < 0 || (actualPricePaise as number) > 10_000_000_000)) fields.push({ field: `${path}.actualPricePaise`, code: "invalid", message: "Enter a valid selling amount in paise." });
+    if (hasActualPrice && Number.isSafeInteger(regularPricePaise) && Number.isSafeInteger(actualPricePaise) && (actualPricePaise as number) > (regularPricePaise as number)) fields.push({ field: path, code: "invalid", message: "Selling price cannot exceed the list price." });
+
     const salePricePaise = item.salePricePaise;
     if (!(salePricePaise === null || (Number.isSafeInteger(salePricePaise) && (salePricePaise as number) >= 0 && (salePricePaise as number) <= 10_000_000_000))) fields.push({ field: `${path}.salePricePaise`, code: "invalid", message: "Enter a valid sale amount in paise or leave it unset." });
 
@@ -102,19 +115,42 @@ export function parseProductPriceWrites(value: unknown): ValidationResult<Produc
     if (saleEndsAt === undefined) fields.push({ field: `${path}.saleEndsAt`, code: "invalid", message: "Enter a UTC date and time ending in Z, or leave it unset." });
     if (salePricePaise === null && (saleStartsAt !== null || saleEndsAt !== null)) fields.push({ field: path, code: "invalid", message: "Clear sale dates when there is no sale price." });
     if (salePricePaise !== null && (saleStartsAt === null || saleEndsAt === null || saleStartsAt === undefined || saleEndsAt === undefined || Date.parse(saleStartsAt) >= Date.parse(saleEndsAt))) fields.push({ field: path, code: "invalid", message: "A sale needs a start time before its end time." });
-    if (salePricePaise !== null && Number.isSafeInteger(regularPricePaise) && (salePricePaise as number) > (regularPricePaise as number)) fields.push({ field: path, code: "invalid", message: "Sale price cannot exceed regular price." });
+    const saleCeiling = hasActualPrice ? actualPricePaise : regularPricePaise;
+    if (salePricePaise !== null && Number.isSafeInteger(saleCeiling) && (salePricePaise as number) > (saleCeiling as number)) fields.push({ field: path, code: "invalid", message: hasActualPrice ? "Sale price cannot exceed selling price." : "Sale price cannot exceed regular price." });
 
     const reason = typeof item.reason === "string" ? item.reason.trim() : "";
     if (!reason || Array.from(reason).length > 500 || CONTROL_CHARS.test(reason)) fields.push({ field: `${path}.reason`, code: "invalid", message: "Enter a reason using at most 500 characters." });
 
     if (/^[A-Za-z0-9._-]{1,80}$/.test(sku) && Number.isSafeInteger(expectedPriceVersion) && (expectedPriceVersion as number) >= 0 &&
       Number.isSafeInteger(regularPricePaise) && (regularPricePaise as number) >= 0 && (regularPricePaise as number) <= 10_000_000_000 &&
+      (!hasActualPrice || (Number.isSafeInteger(actualPricePaise) && (actualPricePaise as number) >= 0 && (actualPricePaise as number) <= 10_000_000_000)) &&
       (salePricePaise === null || (Number.isSafeInteger(salePricePaise) && (salePricePaise as number) >= 0 && (salePricePaise as number) <= 10_000_000_000)) &&
       saleStartsAt !== undefined && saleEndsAt !== undefined && reason && Array.from(reason).length <= 500 && !CONTROL_CHARS.test(reason)) {
       writes.push({ sku, expectedPriceVersion: expectedPriceVersion as number, regularPricePaise: regularPricePaise as number,
+        ...(hasActualPrice ? { actualPricePaise: actualPricePaise as number } : {}),
         salePricePaise: salePricePaise as number | null, saleStartsAt, saleEndsAt, reason });
     }
   });
 
   return fields.length ? fail(fields) : { ok: true, value: writes };
+}
+
+export function isProductTableStats(value: unknown): value is ProductTableStats {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const stats = value as Record<string, unknown>;
+  const count = (candidate: unknown) => Number.isSafeInteger(candidate) && (candidate as number) >= 0;
+  if (!count(stats.totalProducts) || !count(stats.unpricedProducts) || (stats.unpricedProducts as number) > (stats.totalProducts as number) ||
+    !Array.isArray(stats.categories) || stats.categories.length > 500) return false;
+  if (stats.categories.some((item) => !item || typeof item !== "object" || Array.isArray(item) ||
+    typeof (item as Record<string, unknown>).id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test((item as Record<string, unknown>).id as string) ||
+    typeof (item as Record<string, unknown>).title !== "string" || Array.from((item as Record<string, unknown>).title as string).length > 160 ||
+    !count((item as Record<string, unknown>).count) || ((item as Record<string, unknown>).count as number) > (stats.totalProducts as number))) return false;
+  if (stats.prices === null) return stats.unpricedProducts === stats.totalProducts;
+  if (!stats.prices || typeof stats.prices !== "object" || Array.isArray(stats.prices)) return false;
+  const prices = stats.prices as Record<string, unknown>;
+  return count(prices.pricedProducts) && (prices.pricedProducts as number) > 0 &&
+    (prices.pricedProducts as number) <= (stats.totalProducts as number) &&
+    (stats.unpricedProducts as number) + (prices.pricedProducts as number) === (stats.totalProducts as number) &&
+    [prices.minPaise, prices.avgPaise, prices.maxPaise].every((amount) => Number.isSafeInteger(amount) && (amount as number) >= 0 && (amount as number) <= 10_000_000_000) &&
+    (prices.minPaise as number) <= (prices.avgPaise as number) && (prices.avgPaise as number) <= (prices.maxPaise as number);
 }

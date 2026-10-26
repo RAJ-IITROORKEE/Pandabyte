@@ -324,6 +324,7 @@
 .rowEditorHeading { justify-content: space-between; gap: 12px; }
 .rowEditorHeading h3 { font-size: 13px; }
 .relationRow { display: grid; min-width: 0; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 40px; align-items: end; gap: 8px; padding: 10px; border: 1px solid var(--divider); border-radius: 2px; }
+.rowEditor[aria-label="Variants"] > .relationRow { align-items: start; }
 .rowField { display: grid; min-width: 0; gap: 5px; }
 .rowField > span, .inlineCheck > span { color: var(--muted); font-size: 10px; }
 .rowField input { min-height: 38px; padding: 7px 9px; font-size: 12px; }

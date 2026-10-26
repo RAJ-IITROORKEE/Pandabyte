@@ -32,7 +32,7 @@ test("product table query writes defaults while omitting empty search and catego
   assert.equal(serializeProductTableQuery({ ...DEFAULT_PRODUCT_TABLE_QUERY, q: "   " }).startsWith("q="), false);
 });
 
-test("product price uses only operational prices and marks source observations as unconfigured", () => {
+test("Admin shows saved source prices and retains source labels", () => {
   assert.deepEqual(presentProductPrice(null, true), {
     current: "Not configured", regular: null, discount: null, sourceObservation: true,
   });
@@ -40,7 +40,7 @@ test("product price uses only operational prices and marks source observations a
     current: "Not configured", regular: null, discount: null, sourceObservation: false,
   });
   assert.deepEqual(presentProductPrice({ regularPricePaise: 20_000, effectivePricePaise: 15_000, isOnSale: true, from: false }, true), {
-    current: "Not configured", regular: null, discount: null, sourceObservation: true,
+    current: "₹150.00", regular: "₹200.00", discount: "25% off", sourceObservation: true,
   });
 });
 

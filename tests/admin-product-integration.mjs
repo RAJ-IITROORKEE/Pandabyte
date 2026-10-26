@@ -27,7 +27,8 @@ class HarnessFailure extends Error {
 }
 
 function safeFailureLabel(error) {
-  const name = typeof error?.name === "string" ? error.name.replace(/[^a-zA-Z0-9_.-]/g, "").slice(0, 40) || "Error" : "Error";
+  if (typeof error?.label === "string" && /^[a-z0-9_]{1,180}$/.test(error.label)) return error.label;
+  const name = typeof error?.name === "string" ? error.name.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 40) || "error" : "error";
   const location = typeof error?.stack === "string" ? error.stack.match(/admin-product-integration\.mjs:(\d+):(\d+)/) : null;
   return location ? `admin_product_integration_${name}_at_${location[1]}` : "admin_product_integration_failed";
 }
@@ -54,6 +55,21 @@ function request(context, route, token, method = "GET", json) {
 async function body(response, expectedStatus, label) {
   ensure(response.status === expectedStatus, `${label}_status_${response.status}`);
   return safeJson(response, `${label}_json`);
+}
+
+function checkProductStats(stats, label) {
+  ensure(stats && Number.isSafeInteger(stats.totalProducts) && stats.totalProducts >= 0 && Number.isSafeInteger(stats.unpricedProducts) &&
+    stats.unpricedProducts >= 0 && stats.unpricedProducts <= stats.totalProducts && Array.isArray(stats.categories) && stats.categories.length <= 500,
+  `${label}_shape_invalid`);
+  ensure(stats.categories.every((category) => category && typeof category.id === "string" && typeof category.title === "string" &&
+    Number.isSafeInteger(category.count) && category.count >= 0 && category.count <= stats.totalProducts), `${label}_categories_invalid`);
+  if (stats.prices === null) ensure(stats.unpricedProducts === stats.totalProducts, `${label}_empty_prices_invalid`);
+  else ensure(stats.prices && Number.isSafeInteger(stats.prices.minPaise) && Number.isSafeInteger(stats.prices.avgPaise) &&
+    Number.isSafeInteger(stats.prices.maxPaise) && Number.isSafeInteger(stats.prices.pricedProducts) && stats.prices.pricedProducts > 0 &&
+    stats.prices.pricedProducts + stats.unpricedProducts === stats.totalProducts && stats.prices.minPaise >= 0 &&
+    stats.prices.minPaise <= stats.prices.avgPaise && stats.prices.avgPaise <= stats.prices.maxPaise && stats.prices.maxPaise <= 10_000_000_000,
+  `${label}_prices_invalid`);
+  return stats;
 }
 
 function commonDocument(runId, suffix) {
@@ -104,11 +120,13 @@ async function verify(context, state, fixtures) {
   base.variants.push({ sku: `P3-${state.runId.slice(0, 8)}-SECOND`.toUpperCase(), label: "Second" });
 
   ensure((await request(context, "/api/admin/products/table", customerToken)).status === 403, "customer_product_table_access_allowed");
+  const initialTable = await body(await request(context, "/api/admin/products/table?limit=10", staffToken), 200, "initial_product_table");
+  const initialStats = checkProductStats(initialTable.stats, "initial_product_stats");
   ensure((await request(context, "/api/admin/products/table?q=x&q=y", staffToken)).status === 400, "duplicate_table_query_accepted");
   ensure((await request(context, "/api/admin/products/table?debug=1", staffToken)).status === 400, "unknown_table_query_accepted");
 
   const createdResponse = await postProduct(context, staffToken, base, [
-    { sku: base.variants[0].sku, expectedPriceVersion: 0, regularPricePaise: 15000, salePricePaise: 12000, saleStartsAt: "2099-01-01T00:00:00Z", saleEndsAt: "2099-02-01T00:00:00Z", reason: "Fixture initial price" },
+    { sku: base.variants[0].sku, expectedPriceVersion: 0, regularPricePaise: 15000, actualPricePaise: 13000, salePricePaise: 12000, saleStartsAt: "2099-01-01T00:00:00Z", saleEndsAt: "2099-02-01T00:00:00Z", reason: "Fixture initial price" },
     { sku: base.variants[1].sku, expectedPriceVersion: 0, regularPricePaise: 17000, salePricePaise: null, saleStartsAt: null, saleEndsAt: null, reason: "Fixture initial price" },
   ]);
   const createdBody = await body(createdResponse, 201, "product_create_with_prices");
@@ -122,7 +140,7 @@ async function verify(context, state, fixtures) {
   const priceBody = await body(priceResponse, 200, "product_scoped_prices");
   ensure(priceBody.sourceObservation === false && priceBody.items?.length === 2, "product_price_scope_invalid");
   const lowest = priceBody.items.find(({ sku }) => sku === base.variants[0].sku);
-  ensure(lowest?.regularPaise === 15000 && lowest.salePaise === 12000 && lowest.priceVersion === 1, "product_variant_price_missing");
+  ensure(lowest?.regularPaise === 15000 && lowest.actualPaise === 13000 && lowest.salePaise === 12000 && lowest.priceVersion === 1, "product_variant_price_missing");
   ensure(priceBody.items.every((item) => item.productId === product.id && item.stock === null && item.stockVersion === null), "product_price_read_exposed_stock_or_other_product");
   state.variants.push(...priceBody.items.map(({ id, productId, sku }) => ({ id, productId, sku })));
   await checkpoint(state);
@@ -132,7 +150,10 @@ async function verify(context, state, fixtures) {
   const tableResponse = await request(context, `/api/admin/products/table?${tableQuery}`, staffToken);
   const tableBody = await body(tableResponse, 200, "product_table_list");
   const row = tableBody.items?.find(({ id }) => id === product.id);
-  ensure(row?.status === "draft" && row.price?.regularPricePaise === 15000 && row.price?.effectivePricePaise === 15000 && row.price.from === true, "product_table_projection_invalid");
+  ensure(row?.status === "draft" && row.price?.regularPricePaise === 15000 && row.price?.effectivePricePaise === 13000 && row.price.from === true, "product_table_projection_invalid");
+  const firstProductStats = checkProductStats(tableBody.stats, "first_product_stats");
+  ensure(firstProductStats.totalProducts === initialStats.totalProducts + 1 && firstProductStats.unpricedProducts === initialStats.unpricedProducts &&
+    firstProductStats.prices?.pricedProducts === (initialStats.prices?.pricedProducts ?? 0) + 1, "product_table_stats_not_global_or_updated");
   ensure(tableBody.categoryOptions && Array.isArray(tableBody.categoryOptions), "product_table_categories_missing");
 
   const rollbackDoc = commonDocument(state.runId, "atomic-rollback");
@@ -149,13 +170,82 @@ async function verify(context, state, fixtures) {
   state.records.push({ id: sourceBody.record.id, module: "products", kind: "product", slug: sourceBody.record.slug });
   await checkpoint(state);
   const sourcePriceBody = await body(await request(context, `/api/admin/products/${sourceBody.record.id}/pricing`, staffToken), 200, "source_observation_price_read");
-  ensure(sourcePriceBody.sourceObservation === true && sourcePriceBody.items?.every(({ regularPaise, salePaise }) => regularPaise === null && salePaise === null), "source_observation_operational_prices_exposed");
+  ensure(sourcePriceBody.sourceObservation === true && sourcePriceBody.items?.every(({ regularPaise, actualPaise, salePaise }) => regularPaise === null && actualPaise === null && salePaise === null), "source_observation_initial_prices_not_empty");
   const sourceVariantId = sourceBody.record.document.variants[0].id;
+  const sourceUpdateDocument = { ...source, variants: sourceBody.record.document.variants };
   state.variants.push({ id: sourceVariantId, productId: sourceBody.record.id, sku: source.variants[0].sku });
-  const sourcePriceWrite = await request(context, `/api/admin/pricing/${sourceVariantId}`, staffToken, "PATCH", {
-    expectedVersion: 0, regularPaise: 12300, salePaise: null, saleFrom: null, saleUntil: null, reason: "Source observation must remain unpriced",
+
+  const staffUserId = fixtures.users.find(({ role }) => role === "staff").userId;
+  const publishGrant = await rpc(context.admin, "set_staff_capability", {
+    target_user_id: staffUserId,
+    capability_name: "content.publish",
+    enabled: true,
+    reason: `Unpriced source publish guard fixture ${state.runId}`,
   });
-  ensure(sourcePriceWrite.status === 409, "source_observation_operational_price_write_allowed");
+  ensure(!publishGrant.error, "source_publish_fixture_capability_grant_failed");
+  try {
+    const capability = await rpc(fixtures.auth.staff.database, "has_capability", { capability_name: "content.publish" });
+    ensure(!capability.error && capability.data === true, "source_publish_fixture_capability_missing");
+    const publishAttempt = await request(context, `/api/admin/products/${sourceBody.record.id}/publish`, staffToken, "POST", {
+      expectedVersion: sourceBody.record.version,
+    });
+    ensure(publishAttempt.status === 409, "unpriced_source_product_published");
+    const stillUnpublished = await body(await request(context, `/api/admin/products/${sourceBody.record.id}`, staffToken), 200, "source_after_unpriced_publish");
+    ensure(stillUnpublished.record.version === sourceBody.record.version && stillUnpublished.record.publishedRevisionId === null,
+      "unpriced_source_publish_changed_record");
+  } finally {
+    const revoke = await rpc(context.admin, "set_staff_capability", {
+      target_user_id: staffUserId,
+      capability_name: "content.publish",
+      enabled: false,
+      reason: `Revoke unpriced source publish guard fixture ${state.runId}`,
+    });
+    ensure(!revoke.error, "source_publish_fixture_capability_revoke_failed");
+    const revoked = await rpc(fixtures.auth.staff.database, "has_capability", { capability_name: "content.publish" });
+    ensure(!revoked.error && revoked.data === false, "source_publish_fixture_capability_not_revoked");
+  }
+
+  const invalidSourcePair = await request(context, `/api/admin/products/${sourceBody.record.id}`, staffToken, "PATCH", {
+    expectedVersion: sourceBody.record.version,
+    document: sourceUpdateDocument,
+    prices: [{ sku: source.variants[0].sku, expectedPriceVersion: 0, regularPricePaise: 2, actualPricePaise: 3, salePricePaise: null, saleStartsAt: null, saleEndsAt: null, reason: "Invalid source pair" }],
+  });
+  ensure(invalidSourcePair.status === 400, "source_actual_above_list_accepted");
+  const unchangedSource = await body(await request(context, `/api/admin/products/${sourceBody.record.id}`, staffToken), 200, "source_after_invalid_pair");
+  ensure(unchangedSource.record.version === sourceBody.record.version, "invalid_source_pair_changed_document");
+
+  const sourceUpdateResponse = await request(context, `/api/admin/products/${sourceBody.record.id}`, staffToken, "PATCH", {
+    expectedVersion: sourceBody.record.version,
+    document: sourceUpdateDocument,
+    prices: [{ sku: source.variants[0].sku, expectedPriceVersion: 0, regularPricePaise: 2, actualPricePaise: 1, salePricePaise: null, saleStartsAt: null, saleEndsAt: null, reason: "Source price pair fixture" }],
+  });
+  const sourceUpdate = await body(sourceUpdateResponse, 200, "source_actual_price_save");
+  const sourcePrices = await body(await request(context, `/api/admin/products/${sourceBody.record.id}/pricing`, staffToken), 200, "source_actual_price_read");
+  ensure(sourcePrices.sourceObservation === true && sourcePrices.items?.length === 1 && sourcePrices.items[0].regularPaise === 2 &&
+    sourcePrices.items[0].actualPaise === 1 && sourcePrices.items[0].salePaise === null && sourcePrices.items[0].stock === null &&
+    sourcePrices.items[0].stockVersion === null, "source_actual_price_pair_not_admin_visible");
+
+  const sourceTable = await body(await request(context, `/api/admin/products/table?q=${encodeURIComponent(source.variants[0].sku)}&limit=10`, staffToken), 200, "source_price_table");
+  const sourceRow = sourceTable.items?.find(({ id }) => id === sourceBody.record.id);
+  const finalStats = checkProductStats(sourceTable.stats, "source_product_stats");
+  ensure(sourceTable.total === 1 && sourceRow?.sourceObservation === true && sourceRow.price?.regularPricePaise === 2 &&
+    sourceRow.price?.effectivePricePaise === 1 && finalStats.totalProducts === initialStats.totalProducts + 2 &&
+    finalStats.unpricedProducts === initialStats.unpricedProducts && finalStats.prices?.pricedProducts === (initialStats.prices?.pricedProducts ?? 0) + 2 &&
+    (finalStats.prices?.minPaise ?? 0) <= 1, "source_price_table_or_global_stats_invalid");
+
+  const staleSourceSave = await request(context, `/api/admin/products/${sourceBody.record.id}`, staffToken, "PATCH", {
+    expectedVersion: sourceUpdate.record.version,
+    document: { ...sourceUpdateDocument, summary: "This stale price save must roll back." },
+    prices: [{ sku: source.variants[0].sku, expectedPriceVersion: 0, regularPricePaise: 4, actualPricePaise: 3, salePricePaise: null, saleStartsAt: null, saleEndsAt: null, reason: "Stale source price fixture" }],
+  });
+  ensure(staleSourceSave.status === 409, "stale_source_price_save_not_conflicted");
+  const sourceAfterConflict = await body(await request(context, `/api/admin/products/${sourceBody.record.id}`, staffToken), 200, "source_after_stale_pair");
+  ensure(sourceAfterConflict.record.version === sourceUpdate.record.version && sourceAfterConflict.record.document.summary === source.summary, "stale_source_price_save_changed_document");
+
+  const sourcePriceWrite = await request(context, `/api/admin/pricing/${sourceVariantId}`, staffToken, "PATCH", {
+    expectedVersion: 0, regularPaise: 12300, salePaise: null, saleFrom: null, saleUntil: null, reason: "Use paired Admin source price editing",
+  });
+  ensure(sourcePriceWrite.status === 409, "legacy_source_price_write_bypassed_admin_pair");
 
   const richInvalid = commonDocument(state.runId, "invalid-rich-content");
   richInvalid.richContent = { type: "doc", content: [{ type: "script", text: "alert(1)" }] };
@@ -274,7 +364,7 @@ async function main() {
   }
 
   const keepFixtures = args.has("--keep-fixtures");
-  const state = { runId: randomUUID(), users: [], staffUserId: "", records: [], variants: [], previewProductId: "" };
+  const state = { runId: randomUUID(), users: [], staffUserId: "", records: [], variants: [], media: [], storageKeys: [], inquiries: [], previewProductId: "" };
   let failure = null;
   try {
     const fixtures = await createFixtures(context.clerk, state.runId, (fixture) => state.users.push(fixture));

@@ -1,0 +1,156 @@
+{
+  "date": "2026-10-27",
+  "status": "verified",
+  "scope": "Admin product Set/Actual prices, captured-source import, alignment, color swatches and global statistics",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "parallel": true,
+    "fastTier": "Not independently selectable; no Fast-tier claim."
+  },
+  "migration": {
+    "file": "20261026205727_required-product-prices.sql",
+    "applied": true,
+    "scope": "linked development project",
+    "destructiveRollback": false,
+    "firstAttempt": "Syntax gate rejected an extra closing parenthesis before execution; corrected and exact migration applied.",
+    "publicationPairGuard": {
+      "file": "20261026211809_product-publication-price-pair.sql",
+      "applied": true,
+      "test": "Unpriced disposable source publication rejected409 with unchanged version/revision; temporary fixture grant revoked and all fixtures cleaned."
+    }
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed final production build and compiler TypeScript check",
+    "unit": {
+      "shared": 163,
+      "mediaDocx": 3,
+      "importer": 8,
+      "failed": 0,
+      "total": 174
+    },
+    "http": {
+      "auth": 7,
+      "security": 2,
+      "diagnostics": 1,
+      "failed": 0
+    },
+    "developmentApi": "All product table/pricing/source-pair/version rollback/capability assertions and final disposable cleanup passed. Initial fixture ID reuse and cleanup initializer defects were fixed before the final passing run.",
+    "browser": {
+      "statisticsReflowCases": 8,
+      "widths": [
+        320,
+        768,
+        1024,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "pageOverflow": false,
+      "variantInputTopPositionsEqual": true,
+      "textPaletteActualColors": 10,
+      "highlightPaletteActualColors": 4,
+      "keyboardFocusVisible": true,
+      "requiredPrices": true,
+      "actualCannotExceedSet": true,
+      "finalMobilePaletteRetest": "passed at all four widths in both themes; no page overflow",
+      "editorReflowCases": 8,
+      "totalReflowThemeCases": 16,
+      "finalActualStats": {
+        "totalProducts": 42,
+        "unpricedProducts": 0,
+        "categories": {
+          "Sensors": 22,
+          "Dev Boards": 9,
+          "Accessories": 6,
+          "Shields": 3,
+          "IoT Kits": 2
+        },
+        "minPaise": 6000,
+        "avgPaise": 203952,
+        "maxPaise": 4000000
+      },
+      "filterInvariant": "PB-BMV080 filter shows one row with ₹8000/₹6000 and25%off; global totals and price cards unchanged",
+      "x32shieldPriceInputs": "750.00/750.00 required",
+      "consoleErrors": 0,
+      "preview": "http://localhost:3000/admin/products?status=all&sort=updated_desc&limit=20&offset=0",
+      "screenshots": [
+        ".bootstrap/admin-price-followup/products-stats-dark.png",
+        ".bootstrap/admin-price-followup/products-stats-light.png",
+        ".bootstrap/admin-price-followup/color-swatches.png"
+      ],
+      "viewportOverrideReset": true
+    },
+    "disposableCleanup": "passed; fixture marker absent"
+  },
+  "source": {
+    "products": 44,
+    "skuCandidates": 42,
+    "heldMissingSku": 2,
+    "listingObservationsVerified": 89,
+    "planDispositions": {
+      "already-exact": 0,
+      "ready-to-update": 42,
+      "conflict": 0,
+      "missing-admin-record": 0,
+      "ambiguous-admin-record": 0,
+      "source-admin-match-required": 0,
+      "invalid-admin-record": 0
+    },
+    "capturedPriceStats": {
+      "regularPricePaise": {
+        "count": 42,
+        "minPaise": 6000,
+        "meanPaise": 210190,
+        "maxPaise": 4000000
+      },
+      "actualPricePaise": {
+        "count": 42,
+        "minPaise": 6000,
+        "meanPaise": 203952,
+        "maxPaise": 4000000
+      }
+    },
+    "discountedSkus": [
+      "XLORA",
+      "PBNEO6M",
+      "PB-BMV080"
+    ],
+    "provenance": "Local preserved PandaByte.in archive, dated capture observations, not a live-price verification",
+    "reportDirectory": ".bootstrap/admin-price-followup",
+    "importStatus": "verified",
+    "applied": true,
+    "updated": 42,
+    "verifiedPrices": 42,
+    "held": 2,
+    "publicMasksVerified": 42,
+    "preservedDocumentsVerified": 42,
+    "preservedPublishedRevisionsVerified": 42
+  },
+  "preserved": [
+    "source archive bytes",
+    "product documents and media",
+    "published revisions",
+    "source-only public price masks and non-purchasability",
+    "stock",
+    "protected owner session/role",
+    "storefront layout/theme/logo",
+    "other-chat source/CAD/design artifacts"
+  ],
+  "notPerformed": [
+    "content publication",
+    "checkout/payments",
+    "production deployment",
+    "live email/billing",
+    "load tests",
+    "backup/export/restore/recovery operations",
+    "actual zoom",
+    "OS reduced-motion runtime switching",
+    "screen-reader speech",
+    "physical-device testing"
+  ]
+}

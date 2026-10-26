@@ -1,7 +1,7 @@
 import { operationalJson } from "@/lib/observability/events";
 import { requireCapability } from "@/lib/authorization";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
-import { parseProductTableQuery } from "./product-contract.ts";
+import { isProductTableStats, parseProductTableQuery, type ProductTableStats } from "./product-contract.ts";
 import {
   parseRecordId,
   type AdminVariantDto,
@@ -83,9 +83,9 @@ function safeText(value: unknown, max: number): value is string {
   return typeof value === "string" && Array.from(value).length <= max && !CONTROL_CHARS.test(value);
 }
 
-export function isProductTableResult(value: unknown, limit: number): value is { items: unknown[]; total: number; categoryOptions: unknown[] } {
+export function isProductTableResult(value: unknown, limit: number): value is { items: unknown[]; total: number; categoryOptions: unknown[]; stats: ProductTableStats } {
   return isObject(value) && Array.isArray(value.items) && value.items.length <= limit && Number.isSafeInteger(value.total) && (value.total as number) >= value.items.length &&
-    Array.isArray(value.categoryOptions) && value.categoryOptions.length <= 500;
+    Array.isArray(value.categoryOptions) && value.categoryOptions.length <= 500 && isProductTableStats(value.stats);
 }
 
 export function isProductTableItem(value: unknown): boolean {
@@ -100,7 +100,7 @@ export function isProductTableItem(value: unknown): boolean {
       !Number.isSafeInteger(value.price.effectivePricePaise) || (value.price.effectivePricePaise as number) < 0 ||
       (value.price.effectivePricePaise as number) > (value.price.regularPricePaise as number) || typeof value.price.isOnSale !== "boolean" || typeof value.price.from !== "boolean") return false;
   }
-  return !(value.sourceObservation && value.price !== null);
+  return true;
 }
 
 export function parseAdminVariantDto(value: unknown): AdminVariantDto | null {
@@ -110,17 +110,20 @@ export function parseAdminVariantDto(value: unknown): AdminVariantDto | null {
   const stringField = (input: unknown, max: number) => typeof input === "string" && input.trim().length > 0 && Array.from(input).length <= max && !CONTROL_CHARS.test(input);
   const nullableInteger = (input: unknown, max: number) => input === null || (Number.isSafeInteger(input) && (input as number) >= 0 && (input as number) <= max);
   const nullableDate = (input: unknown) => input === null || (typeof input === "string" && Number.isFinite(Date.parse(input)));
+  const actualPaise = value.actualPaise === undefined ? null : value.actualPaise;
   if (!id || !productId || !stringField(value.productTitle, 200) || !stringField(value.sku, 80) || !stringField(value.label, 120) ||
-    !nullableInteger(value.regularPaise, 10_000_000_000) || !nullableInteger(value.salePaise, 10_000_000_000) || !nullableDate(value.saleFrom) || !nullableDate(value.saleUntil) ||
+    !nullableInteger(value.regularPaise, 10_000_000_000) || !nullableInteger(actualPaise, 10_000_000_000) || !nullableInteger(value.salePaise, 10_000_000_000) || !nullableDate(value.saleFrom) || !nullableDate(value.saleUntil) ||
     !Number.isSafeInteger(value.priceVersion) || (value.priceVersion as number) < 0 || !nullableInteger(value.stock, 2_147_483_647) ||
     !(value.stockVersion === null || (Number.isSafeInteger(value.stockVersion) && (value.stockVersion as number) >= 0))) return null;
   const saleFrom = value.saleFrom === null ? null : new Date(value.saleFrom as string).toISOString();
   const saleUntil = value.saleUntil === null ? null : new Date(value.saleUntil as string).toISOString();
   const salePaise = value.salePaise as number | null;
   const regularPaise = value.regularPaise as number | null;
+  if (actualPaise !== null && (regularPaise === null || (actualPaise as number) > regularPaise)) return null;
+  const saleCeiling = actualPaise === null ? regularPaise : actualPaise as number;
   if ((salePaise === null && (saleFrom !== null || saleUntil !== null)) ||
-    (salePaise !== null && (regularPaise === null || salePaise > regularPaise || !saleFrom || !saleUntil || Date.parse(saleFrom) >= Date.parse(saleUntil)))) return null;
-  return { id, productId, productTitle: value.productTitle as string, sku: value.sku as string, label: value.label as string, regularPaise, salePaise,
+    (salePaise !== null && (saleCeiling === null || salePaise > saleCeiling || !saleFrom || !saleUntil || Date.parse(saleFrom) >= Date.parse(saleUntil)))) return null;
+  return { id, productId, productTitle: value.productTitle as string, sku: value.sku as string, label: value.label as string, regularPaise, actualPaise: actualPaise as number | null, salePaise,
     saleFrom, saleUntil, priceVersion: value.priceVersion as number, stock: value.stock as number | null, stockVersion: value.stockVersion as number | null };
 }
 
@@ -157,8 +160,6 @@ export async function adminListProductPrices(request: Request, rawProductId: str
   if (!isObject(data) || !Array.isArray(data.items) || data.items.length > 100 || typeof data.sourceObservation !== "boolean") return errorResponse("backend_unavailable", 503);
   const parsed = data.items.map((item) => parseAdminVariantDto(item));
   if (parsed.some((item) => item === null || item.productId !== productId)) return errorResponse("backend_unavailable", 503);
-  const items = (parsed as AdminVariantDto[]).map((item) => data.sourceObservation ? {
-    ...item, regularPaise: null, salePaise: null, saleFrom: null, saleUntil: null, stock: null, stockVersion: null,
-  } : { ...item, stock: null, stockVersion: null });
+  const items = (parsed as AdminVariantDto[]).map((item) => ({ ...item, stock: null, stockVersion: null }));
   return respond({ items, sourceObservation: data.sourceObservation });
 }

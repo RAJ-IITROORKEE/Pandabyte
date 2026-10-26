@@ -646,6 +646,7 @@ export type AdminVariantDto = {
   sku: string;
   label: string;
   regularPaise: number | null;
+  actualPaise?: number | null;
   salePaise: number | null;
   saleFrom: string | null;
   saleUntil: string | null;

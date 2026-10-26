@@ -1,3 +1,5 @@
+> Latest correction, 27 October 2026: owner-approved captured source prices are editable/importable in Admin as required Set/Actual pairs; source observations remain non-purchasable and publicly price-masked. Global product/category/price statistics are added. Earlier source-price restrictions below are historical. See [current contract](admin-product-prices.md).
+
 # Product administration checkpoint
 
 27 October 2026. The owner authorized the product-table/editor upgrade, its necessary development backend changes, and pricing inside product add/edit. The existing public theme, logo and unrelated storefront behavior stay unchanged. Categories are a later checkpoint.

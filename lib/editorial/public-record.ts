@@ -20,7 +20,7 @@ export function parsePublicVariant(value: unknown): PublicVariant {
     !paise(value.regularPricePaise) || !paise(value.effectivePricePaise) || typeof value.isOnSale !== "boolean" ||
     !(value.saleEndsAt === null || date(value.saleEndsAt)) || !["available", "unavailable"].includes(String(value.availability)) ||
     (value.effectivePricePaise !== null && (value.regularPricePaise === null || value.effectivePricePaise > value.regularPricePaise)) ||
-    (value.isOnSale && (value.saleEndsAt === null || value.effectivePricePaise === null)) ||
+    (value.isOnSale && (value.effectivePricePaise === null || (value.saleEndsAt === null && (value.regularPricePaise === null || value.effectivePricePaise >= value.regularPricePaise)))) ||
     (!value.isOnSale && (value.saleEndsAt !== null || value.effectivePricePaise !== value.regularPricePaise))) throw new Error("Published pricing could not be rendered.");
   return { id: value.id, sku: value.sku, label: value.label, regularPricePaise: value.regularPricePaise,
     effectivePricePaise: value.effectivePricePaise, isOnSale: value.isOnSale, saleEndsAt: value.saleEndsAt,

@@ -4,6 +4,18 @@
 .toolButton:hover:not(:disabled), .toolButtonActive { border-color: var(--accent); background: var(--status-soft); color: var(--accent); }
 .toolButton:disabled { opacity: .5; cursor: not-allowed; }
 .toolbar select { width: auto; min-height: 36px; padding: 6px 8px; font-size: 11px; }
+.colorPicker { position: relative; }
+.colorPicker > summary { display: inline-flex; min-height: 36px; align-items: center; gap: 7px; padding: 6px 8px; border: 1px solid var(--divider); background: var(--surface); color: var(--foreground); cursor: pointer; font-size: 11px; list-style: none; }
+.colorPicker > summary::-webkit-details-marker { display: none; }
+.colorPicker > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.colorPicker[open] { z-index: 2; }
+.colorPicker[open] > summary { border-color: var(--accent); }
+.currentColor, .colorSwatch { display: block; width: 18px; height: 18px; border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent); }
+.colorPalette { position: absolute; z-index: 5; top: calc(100% + 5px); left: 0; display: grid; width: min(206px, calc(100vw - 32px)); grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; padding: 8px; border: 1px solid var(--divider); background: var(--surface); }
+.colorPalette > button { display: grid; min-width: 0; min-height: 36px; place-items: center; padding: 4px; border: 1px solid var(--divider); border-radius: 2px; background: var(--background); color: var(--foreground); cursor: pointer; font: inherit; font-size: 11px; }
+.colorPalette > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.colorPalette > button[aria-pressed="true"] { border-color: var(--accent); background: var(--status-soft); }
+.colorPalette > .colorReset { grid-column: 1 / -1; justify-items: start; padding: 6px 8px; }
 .editorSurface { min-height: 280px; overflow-x: auto; border: 1px solid var(--border); background: var(--background); }
 .editorSurface:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 .editorSurface :global(.product-rich-editor) { min-height: 280px; padding: 18px; outline: none; color: var(--foreground); font-size: 14px; line-height: 1.7; }
@@ -34,4 +46,9 @@
 @media (max-width: 720px) {
   .imageUpload, .imageProperties { grid-template-columns: minmax(0, 1fr); }
   .imageUpload > p { grid-column: auto; }
+}
+.colorPicker { max-width: 100%; }
+@media (max-width: 720px) {
+  .colorPicker[open] { flex-basis: 100%; }
+  .colorPalette { position: static; max-width: 100%; margin-top: 5px; }
 }

@@ -708,8 +708,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const serialized = useMemo(() => JSON.stringify(draft), [draft]);
   const documentDirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
   const dirty = documentDirty || (module === "products" && (productPricing.dirty || !richContentValid || pendingUploads > 0));
-  const hasProductSourceObservation = module === "products" && "sourceObservation" in draft;
-  const pricingReady = module !== "products" || hasProductSourceObservation || productPricing.ready;
+  const pricingReady = module !== "products" || productPricing.ready;
 
   useEffect(() => {
     if (validationIssues.length) validationSummaryRef.current?.focus();
@@ -775,11 +774,11 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setError("Wait for all product media uploads to finish before saving.");
       return null;
     }
-    if (module === "products" && !hasProductSourceObservation && !productPricing.ready) {
+    if (module === "products" && !productPricing.ready) {
       setError("Wait for variant prices to load, or retry the price read, before saving this product.");
       return null;
     }
-    if (module === "products" && !hasProductSourceObservation && productPricing.errors.length) {
+    if (module === "products" && productPricing.errors.length) {
       setValidationIssues(productPricing.errors.map((message) => ({ field: "prices", message })));
       return null;
     }
@@ -794,7 +793,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setBusy(false);
       return null;
     }
-    const prices = module === "products" && !("sourceObservation" in parsed.value) ? productPricing.writes : [];
+    const prices = module === "products" ? productPricing.writes : [];
     try {
       const result = isNew
         ? await api<{ record: AdminRecord }>(`/api/admin/${module}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ document: parsed.value, ...(prices.length ? { prices } : {}) }) })

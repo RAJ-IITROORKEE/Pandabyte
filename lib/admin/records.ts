@@ -380,8 +380,9 @@ export async function adminCreate(request: Request, rawModule: string): Promise<
   if (!parsed.ok) return validationResponse(parsed.fields);
   const priceFields = productInput.prices?.length ? validateProductPriceSkus(parsed.value.document, productInput.prices) : [];
   if (priceFields.length) return validationResponse(priceFields);
-  if (productInput.prices?.length && isObject(parsed.value.document) && "sourceObservation" in parsed.value.document) {
-    return validationResponse([{ field: "prices", code: "invalid", message: "Source observations cannot have operational prices." }]);
+  if (productInput.prices?.length && isObject(parsed.value.document) && "sourceObservation" in parsed.value.document &&
+    productInput.prices.some((price) => price.actualPricePaise === undefined)) {
+    return validationResponse([{ field: "prices", code: "invalid", message: "Source observations require an explicit selling price." }]);
   }
   const result = productInput.prices?.length
     ? await rpc(access.client, "admin_save_product_with_prices", {
@@ -429,8 +430,9 @@ export async function adminUpdate(request: Request, rawModule: string, rawId: st
   if (!parsed.ok) return validationResponse(parsed.fields);
   const priceFields = productInput.prices?.length ? validateProductPriceSkus(parsed.value.document, productInput.prices) : [];
   if (priceFields.length) return validationResponse(priceFields);
-  if (productInput.prices?.length && isObject(parsed.value.document) && "sourceObservation" in parsed.value.document) {
-    return validationResponse([{ field: "prices", code: "invalid", message: "Source observations cannot have operational prices." }]);
+  if (productInput.prices?.length && isObject(parsed.value.document) && "sourceObservation" in parsed.value.document &&
+    productInput.prices.some((price) => price.actualPricePaise === undefined)) {
+    return validationResponse([{ field: "prices", code: "invalid", message: "Source observations require an explicit selling price." }]);
   }
   const result = productInput.prices?.length
     ? await rpc(access.client, "admin_save_product_with_prices", {
@@ -535,9 +537,10 @@ function parseVariantDto(value: unknown): AdminVariantDto | null {
   const stringField = (input: unknown, max: number): input is string => typeof input === "string" && input.trim().length > 0 && Array.from(input).length <= max && !/[\u0000-\u001f\u007f]/.test(input);
   const nullableInteger = (input: unknown, max: number) => input === null || (Number.isSafeInteger(input) && (input as number) >= 0 && (input as number) <= max);
   const nullableDate = (input: unknown) => input === null || (typeof input === "string" && Number.isFinite(Date.parse(input)));
+  const actualPaise = value.actualPaise === undefined ? null : value.actualPaise;
   if (
     !id || !productId || !stringField(value.productTitle, 200) || !stringField(value.sku, 80) || !stringField(value.label, 120) ||
-    !nullableInteger(value.regularPaise, 10_000_000_000) || !nullableInteger(value.salePaise, 10_000_000_000) ||
+    !nullableInteger(value.regularPaise, 10_000_000_000) || !nullableInteger(actualPaise, 10_000_000_000) || !nullableInteger(value.salePaise, 10_000_000_000) ||
     !nullableDate(value.saleFrom) || !nullableDate(value.saleUntil) ||
     !Number.isSafeInteger(value.priceVersion) || (value.priceVersion as number) < 0 ||
     !nullableInteger(value.stock, 2_147_483_647) ||
@@ -547,8 +550,10 @@ function parseVariantDto(value: unknown): AdminVariantDto | null {
   const saleUntil = value.saleUntil === null ? null : new Date(value.saleUntil as string).toISOString();
   const salePaise = value.salePaise as number | null;
   const regularPaise = value.regularPaise as number | null;
+  if (actualPaise !== null && (regularPaise === null || (actualPaise as number) > regularPaise)) return null;
+  const saleCeiling = actualPaise === null ? regularPaise : actualPaise as number;
   if ((salePaise === null && (saleFrom !== null || saleUntil !== null)) ||
-      (salePaise !== null && (regularPaise === null || salePaise > regularPaise || !saleFrom || !saleUntil || Date.parse(saleFrom) >= Date.parse(saleUntil)))) return null;
+      (salePaise !== null && (saleCeiling === null || salePaise > saleCeiling || !saleFrom || !saleUntil || Date.parse(saleFrom) >= Date.parse(saleUntil)))) return null;
   return {
     id,
     productId,
@@ -556,6 +561,7 @@ function parseVariantDto(value: unknown): AdminVariantDto | null {
     sku: value.sku,
     label: value.label,
     regularPaise,
+    actualPaise: actualPaise as number | null,
     salePaise,
     saleFrom,
     saleUntil,

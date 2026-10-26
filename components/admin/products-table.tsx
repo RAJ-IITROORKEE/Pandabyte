@@ -18,6 +18,8 @@ import {
   type ProductTableStatus,
   type ProductTableSort,
 } from "./products-table-query";
+import { isProductTableStats, type ProductTableStats } from "@/lib/admin/product-contract";
+import { ProductStats } from "./product-stats";
 import styles from "./products-table.module.css";
 
 type ProductCategory = { id: string; title: string };
@@ -32,7 +34,7 @@ type ProductTableRow = {
   price: ProductTablePrice;
   sourceObservation: boolean;
 };
-type ProductTableResponse = { items: ProductTableRow[]; total: number; categoryOptions: ProductCategory[] };
+type ProductTableResponse = { items: ProductTableRow[]; total: number; categoryOptions: ProductCategory[]; stats: ProductTableStats };
 type ApiError = { error?: { message?: string } };
 const EMPTY_CATEGORY_OPTIONS: ProductCategory[] = [];
 
@@ -128,7 +130,7 @@ export function ProductsTable() {
         return response.json() as Promise<ProductTableResponse>;
       })
       .then((result) => {
-        if (!Array.isArray(result.items) || !Number.isSafeInteger(result.total) || result.total < 0 || !Array.isArray(result.categoryOptions)) {
+        if (!Array.isArray(result.items) || !Number.isSafeInteger(result.total) || result.total < 0 || !Array.isArray(result.categoryOptions) || !isProductTableStats(result.stats)) {
           throw new Error("Products could not be loaded. Try again.");
         }
         setResponseState({ key: requestKey, value: result });
@@ -184,6 +186,8 @@ export function ProductsTable() {
       <div><h1>Products</h1><p>Manage product descriptions, categories, and specifications.</p></div>
       <Link className={styles.newButton} href="/admin/products/new">New product</Link>
     </header>
+
+    <ProductStats stats={responseState?.value.stats} loading={loading} />
 
     <section className={styles.controls} aria-label="Product table filters">
       <label className={styles.search} htmlFor="products-search">

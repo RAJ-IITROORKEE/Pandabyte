@@ -12,8 +12,9 @@ test("published list projection restores empty blocks and rejects private/malfor
 test("public prices are bounded coherent paise without stock count fields", () => {
   const variant={id,sku:"X-C6",label:"Board",regularPricePaise:10000,effectivePricePaise:8000,isOnSale:true,saleEndsAt:"2026-11-01T00:00:00Z",availability:"available",stock:100};
   assert.equal(parsePublicVariant(variant).effectivePricePaise,8000);
+  assert.equal(parsePublicVariant({...variant,saleEndsAt:null}).isOnSale,true);
   assert.equal("stock" in parsePublicVariant(variant),false);
-  for(const patch of [{effectivePricePaise:1.1},{effectivePricePaise:10001},{saleEndsAt:null},{availability:"infinite"},{isOnSale:false}]) assert.throws(()=>parsePublicVariant({...variant,...patch}));
+  for(const patch of [{effectivePricePaise:1.1},{effectivePricePaise:10001},{saleEndsAt:null,effectivePricePaise:10000},{saleEndsAt:null,effectivePricePaise:null},{availability:"infinite"},{isOnSale:false}]) assert.throws(()=>parsePublicVariant({...variant,...patch}));
 });
 test("models and resource collections remain editable and backward compatible", () => {
   const product={...doc,categoryIds:[],variants:[],specifications:[],compatibility:[],kitContents:[],resources:[],mediaIds:[]};

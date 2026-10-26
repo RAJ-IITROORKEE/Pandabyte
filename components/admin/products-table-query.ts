@@ -28,7 +28,7 @@ export const DEFAULT_PRODUCT_TABLE_QUERY: ProductTableQuery = {
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
 
 export function presentProductPrice(price: ProductTablePrice, sourceObservation: boolean): ProductPricePresentation {
-  if (!price || sourceObservation) return { current: "Not configured", regular: null, discount: null, sourceObservation };
+  if (!price) return { current: "Not configured", regular: null, discount: null, sourceObservation };
   const hasSale = price.isOnSale && price.effectivePricePaise < price.regularPricePaise;
   const prefix = price.from ? "From " : "";
   const discountPercent = hasSale ? Math.round((1 - price.effectivePricePaise / price.regularPricePaise) * 100) : 0;

@@ -1,0 +1,70 @@
+.stats {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(150px, .72fr) minmax(260px, 1.3fr) minmax(290px, 1.4fr);
+  align-items: stretch;
+  gap: 12px;
+  color: var(--admin-foreground, var(--foreground));
+}
+
+.panel {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 13px;
+  padding: clamp(14px, 1.6vw, 18px);
+  border: 1px solid var(--admin-divider, var(--divider));
+  border-radius: 0;
+  background: var(--admin-surface, var(--surface));
+}
+
+.heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--admin-muted, var(--muted));
+}
+
+.heading svg { flex: 0 0 auto; }
+.heading h2 { min-width: 0; margin: 0; color: var(--admin-foreground, var(--foreground)); font-size: 12px; font-weight: 600; letter-spacing: -.01em; }
+.categoryTotal { flex: 0 0 auto; margin-left: auto; color: var(--admin-muted, var(--muted)); font-size: 10px; }
+.totalValue { align-self: center; color: var(--admin-foreground, var(--foreground)); font-size: clamp(27px, 3vw, 34px); font-variant-numeric: tabular-nums; font-weight: 550; letter-spacing: -.04em; line-height: 1; }
+.unpriced { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 10px; margin: 0; padding-top: 10px; border-top: 1px solid var(--admin-divider, var(--divider)); }
+.unpriced dt { min-width: 0; color: var(--admin-muted, var(--muted)); font-size: 11px; }
+.unpriced dd { margin: 0; color: var(--admin-foreground, var(--foreground)); font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.caption { margin: 0; color: var(--admin-muted, var(--muted)); font-size: 10px; line-height: 1.5; }
+
+.categoryList { max-height: 136px; overflow-y: auto; padding-right: 4px; display: grid; min-width: 0; gap: 10px; margin: 0; padding-block: 0; padding-left: 0; list-style: none; }
+.categoryRow { display: grid; min-width: 0; gap: 5px; }
+.categoryLabel { display: flex; min-width: 0; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 11px; }
+.categoryLabel span { min-width: 0; overflow-wrap: anywhere; }
+.categoryLabel strong { flex: 0 0 auto; color: var(--admin-muted, var(--muted)); font-size: 10px; font-variant-numeric: tabular-nums; font-weight: 550; }
+.meter { height: 4px; overflow: hidden; background: var(--admin-background, var(--background)); }
+.meter span { display: block; height: 100%; background: var(--admin-accent, var(--accent)); }
+.note { margin: 0; padding-top: 10px; border-top: 1px solid var(--admin-divider, var(--divider)); color: var(--admin-muted, var(--muted)); font-size: 10px; line-height: 1.5; }
+
+.pricePanel { gap: 10px; }
+.priceList { display: grid; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 0; }
+.priceList > div { display: grid; min-width: 0; align-content: start; gap: 9px; padding: 9px 8px; border: 1px solid var(--admin-border, var(--border)); background: var(--admin-background, var(--background)); }
+.priceList dt { color: var(--admin-muted, var(--muted)); font-size: 10px; }
+.priceList dd { min-width: 0; margin: 0; overflow-wrap: anywhere; color: var(--admin-foreground, var(--foreground)); font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1.35; }
+.state { grid-column: 1 / -1; margin: 0; padding: 18px; border: 1px solid var(--admin-divider, var(--divider)); color: var(--admin-muted, var(--muted)); font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1120px) {
+  .stats { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+  .categoryPanel { grid-column: 1 / -1; grid-row: 2; }
+  .pricePanel { grid-column: 2; grid-row: 1; }
+}
+
+@media (max-width: 700px) {
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .categoryPanel, .pricePanel { grid-column: auto; grid-row: auto; }
+}
+
+@media (max-width: 420px) {
+  .priceList { grid-template-columns: minmax(0, 1fr); }
+  .priceList > div { grid-template-columns: minmax(0, .7fr) minmax(0, 1fr); align-items: center; gap: 8px; }
+}
+
+.categoryList:focus-visible { outline: 2px solid var(--admin-accent, var(--accent)); outline-offset: 4px; }

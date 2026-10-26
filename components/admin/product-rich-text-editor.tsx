@@ -39,6 +39,8 @@ import editorStyles from "./product-rich-text-editor.module.css";
 
 const MAX_INLINE_IMAGES = 30;
 const acceptedImageTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+const textColorNames = ["Charcoal", "Slate", "Gray", "Red", "Orange", "Amber", "Green", "Sky", "Blue", "Violet"] as const;
+const highlightNames = ["Yellow", "Green", "Blue", "Pink"] as const;
 
 const ManagedImage = Image.extend({
   addAttributes() {
@@ -133,6 +135,16 @@ function Button({ active, label, onClick, children, disabled = false }: { active
   return <button aria-label={label} aria-pressed={active} className={`${editorStyles.toolButton} ${active ? editorStyles.toolButtonActive : ""}`} disabled={disabled} onClick={onClick} title={label} type="button">{children}</button>;
 }
 
+function ColorPalette({ label, colors, names, selectedColor, clearLabel, onSelect, onClear }: { label: string; colors: readonly string[]; names: readonly string[]; selectedColor?: string; clearLabel: string; onSelect: (color: string) => void; onClear: () => void }) {
+  return <details className={editorStyles.colorPicker}>
+    <summary>{label}{selectedColor && <span aria-hidden="true" className={editorStyles.currentColor} style={{ backgroundColor: selectedColor }} />}</summary>
+    <div aria-label={`${label} palette`} className={editorStyles.colorPalette} role="group">
+      <button aria-pressed={!selectedColor} className={editorStyles.colorReset} onMouseDown={(event) => event.preventDefault()} onClick={onClear} type="button">{clearLabel}</button>
+      {colors.map((color, index) => <button aria-label={`${names[index]} ${label.toLowerCase()}`} aria-pressed={selectedColor === color} className={editorStyles.colorOption} key={color} onMouseDown={(event) => event.preventDefault()} onClick={() => onSelect(color)} title={names[index]} type="button"><span aria-hidden="true" className={editorStyles.colorSwatch} style={{ backgroundColor: color }} /></button>)}
+    </div>
+  </details>;
+}
+
 function countInlineImages(content: JSONContent | undefined) {
   let count = 0;
   const nodes = [...(content?.content ?? [])];
@@ -207,6 +219,9 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
       onChange(parsed);
       setRevision((currentRevision) => currentRevision + 1);
     },
+    onSelectionUpdate() {
+      setRevision((currentRevision) => currentRevision + 1);
+    },
   });
   const valueJson = JSON.stringify(value);
   useEffect(() => {
@@ -216,6 +231,8 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
   }, [editor, value, valueJson]);
   const imageCount = editor ? countInlineImages(editor.getJSON()) : 0;
   const selectedImage = editor?.isActive("image") ? editor.getAttributes("image") : null;
+  const selectedTextColor = PRODUCT_TEXT_COLORS.find((color) => editor?.isActive("textStyle", { color }));
+  const selectedHighlight = PRODUCT_HIGHLIGHTS.find((color) => editor?.isActive("highlight", { color }));
   void revision;
 
   async function insertImage() {
@@ -284,12 +301,8 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
       <select aria-label="Font size" className={styles.input} defaultValue="" onChange={(event) => event.target.value ? editor.chain().focus().setFontSize(event.target.value).run() : editor.chain().focus().unsetFontSize().run()}>
         <option value="">Size</option>{PRODUCT_FONT_SIZES.map((size) => <option key={size} value={size}>{size.replace("px", "")} px</option>)}
       </select>
-      <select aria-label="Text color" className={styles.input} defaultValue="" onChange={(event) => event.target.value ? editor.chain().focus().setColor(event.target.value).run() : editor.chain().focus().unsetColor().run()}>
-        <option value="">Text color</option>{PRODUCT_TEXT_COLORS.map((color) => <option key={color} value={color}>{color}</option>)}
-      </select>
-      <select aria-label="Highlight color" className={styles.input} defaultValue="" onChange={(event) => event.target.value ? editor.chain().focus().setHighlight({ color: event.target.value }).run() : editor.chain().focus().unsetHighlight().run()}>
-        <option value="">Highlight</option>{PRODUCT_HIGHLIGHTS.map((color) => <option key={color} value={color}>{color}</option>)}
-      </select>
+      <ColorPalette clearLabel="Default color" colors={PRODUCT_TEXT_COLORS} label="Text color" names={textColorNames} onClear={() => editor.chain().focus().unsetColor().run()} onSelect={(color) => editor.chain().focus().setColor(color).run()} selectedColor={selectedTextColor} />
+      <ColorPalette clearLabel="Remove highlight" colors={PRODUCT_HIGHLIGHTS} label="Highlight color" names={highlightNames} onClear={() => editor.chain().focus().unsetHighlight().run()} onSelect={(color) => editor.chain().focus().setHighlight({ color }).run()} selectedColor={selectedHighlight} />
       <select aria-label="Text alignment" className={styles.input} defaultValue="left" onChange={(event) => editor.chain().focus().setTextAlign(event.target.value).run()}>
         <option value="left">Align left</option><option value="center">Align center</option><option value="right">Align right</option>
       </select>
