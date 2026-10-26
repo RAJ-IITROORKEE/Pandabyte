@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { Plus, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CartInputLine } from "@/lib/cart/validation";
@@ -10,14 +11,14 @@ import { addCartItem } from "./cart-utils";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, saveGuestCart, subscribeGuestCart } from "./guest-cart-store";
 import styles from "./cart.module.css";
 
-export function AddToCartButton({ variantId, available, quantity = 1, showBuyNow = false }: { variantId: string; available: boolean; quantity?: number; showBuyNow?: boolean }) {
+export function AddToCartButton({ variantId, available, quantity = 1, showBuyNow = false, compactLabel }: { variantId: string; available: boolean; quantity?: number; showBuyNow?: boolean; compactLabel?: string }) {
   const { user, isLoaded } = useUser();
-  if (!isLoaded) return <button className={styles.addButton} type="button" disabled>Loading account…</button>;
+  if (!isLoaded) return <button className={compactLabel ? styles.compactButton : styles.addButton} type="button" disabled aria-label="Loading account">{compactLabel ? <ShoppingCart aria-hidden="true" size={19} /> : "Loading account…"}</button>;
   const userId = user?.id ?? null;
-  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} showBuyNow={showBuyNow} />;
+  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} showBuyNow={showBuyNow} compactLabel={compactLabel} />;
 }
 
-function AddToCartButtonSession({ variantId, available, quantity, userId, showBuyNow }: { variantId: string; available: boolean; quantity: number; userId: string | null; showBuyNow: boolean }) {
+function AddToCartButtonSession({ variantId, available, quantity, userId, showBuyNow, compactLabel }: { variantId: string; available: boolean; quantity: number; userId: string | null; showBuyNow: boolean; compactLabel?: string }) {
   const router = useRouter();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const [busy, setBusy] = useState(false);
@@ -108,9 +109,10 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
     : !userId && !guest.ready
       ? "Preparing your guest cart…"
       : "";
-  return <div className={styles.addToCart}>
-    <button className={styles.addButton} type="button" onClick={() => handleAdd()} disabled={disabled}>
-      {busy ? "Adding…" : needsReview ? "Review cart before retrying" : initialNotice ? "Cart needs attention" : available ? "Add to cart" : "Currently unavailable"}
+  const buttonText = busy ? "Adding…" : needsReview ? "Review cart before retrying" : initialNotice ? "Cart needs attention" : available ? "Add to cart" : "Currently unavailable";
+  return <div className={compactLabel ? styles.compactCart : styles.addToCart}>
+    <button className={compactLabel ? styles.compactButton : styles.addButton} type="button" onClick={() => handleAdd()} disabled={disabled} aria-label={compactLabel ? `${buttonText}: ${compactLabel}` : undefined} title={compactLabel ? buttonText : undefined}>
+      {compactLabel ? <><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></> : buttonText}
     </button>
     {showBuyNow && <button className={styles.buyButton} type="button" onClick={() => handleAdd(true)} disabled={disabled}>{busy ? "Adding…" : "Buy now"}</button>}
     {error && <p className={styles.addError} role="alert">{error}</p>}

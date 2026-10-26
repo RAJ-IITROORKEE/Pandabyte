@@ -1,0 +1,62 @@
+{
+  "verifiedOn": "2026-10-27",
+  "license": "https://unsplash.com/license",
+  "files": [
+    {
+      "file": "public/blog-preview/boards.webp",
+      "bytes": 72718,
+      "width": 1200,
+      "height": 676,
+      "format": "webp",
+      "sha256": "318beae55467d8bd4b4d419900a1be26ebb710b83f6241e3fa819e4f0f3de49c"
+    },
+    {
+      "file": "public/blog-preview/workbench.webp",
+      "bytes": 92624,
+      "width": 1200,
+      "height": 800,
+      "format": "webp",
+      "sha256": "daef5a5b908612f0bb318a8afc7c0a2f0cf5d9e9fc4d4ddfb20455cfbc9c8ecb"
+    },
+    {
+      "file": "public/blog-preview/circuit.webp",
+      "bytes": 231542,
+      "width": 1200,
+      "height": 800,
+      "format": "webp",
+      "sha256": "4a8543451cdcb21a6fcaa5ffdb9660cf0f444d8692fce946c40cb63e6e3062b9"
+    },
+    {
+      "file": "design-assets/blog-preview-source/boards.jpg",
+      "bytes": 583011,
+      "width": 2400,
+      "height": 1351,
+      "format": "jpeg",
+      "sha256": "5e3f80237ff004348641a6881c9f0960ac949612bef6948dc7b7a0cd5794683c"
+    },
+    {
+      "file": "design-assets/blog-preview-source/workbench.jpg",
+      "bytes": 600864,
+      "width": 2400,
+      "height": 1600,
+      "format": "jpeg",
+      "sha256": "32837f8db9813e7d1c6fa3031c49bf23259496d68a478bc824f5f7cd47e59ad9"
+    },
+    {
+      "file": "design-assets/blog-preview-source/circuit.jpg",
+      "bytes": 946852,
+      "width": 2400,
+      "height": 1600,
+      "format": "jpeg",
+      "sha256": "fcd8158b4a29683fdd79626bbc23470b58aa8d0de2972d79e2f3c1d6c54b65c3"
+    },
+    {
+      "file": "design-assets/blog-preview-source/rejected-ram-visible-brand.jpg",
+      "bytes": 550766,
+      "width": 2400,
+      "height": 1351,
+      "format": "jpeg",
+      "sha256": "20e3f7082a2edbb3f464c0e14fc69bfb68855a15fcb8097599a5fb31fde5bb62"
+    }
+  ]
+}

@@ -39,7 +39,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px 24px;
 }
 
@@ -58,5 +58,4 @@
 .card h3 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .card p { font-size: 14px; }
 
-@media (max-width: 960px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }

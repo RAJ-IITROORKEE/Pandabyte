@@ -50,7 +50,7 @@ export default async function YouTubePage({ searchParams }: {
         <p className={youtubeStyles.count}>{result.total.toLocaleString("en-IN")} {result.total === 1 ? "video" : "videos"}{query ? " found" : ""}</p>
         {result.items.length
           ? <div className={youtubeStyles.grid}>{result.items.map((record) => <article className={youtubeStyles.card} key={record.id}>
-              <VideoPlayer videoId={youtubeVideoId(record.document.url)} title={record.title} compact />
+              <VideoPlayer videoId={youtubeVideoId(record.document.url)} title={record.title} compact inline />
               <h3><Link href={`/learn/youtube/${record.slug}`}>{record.title}</Link></h3>
               {record.summary && <p>{record.summary}</p>}
             </article>)}</div>

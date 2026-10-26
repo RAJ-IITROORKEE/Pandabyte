@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Play } from "lucide-react";
 import styles from "./editorial.module.css";
 
-export function VideoPlayer({ videoId, title, compact = false }: { videoId: string | null; title: string; compact?: boolean }) {
+export function VideoPlayer({ videoId, title, compact = false, inline = false }: { videoId: string | null; title: string; compact?: boolean; inline?: boolean }) {
   const [started, setStarted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -13,7 +13,7 @@ export function VideoPlayer({ videoId, title, compact = false }: { videoId: stri
   }, [started]);
 
   if (!videoId) return <p className={styles.videoNote}>This video link is unavailable.</p>;
-  if (started) {
+  if (started || inline) {
     return <div className={`${styles.videoFrame} ${compact ? styles.videoFrameCompact : ""}`}>
       <iframe
         ref={iframeRef}
