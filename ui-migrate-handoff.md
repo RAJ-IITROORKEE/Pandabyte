@@ -120,3 +120,7 @@ Admin categories now have PNG/simple SVG image upload, a no-background preferenc
 ## Storefront category content and upload previews — 27 October 2026
 
 Catalog category links now show published image thumbnails and a single selected category shows its full published description and gallery. Media Library uploads open their private preview immediately. The Categories local-server failure was traced to competing builds replacing the same `.next` directory; this preview uses the opt-in isolated `PANDABYTE_NEXT_DIST_DIR` build path. Browser, disposable private upload/cleanup, width/theme, focused tests and build checks passed. Existing published categories have images but no rich descriptions to visually verify. No publication or deployment was performed by this checkpoint. The public category-list payload still includes every category’s rich content; consider a compact list projection as a later backend optimization.
+
+## Development category descriptions — 27 October 2026
+
+Five source-grounded category rich descriptions are published in development and verified on the storefront. Existing category images and other fields were preserved; list markers were fixed. See [source and verification notes](docs/category-rich-descriptions.md). No production publication or deployment occurred.
