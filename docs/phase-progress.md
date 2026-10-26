@@ -328,3 +328,5 @@ Twenty-four accepted reflow/theme cases cover Categories table/editor and produc
 [Contract](admin-categories-charts.md) and [evidence](verification/admin-categories-charts.json) record coverage/limits. The existing first100 parent-category picker bound remains; actual zoom, OS motion switching, screen-reader speech and physical-mobile checks remain manual. No real category/product/media edit, publication, importer rerun, checkout/payment, deployment, live email/billing, load or recovery operation occurred. Source/CAD/design artifacts and owner access are preserved.
 
 Concurrent-work boundary: unrelated public storefront/components and dependency edits appeared during this checkpoint and are preserved outside this commit. Only the category unit-test script hunk is staged from `package.json`; no storefront implementation or dependency change is owned by this Admin task. Verification records the built Admin preview, not unverified concurrent working changes.
+
+Categories/chart implementation: **58b3d19** — `feat: upgrade category administration and product charts`.
