@@ -124,9 +124,9 @@ function sampleFor(selection: Selection) {
 
 function announcementFor(selection: Selection) {
   if (!selection) return "Selection cleared. Display values are samples, not live sensor data.";
-  if (selection === "board") return "PandaByte xC6 selected. The shield, pin labels, and routes are proposed concepts, not verified hardware.";
+  if (selection === "board") return "PandaByte xC6 highlighted. The shield, pin labels, and routes are proposed concepts, not verified hardware.";
   const device = devices[selection];
-  return `${device.name} selected. ${device.screen.heading}. Sample reading: ${device.screen.value} ${device.screen.unit}. Not live sensor data.`;
+  return `${device.name} highlighted. ${device.screen.heading}. Sample reading: ${device.screen.value} ${device.screen.unit}. Not live sensor data.`;
 }
 
 function pointerToPlane(stage: HTMLElement, world: HTMLElement, clientX: number, clientY: number): Point {
@@ -149,8 +149,9 @@ export function HomeCircuit() {
   const [focused, setFocused] = useState<Selection>(null);
   const [gesture, setGesture] = useState<Gesture>(null);
   const [announcement, setAnnouncement] = useState("");
-  const hasActiveSelectionRef = useRef(false);
-  const active = hovered ?? focused ?? selected;
+  const hasCircuitTargetRef = useRef(false);
+  const active = focused ?? hovered ?? selected;
+  const announcementTarget = focused ?? selected;
   const screen = sampleFor(active);
 
   useEffect(() => {
@@ -174,11 +175,11 @@ export function HomeCircuit() {
   }, []);
 
   useEffect(() => {
-    if (active) hasActiveSelectionRef.current = true;
-    if (!hasActiveSelectionRef.current) return;
-    const timer = window.setTimeout(() => setAnnouncement(announcementFor(active)), 180);
+    if (announcementTarget) hasCircuitTargetRef.current = true;
+    if (!hasCircuitTargetRef.current) return;
+    const timer = window.setTimeout(() => setAnnouncement(announcementFor(announcementTarget)), 180);
     return () => window.clearTimeout(timer);
-  }, [active]);
+  }, [announcementTarget]);
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.button !== 0) return;

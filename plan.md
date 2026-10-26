@@ -140,6 +140,8 @@ Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/c
 
 ## Phase 6 — migration, capacity and launch readiness
 
+26 October accessibility continuation after `91109c5`: [bounded follow-up and remaining manual gates](docs/phase-6-accessibility-followup.md). Form/preview/circuit fixes and forty final reflow cases are verified; genuine zoom, runtime reduced-motion switching and real screen-reader speech are still unverified. No content publication, checkout/payments, load test, recovery or deployment is added. Operational-readiness documentation and owner content decisions remain independent next work; full Phase 6 exit is open.
+
 26 October code follow-up after `c84ea71`: the [three content-control fixes](docs/site-content-controls.md) are implemented and development-tested with Luna xhigh workers. Matching navigation overrides, optional bounded support/brand fields and clearer private note formatting retain publication/privacy gates. No content publication or imported-note backfill occurred; owner content decisions remain the next gate. Checkout/payments, load tests, recovery operations and deployment stay deferred.
 
 26 October content-gap continuation after `4a71e23`: [owner handoff and code backlog](docs/content-gap-checklist.md), checked with two Luna xhigh reviewers, live anonymous published totals and 15 completed built-in-browser routes. This is documentation only: owner approvals, CMS content entry/publication and code fixes remain distinct next actions. Checkout/payments, load tests, recovery operations and deployment remain deferred.

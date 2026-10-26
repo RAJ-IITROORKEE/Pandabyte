@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "@/components/account.module.css";
 
 type Profile = {
@@ -40,6 +40,11 @@ export function AccountProfile() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("Loading your contact details.");
   const [error, setError] = useState("");
+  const formErrorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (loaded && error) formErrorRef.current?.focus();
+  }, [error, loaded]);
 
   const loadProfile = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -111,7 +116,7 @@ export function AccountProfile() {
         </div>
       </div>
 
-      <form className={styles.contactForm} onSubmit={saveProfile}>
+      <form className={styles.contactForm} onSubmit={saveProfile} aria-describedby={loaded && error ? "account-contact-error" : undefined} aria-busy={saving}>
         {loading ? (
           <p className={styles.loadingState} role="status">Loading your contact details…</p>
         ) : !loaded ? (
@@ -155,7 +160,7 @@ export function AccountProfile() {
         {!loading && loaded && (
           <div className={styles.contactActions}>
             {error && (
-              <div className={styles.errorState} role="alert">
+              <div id="account-contact-error" ref={formErrorRef} className={styles.errorState} role="alert" tabIndex={-1}>
                 <p>{error}</p>
               </div>
             )}

@@ -91,6 +91,6 @@ export function ContactForm({ challengeConfig, nonce }: { challengeConfig: Conta
     <button type="submit" disabled={sending || !challengeConfig.enabled || !challengeConfig.siteKey || !challengeToken}>
       {sending ? "Sending…" : "Send message"}
     </button>
-    <p className={styles.formStatus} data-state={state.kind} role={state.kind === "error" ? "alert" : "status"} aria-live="polite">{state.message}</p>
+    <p className={styles.formStatus} data-state={state.kind} role={state.kind === "error" ? "alert" : "status"}>{state.message}</p>
   </form>;
 }

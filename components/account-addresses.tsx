@@ -113,6 +113,8 @@ export function AccountAddresses() {
   const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
   const focusAfterCloseRef = useRef<HTMLElement | null>(null);
   const focusAddAfterDeleteRef = useRef(false);
+  const focusSaveErrorRef = useRef(false);
+  const formErrorRef = useRef<HTMLDivElement>(null);
 
   const loadAddresses = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -153,6 +155,13 @@ export function AccountAddresses() {
     if (target.isConnected) target.focus();
     else (addAddressRef.current ?? addressLabelRef.current)?.focus();
   }, [confirmDeleteId, editing, loading, saving]);
+
+  useEffect(() => {
+    if (focusSaveErrorRef.current && error) {
+      focusSaveErrorRef.current = false;
+      formErrorRef.current?.focus();
+    }
+  }, [error]);
 
   function startNewAddress(trigger: HTMLButtonElement) {
     editorTriggerRef.current = trigger;
@@ -226,6 +235,7 @@ export function AccountAddresses() {
       setStatus("Address saved.");
       await loadAddresses();
     } catch (cause) {
+      focusSaveErrorRef.current = true;
       setError(cause instanceof Error ? cause.message : "This address could not be saved. Please try again.");
     } finally {
       setSaving(false);
@@ -356,7 +366,7 @@ export function AccountAddresses() {
       {editing && (
         <div className={styles.formPanel}>
           <h3 id="address-form-heading">{editing.id ? "Edit address" : "Add an address"}</h3>
-          <form className={styles.addressForm} onSubmit={saveAddress} aria-labelledby="address-form-heading">
+          <form className={styles.addressForm} onSubmit={saveAddress} aria-labelledby="address-form-heading" aria-describedby={error ? "address-form-error" : undefined} aria-busy={saving}>
             <div className={styles.formGrid}>
               <div className={styles.field}>
                 <label htmlFor="address-label">Address label</label>
@@ -418,7 +428,7 @@ export function AccountAddresses() {
                 {saving ? "Saving…" : editing.id ? "Save address" : "Add address"}
               </button>
             </div>
-            {error && <div className={styles.errorState} role="alert">
+            {error && <div id="address-form-error" ref={formErrorRef} className={styles.errorState} role="alert" tabIndex={-1}>
               <p>{error}</p>
               {editing.id && (
                 <button

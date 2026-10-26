@@ -10,6 +10,8 @@
 
 ## Current authorization
 
+**Latest accessibility authorization, 26 October 2026:** after `91109c5`, perform remaining bounded Phase 6 accessibility reviews with Luna xhigh workers, browser tests, fixes and a local commit. See [follow-up and manual gates](docs/phase-6-accessibility-followup.md). Preserve real customer data, existing content, source/CAD/design artifacts and owner access. Content publication, checkout/payments, load tests, deployment, live email/billing and recovery operations stay deferred. Viewport/DOM/source checks must not be reported as actual zoom, reduced-motion runtime switching or screen-reader speech coverage.
+
 **Latest content-control authorization, 26 October 2026:** after `c84ea71`, implement and test the three code fixes with Luna xhigh workers and a local commit: matching core navigation overrides, bounded support/brand copy and clearer private source-review formatting. See [site controls](docs/site-content-controls.md). Test only unpublished disposable drafts; content publication, importer reruns/backfill, checkout/payments, load tests, deployment, live email/billing and recovery operations remain deferred. Preserve other-chat/source artifacts and owner access.
 
 **Latest populated-site review authorization, 26 October 2026:** continue Phase 6 performance/accessibility review after `b531ee8`, with bounded Luna xhigh workers, sequential localhost measurements, built-in-browser checks, concrete fixes and a local commit. Preserve current content/owner session, original media delivery, private/no-store responses and publication withdrawal checks. Checkout, payments, load tests, deployment, recovery operations, live email and billing remain deferred. See [review contract and evidence](docs/phase-6-populated-review.md).

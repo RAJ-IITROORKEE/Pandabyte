@@ -8,6 +8,8 @@
 
 # PandaByte.in — single project context
 
+26 October accessibility follow-up after `91109c5`: [form focus/live semantics, preview headings, circuit feedback and narrow file-input fixes](docs/phase-6-accessibility-followup.md) pass bounded development checks. Actual browser zoom, reduced-motion preference switching and real screen-reader speech remain manual gates. No content was published or real customer data changed; commerce, load tests, recovery operations and deployment remain deferred.
+
 26 October code follow-up after `c84ea71`: [editable navigation, support/brand copy and private review-note formatting](docs/site-content-controls.md) are implemented and development-tested. Only disposable unpublished drafts were used; content publication and note backfill remain deferred. Checkout/payments, load tests, recovery operations and deployment remain deferred.
 
 26 October content review after `4a71e23`: the [content-gap checklist](docs/content-gap-checklist.md) separates owner factual/rights/company-copy decisions from existing Admin entry tasks and three concrete code-editability/review-note gaps. Anonymous published counts and 15 completed browser routes were reviewed; no content was changed or approved. Checkout/payments, load tests, recovery operations and deployment remain deferred.

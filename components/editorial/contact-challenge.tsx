@@ -133,7 +133,7 @@ export function ContactChallenge({
     {config.testMode && <p className={styles.testNotice}>Development test key active. This does not prove production protection.</p>}
     <h3 id="contact-challenge-title">Spam protection</h3>
     <div ref={container} className={styles.widget} />
-    <p className={status === "error" ? styles.error : styles.status} role={status === "error" ? "alert" : "status"} aria-live="polite">
+    <p className={status === "error" ? styles.error : styles.status} role={status === "error" ? "alert" : "status"}>
       {loadFailed ? runtimeAvailable
         ? "Verification is unavailable. Your message was not sent, and your entries are still here."
         : "Verification did not load. Your message was not sent, and your entries are still here. Try again later."

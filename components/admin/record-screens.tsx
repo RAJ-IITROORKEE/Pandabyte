@@ -395,10 +395,11 @@ function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (
 }
 
 function DraftPreview({ document }: { document: AdminDocument }) {
-  return <section className={styles.previewPanel} aria-label="Private draft preview">
+  return <section className={styles.previewPanel} aria-label="Private draft preview" aria-describedby="draft-preview-privacy">
     <p className={styles.eyebrow}>Private draft preview</p>
-    <PublishedDocument document={document} />
-    <p className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
+    <h2>{document.title || "Untitled draft"}</h2>
+    <PublishedDocument document={document} hideTitle />
+    <p id="draft-preview-privacy" className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
   </section>;
 }
 
@@ -489,6 +490,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const [error, setError] = useState("");
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const validationSummaryRef = useRef<HTMLDivElement>(null);
+  const editorErrorRef = useRef<HTMLDivElement>(null);
   const [notice, setNotice] = useState("");
   const [conflict, setConflict] = useState(false);
   const [restoreId, setRestoreId] = useState("");
@@ -499,6 +501,10 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   useEffect(() => {
     if (validationIssues.length) validationSummaryRef.current?.focus();
   }, [validationIssues]);
+
+  useEffect(() => {
+    if (error) editorErrorRef.current?.focus();
+  }, [error]);
 
   const load = useCallback(async () => {
     if (isNew) return;
@@ -605,8 +611,8 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   }
 
   if (!canEdit) return <AdminAccessDeniedScreen title={meta.title} />;
-  if (loading) return <div className={styles.screen}><p className={styles.loadingState}>Loading {meta.singular}…</p></div>;
-  if (!isNew && !record && error) return <div className={styles.screen}><div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setError(""); void load(); }}><RefreshCw size={15} aria-hidden="true" /> Try again</button></div></div>;
+  if (loading) return <div className={styles.screen}><p className={styles.loadingState} role="status">Loading {meta.singular}…</p></div>;
+  if (!isNew && !record && error) return <div className={styles.screen}><div id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} role="alert" tabIndex={-1}><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setError(""); void load(); }}><RefreshCw size={15} aria-hidden="true" /> Try again</button></div></div>;
   const status = record?.archived ? "Archived" : record?.publishedRevisionId ? "Published" : "Draft";
 
   return <div className={styles.screen}>
@@ -619,10 +625,10 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     </div>
     {previewOpen && <DraftPreview document={draft} />}
     {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
-    {validationIssues.length > 0 && <div className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}
-    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
+    {validationIssues.length > 0 && <div id="record-validation-summary" className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}
+    {error && <div id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} role="alert" tabIndex={-1}><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
     {notice && <p className={styles.successBanner} role="status"><Check size={16} aria-hidden="true" /> {notice}</p>}
-    <form className={styles.editorForm} onSubmit={save} aria-busy={busy}>
+    <form className={styles.editorForm} onSubmit={save} aria-busy={busy} aria-describedby={validationIssues.length && error ? "record-validation-summary record-editor-error" : validationIssues.length ? "record-validation-summary" : error ? "record-editor-error" : undefined}>
       <fieldset className={styles.editorFieldset} disabled={!canEdit}>
         <DocumentFields module={module} document={draft} setDocument={setDraft} recordId={record?.id} />
       </fieldset>

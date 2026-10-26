@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type AccountFile = {
   id: string;
@@ -62,6 +62,22 @@ export function AccountFiles() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const uploadErrorRef = useRef<HTMLParagraphElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const firstDeleteButtonRef = useRef<HTMLButtonElement>(null);
+  const focusAfterDeleteRef = useRef(false);
+
+  useEffect(() => {
+    if (uploadError) uploadErrorRef.current?.focus();
+  }, [uploadError]);
+
+  useEffect(() => {
+    if (focusAfterDeleteRef.current && !deletingId) {
+      focusAfterDeleteRef.current = false;
+      (firstDeleteButtonRef.current ?? uploadInputRef.current)?.focus();
+    }
+  }, [deletingId, files]);
 
   async function loadFiles() {
     try {
@@ -105,6 +121,7 @@ export function AccountFiles() {
     const form = event.currentTarget;
     setBusy(true);
     setError("");
+    setUploadError("");
     setMessage("");
 
     try {
@@ -115,7 +132,7 @@ export function AccountFiles() {
       const body = await readApiBody(response);
 
       if (!response.ok) {
-        setError(responseMessage(body as ApiError, "The file could not be uploaded."));
+        setUploadError(responseMessage(body as ApiError, "The file could not be uploaded."));
         return;
       }
 
@@ -123,7 +140,7 @@ export function AccountFiles() {
       setMessage("File uploaded.");
       await loadFiles();
     } catch {
-      setError("The file could not be uploaded.");
+      setUploadError("The file could not be uploaded.");
     } finally {
       setBusy(false);
     }
@@ -145,6 +162,7 @@ export function AccountFiles() {
         return;
       }
 
+      focusAfterDeleteRef.current = true;
       setFiles((current) => current.filter((item) => item.id !== file.id));
       setMessage("File deleted.");
     } catch {
@@ -169,37 +187,44 @@ export function AccountFiles() {
 
       <form
         onSubmit={upload}
+        aria-busy={busy}
+        aria-describedby={uploadError ? "account-file-upload-error" : undefined}
         style={{ display: "flex", flexWrap: "wrap", alignItems: "end", gap: 12, paddingBottom: 20 }}
       >
-        <div style={{ display: "grid", gap: 6 }}>
+        <div style={{ display: "grid", gap: 6, minWidth: 0, maxWidth: "100%" }}>
           <label htmlFor="account-file">Choose a .txt file</label>
           <input
+            ref={uploadInputRef}
             id="account-file"
             name="file"
             type="file"
+            style={{ minWidth: 0, maxWidth: "100%" }}
             accept=".txt,text/plain"
             required
             disabled={busy}
+            aria-describedby={uploadError ? "account-file-help account-file-upload-error" : "account-file-help"}
+            onChange={() => setUploadError("")}
           />
         </div>
         <button type="submit" disabled={busy} style={buttonStyle}>
           {busy ? "Uploading…" : "Upload file"}
         </button>
       </form>
-      <p className="availability-note" style={{ marginTop: 0, paddingBottom: 20 }}>
+      {uploadError ? <p id="account-file-upload-error" ref={uploadErrorRef} role="alert" tabIndex={-1} className="availability-note">{uploadError}</p> : null}
+      <p id="account-file-help" className="availability-note" style={{ marginTop: 0, paddingBottom: 20 }}>
         Plain-text UTF-8 files up to 64 KiB. The list shows the 50 newest files.
       </p>
 
       {error ? <p role="alert" className="availability-note">{error}</p> : null}
       {message ? <p role="status" className="availability-note">{message}</p> : null}
-      {loading ? <p className="availability-note">Loading files…</p> : null}
+      {loading ? <p className="availability-note" role="status">Loading files…</p> : null}
       {!loading && !error && files.length === 0 ? (
         <p className="availability-note">You have no uploaded files yet.</p>
       ) : null}
 
       {!loading && files.length > 0 ? (
         <ul className="status-list" aria-label="Your uploaded files">
-          {files.map((file) => (
+          {files.map((file, index) => (
             <li key={file.id} className="status-item">
               <div className="status-copy" style={{ minWidth: 0 }}>
                 <h3 style={{ overflowWrap: "anywhere" }}>{file.filename}</h3>
@@ -210,6 +235,7 @@ export function AccountFiles() {
                   Download
                 </a>
                 <button
+                  ref={index === 0 ? firstDeleteButtonRef : undefined}
                   type="button"
                   disabled={deletingId !== null || busy}
                   aria-label={`Delete ${file.filename}`}

@@ -1,0 +1,569 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Calcutta",
+  "priorCommit": "91109c5",
+  "scope": "bounded remaining Phase6 accessibility review/fixes; development only",
+  "fullPhase6Exit": false,
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "tasks": [
+      "public contact alert semantics",
+      "private/Admin form focus and semantics",
+      "circuit motion/keyboard review"
+    ]
+  },
+  "changes": [
+    "Contact alert regions no longer override alert semantics with polite live mode",
+    "Profile/address/upload/Admin errors associated and focused; busy/loading/result status exposed",
+    "Private preview uses document H2 under sole editor H1 and exposes privacy description",
+    "Table selection uses actual keyboard-operable buttons",
+    "Circuit focus precedes hover and only focus/selection feeds highlighted live announcements",
+    "Native account file input constrained after observed320px overflow"
+  ],
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed after narrow-input fix",
+    "unit": {
+      "passed": 125,
+      "failed": 0
+    },
+    "securityHttp": {
+      "passed": 2
+    },
+    "authHttp": {
+      "passed": 7
+    },
+    "shellHttp": {
+      "passed": 3
+    },
+    "browser": {
+      "surface": "built-in app browser",
+      "account": {
+        "fileRequired": {
+          "focused": true,
+          "helpLinked": true,
+          "invalid": true
+        },
+        "uploadRejection": {
+          "errorFocused": true,
+          "errorRole": "alert",
+          "fileCount": 0,
+          "inputDescribed": true
+        },
+        "addressRequired": {
+          "focused": true,
+          "invalid": true
+        },
+        "addressCancel": {
+          "focusReturned": true
+        }
+      },
+      "contact": {
+        "buttonEnabled": true,
+        "nativeInvalid": {
+          "nameFocused": true,
+          "nameMissing": true
+        }
+      },
+      "admin": {
+        "formDescribed": true,
+        "validationFocused": true,
+        "h1Count": 1,
+        "previewHasH2": true,
+        "privacyDescribed": true
+      },
+      "media": {
+        "detailHeadingFocused": true,
+        "selectedButton": true,
+        "tableRowsHaveButton": true,
+        "resultLiveRegion": true
+      },
+      "motion": {
+        "initialLiveSilent": true,
+        "reducedMotion": false,
+        "focusWinsOverStaleHover": true,
+        "sampleCaveat": true,
+        "keyboardSelected": true,
+        "clearAnnounced": true,
+        "pauseControl": {
+          "animationPaused": true,
+          "checked": true
+        }
+      },
+      "initialAccountOverflow": [
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": false,
+          "h1Count": 1,
+          "overflow": true,
+          "width": 320
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 768
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1024
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1440
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": false,
+          "h1Count": 1,
+          "overflow": true,
+          "width": 320
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 768
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1024
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1440
+        }
+      ],
+      "finalReflow": [
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 320
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 768
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 1024
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "light",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 1440
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 320
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 768
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 1024
+        },
+        {
+          "page": "account-files-open-error",
+          "theme": "dark",
+          "errorDescribed": true,
+          "fileInputFits": true,
+          "h1Count": 1,
+          "inputMaxWidth": "100%",
+          "overflow": false,
+          "width": 1440
+        },
+        {
+          "page": "contact",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 320
+        },
+        {
+          "page": "contact",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 768
+        },
+        {
+          "page": "contact",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 1024
+        },
+        {
+          "page": "contact",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 1440
+        },
+        {
+          "page": "contact",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 320
+        },
+        {
+          "page": "contact",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 768
+        },
+        {
+          "page": "contact",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 1024
+        },
+        {
+          "page": "contact",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "politeAlerts": 0,
+          "unnamedInputs": 0,
+          "width": 1440
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 320
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 768
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 1024
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "light",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 1440
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 320
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 768
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 1024
+        },
+        {
+          "page": "admin-unsaved-preview",
+          "theme": "dark",
+          "h1Count": 1,
+          "overflow": false,
+          "previewH2": true,
+          "rawIds": false,
+          "width": 1440
+        },
+        {
+          "page": "home",
+          "theme": "light",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 320
+        },
+        {
+          "page": "home",
+          "theme": "light",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 768
+        },
+        {
+          "page": "home",
+          "theme": "light",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1024
+        },
+        {
+          "page": "home",
+          "theme": "light",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1440
+        },
+        {
+          "page": "home",
+          "theme": "dark",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 320
+        },
+        {
+          "page": "home",
+          "theme": "dark",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 768
+        },
+        {
+          "page": "home",
+          "theme": "dark",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1024
+        },
+        {
+          "page": "home",
+          "theme": "dark",
+          "circuitDescribed": true,
+          "h1Count": 1,
+          "overflow": false,
+          "width": 1440
+        },
+        {
+          "page": "product-gallery",
+          "theme": "light",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 320
+        },
+        {
+          "page": "product-gallery",
+          "theme": "light",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 768
+        },
+        {
+          "page": "product-gallery",
+          "theme": "light",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 1024
+        },
+        {
+          "page": "product-gallery",
+          "theme": "light",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 1440
+        },
+        {
+          "page": "product-gallery",
+          "theme": "dark",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 320
+        },
+        {
+          "page": "product-gallery",
+          "theme": "dark",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 768
+        },
+        {
+          "page": "product-gallery",
+          "theme": "dark",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 1024
+        },
+        {
+          "page": "product-gallery",
+          "theme": "dark",
+          "h1Count": 1,
+          "mainAlt": true,
+          "overflow": false,
+          "selectedImage": true,
+          "width": 1440
+        }
+      ],
+      "passedFinalReflowCases": 40,
+      "finalState": {
+        "consoleErrors": 0,
+        "viewportRestored": true,
+        "returnProductRetained": true,
+        "preferencesChanged": false
+      },
+      "screenshot": ".bootstrap/phase6-accessibility/narrow-account-proof.png"
+    }
+  },
+  "dataBoundary": {
+    "contentPublished": 0,
+    "savedDrafts": 0,
+    "contactInquiriesCreated": 0,
+    "addressesWritten": 0,
+    "profileChangesSubmitted": 0,
+    "filesStored": 0,
+    "emptyFileRequestsRejectedBeforeStorage": 2,
+    "backendSchemaRolesOrCredentialsChanged": false,
+    "syntheticFile": "zero-byte local ignored text fixture only",
+    "profileTest": "Control characters sanitized and49-character input bounded by browser; fixtures not submitted; original UI value restored",
+    "sourceAndOtherChatArtifacts": "not edited/staged"
+  },
+  "coverageLimits": {
+    "genuineZoom": "Shortcut left CSS viewport909 and device-pixel ratio1.2000000476837158 unchanged; viewport capability is sizing only. Actual200%/400% zoom not verified.",
+    "reducedMotion": "Runtime preference false; no media-emulation capability; CSS fallback reviewed, pause control tested, no OS preference switched.",
+    "screenReader": "DOM/AX semantics inspected; no actual reader speech/announcement verification or installation.",
+    "saveDeleteFailures": "Profile/address/file-delete and operational mutation-failure focus source-reviewed where no safe no-write browser path was exercised.",
+    "fileChooser": "First attempt occurred with disclosure closed and timed out; normal chooser/rejection succeeded after expanding it."
+  },
+  "deferred": [
+    "Content publication/live publish-withdraw cycle",
+    "Checkout/payments",
+    "Load testing/deployment",
+    "Live email/billing",
+    "Backup/export/restore",
+    "Production/engineering/rights/accessibility certification"
+  ]
+}
