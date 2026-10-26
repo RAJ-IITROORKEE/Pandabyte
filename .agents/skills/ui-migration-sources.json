@@ -1,0 +1,15 @@
+{
+  "verifiedAt": "2026-10-26T13:01:52.587Z",
+  "skills": [
+    {
+      "name": "frontend-a11y",
+      "source": "https://github.com/affaan-m/ECC",
+      "commit": "25278e7d7b6cf6e6a4e7a6c8e10f14ff22f0eb5b",
+      "path": ".agents/skills/frontend-a11y/SKILL.md",
+      "gitBlob": "a39419935900b1ac1003827d83c896610350b619",
+      "sha256": "e00991a3f4d47fcf1529dd74a080afcf46137dc5061e70dc6e3da7b27f2ae3f3",
+      "license": ".agents/skills/LICENSE.ecc",
+      "status": "Existing owner/concurrent installation verified and reused; not overwritten"
+    }
+  ]
+}

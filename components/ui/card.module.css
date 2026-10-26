@@ -1,0 +1,20 @@
+.card {
+  min-width: 0;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+
+.description {
+  color: var(--muted);
+  line-height: 1.7;
+}

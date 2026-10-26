@@ -1,0 +1,80 @@
+{
+  "verifiedAt": "2026-10-26T12:34:03.138Z",
+  "retrieval": "Authenticated official Superdesign CLI; read only, no generation/import",
+  "selectedVisualAnchor": "e5d5055d-1779-4480-bc8f-f94e5c9e5897",
+  "heroConstraint": "Preserve current implemented homepage hero",
+  "references": [
+    {
+      "route": "/",
+      "title": "Home",
+      "draftId": "011e75c8-d90c-40ed-aac8-bc39b8e2f1ba",
+      "version": 26,
+      "previewUrl": "https://p.superdesign.dev/draft/011e75c8-d90c-40ed-aac8-bc39b8e2f1ba",
+      "localFile": ".superdesign/review/homepage.html",
+      "sha256": "364718b7227d8d491f97edf9c18934ec72f087221f430eb13a764d599cb5acd2",
+      "matchesLocal": true,
+      "lightTokens": ":root {\r\n      --bg: #FAFAFA;\r\n      --surface: #FFFFFF;\r\n      --text: #171717;\r\n      --secondary: #525252;\r\n      --action: #146C43;\r\n      --action-text: #FFFFFF;\r\n      --border: #737373;\r\n      --divider: #E4E4E7;\r\n    }",
+      "darkTokens": ".dark {\r\n      --bg: #141414;\r\n      --surface: #1C1C1C;\r\n      --text: #FAFAFA;\r\n      --secondary: #B4B4B4;\r\n      --action: #72E3AD;\r\n      --action-text: #0B2116;\r\n      --border: #737373;\r\n      --divider: #303030;\r\n    }"
+    },
+    {
+      "route": "/shop",
+      "title": "Catalog and search",
+      "draftId": "3e6f0e8f-4075-4527-8140-1a969c87ea67",
+      "version": 9,
+      "previewUrl": "https://p.superdesign.dev/draft/3e6f0e8f-4075-4527-8140-1a969c87ea67",
+      "localFile": ".superdesign/review/screens/catalog.html",
+      "sha256": "7aa83b1befe6272982d5bc1d800941062a4b29f5702d3c538065f6b5bd2f0b48",
+      "matchesLocal": true,
+      "lightTokens": ":root {\r\n      --bg: #FAFAFA;\r\n      --surface: #FFFFFF;\r\n      --text: #171717;\r\n      --secondary: #525252;\r\n      --action: #146C43;\r\n      --action-text: #FFFFFF;\r\n      --border: #737373;\r\n      --divider: #E4E4E7;\r\n    }",
+      "darkTokens": ".dark {\r\n      --bg: #141414;\r\n      --surface: #1C1C1C;\r\n      --text: #FAFAFA;\r\n      --secondary: #B4B4B4;\r\n      --action: #72E3AD;\r\n      --action-text: #0B2116;\r\n      --border: #737373;\r\n      --divider: #303030;\r\n    }"
+    },
+    {
+      "route": "/products/pandapulse",
+      "title": "PandaPulse kit",
+      "draftId": "e5d5055d-1779-4480-bc8f-f94e5c9e5897",
+      "version": 9,
+      "previewUrl": "https://p.superdesign.dev/draft/e5d5055d-1779-4480-bc8f-f94e5c9e5897",
+      "localFile": ".superdesign/review/screens/pandapulse.html",
+      "sha256": "9380c53bfd36a4571fda4af503f22665b57e1718ea388b494169563536047a33",
+      "matchesLocal": true,
+      "lightTokens": ":root {\n      --bg: #FAFAFA;\n      --surface: #FFFFFF;\n      --text: #171717;\n      --secondary: #525252;\n      --action: #146C43;\n      --action-text: #FFFFFF;\n      --border: #737373;\n      --divider: #E4E4E7;\n    }",
+      "darkTokens": ".dark {\n      --bg: #141414;\n      --surface: #1C1C1C;\n      --text: #FAFAFA;\n      --secondary: #B4B4B4;\n      --action: #72E3AD;\n      --action-text: #0B2116;\n      --border: #737373;\n      --divider: #303030;\n    }"
+    },
+    {
+      "route": "/about",
+      "title": "About",
+      "draftId": "7338e138-5c6c-442e-8c24-71f89d06c05d",
+      "version": 8,
+      "previewUrl": "https://p.superdesign.dev/draft/7338e138-5c6c-442e-8c24-71f89d06c05d",
+      "localFile": ".superdesign/review/screens/about.html",
+      "sha256": "eaaadd21899103a2c4c936a57f35ec3b9aa76ca87a81e1cf99df5649147834fb",
+      "matchesLocal": true,
+      "lightTokens": ":root {\n      --bg: #FAFAFA;\n      --surface: #FFFFFF;\n      --text: #171717;\n      --secondary: #525252;\n      --action: #146C43;\n      --action-text: #FFFFFF;\n      --border: #737373;\n      --divider: #E4E4E7;\n    }",
+      "darkTokens": ".dark {\n      --bg: #141414;\n      --surface: #1C1C1C;\n      --text: #FAFAFA;\n      --secondary: #B4B4B4;\n      --action: #72E3AD;\n      --action-text: #0B2116;\n      --border: #737373;\n      --divider: #303030;\n    }"
+    },
+    {
+      "route": "/contact",
+      "title": "Contact",
+      "draftId": "67fead89-2de5-435a-9872-bba495f82742",
+      "version": 9,
+      "previewUrl": "https://p.superdesign.dev/draft/67fead89-2de5-435a-9872-bba495f82742",
+      "localFile": ".superdesign/review/screens/contact.html",
+      "sha256": "e49769e8820112b16ef97c2a67f1281ef0092b002cb37f0bef64d9ea98522cc8",
+      "matchesLocal": true,
+      "lightTokens": ":root {\r\n      --bg: #FAFAFA;\r\n      --surface: #FFFFFF;\r\n      --text: #171717;\r\n      --secondary: #525252;\r\n      --action: #146C43;\r\n      --action-text: #FFFFFF;\r\n      --border: #737373;\r\n      --divider: #E4E4E7;\r\n    }",
+      "darkTokens": ".dark {\r\n      --bg: #141414;\r\n      --surface: #1C1C1C;\r\n      --text: #FAFAFA;\r\n      --secondary: #B4B4B4;\r\n      --action: #72E3AD;\r\n      --action-text: #0B2116;\r\n      --border: #737373;\r\n      --divider: #303030;\r\n    }"
+    },
+    {
+      "route": "/admin",
+      "title": "Admin dashboard",
+      "draftId": "e9fb785b-89be-46d3-9ce8-62c31fb08caa",
+      "version": 7,
+      "previewUrl": "https://p.superdesign.dev/draft/e9fb785b-89be-46d3-9ce8-62c31fb08caa",
+      "localFile": ".superdesign/review/refined/admin-dashboard.html",
+      "sha256": "d23129da34ca2231db5ab7281b7452257d5c0aef98979f5fd3ea7427ee3952d1",
+      "matchesLocal": true,
+      "lightTokens": ":root{color-scheme:light;--bg:#FAFAFA;--surface:#FFFFFF;--text:#171717;--secondary:#525252;--action:#146C43;--action-text:#FFFFFF;--border:#737373;--divider:#E4E4E7}",
+      "darkTokens": ".dark{color-scheme:dark;--bg:#141414;--surface:#1C1C1C;--text:#FAFAFA;--secondary:#B4B4B4;--action:#72E3AD;--action-text:#0B2116;--border:#737373;--divider:#303030}"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import styles from "./page-frame.module.css";
 
 export function PublicPage({ eyebrow, title, description, children, wide = false }: {
@@ -16,8 +17,8 @@ export function PublicPage({ eyebrow, title, description, children, wide = false
 }
 
 export function EmptyState({ title, children, href, label }: { title: string; children?: ReactNode; href?: string; label?: string }) {
-  return <section className={styles.empty}>
-    <h2>{title}</h2>{children && <div>{children}</div>}
+  return <Card as="section" className={styles.empty}>
+    <CardTitle as="h2">{title}</CardTitle>{children && <CardDescription>{children}</CardDescription>}
     {href && label && <Link className="site-link" href={href}>{label}</Link>}
-  </section>;
+  </Card>;
 }

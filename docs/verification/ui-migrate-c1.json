@@ -1,0 +1,156 @@
+{
+  "checkpoint": "C1",
+  "status": "passed with explicit tooling-isolation adaptation",
+  "date": "2026-10-26",
+  "baselineCommit": "8178ce0",
+  "mode": "production localhost",
+  "tooling": {
+    "version": "3.2.5",
+    "location": ".tools/lightswind",
+    "install": "npm install --prefix .tools/lightswind --ignore-scripts --no-fund",
+    "result": "8 packages added; audit 9 packages, 0 vulnerabilities",
+    "rootInstall": "Failed ERESOLVE due to concurrent three@0.186.1 optional peer mismatch; no bypass or downgrade"
+  },
+  "commands": [
+    {
+      "command": "npm run lint",
+      "exit": 0,
+      "warnings": "2 unused variable warnings in concurrent tests/glb-validation.test.mjs; no UI lint errors"
+    },
+    {
+      "command": "npm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npm run build",
+      "exit": 0
+    },
+    {
+      "command": "Official Superdesign CLI reference recheck",
+      "result": "6 pinned versions and hashes match"
+    }
+  ],
+  "browserCases": [
+    {
+      "cardBackground": "rgb(28, 28, 28)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "cardBackground": "rgb(28, 28, 28)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "dark",
+      "width": 768
+    },
+    {
+      "cardBackground": "rgb(28, 28, 28)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "dark",
+      "width": 1024
+    },
+    {
+      "cardBackground": "rgb(28, 28, 28)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "dark",
+      "width": 1440
+    },
+    {
+      "cardBackground": "rgb(255, 255, 255)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "light",
+      "width": 320
+    },
+    {
+      "cardBackground": "rgb(255, 255, 255)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "light",
+      "width": 768
+    },
+    {
+      "cardBackground": "rgb(255, 255, 255)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "light",
+      "width": 1024
+    },
+    {
+      "cardBackground": "rgb(255, 255, 255)",
+      "cardHeading": "Company information has not been published yet.",
+      "cardTag": "SECTION",
+      "h1Count": 1,
+      "overflow": false,
+      "route": "/about",
+      "theme": "light",
+      "width": 1440
+    }
+  ],
+  "hero": {
+    "sources": [
+      {
+        "path": "components/home-hero.tsx",
+        "sha256": "dc4c9f6788654fc07669b81923d410d680e091d10b5bb6f787f23fd6fc40d3a6",
+        "unchangedFromHead": true
+      },
+      {
+        "path": "components/home-circuit.tsx",
+        "sha256": "7bac1aacaf2bf81cffc88e4e6f3c60b74cfede0591e3abca6b0fd76e38e6b210",
+        "unchangedFromHead": true
+      },
+      {
+        "path": "components/home-circuit.module.css",
+        "sha256": "045949ea471fdc53db9959480e4a27be5635aa11310805c1c0c171d061a4814c",
+        "unchangedFromHead": true
+      },
+      {
+        "path": "components/home-circuit-geometry.ts",
+        "sha256": "d3741f2d0959614541349554a872e965c610a2e10c6cdf1cf62841a9760dc2e7",
+        "unchangedFromHead": true
+      }
+    ],
+    "rendering": "Desktop dark and 320px light observed after image load",
+    "interaction": "DHT selection aria-pressed true; Home resets false",
+    "capture": ".bootstrap/ui-migrate/c1/hero-dark-1440.png"
+  },
+  "pilotCapture": ".bootstrap/ui-migrate/c1/pilot-light-1440.png",
+  "boundaries": {
+    "uiBackendWrites": 0,
+    "contentWrites": 0,
+    "publicationActions": 0,
+    "ownerSessionRetained": true,
+    "concurrentWork": "Separate 3D source/dependencies preserved; excluded from UI staging"
+  },
+  "notRun": [
+    "Actual zoom",
+    "OS reduced motion runtime",
+    "Screen reader speech",
+    "No unit tests added for static card markup"
+  ]
+}
