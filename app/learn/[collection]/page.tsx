@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { EditorialCard } from "@/components/editorial/editorial-card";
 import { EditorialPagination } from "@/components/editorial/editorial-pagination";
 import { editorialPageNumber } from "@/components/editorial/public-utils";
@@ -8,6 +7,7 @@ import styles from "@/components/editorial/editorial.module.css";
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { listPublishedRecords } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
+import { LearningNavigation } from "../learning-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -49,10 +49,7 @@ export default async function LearnCollection({ params, searchParams }: Props) {
   const resultCap = MAX_PAGE * PAGE_SIZE;
   return <PublicPage eyebrow="Learn" title={collections[selected]} description="Resources published by PandaByte." wide>
     <div className={styles.stack}>
-      <nav className={styles.filters} aria-label="Learning resource collections">
-        {Object.entries(collections).map(([slug, label]) => <Link className={styles.filterLink} href={`/learn/${slug}`} key={slug} aria-current={slug === selected ? "page" : undefined}>{label}</Link>)}
-        <Link className={styles.filterLink} href="/learn/youtube">YouTube</Link>
-      </nav>
+      <LearningNavigation current={selected} />
       {result.items.length
         ? <div className={styles.grid}>{result.items.map((record) => <EditorialCard key={record.id} record={record} href={`/learn/resources/${record.slug}`} />)}</div>
         : <EmptyState title="No resources have been published in this collection yet." />}

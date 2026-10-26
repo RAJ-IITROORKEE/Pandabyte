@@ -10,7 +10,7 @@ function DocumentBlock({ block }: { block: ContentBlock }) {
     case "orderedList": return <ol>{block.items.map((text, index) => <li key={index}>{text}</li>)}</ol>;
     case "link": return <p><a href={block.url} rel="noopener noreferrer">{block.label}</a></p>;
     case "image": return <Image unoptimized src={`/api/media/${block.mediaId}`} alt={block.alt} width={1000} height={700} style={{ objectFit: "contain", height: "auto", maxWidth: "100%" }} />;
-    case "table": return <div className="document-table"><table><thead><tr>{block.headers.map((header, index) => <th scope="col" key={index}>{header}</th>)}</tr></thead><tbody>{block.rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody></table></div>;
+    case "table": return <div className="document-table" role="region" aria-label="Content table" tabIndex={0}><table><thead><tr>{block.headers.map((header, index) => <th scope="col" key={index}>{header}</th>)}</tr></thead><tbody>{block.rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody></table></div>;
   }
 }
 

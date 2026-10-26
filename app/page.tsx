@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { HomeCircuit } from "@/components/home-circuit";
 import { HomeBrands } from "@/components/home-brands";
 import { HomeHero } from "@/components/home-hero";
@@ -82,7 +83,7 @@ export default async function HomePage() {
           <div className={sections.sectionHeading}>
             <div>
               <h2 id="categories-title">Explore Categories</h2>
-              <p className={sections.categoryIntro}>Find the hardware for your next build.</p>
+              <p className={sections.categoryIntro}>Find the hardware for your next build. Category images are illustrative.</p>
             </div>
             <Link className={sections.sectionLink} href="/shop">View all products <ChevronRight aria-hidden="true" /></Link>
           </div>
@@ -90,8 +91,13 @@ export default async function HomePage() {
             <nav aria-label="Published product categories" className={sections.categoryGrid}>
               {categories.map((category) => (
                 <Link className={sections.categoryCard} href={categoryHref(category.slug)} key={category.id}>
-                  <span className={sections.categoryCardTitle}>{category.title}</span>
-                  <ChevronRight aria-hidden="true" />
+                  {category.document.mediaIds[0] && <span className={sections.categoryImage}>
+                    <Image src={`/api/media/${encodeURIComponent(category.document.mediaIds[0])}?w=960`} alt="" width={600} height={450} sizes="(max-width: 767px) 50vw, 20vw" unoptimized />
+                  </span>}
+                  <span className={sections.categoryCardLabel}>
+                    <span className={sections.categoryCardTitle}>{category.title}</span>
+                    <ChevronRight aria-hidden="true" />
+                  </span>
                 </Link>
               ))}
             </nav>

@@ -55,6 +55,7 @@ body {
 .published-document pre { overflow-x: auto; padding: 16px; background: var(--surface); border: 1px solid var(--divider); border-radius: 8px; }
 .document-summary { color: var(--muted); font-size: 19px; }
 .document-table { max-width: 100%; overflow-x: auto; }
+.document-table:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .document-table table { border-collapse: collapse; width: 100%; }
 .document-table th, .document-table td { padding: 10px; text-align: left; border: 1px solid var(--border); min-width: 96px; }
 .published-document dt { font-weight: 600; }

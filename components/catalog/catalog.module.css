@@ -203,6 +203,7 @@
 .contentBlock pre { overflow-x: auto; padding: 16px; background: var(--surface); border: 1px solid var(--divider); border-radius: 8px; }
 .contentBlock img { max-width: 100%; height: auto; margin-block: 16px; }
 .tableWrap { max-width: 100%; overflow-x: auto; }
+.tableWrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .tableWrap table { width: 100%; border-collapse: collapse; }
 .tableWrap th, .tableWrap td { min-width: 96px; padding: 10px; text-align: left; border: 1px solid var(--border); }
 

@@ -14,7 +14,7 @@ function ContentBlockView({ block }: { block: ContentBlock }) {
     case "orderedList": return <ol>{block.items.map((item, index) => <li key={index}>{item}</li>)}</ol>;
     case "link": return <p><a href={block.url} rel="noopener noreferrer">{block.label}</a></p>;
     case "image": return <Image src={`/api/media/${block.mediaId}`} alt={block.alt} width={1200} height={900} unoptimized sizes="(max-width: 760px) 100vw, 760px" />;
-    case "table": return <div className={styles.tableWrap}><table>
+    case "table": return <div className={styles.tableWrap} role="region" aria-label="Product content table" tabIndex={0}><table>
       <thead><tr>{block.headers.map((header, index) => <th scope="col" key={index}>{header}</th>)}</tr></thead>
       <tbody>{block.rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody>
     </table></div>;

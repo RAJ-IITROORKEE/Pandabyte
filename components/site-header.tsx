@@ -106,7 +106,7 @@ function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: N
           <AuthControls />
           <span className="pb-theme-action"><ThemeToggle /></span>
         </div>
-        <button className="pb-mobile-toggle pb-icon-button" type="button" ref={toggleRef} aria-label={mobileOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileOpen} aria-controls="pb-mobile-navigation" onClick={() => setMobileOpen((open) => !open)}>
+        <button className="pb-mobile-toggle pb-icon-button" type="button" ref={toggleRef} aria-label={mobileOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileOpen} aria-controls={mobileOpen ? "pb-mobile-navigation" : undefined} onClick={() => setMobileOpen((open) => !open)}>
           {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
       </div>

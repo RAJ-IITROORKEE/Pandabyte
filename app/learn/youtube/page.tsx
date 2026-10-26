@@ -6,6 +6,7 @@ import styles from "@/components/editorial/editorial.module.css";
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { listPublishedRecords } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
+import { LearningNavigation } from "../learning-navigation";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { ...publicMetadata(null, "/learn/youtube"), title: "YouTube | Learn | PandaByte.in" };
@@ -29,6 +30,7 @@ export default async function YouTubePage({ searchParams }: {
   const resultCap = MAX_PAGE * PAGE_SIZE;
   return <PublicPage eyebrow="Learn" title="YouTube" description="Videos published by PandaByte." wide>
     <div className={styles.stack}>
+      <LearningNavigation current="youtube" />
       {result.items.length
         ? <div className={styles.grid}>{result.items.map((record) => <EditorialCard key={record.id} record={record} href={`/learn/youtube/${record.slug}`} />)}</div>
         : <EmptyState title="No videos have been published yet.">PandaByte videos will appear here when they are ready.</EmptyState>}

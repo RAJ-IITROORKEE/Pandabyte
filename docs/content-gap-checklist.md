@@ -1,5 +1,7 @@
 # Content-gap checklist
 
+Update, 27 October: six FAQs and five explicitly illustrative category images have since been published in development; the counts and publication statements below are historical. See [public follow-up](public-faq-about-followup.md) and [category imagery and accessibility](public-category-art-accessibility.md). The factual and rights decisions remain open.
+
 Reviewed 26 October 2026 against application commit `4a71e23`, with two bounded Luna xhigh reviewers and root verification of the development site. This is a review and handoff, not permission to publish, import more products or implement the code backlog. Checkbox items below remain open until explicitly completed and approved.
 
 Subsequent owner authorization after `c84ea71` implemented the three code fixes; see [site controls and verification](site-content-controls.md). The factual/company-content checklist below remains open. No company/catalog content was published or product notes backfilled.

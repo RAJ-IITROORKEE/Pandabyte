@@ -35,6 +35,7 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   const [focused, setFocused] = useState(false);
   const [paused, setPaused] = useState(false);
   const [viewerActive, setViewerActive] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
   const currentIndex = Math.min(activeIndex, Math.max(0, slides.length - 1));
   const activeSlide = slides[currentIndex];
   const onViewerActiveChange = useCallback((active: boolean) => setViewerActive(active), []);
@@ -76,7 +77,10 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
 
   function moveSlide(offset: number) {
     if (slides.length < 2) return;
-    setActiveIndex((current) => (Math.min(current, slides.length - 1) + offset + slides.length) % slides.length);
+    const next = (currentIndex + offset + slides.length) % slides.length;
+    const slide = slides[next];
+    setActiveIndex(next);
+    setAnnouncement(`${slide.type === "image" ? slide.image.alt || title : "3D preview"}, ${next + 1} of ${slides.length}`);
   }
 
   return (
@@ -131,6 +135,7 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
           <span>{paused || reducedMotion ? "Play" : "Pause"}</span>
         </button>
       </div>}
+      <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{announcement}</span>
     </div>
   );
 }

@@ -7,9 +7,12 @@
 .categorySection { position: relative; padding: clamp(24px, 4vw, 48px); background: var(--background); border: 1px solid var(--divider); border-radius: 16px; }
 .categoryIntro { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
 .categoryGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-.categoryCard { display: flex; min-width: 0; min-height: 126px; flex-direction: column-reverse; align-items: start; justify-content: space-between; gap: 24px; padding: 18px; color: var(--foreground); background: var(--surface); border: 1px solid var(--divider); border-radius: 10px; text-decoration: none; transition: border-color 160ms ease, color 160ms ease; }
+.categoryCard { display: flex; min-width: 0; min-height: 126px; flex-direction: column; overflow: hidden; color: var(--foreground); background: var(--surface); border: 1px solid var(--divider); border-radius: 10px; text-decoration: none; transition: border-color 160ms ease, color 160ms ease; }
 .categoryCard:hover { color: var(--accent); border-color: var(--accent); }
-.categoryCard svg { width: 18px; height: 18px; align-self: end; flex: none; }
+.categoryImage { display: grid; aspect-ratio: 4 / 3; place-items: center; padding: 14px; background: #fff; border-bottom: 1px solid var(--divider); }
+.categoryImage img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.categoryCardLabel { display: flex; flex: 1; min-height: 60px; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; }
+.categoryCard svg { width: 18px; height: 18px; flex: none; }
 .categoryCardTitle { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .productGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .productGrid > * { min-width: 0; }
@@ -34,5 +37,6 @@
 @media (max-width: 539px) {
   .sectionHeading { align-items: start; flex-direction: column; gap: 8px; }
   .productGrid { grid-template-columns: minmax(0, 1fr); }
-  .categoryCard { min-height: 100px; padding: 14px; }
+  .categoryCard { min-height: 100px; }
+  .categoryCardLabel { padding-inline: 12px; }
 }
