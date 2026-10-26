@@ -26,6 +26,7 @@ import { productSlugFromTitle } from "./product-editor-utils";
 import { ProductDocumentEditor } from "./product-document-editor";
 import { ProductPricingEditor, type ProductPricingState } from "./product-pricing-editor";
 import galleryStyles from "./product-gallery-editor.module.css";
+import confirmationStyles from "./products-table.module.css";
 import {
   ADMIN_MODULES,
   parseDocument,
@@ -580,11 +581,11 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     <section className={styles.panel}>
       <div className={styles.sectionHeading}><div><h2>Record details</h2><p>Use confirmed, owner-approved content.</p></div></div>
       <div className={styles.formGrid}>
-        <Field label="Title"><TextInput value={str("title")} onChange={(value) => { if (module === "products" && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
-        <Field label="Slug" hint={module === "products" ? slugAuto ? "Generated from the title until you edit it." : "Manual slug override." : "Lowercase letters, numbers, and hyphens."}><TextInput value={str("slug")} onChange={(value) => { set("slug", value); if (module === "products") setSlugAuto(false); }} maxLength={160} /></Field>
+        <Field label="Title"><TextInput value={str("title")} onChange={(value) => { if ((module === "products" || module === "categories") && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
+        <Field label="Slug" hint={module === "products" || module === "categories" ? slugAuto ? "Generated from the title until you edit it." : "Manual slug override." : "Lowercase letters, numbers, and hyphens."}><TextInput value={str("slug")} onChange={(value) => { set("slug", value); if (module === "products" || module === "categories") setSlugAuto(false); }} maxLength={160} /></Field>
         {module !== "products" && <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>}
       </div>
-      {module === "products" && !slugAuto && <button className={styles.secondaryButton} onClick={() => { setSlugAuto(true); set("slug", productSlugFromTitle(str("title"))); }} type="button">Generate slug from title</button>}
+      {(module === "products" || module === "categories") && !slugAuto && <button className={styles.secondaryButton} onClick={() => { setSlugAuto(true); set("slug", productSlugFromTitle(str("title"))); }} type="button">Generate slug from title</button>}
     </section>
 
     {module === "products" && <section className={styles.panel}>
@@ -617,7 +618,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     </section>}
 
     {(module === "products" || module === "categories") && <section className={styles.panel}>
-      <div className={styles.sectionHeading}><div><h2>Catalog details</h2><p>Add categories, specifications, compatibility and resources. Inventory is managed separately.</p></div></div>
+      <div className={styles.sectionHeading}><div><h2>{module === "categories" ? "Category organization" : "Catalog details"}</h2><p>{module === "categories" ? "Choose a parent and display order. Lower positions appear first." : "Add categories, specifications, compatibility and resources. Inventory is managed separately."}</p></div></div>
       <div className={styles.formGrid}>
         {module === "products" && <RelationPicker label="Categories" module="categories" values={arr("categoryIds")} onChange={(value) => set("categoryIds", value)} />}
         {module === "categories" && <>
@@ -693,6 +694,9 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const validationSummaryRef = useRef<HTMLDivElement>(null);
   const editorErrorRef = useRef<HTMLDivElement>(null);
+  const categoryArchiveDialog = useRef<HTMLDialogElement>(null);
+  const categoryHeadingRef = useRef<HTMLHeadingElement>(null);
+  const [categoryArchiveOpen, setCategoryArchiveOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [conflict, setConflict] = useState(false);
   const [restoreId, setRestoreId] = useState("");
@@ -709,6 +713,17 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const documentDirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
   const dirty = documentDirty || (module === "products" && (productPricing.dirty || !richContentValid || pendingUploads > 0));
   const pricingReady = module !== "products" || productPricing.ready;
+
+  useEffect(() => {
+    const dialog = categoryArchiveDialog.current;
+    if (!dialog) return;
+    if (categoryArchiveOpen && !dialog.open) dialog.showModal();
+    if (!categoryArchiveOpen && dialog.open) dialog.close();
+  }, [categoryArchiveOpen]);
+
+  useEffect(() => {
+    if (module === "categories" && record?.archived) categoryHeadingRef.current?.focus();
+  }, [module, record?.archived]);
 
   useEffect(() => {
     if (validationIssues.length) validationSummaryRef.current?.focus();
@@ -809,6 +824,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
         setRichContentResetKey((value) => value + 1);
         toast.success("Product draft saved.");
       }
+      if (module === "categories") { setSlugAuto(false); toast.success("Category draft saved."); }
       setConflict(false);
       setNotice("Draft saved.");
       if (isNew) router.replace(`/admin/${module}/${result.record.id}`);
@@ -819,7 +835,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setConflict(status === 409);
       if (Array.isArray(fields) && fields.length) setValidationIssues(fields);
       else setError(reason instanceof Error ? reason.message : "The draft could not be saved.");
-      if (module === "products") toast.error(reason instanceof Error ? reason.message : "The product draft could not be saved.");
+      if (module === "products" || module === "categories") toast.error(reason instanceof Error ? reason.message : "The draft could not be saved.");
       return null;
     } finally {
       setBusy(false);
@@ -851,11 +867,12 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setConflict(false);
       setNotice(action === "publish" ? "Record published." : action === "unpublish" ? "Record unpublished." : action === "archive" ? "Record archived." : "Revision restored as a new draft.");
       if (module === "products") toast.success(action === "publish" ? "Product published." : "Product updated.");
+      if (module === "categories") toast.success(action === "archive" ? "Category archived. Its history was preserved." : "Category updated.");
     } catch (reason) {
       const status = (reason as { status?: number }).status;
       setConflict(status === 409);
       setError(reason instanceof Error ? reason.message : "The action could not be completed.");
-      if (module === "products") toast.error(reason instanceof Error ? reason.message : "The product action could not be completed.");
+      if (module === "products" || module === "categories") toast.error(reason instanceof Error ? reason.message : "The action could not be completed.");
     } finally {
       setBusy(false);
     }
@@ -868,7 +885,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 
   return <div className={styles.screen}>
     <div className={styles.editorHeading}>
-      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
+      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><h1 ref={module === "categories" ? categoryHeadingRef : undefined} tabIndex={module === "categories" ? -1 : undefined}>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
       <div className={styles.editorActions}>
         <button className={styles.secondaryButton} type="button" onClick={() => setPreviewOpen((value) => !value)}><Eye size={16} aria-hidden="true" /> {previewOpen ? "Hide preview" : "Preview draft"}</button>
         <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
@@ -889,13 +906,18 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       <div className={styles.lifecycleActions}>
         <button className={styles.primaryButton} type="button" onClick={() => void transition("publish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
         {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>Unpublish</button>}
-        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady}>Archive</button>}
+        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => module === "categories" ? setCategoryArchiveOpen(true) : window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady}>Archive</button>}
       </div>
       {!canPublish && <p className={styles.fieldHint}>Your role does not include publishing, unpublishing, or archiving.</p>}
       {record.revisions && record.revisions.length > 0 && <div className={styles.revisionPicker}><label className={styles.field}><span className={styles.fieldLabel}>Restore a published revision as a draft</span><select className={styles.input} value={restoreId} onChange={(event) => setRestoreId(event.target.value)}><option value="">Select a revision</option>{record.revisions.map((revision) => <option value={revision.id} key={revision.id}>Revision {revision.revisionNumber} · {revision.title} · {formatDate(revision.publishedAt)}</option>)}</select></label><button className={styles.secondaryButton} type="button" disabled={!restoreId || !canEdit || busy} onClick={() => void transition("restore", restoreId)}>Restore draft</button></div>}
       {record.archived && (!record.revisions || record.revisions.length === 0) && <p className={styles.fieldHint}>No published revision is available to restore.</p>}
       {record.publishedRevisionId && <p className={styles.fieldHint}>Published record slug: <code>{record.slug}</code></p>}
     </section>}
+    {module === "categories" && <dialog ref={categoryArchiveDialog} className={`${confirmationStyles.dialog} ${confirmationStyles.confirmDialog}`} aria-labelledby="category-editor-archive-title" aria-describedby="category-editor-archive-warning" onClose={() => setCategoryArchiveOpen(false)}>
+      <header className={confirmationStyles.dialogHeader}><h2 id="category-editor-archive-title">Archive category?</h2><button type="button" className={confirmationStyles.iconButton} aria-label="Close archive confirmation" onClick={() => setCategoryArchiveOpen(false)}><X size={18} aria-hidden="true" /></button></header>
+      <p id="category-editor-archive-warning" className={confirmationStyles.confirmCopy}><strong>{draft.title || "This category"}</strong> will be removed from the active catalog. Its history is preserved. Linked products or child categories can prevent archival.{dirty ? " Unsaved edits will be saved first." : ""}</p>
+      <div className={confirmationStyles.confirmActions}><button type="button" className={confirmationStyles.controlButton} onClick={() => setCategoryArchiveOpen(false)}>Cancel</button><button type="button" className={confirmationStyles.archiveConfirm} onClick={() => { setCategoryArchiveOpen(false); void transition("archive"); }}>Archive category</button></div>
+    </dialog>}
   </div>;
 }
 

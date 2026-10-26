@@ -1,0 +1,12 @@
+.categoryCell { min-width: 190px; max-width: 340px; }
+.categoryTitle { display: block; width: min(290px, 28vw); min-width: 180px; overflow: hidden; color: var(--foreground); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.categorySlug { display: block; max-width: 290px; margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.parentCell { max-width: 220px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.productCount { font-variant-numeric: tabular-nums; }
+.dependencyNote { margin-top: 9px; }
+.archiveError { margin-top: 10px; color: light-dark(#b42318, #fda29b); }
+
+@media (max-width: 767px) {
+  .categoryTitle { width: 240px; }
+  .categorySlug { max-width: 240px; }
+}

@@ -1,0 +1,147 @@
+{
+  "date": "2026-10-27",
+  "status": "verified",
+  "scope": "Admin Categories table/editor and product statistics charts; public frontend unchanged",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "parallel": true,
+    "fastTier": "Not independently selectable; no Fast-tier claim."
+  },
+  "migration": {
+    "file": "20261026213552_admin-category-table.sql",
+    "applied": true,
+    "scope": "linked development project",
+    "operation": "additive private read-only RPC, no real record changes"
+  },
+  "checks": {
+    "lint": "passed",
+    "typescript": "passed standalone and final production compiler",
+    "productionBuild": "passed final build",
+    "unit": {
+      "shared": 177,
+      "mediaDocx": 3,
+      "total": 180,
+      "failed": 0
+    },
+    "http": {
+      "auth": 7,
+      "security": 2,
+      "diagnostics": 1,
+      "failed": 0
+    },
+    "developmentApi": {
+      "result": "passed",
+      "fixtureCategories": 11,
+      "coverage": [
+        "anonymous401, customer403 and ungranted staff403",
+        "direct customer RPC denial",
+        "private/no-store responses",
+        "query/DTO bounds and invalid parameters",
+        "create, edit and version conflicts",
+        "server sorting and 10+1 pagination",
+        "parent label projection",
+        "blocked archive with child dependency",
+        "stale archive rejected; unreferenced draft archived",
+        "archived/published-empty status filters"
+      ],
+      "published": 0,
+      "cleanup": "all owned category records, two disposable identities and temporary grants removed; fixture tracker absent"
+    },
+    "browser": {
+      "acceptedReflowThemeCases": 24,
+      "categoryTableCases": 8,
+      "categoryEditorCases": 8,
+      "productChartCases": 8,
+      "widths": [
+        320,
+        768,
+        1024,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "pageOverflow": false,
+      "coverage": [
+        "category search/empty state",
+        "pagination from serial1 to11 and back",
+        "real nonzero product counts22/9/6/3/2 sorted descending",
+        "modal Escape/cancel and focus return",
+        "dependency409 shown without removal",
+        "browser draft edit saved and persisted after reload",
+        "new form validation focuses summary and auto slug board-accessories-sensors",
+        "confirmed row archival and focus fallback to table",
+        "confirmed editor archival and focus fallback to heading",
+        "category tooltip Sensors/Products/22",
+        "price tooltip Highest/Current price/INR40000",
+        "category bar count labels and accessible table",
+        "no hidden SVG focus stops",
+        "final clean42-product/five-active-category views"
+      ],
+      "consoleErrors": 0,
+      "initialDiagnosticAttempts": "Initial mixed-tab viewport checks and320px hidden-table overflow excluded from accepted counts. Wrapped accessible table and retested all final chart widths/themes.",
+      "viewportOverridesReset": true,
+      "screenshots": [
+        ".bootstrap/admin-categories/categories-dark.png",
+        ".bootstrap/admin-categories/categories-light.png",
+        ".bootstrap/admin-categories/product-charts-dark.png",
+        ".bootstrap/admin-categories/product-charts-light.png"
+      ],
+      "previews": [
+        "http://localhost:3000/admin/categories?status=published&sort=title_asc&limit=20&offset=0",
+        "http://localhost:3000/admin/products"
+      ]
+    },
+    "publicCatalog": "42 original source products remain price-masked and non-purchasable; public application files unchanged"
+  },
+  "charts": {
+    "source": "official shadcn ChartContainer/tooltip composition adapted for Admin, backed by existing Recharts3.10.1",
+    "notice": "docs/licenses/shadcn-chart.txt",
+    "dependenciesAdded": 0,
+    "actualKpis": {
+      "products": 42,
+      "activeCategories": 5,
+      "priced": 42,
+      "unpriced": 0
+    },
+    "categoryCounts": {
+      "Sensors": 22,
+      "Dev Boards": 9,
+      "Accessories": 6,
+      "Shields": 3,
+      "IoT Kits": 2
+    },
+    "actualPricesPaise": {
+      "lowest": 6000,
+      "average": 203952,
+      "highest": 4000000
+    },
+    "fabricatedTrends": false,
+    "motion": "bars disable animation; installed Tooltip auto mode checks prefers-reduced-motion. Runtime OS switching not claimed."
+  },
+  "preserved": [
+    "real categories and products",
+    "prices and stock",
+    "published revisions",
+    "owner Clerk session and protected role",
+    "public frontend/theme/logo/hero",
+    "other-chat source/CAD/Superdesign files"
+  ],
+  "limits": [
+    "parent picker retains first100 categories",
+    "safe deletion is archival; linked categories remain guarded",
+    "actual zoom, OS motion switching, screen-reader speech and physical-device checks not performed"
+  ],
+  "notPerformed": [
+    "content publication",
+    "importer rerun",
+    "checkout/payments",
+    "production deployment",
+    "live email/billing",
+    "load tests",
+    "recovery operations"
+  ],
+  "concurrentWork": "Unrelated storefront/component/dependency edits appeared during this checkpoint; preserved unstaged. Only the unit test script hunk of package.json belongs to this commit; no claims about validation of other-chat working changes."
+}

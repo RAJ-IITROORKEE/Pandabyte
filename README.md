@@ -14,6 +14,8 @@
 
 # PandaByte.in — single project context
 
+27 October Categories/chart checkpoint: the isolated Mono Admin adds server-side category search/filter/sort/pagination, parent/product counts, versioned edit feedback and confirmed safe archival. Product statistics use Admin-scoped shadcn/Recharts visualizations with real counts/prices. Public frontend and real records remain unchanged. [Contract](docs/admin-categories-charts.md) · [verification](docs/verification/admin-categories-charts.json).
+
 27 October product administration checkpoint: pricing now belongs to product add/edit; the standalone Pricing page redirects to Products. The Mono product table adds scoped search/filter/sort/pagination, image previews, concise metadata and confirmed archival. The editor adds safe slug generation, five-image uploads, tags, structured rich text, separate supported-layout DOCX previews and retained 3D controls. Development API/schema changes preserve capability, version, private-media and source-observation boundaries. [Contract](docs/admin-products.md) · [verification](docs/verification/admin-products.json).
 
 27 October Admin UI checkpoint: the owner selected a separate Kiranism Mono Admin interface with Geist Mono, Tabler icons and independent appearance controls. The public storefront keeps its logo, hero and existing styling. Existing Clerk/InsForge permissions and data flows remain authoritative; workspace/chat/AI/notification additions are upcoming previews. See [the Admin migration contract](docs/admin-mono-migration.md) and [verification](docs/verification/admin-mono.json).

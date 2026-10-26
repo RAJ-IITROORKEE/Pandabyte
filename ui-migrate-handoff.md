@@ -102,3 +102,11 @@ Import result: 42 price pairs saved and fully post-verified, zero unpriced/confl
 Final price/statistics verification: lint, TypeScript and production build pass; 174 unit checks and ten auth/security/diagnostics HTTP checks pass. Sixteen measured table/editor reflow/theme cases pass, including both mobile color palettes; no page overflow or final console errors. The real filtered discount and unchanged global cards were browser-checked. Final screenshots are ignored under `.bootstrap/admin-price-followup/`; the Products preview is open with viewport override reset. All disposable fixtures are cleaned up.
 
 Product prices/statistics implementation: **96acfe9** — `feat: add required product prices and catalog statistics`.
+
+## Categories and product charts — 27 October 2026
+
+The Admin-only Mono Categories upgrade adds private server search/filter/sort/pagination, parent/product-count columns, confirmed safe archival, auto/manual category slugs and Sonner feedback. Product statistics now use Admin-scoped shadcn/Recharts category and current-price comparisons with real values and accessible alternatives. Public frontend/theme/logo/hero and existing records are unchanged.
+
+[Contract](docs/admin-categories-charts.md) and [verification](docs/verification/admin-categories-charts.json) record the applied read-only category RPC, 180 unit checks, ten auth/security/diagnostics HTTP checks, disposable development CRUD/dependency coverage and24 accepted browser reflow/theme cases. Owned test records/identities/grants are removed. Both clean previews are open; ignored screenshots are under `.bootstrap/admin-categories/`. Parent lookup retains its first100 bound; actual zoom/OS motion/screen-reader/physical-device gates remain manual. No publication, importer, commerce, deployment, live email/billing, load or recovery work is included.
+
+Concurrent-work boundary: unrelated public storefront/components and dependency edits appeared during this checkpoint and are preserved outside this commit. Only the category unit-test script hunk is staged from `package.json`; no storefront implementation or dependency change is owned by this Admin task. Verification records the built Admin preview, not unverified concurrent working changes.
