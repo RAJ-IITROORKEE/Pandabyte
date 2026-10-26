@@ -1,9 +1,10 @@
-.page { width: min(100%, 1120px); padding: clamp(32px, 5vw, 72px) 24px 80px; margin-inline: auto; overflow-wrap: anywhere; }
+.page { width: min(100%, 1120px); padding: clamp(40px, 6vw, 88px) 24px 96px; margin-inline: auto; overflow-wrap: anywhere; }
 .wide { width: min(100%, 1280px); }
-.heading { margin-bottom: 40px; max-width: 800px; }
-.heading h1 { margin: 12px 0 16px; font-size: clamp(30px, 3.2vw, 40px); font-weight: 600; line-height: 1.12; letter-spacing: -.04em; text-wrap: balance; }
-.description { color: var(--muted); line-height: 1.7; font-size: 17px; max-width: 720px; }
-.empty { padding: clamp(20px, 4vw, 32px); margin-block: 24px; }
+.heading { max-width: 800px; margin-bottom: clamp(36px, 5vw, 64px); }
+.heading h1 { margin: 0; font-size: clamp(36px, 4.5vw, 56px); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; text-wrap: balance; }
+.context { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.description { max-width: 62ch; margin: 20px 0 0; color: var(--muted); line-height: 1.7; font-size: 17px; }
+.empty { padding: clamp(24px, 4vw, 36px); margin-block: 24px; }
 .empty h2 { margin-bottom: 12px; }
 .empty div { margin-bottom: 16px; }
 @media (max-width: 380px) { .page { padding-inline: 16px; } }

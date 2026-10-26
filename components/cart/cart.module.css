@@ -113,3 +113,27 @@
   .quantityButton { width: 100%; }
   .lineTotal { text-align: right; }
 }
+
+/* Keep the cart focused on the item list and its total. */
+.heading { margin-bottom: 40px; }
+.itemsPanel { padding: 0; background: transparent; border: 0; border-radius: 0; }
+.panelHeading { padding-bottom: 20px; }
+.item { padding-block: 26px; }
+.summary { padding: 28px; }
+.empty { max-width: 720px; padding: clamp(28px, 5vw, 48px); }
+@media (max-width: 560px) {
+  .heading { margin-bottom: 28px; }
+  .summary { padding: 22px; }
+}
+
+.embedded { width: 100%; padding: 24px; }
+.embedded .cartLayout { grid-template-columns: minmax(0, 1fr); }
+.embedded .summary { position: static; }
+.embedded .item { grid-template-columns: minmax(0, 1fr) auto; gap: 14px 18px; align-items: start; }
+.embedded .itemDetails { grid-column: 1 / -1; }
+.embedded .quantityForm { grid-column: 1; }
+.embedded .lineTotal { grid-column: 2; align-self: center; }
+.embedded .mergeNotice > div { min-width: 0; }
+.checkoutNotice { padding-block: 32px; border-top: 1px solid var(--divider); }
+.checkoutNotice h2 { margin: 0 0 16px; font-size: clamp(23px, 3vw, 30px); font-weight: 600; letter-spacing: -.025em; }
+.checkoutNotice p { max-width: 60ch; color: var(--muted); line-height: 1.7; }

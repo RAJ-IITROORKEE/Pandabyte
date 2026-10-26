@@ -1,432 +1,124 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FocusEvent as ReactFocusEvent,
-  type KeyboardEvent,
-  type MouseEvent,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ArrowUpRight,
-  Bot,
-  BookOpenText,
-  ChevronDown,
-  Cpu,
-  Layers,
-  Menu,
-  ShoppingCart,
-  Sparkles,
-  Terminal,
-  X,
-} from "lucide-react";
+import { ChevronDown, Menu, Search, ShoppingCart, X } from "lucide-react";
 import { AuthControls } from "@/components/auth-controls";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  resolveSiteNavigation,
-  type NavigationLink,
-  type SiteLink,
-} from "@/lib/site-navigation";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
+import { resolveSiteNavigation, type NavigationLink, type SiteLink } from "@/lib/site-navigation";
 import "@/components/site-header.css";
 
-type MainMenu = "solutions" | "learn" | "about";
-type Disclosure = "hardware" | "upcoming" | null;
+type MenuSection = { title: string; links: SiteLink[]; comingSoon?: boolean };
 
 export function SiteHeader({ navigationLinks = [] }: { navigationLinks?: NavigationLink[] }) {
   const pathname = usePathname();
-  return <SiteHeaderContent key={pathname} navigationLinks={navigationLinks} />;
+  return <SiteHeaderContent key={pathname} navigationLinks={navigationLinks} onCartPage={pathname === "/cart"} />;
 }
 
-function SiteHeaderContent({ navigationLinks }: { navigationLinks: NavigationLink[] }) {
-  const headerRef = useRef<HTMLElement>(null);
-  const mobileToggleRef = useRef<HTMLButtonElement>(null);
-  const triggerRefs = useRef<Record<MainMenu, HTMLButtonElement | null>>({
-    solutions: null,
-    learn: null,
-    about: null,
-  });
-  const hoverOpenedRef = useRef<MainMenu | null>(null);
-  const [openMenu, setOpenMenu] = useState<MainMenu | null>(null);
-  const [openDisclosure, setOpenDisclosure] = useState<Disclosure>(null);
+function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: NavigationLink[]; onCartPage: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigation = resolveSiteNavigation(navigationLinks);
-
-  function menuHasContent(menu: MainMenu) {
-    if (menu === "solutions") {
-      return navigation.header.hardwareHighlight.length + navigation.header.hardware.length + navigation.header.upcoming.length + navigation.header.tools.length + navigation.header.solutionsFooter.length > 0;
-    }
-    return menu === "learn" ? navigation.header.learn.length > 0 : navigation.header.about.length > 0;
-  }
+  const headerRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const { header } = resolveSiteNavigation(navigationLinks);
+  const primary = (href: string) => header.primary.filter((link) => link.href === href);
+  const menus: { label: string; sections: MenuSection[] }[] = [
+    { label: "Products", sections: [{ title: "Hardware", links: header.hardware }] },
+    { label: "Solutions", sections: [
+      { title: "Explore", links: [...primary("/solutions"), ...header.tools.filter((link) => link.href === "/solutions/skills-cli")] },
+      { title: "Coming soon", links: [...header.upcoming, ...header.tools.filter((link) => link.href !== "/solutions/skills-cli"), { label: "Agent tools", href: "/agent" }], comingSoon: true },
+    ] },
+    { label: "Company", sections: [
+      { title: "PandaByte", links: header.about },
+      { title: "Learn & support", links: [...primary("/learn"), ...header.learn] },
+    ] },
+  ];
 
   useEffect(() => {
+    if (!mobileOpen) return;
+    const dismiss = (event: globalThis.PointerEvent | globalThis.FocusEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setMobileOpen(false);
+    };
     const breakpoint = window.matchMedia("(min-width: 980px)");
-    const resetNavigation = () => {
-      hoverOpenedRef.current = null;
-      setOpenMenu(null);
-      setOpenDisclosure(null);
+    const reset = () => setMobileOpen(false);
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("focusin", dismiss);
+    breakpoint.addEventListener("change", reset);
+    window.addEventListener("popstate", reset);
+    window.addEventListener("hashchange", reset);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("focusin", dismiss);
+      breakpoint.removeEventListener("change", reset);
+      window.removeEventListener("popstate", reset);
+      window.removeEventListener("hashchange", reset);
+    };
+  }, [mobileOpen]);
+
+  function onKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Escape" && mobileOpen) {
+      event.preventDefault();
       setMobileOpen(false);
-    };
-    const dismissOnHistoryNavigation = () => resetNavigation();
-
-    breakpoint.addEventListener("change", resetNavigation);
-    window.addEventListener("popstate", dismissOnHistoryNavigation);
-    window.addEventListener("hashchange", dismissOnHistoryNavigation);
-    return () => {
-      breakpoint.removeEventListener("change", resetNavigation);
-      window.removeEventListener("popstate", dismissOnHistoryNavigation);
-      window.removeEventListener("hashchange", dismissOnHistoryNavigation);
-    };
-  }, []);
-
-  useEffect(() => {
-    const dismissOutside = (event: globalThis.PointerEvent | globalThis.FocusEvent) => {
-      if (!headerRef.current?.contains(event.target as Node)) {
-        hoverOpenedRef.current = null;
-        setOpenMenu(null);
-        setOpenDisclosure(null);
-        setMobileOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", dismissOutside);
-    document.addEventListener("focusin", dismissOutside);
-    return () => {
-      document.removeEventListener("pointerdown", dismissOutside);
-      document.removeEventListener("focusin", dismissOutside);
-    };
-  }, []);
-
-  function closeNavigation() {
-    hoverOpenedRef.current = null;
-    setOpenMenu(null);
-    setOpenDisclosure(null);
-    setMobileOpen(false);
-  }
-
-  function toggleMenu(menu: MainMenu) {
-    hoverOpenedRef.current = null;
-    setOpenDisclosure(null);
-    setOpenMenu((current) => (current === menu ? null : menu));
-  }
-
-  function openMenuFromKeyboard(menu: MainMenu) {
-    hoverOpenedRef.current = null;
-    setOpenDisclosure(null);
-    setOpenMenu(menu);
-    requestAnimationFrame(() => {
-      headerRef.current
-        ?.querySelector<HTMLElement>(`[data-menu-panel="${menu}"] a, [data-menu-panel="${menu}"] summary`)
-        ?.focus();
-    });
-  }
-
-  function onMenuPointerEnter(menu: MainMenu) {
-    if (!menuHasContent(menu) || !window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 980px)").matches) return;
-    hoverOpenedRef.current = menu;
-    setOpenDisclosure(null);
-    setOpenMenu(menu);
-  }
-
-  function onMenuPointerLeave(menu: MainMenu, event: ReactPointerEvent<HTMLLIElement>) {
-    if (
-      hoverOpenedRef.current === menu &&
-      !event.currentTarget.contains(document.activeElement)
-    ) {
-      hoverOpenedRef.current = null;
-      setOpenDisclosure(null);
-      setOpenMenu(null);
+      toggleRef.current?.focus();
     }
   }
 
-  function onMenuTriggerClick(menu: MainMenu) {
-    if (hoverOpenedRef.current === menu) {
-      hoverOpenedRef.current = null;
-      return;
-    }
-    toggleMenu(menu);
-  }
-
-  function onMenuBlur(menu: MainMenu, event: ReactFocusEvent<HTMLLIElement>) {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      if (hoverOpenedRef.current === menu) hoverOpenedRef.current = null;
-      setOpenMenu((current) => (current === menu ? null : current));
-      setOpenDisclosure(null);
-    }
-  }
-
-  function onHeaderKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key !== "Escape") return;
-
-    if (openMenu) {
-      event.preventDefault();
-      hoverOpenedRef.current = null;
-      setOpenMenu(null);
-      setOpenDisclosure(null);
-      triggerRefs.current[openMenu]?.focus();
-    } else if (mobileOpen) {
-      event.preventDefault();
-      closeNavigation();
-      mobileToggleRef.current?.focus();
-    }
-  }
-
-  function toggleDisclosure(event: MouseEvent<HTMLElement>, disclosure: Exclude<Disclosure, null>) {
-    event.preventDefault();
-    setOpenDisclosure((current) => (current === disclosure ? null : disclosure));
-  }
-
-  function onDisclosureKeyDown(event: KeyboardEvent<HTMLDetailsElement>, disclosure: Exclude<Disclosure, null>) {
-    if (event.key === "Escape" && openDisclosure === disclosure) {
-      event.preventDefault();
-      event.stopPropagation();
-      setOpenDisclosure(null);
-      event.currentTarget.querySelector("summary")?.focus();
-    }
-  }
-
-  function onDisclosureSummaryKeyDown(event: KeyboardEvent<HTMLElement>, disclosure: Exclude<Disclosure, null>) {
-    if (event.key !== "ArrowDown" && event.key !== "ArrowRight") return;
-    event.preventDefault();
-    setOpenDisclosure(disclosure);
-    const details = event.currentTarget.parentElement;
-    requestAnimationFrame(() => {
-      details?.querySelector<HTMLElement>("a")?.focus();
-    });
-  }
-
-  function renderMenuItems(links: SiteLink[]) {
-    return links.map(({ label, href }) => (
-      <Link className="pb-menu-link" href={href} key={href} onClick={closeNavigation}>
-        {label}
-      </Link>
+  function sections(items: MenuSection[], desktop: boolean) {
+    return items.filter((section) => section.links.length > 0).map((section) => (
+      <div className="pb-menu-section" key={section.title}>
+        <p className="pb-menu-heading">{section.title}</p>
+        {section.links.map((link) => {
+          const label = section.comingSoon ? link.label.replace(/\s*[·-]\s*coming soon\s*$/i, "") : link.label;
+          const content = <>{label}{section.comingSoon && <span className="pb-coming-soon">Coming soon</span>}</>;
+          return desktop ? <NavigationMenuLink asChild key={link.href}><Link className="pb-menu-link" href={link.href}>{content}</Link></NavigationMenuLink>
+            : <Link className="pb-menu-link" href={link.href} key={link.href} onClick={() => setMobileOpen(false)}>{content}</Link>;
+        })}
+      </div>
     ));
   }
 
   return (
-    <header
-      className="pb-site-header"
-      data-mobile-open={mobileOpen}
-      ref={headerRef}
-      onKeyDown={onHeaderKeyDown}
-    >
+    <header className="pb-site-header" ref={headerRef} onKeyDown={onKeyDown}>
       <div className="pb-header-inner">
-        <Link className="pb-brand" href="/" aria-label="PandaByte home" onClick={closeNavigation}>
-          <span className="pb-logo">
-            <Image src="/brand/pandabyte-logo.png" alt="" width={40} height={40} priority />
-          </span>
+        <Link className="pb-brand" href="/" aria-label="PandaByte home" onClick={() => setMobileOpen(false)}>
+          <span className="pb-logo"><Image src="/brand/pandabyte-logo.png" alt="" width={40} height={40} priority /></span>
           <span className="pb-wordmark">PandaByte.in</span>
         </Link>
 
-        <button
-          className="pb-mobile-toggle pb-icon-button"
-          type="button"
-          ref={mobileToggleRef}
-          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={mobileOpen}
-          aria-controls="pb-main-navigation"
-          onClick={() => {
-            setMobileOpen((open) => !open);
-            setOpenMenu(null);
-            setOpenDisclosure(null);
-          }}
-        >
-          {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-        </button>
-
-        <nav className="pb-main-nav" id="pb-main-navigation" aria-label="Main navigation">
-          <ul className="pb-nav-list">
-            {navigation.header.primary.map((link) => {
-              if (link.href === "/solutions") return (
-            <li key={link.href}
-              className="pb-nav-item"
-              onPointerEnter={() => onMenuPointerEnter("solutions")}
-              onPointerLeave={(event) => onMenuPointerLeave("solutions", event)}
-              onBlurCapture={(event) => onMenuBlur("solutions", event)}
-            >
-              <div className="pb-nav-label">
-                <Link href={link.href} onClick={closeNavigation}>{link.label}</Link>
-                {menuHasContent("solutions") && <button
-                  ref={(node) => { triggerRefs.current.solutions = node; }}
-                  className="pb-disclose"
-                  type="button"
-                  aria-label={`Open ${link.label} menu`}
-                  aria-expanded={openMenu === "solutions"}
-                  aria-controls="pb-solutions-menu"
-                  onClick={() => onMenuTriggerClick("solutions")}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowDown") {
-                      event.preventDefault();
-                      openMenuFromKeyboard("solutions");
-                    }
-                  }}
-                >
-                  <ChevronDown aria-hidden="true" />
-                  </button>}
-              </div>
-              {menuHasContent("solutions") && <div
-                className="pb-menu pb-solutions-menu"
-                id="pb-solutions-menu"
-                data-menu-panel="solutions"
-                hidden={openMenu !== "solutions"}
-              >
-                <div className="pb-solution-grid">
-                  <div className="pb-solution-column">
-                    <p className="pb-menu-intro"><Layers aria-hidden="true" /> Hardware</p>
-                    {navigation.header.hardwareHighlight.map((highlight) => <Link className="pb-icon-row" href={highlight.href} key={highlight.href} onClick={closeNavigation}>
-                      <Cpu aria-hidden="true" />
-                      <span><strong>{highlight.label}</strong><small>Explore PandaByte kits</small></span>
-                      <ArrowUpRight aria-hidden="true" />
-                    </Link>)}
-                    {navigation.header.hardware.length > 0 && <details
-                      className="pb-nested"
-                      open={openDisclosure === "hardware"}
-                      onKeyDown={(event) => onDisclosureKeyDown(event, "hardware")}
-                    >
-                      <summary
-                        aria-expanded={openDisclosure === "hardware"}
-                        aria-controls="pb-hardware-links"
-                        onClick={(event) => toggleDisclosure(event, "hardware")}
-                        onKeyDown={(event) => onDisclosureSummaryKeyDown(event, "hardware")}
-                      >
-                        <span><strong>Shop IoT &amp; embedded products</strong></span>
-                        <ChevronDown aria-hidden="true" />
-                      </summary>
-                      <div className="pb-submenu" id="pb-hardware-links">
-                        {renderMenuItems(navigation.header.hardware)}
-                      </div>
-                    </details>}
-                  </div>
-                  <div className="pb-solution-column pb-solution-secondary">
-                    <p className="pb-menu-intro"><Layers aria-hidden="true" /> Products &amp; tools</p>
-                    {navigation.header.upcoming.length > 0 && <details
-                      className="pb-nested"
-                      open={openDisclosure === "upcoming"}
-                      onKeyDown={(event) => onDisclosureKeyDown(event, "upcoming")}
-                    >
-                      <summary
-                        aria-expanded={openDisclosure === "upcoming"}
-                        aria-controls="pb-upcoming-links"
-                        onClick={(event) => toggleDisclosure(event, "upcoming")}
-                        onKeyDown={(event) => onDisclosureSummaryKeyDown(event, "upcoming")}
-                      >
-                        <span><strong>Products</strong><small>Upcoming PandaByte projects</small></span>
-                        <ChevronDown aria-hidden="true" />
-                      </summary>
-                      <div className="pb-submenu" id="pb-upcoming-links">
-                        {renderMenuItems(navigation.header.upcoming)}
-                      </div>
-                    </details>}
-                    {navigation.header.tools.map((tool) => tool.href === "/solutions/skills-cli" ? <Link className="pb-icon-row" href={tool.href} key={tool.href} onClick={closeNavigation}>
-                      <Terminal aria-hidden="true" />
-                      <span><strong>{tool.label}</strong><small>For IoT &amp; embedded development</small></span>
-                      <ArrowUpRight aria-hidden="true" />
-                    </Link> : <Link
-                      className="pb-icon-row"
-                      href={tool.href}
-                      key={tool.href}
-                      aria-label={`${tool.label}, coming soon`}
-                      onClick={closeNavigation}
-                    >
-                      <Bot aria-hidden="true" />
-                      <span><strong>{tool.label} <span className="pb-coming-soon">Coming soon</span></strong><small>Future PandaByte Agent concept</small></span>
-                      <ArrowUpRight aria-hidden="true" />
-                    </Link>)}
-                  </div>
-                </div>
-                <div className="pb-menu-footer">
-                  {navigation.header.solutionsFooter.map((footerLink) => <Link href={footerLink.href} key={footerLink.href} onClick={closeNavigation}>{footerLink.label} <ArrowUpRight aria-hidden="true" /></Link>)}
-                </div>
-              </div>}
-            </li>
-              );
-              if (link.href === "/learn") return (
-            <li key={link.href}
-              className="pb-nav-item"
-              onPointerEnter={() => onMenuPointerEnter("learn")}
-              onPointerLeave={(event) => onMenuPointerLeave("learn", event)}
-              onBlurCapture={(event) => onMenuBlur("learn", event)}
-            >
-              <div className="pb-nav-label">
-                <Link href={link.href} onClick={closeNavigation}>{link.label}</Link>
-                {menuHasContent("learn") && <button
-                  ref={(node) => { triggerRefs.current.learn = node; }}
-                  className="pb-disclose"
-                  type="button"
-                  aria-label={`Open ${link.label} menu`}
-                  aria-expanded={openMenu === "learn"}
-                  aria-controls="pb-learn-menu"
-                  onClick={() => onMenuTriggerClick("learn")}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowDown") {
-                      event.preventDefault();
-                      openMenuFromKeyboard("learn");
-                    }
-                  }}
-                >
-                  <ChevronDown aria-hidden="true" />
-                </button>}
-              </div>
-              {menuHasContent("learn") && <div className="pb-menu" id="pb-learn-menu" data-menu-panel="learn" hidden={openMenu !== "learn"}>
-                <p className="pb-menu-intro"><BookOpenText aria-hidden="true" /> Learn &amp; explore</p>
-                {renderMenuItems(navigation.header.learn)}
-              </div>}
-            </li>
-              );
-              if (link.href === "/about") return (
-            <li key={link.href}
-              className="pb-nav-item"
-              onPointerEnter={() => onMenuPointerEnter("about")}
-              onPointerLeave={(event) => onMenuPointerLeave("about", event)}
-              onBlurCapture={(event) => onMenuBlur("about", event)}
-            >
-              <div className="pb-nav-label">
-                <Link href={link.href} onClick={closeNavigation}>{link.label}</Link>
-                {menuHasContent("about") && <button
-                  ref={(node) => { triggerRefs.current.about = node; }}
-                  className="pb-disclose"
-                  type="button"
-                  aria-label={`Open ${link.label} menu`}
-                  aria-expanded={openMenu === "about"}
-                  aria-controls="pb-about-menu"
-                  onClick={() => onMenuTriggerClick("about")}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowDown") {
-                      event.preventDefault();
-                      openMenuFromKeyboard("about");
-                    }
-                  }}
-                >
-                  <ChevronDown aria-hidden="true" />
-                </button>}
-              </div>
-              {menuHasContent("about") && <div className="pb-menu" id="pb-about-menu" data-menu-panel="about" hidden={openMenu !== "about"}>
-                <p className="pb-menu-intro">PandaByte</p>
-                {renderMenuItems(navigation.header.about)}
-              </div>}
-            </li>
-              );
-              return <li className="pb-contact" key={link.href}><Link href={link.href} onClick={closeNavigation}>{link.label}</Link></li>;
-            })}
-          </ul>
-        </nav>
+        <NavigationMenu className="pb-desktop-nav" aria-label="Main navigation">
+          <NavigationMenuList className="pb-nav-list">
+            {menus.map((menu, index) => <Fragment key={menu.label}>
+              {index === 2 && <NavigationMenuItem><NavigationMenuLink asChild><Link className="pb-nav-link" href="/shop">Shop</Link></NavigationMenuLink></NavigationMenuItem>}
+              <NavigationMenuItem className="pb-nav-item">
+                <NavigationMenuTrigger className="pb-nav-trigger" disabled={!menu.sections.some((section) => section.links.length)}>{menu.label}</NavigationMenuTrigger>
+                <NavigationMenuContent className="pb-menu">{sections(menu.sections, true)}</NavigationMenuContent>
+              </NavigationMenuItem>
+            </Fragment>)}
+          </NavigationMenuList>
+        </NavigationMenu>
 
         <div className="pb-header-actions">
-          <Link className="pb-agent-link" href="/agent" aria-label="Agent tools, coming soon" onClick={closeNavigation}>
-            <Sparkles aria-hidden="true" />
-            <span className="pb-agent-label" aria-hidden="true"><span>Agent</span><span>Coming soon</span></span>
-          </Link>
+          <Link className="pb-icon-button" href="/shop#catalog-query" aria-label="Search catalog" onClick={() => setMobileOpen(false)}><Search aria-hidden="true" /></Link>
+          {onCartPage ? <Link className="pb-icon-button" href="/cart" aria-label="Cart" onClick={() => setMobileOpen(false)}><ShoppingCart aria-hidden="true" /></Link> : <CartDrawer onOpen={() => setMobileOpen(false)} />}
           <AuthControls />
-          <Link className="pb-icon-button pb-cart-link" href="/cart" aria-label="Cart" onClick={closeNavigation}>
-            <ShoppingCart aria-hidden="true" />
-          </Link>
           <span className="pb-theme-action"><ThemeToggle /></span>
         </div>
+        <button className="pb-mobile-toggle pb-icon-button" type="button" ref={toggleRef} aria-label={mobileOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileOpen} aria-controls="pb-mobile-navigation" onClick={() => setMobileOpen((open) => !open)}>
+          {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+        </button>
       </div>
+      {mobileOpen && <nav className="pb-mobile-nav" id="pb-mobile-navigation" aria-label="Main navigation">
+        {menus.map((menu, index) => <div key={menu.label}>
+          {index === 2 && <Link className="pb-mobile-direct" href="/shop" onClick={() => setMobileOpen(false)}>Shop</Link>}
+          <details className="pb-mobile-disclosure">
+            <summary>{menu.label}<ChevronDown aria-hidden="true" /></summary>
+            <div className="pb-mobile-sections">{sections(menu.sections, false)}</div>
+          </details>
+        </div>)}
+      </nav>}
     </header>
   );
 }

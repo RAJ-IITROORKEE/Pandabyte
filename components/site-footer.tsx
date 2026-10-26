@@ -1,14 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { resolveSiteNavigation, type NavigationLink } from "@/lib/site-navigation";
+import { getSiteCopy } from "@/lib/site-copy";
 import "./site-footer.css";
 
-export function SiteFooter({ navigationLinks = [], tagline = "Ideas into embedded innovation.", copyrightName = "PandaByte" }: {
+export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().footerTagline, copyrightName = "PandaByte" }: {
   navigationLinks?: NavigationLink[];
   tagline?: string;
   copyrightName?: string;
 }) {
   const { footerGroups } = resolveSiteNavigation(navigationLinks);
+  const availableLinks = footerGroups.flatMap(group => group.links);
+  const groups = [
+    { title: "Explore", hrefs: ["/shop", "/about", "/contact", "/help"] },
+    { title: "Policies", hrefs: ["/policies#shipping", "/policies#terms", "/policies#privacy"] },
+  ].map(group => ({ title: group.title, links: group.hrefs.flatMap(href => {
+    const link = availableLinks.find(item => item.href === href);
+    return link ? [link] : [];
+  }) })).filter(group => group.links.length > 0);
   return (
     <footer className="pb-site-footer">
       <div className="pb-site-footer__inner">
@@ -28,7 +37,7 @@ export function SiteFooter({ navigationLinks = [], tagline = "Ideas into embedde
             <p className="pb-site-footer__tagline">{tagline}</p>
           </div>
 
-          {footerGroups.map((group) => (
+          {groups.map((group) => (
             <nav className="pb-site-footer__group" aria-label={group.title} key={group.title}>
               <h2>{group.title}</h2>
               <ul>

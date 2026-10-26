@@ -8,7 +8,7 @@ export function PublicPage({ eyebrow, title, description, children, wide = false
 }) {
   return <main id="main" tabIndex={-1} className={`${styles.page} ${wide ? styles.wide : ""}`}>
     <div className={styles.heading}>
-      {eyebrow && <p className="section-kicker">{eyebrow}</p>}
+      {eyebrow && eyebrow !== title && eyebrow !== "PandaByte" && <p className={styles.context}>{eyebrow}</p>}
       <h1>{title}</h1>
       {description && <p className={styles.description}>{description}</p>}
     </div>

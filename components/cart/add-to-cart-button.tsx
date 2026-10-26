@@ -9,14 +9,14 @@ import { addCartItem } from "./cart-utils";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, saveGuestCart, subscribeGuestCart } from "./guest-cart-store";
 import styles from "./cart.module.css";
 
-export function AddToCartButton({ variantId, available }: { variantId: string; available: boolean }) {
+export function AddToCartButton({ variantId, available, quantity = 1 }: { variantId: string; available: boolean; quantity?: number }) {
   const { user, isLoaded } = useUser();
   if (!isLoaded) return <button className={styles.addButton} type="button" disabled>Loading account…</button>;
   const userId = user?.id ?? null;
-  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} userId={userId} />;
+  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} />;
 }
 
-function AddToCartButtonSession({ variantId, available, userId }: { variantId: string; available: boolean; userId: string | null }) {
+function AddToCartButtonSession({ variantId, available, quantity, userId }: { variantId: string; available: boolean; quantity: number; userId: string | null }) {
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -32,10 +32,10 @@ function AddToCartButtonSession({ variantId, available, userId }: { variantId: s
       setError("Your saved guest cart needs review. Open the cart and clear its unreadable saved copy before adding items.");
       return;
     }
-    const nextItems = addCartItem(items, variantId);
+    const nextItems = addCartItem(items, variantId, quantity);
     if (!nextItems) {
       const existing = items.find((item) => item.variantId === variantId);
-      setError(existing ? "This item is already at the maximum quantity of 99." : "A cart can contain at most 50 different items.");
+      setError(existing ? "This quantity would exceed the maximum of 99 per item." : "A cart can contain at most 50 different items.");
       return;
     }
     const result = saveGuestCart(nextItems, { items, revision: guest.revision });
@@ -57,10 +57,10 @@ function AddToCartButtonSession({ variantId, available, userId }: { variantId: s
     let updateAttempted = false;
     try {
       const cart = await loadCustomerCart(controller.signal);
-      const nextItems = addCartItem(cart.items, variantId);
+      const nextItems = addCartItem(cart.items, variantId, quantity);
       if (!nextItems) {
         const existing = cart.items.find((item) => item.variantId === variantId);
-        setError(existing ? "This item is already at the maximum quantity of 99." : "A cart can contain at most 50 different items.");
+        setError(existing ? "This quantity would exceed the maximum of 99 per item." : "A cart can contain at most 50 different items.");
         return;
       }
       updateAttempted = true;
@@ -97,7 +97,8 @@ function AddToCartButtonSession({ variantId, available, userId }: { variantId: s
     void addSignedInLine();
   };
 
-  const disabled = !available || busy || needsReview || (!userId && (!guest.ready || guest.invalidStoredCart));
+  const validQuantity = Number.isInteger(quantity) && quantity >= 1 && quantity <= 99;
+  const disabled = !available || !validQuantity || busy || needsReview || (!userId && (!guest.ready || guest.invalidStoredCart));
   const initialNotice = !userId && guest.invalidStoredCart
     ? "Open your cart to review the unreadable saved guest copy before adding an item."
     : !userId && !guest.ready

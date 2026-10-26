@@ -6,17 +6,21 @@ import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ProductModel3d } from "@/lib/admin/validation";
 import styles from "./catalog.module.css";
+import { MorphingDialogImage } from "@/components/core/morphing-dialog";
 import { ProductModelViewer } from "./product-model-viewer";
 
 export type ProductCardMediaImage = { id: string; alt: string };
 type Slide = { type: "image"; image: ProductCardMediaImage } | { type: "model" };
 
-export function ProductCardMedia({ href, title, images, model3d, featured = false }: {
+export function ProductCardMedia({ href, title, images, model3d, featured = false, morphing = false, suspend = false, onImageChange }: {
   href: string;
   title: string;
   images: ProductCardMediaImage[];
   model3d?: ProductModel3d;
   featured?: boolean;
+  morphing?: boolean;
+  suspend?: boolean;
+  onImageChange?: (imageId: string | undefined) => void;
 }) {
   const slides: Slide[] = [
     ...images.map((image): Slide => ({ type: "image", image })),
@@ -60,10 +64,15 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   }, []);
 
   useEffect(() => {
-    if (slides.length < 2 || !inView || !documentVisible || reducedMotion || hovered || focused || paused || viewerActive) return;
+    if (slides.length < 2 || !inView || !documentVisible || reducedMotion || hovered || focused || paused || viewerActive || suspend) return;
     const timer = window.setInterval(() => setActiveIndex((current) => (Math.min(current, slides.length - 1) + 1) % slides.length), 5000);
     return () => window.clearInterval(timer);
-  }, [documentVisible, focused, hovered, inView, paused, reducedMotion, slides.length, viewerActive]);
+  }, [documentVisible, focused, hovered, inView, paused, reducedMotion, slides.length, viewerActive, suspend]);
+
+  const activeImageId = activeSlide?.type === "image" ? activeSlide.image.id : undefined;
+  useEffect(() => {
+    onImageChange?.(activeImageId);
+  }, [activeImageId, onImageChange]);
 
   function moveSlide(offset: number) {
     if (slides.length < 2) return;
@@ -85,14 +94,21 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
       }}
     >
       {activeSlide?.type === "image" ? <Link className={styles.productCardSlideLink} href={href} aria-label={`View product: ${title}`}>
-        <Image
+        {morphing ? <MorphingDialogImage
+          src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=960`}
+          alt={activeSlide.image.alt}
+          width={800}
+          height={600}
+          loading="lazy"
+          decoding="async"
+        /> : <Image
           src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=960`}
           alt={activeSlide.image.alt}
           width={800}
           height={600}
           unoptimized
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30vw"
-        />
+        />}
       </Link> : activeSlide?.type === "model" && model3d ? <ProductModelViewer model={model3d} title={title} compact onActiveChange={onViewerActiveChange} /> : images.length === 0 && !model3d ? <span>No product image published</span> : null}
 
       {slides.length > 1 && !viewerActive && <div className={styles.productCardMediaControls} role="group" aria-label={`${title} media controls`}>

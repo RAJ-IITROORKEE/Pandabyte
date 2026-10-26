@@ -33,3 +33,15 @@ test("cart line helpers enforce bounds without mutating the input", () => {
   assert.deepEqual(removeCartItem(items, "a"), []);
   assert.deepEqual(items, [line("a", 98)]);
 });
+
+test("quick-view quantities add atomically within the existing cart limits", () => {
+  const items = [line("a", 96)];
+  assert.deepEqual(addCartItem(items, "a", 3), [line("a", 99)]);
+  assert.equal(addCartItem(items, "a", 4), null);
+  assert.deepEqual(addCartItem(items, "b", 7), [line("a", 96), line("b", 7)]);
+  for (const invalid of [0, -1, 1.5, 100, NaN, Infinity]) assert.equal(addCartItem([], "a", invalid), null);
+  const full = Array.from({ length: 50 }, (_, index) => line(String(index), 1));
+  assert.equal(addCartItem(full, "new", 2), null);
+  assert.deepEqual(addCartItem(full, "0", 2)?.[0], line("0", 3));
+  assert.deepEqual(items, [line("a", 96)]);
+});

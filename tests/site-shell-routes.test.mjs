@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { foundationPages } from "../lib/site-navigation.ts";
 
-const origin = "http://localhost:3000";
+const origin = process.env.PANDABYTE_TEST_ORIGIN ?? "http://localhost:3000";
 
 async function page(path) {
   const response = await fetch(new URL(path, origin), { signal: AbortSignal.timeout(20000) });
@@ -19,7 +19,8 @@ test("public route shell has one header/footer, a skip target and local navigati
     assert([1,2].includes((html.match(/<footer\b[^>]*class="pb-site-footer"/g) ?? []).length), route);
     assert.match(html, /id="main"/);
     assert.match(html, /href="#main"/);
-    assert.match(html, /Open Solutions menu/);
+    for (const label of ["Products", "Solutions", "Company"]) assert.match(html, new RegExp(`class="pb-nav-trigger"[^>]*>${label}<`));
+    assert.match(html, />Shop<\/a>/);
     assert.match(html, /pandabyte-theme/);
     assert(!html.includes("https://p.superdesign.dev/draft/"), route);
     assert(!html.includes("₹5,000"), route);

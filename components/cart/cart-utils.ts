@@ -27,14 +27,15 @@ export function mergeGuestCart(serverItems: CartInputLine[], guestItems: CartInp
   return merged;
 }
 
-export function addCartItem(items: CartInputLine[], variantId: string): CartInputLine[] | null {
+export function addCartItem(items: CartInputLine[], variantId: string, quantity = 1): CartInputLine[] | null {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) return null;
   const current = items.find((item) => item.variantId === variantId);
   if (current) {
-    if (current.quantity >= MAX_QUANTITY) return null;
-    return items.map((item) => item.variantId === variantId ? { ...item, quantity: item.quantity + 1 } : item);
+    if (current.quantity + quantity > MAX_QUANTITY) return null;
+    return items.map((item) => item.variantId === variantId ? { ...item, quantity: item.quantity + quantity } : item);
   }
   if (items.length >= MAX_LINES) return null;
-  return [...items, { variantId, quantity: 1 }];
+  return [...items, { variantId, quantity }];
 }
 
 export function setCartItemQuantity(items: CartInputLine[], variantId: string, quantity: number): CartInputLine[] | null {

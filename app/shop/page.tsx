@@ -6,6 +6,7 @@ import { parseCatalogQuery, type CatalogQuery } from "@/lib/catalog/query";
 import { listPublishedRecords } from "@/lib/editorial/published";
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { ProductCard } from "@/components/catalog/product-card";
+import { CatalogFilters } from "@/components/catalog/catalog-filters";
 import styles from "@/components/catalog/catalog.module.css";
 import presentation from "@/components/catalog/catalog-presentation.module.css";
 import { publicMetadata } from "@/lib/editorial/seo";
@@ -110,13 +111,13 @@ export default async function ShopPage({ searchParams }: PageProps) {
       <ul>{parsed.fields.map((field, index) => <li key={`${field.field}-${index}`}>{field.message}</li>)}</ul>
     </section>}
 
-    <form action="/shop" method="get" className={`${styles.catalogControls} ${presentation.controls}`}>
+    <form id="catalog-form" action="/shop" method="get" className={`${styles.catalogControls} ${presentation.controls}`} />
       <div className={`${styles.searchForm} ${presentation.searchRow}`}>
         <div className={styles.searchField} key={rawSearchKey}>
           <label className={styles.fieldLabel} htmlFor="catalog-query">Search products</label>
-          <input className={styles.input} id="catalog-query" name="q" type="search" maxLength={120} defaultValue={firstParam(raw.q)} placeholder="Search by product, SKU or model" />
+          <input className={styles.input} id="catalog-query" form="catalog-form" name="q" type="search" maxLength={120} defaultValue={firstParam(raw.q)} placeholder="Search by product, SKU or model" />
         </div>
-        <button className={styles.searchButton} type="submit" aria-label="Search catalog">
+        <button className={styles.searchButton} form="catalog-form" type="submit" aria-label="Search catalog">
           <Search aria-hidden="true" />
           <span className={styles.srOnly}>Search</span>
         </button>
@@ -124,15 +125,12 @@ export default async function ShopPage({ searchParams }: PageProps) {
       </div>
 
       <div className={`${styles.catalogLayout} ${presentation.layout}`}>
-        <aside className={`${styles.filters} ${presentation.filters}`} aria-label="Catalog filters" key={rawSearchKey}>
-          <details className={styles.filterDisclosure} open>
-            <summary className={styles.filterSummary}>Filters</summary>
-          <div className={styles.filterContents} id="catalog-filter-controls">
+        <CatalogFilters key={rawSearchKey}>
           <fieldset className={styles.filterGroup}>
             <legend className={styles.filterHeading}>Category</legend>
             <div className={styles.checkList}>
               {categories.length ? categories.map((category) => <label className={styles.checkLabel} key={category.id}>
-                <input className={styles.checkbox} type="checkbox" name="category" value={category.slug} defaultChecked={selectedCategories.has(category.slug) || selectedCategories.has(category.id)} />
+                <input className={styles.checkbox} form="catalog-form" type="checkbox" name="category" value={category.slug} defaultChecked={selectedCategories.has(category.slug) || selectedCategories.has(category.id)} />
                 <span>{category.title}</span>
               </label>) : <p>No product categories have been published yet.</p>}
             </div>
@@ -141,16 +139,16 @@ export default async function ShopPage({ searchParams }: PageProps) {
             <legend className={styles.filterHeading}>Price range (INR)</legend>
             <div className={styles.priceFields}>
               <label><span className={styles.priceLabel}>Minimum</span>
-                <input className={styles.input} name="min" type="text" inputMode="decimal" defaultValue={query?.minPaise == null ? rawMin : priceInput(query.minPaise)} placeholder="Any" />
+                <input className={styles.input} form="catalog-form" name="min" type="text" inputMode="decimal" defaultValue={query?.minPaise == null ? rawMin : priceInput(query.minPaise)} placeholder="Any" />
               </label>
               <label><span className={styles.priceLabel}>Maximum</span>
-                <input className={styles.input} name="max" type="text" inputMode="decimal" defaultValue={query?.maxPaise == null ? rawMax : priceInput(query.maxPaise)} placeholder="Any" />
+                <input className={styles.input} form="catalog-form" name="max" type="text" inputMode="decimal" defaultValue={query?.maxPaise == null ? rawMax : priceInput(query.maxPaise)} placeholder="Any" />
               </label>
             </div>
           </fieldset>
           <div className={styles.filterGroup}>
             <label className={styles.fieldLabel} htmlFor="availability">Availability</label>
-            <select className={styles.select} id="availability" name="availability" defaultValue={availability}>
+            <select className={styles.select} id="availability" form="catalog-form" name="availability" defaultValue={availability}>
               <option value="all">All products</option>
               <option value="available">Available</option>
               <option value="unavailable">Unavailable</option>
@@ -158,7 +156,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
           </div>
           <div className={styles.filterGroup}>
             <label className={styles.fieldLabel} htmlFor="catalog-sort">Sort</label>
-            <select className={styles.select} id="catalog-sort" name="sort" defaultValue={sort}>
+            <select className={styles.select} id="catalog-sort" form="catalog-form" name="sort" defaultValue={sort}>
               <option value="relevance">Relevance</option>
               <option value="newest">Newest</option>
               <option value="price_asc">Price: low to high</option>
@@ -167,19 +165,17 @@ export default async function ShopPage({ searchParams }: PageProps) {
             </select>
           </div>
           <div className={styles.filterActions}>
-            <button className={styles.filterButton} type="submit">Apply filters</button>
+            <button className={styles.filterButton} form="catalog-form" type="submit">Apply filters</button>
           </div>
-          </div>
-          </details>
-        </aside>
+        </CatalogFilters>
 
         {query ? <section aria-labelledby="catalog-results-heading">
           <div className={`${styles.resultsHeader} ${presentation.resultsHeader}`}>
             <h2 className={styles.resultsCount} id="catalog-results-heading" aria-live="polite">
               {products.total} {products.total === 1 ? "published product" : "published products"}
             </h2>
-            <input type="hidden" name="limit" value={query.limit} />
-            <input type="hidden" name="page" value="1" />
+            <input type="hidden" form="catalog-form" name="limit" value={query.limit} />
+            <input type="hidden" form="catalog-form" name="page" value="1" />
           </div>
 
           {products.items.length ? <div className={`${styles.productGrid} ${presentation.grid}`}>
@@ -205,7 +201,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
           <p>Correct the values above and apply filters to load matching products.</p>
         </section>}
       </div>
-    </form>
     </div>
   </PublicPage>;
 }

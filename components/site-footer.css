@@ -13,8 +13,8 @@
 
 .pb-site-footer__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
-  gap: 32px;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: 48px;
 }
 
 .pb-site-footer__brand,
@@ -52,7 +52,7 @@
 }
 
 .pb-site-footer__tagline {
-  max-width: 240px;
+  max-width: 310px;
   margin: 12px 0 0;
   color: var(--muted);
   font-size: 15px;
@@ -130,12 +130,12 @@
   }
 
   .pb-site-footer__grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 20px;
   }
 
   .pb-site-footer__brand {
-    grid-column: auto;
+    grid-column: 1 / -1;
   }
 
   .pb-site-footer__bottom {

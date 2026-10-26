@@ -10,6 +10,7 @@ import { PublishedDocument } from "@/components/published-document";
 import { listCatalogProducts } from "@/lib/catalog/published";
 import { getPublishedRecord, listPublishedRecords } from "@/lib/editorial/published";
 import styles from "@/components/home.module.css";
+import sections from "@/components/home-sections.module.css";
 import { publicMetadata } from "@/lib/editorial/seo";
 import { permanentRedirect } from "next/navigation";
 import { getSiteCopy } from "@/lib/site-copy";
@@ -72,23 +73,22 @@ export default async function HomePage() {
         <HomeBrands />
 
         {home?.document.blocks.length ? (
-          <section className={styles.homeContent} aria-label="Additional homepage content">
+          <section className={sections.homeContent} aria-label="Additional homepage content">
             <PublishedDocument document={{ ...home.document, summary: "" }} hideTitle />
           </section>
         ) : null}
 
-        <section className={styles.contentSection} aria-labelledby="categories-title">
-          <div className={styles.sectionHeading}>
+        <section className={sections.contentSection} aria-labelledby="categories-title">
+          <div className={sections.sectionHeading}>
             <div>
-              <p className={styles.sectionKicker}>Browse by category</p>
               <h2 id="categories-title">Explore Categories</h2>
             </div>
           </div>
           {categories.length ? (
-            <nav aria-label="Published product categories" className={styles.categoryGrid}>
+            <nav aria-label="Published product categories" className={sections.categoryGrid}>
               {categories.map((category) => (
-                <Link className={styles.categoryCard} href={categoryHref(category.slug)} key={category.id}>
-                  <span className={styles.categoryCardTitle}>{category.title}</span>
+                <Link className={sections.categoryCard} href={categoryHref(category.slug)} key={category.id}>
+                  <span className={sections.categoryCardTitle}>{category.title}</span>
                   <ChevronRight aria-hidden="true" />
                 </Link>
               ))}
@@ -100,16 +100,15 @@ export default async function HomePage() {
           )}
         </section>
 
-        <section className={styles.contentSection} aria-labelledby="featured-title">
-          <div className={styles.sectionHeading}>
+        <section className={sections.contentSection} aria-labelledby="featured-title">
+          <div className={sections.sectionHeading}>
             <div>
-              <p className={styles.sectionKicker}>Latest products</p>
               <h2 id="featured-title">Featured Hardware</h2>
             </div>
-            <Link className={styles.sectionLink} href="/shop">View Catalog <ChevronRight aria-hidden="true" /></Link>
+            <Link className={sections.sectionLink} href="/shop">View Catalog <ChevronRight aria-hidden="true" /></Link>
           </div>
           {products.items.length ? (
-            <div className={styles.productGrid}>
+            <div className={sections.productGrid}>
               {products.items.map((product) => <ProductCard key={product.id} product={product} featured />)}
             </div>
           ) : (
@@ -119,24 +118,22 @@ export default async function HomePage() {
           )}
         </section>
 
-        <section className={styles.supportPanel} aria-labelledby="support-title">
+        <section className={sections.supportPanel} aria-labelledby="support-title">
           <div>
-            <p className={styles.supportKicker}>Support</p>
             <h2 id="support-title">{siteCopy.supportTitle}</h2>
             <p>{siteCopy.supportText}</p>
-            <Link className={`${styles.primaryAction} ${styles.supportAction}`} href="/contact"><Mail aria-hidden="true" />Contact Support</Link>
+            <Link className={`${styles.primaryAction} ${sections.supportAction}`} href="/contact"><Mail aria-hidden="true" />Contact Support</Link>
           </div>
-          {contact && <address className={styles.supportContact}>
+          {contact && <address className={sections.supportContact}>
             {contact.phone && <p><span>Phone</span><a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`}>{contact.phone}</a></p>}
             {contact.email && <p><span>Email</span><a href={`mailto:${contact.email}`}>{contact.email}</a></p>}
             {contact.hours && <p>{contact.hours}{contact.timezone ? ` (${contact.timezone})` : ""}</p>}
           </address>}
         </section>
 
-        <section className={`${styles.contentSection} ${styles.faqSection}`} aria-labelledby="faq-title">
-          <div className={styles.sectionHeading}>
+        <section className={`${sections.contentSection} ${sections.faqSection}`} aria-labelledby="faq-title">
+          <div className={sections.sectionHeading}>
             <div>
-              <p className={styles.sectionKicker}>From the Help Center</p>
               <h2 id="faq-title">Frequently asked questions</h2>
             </div>
           </div>

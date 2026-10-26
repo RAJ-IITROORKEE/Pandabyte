@@ -1,7 +1,7 @@
 const defaults = {
   supportTitle: "Engineering Support",
   supportText: "Contact PandaByte for IoT development, setup, and troubleshooting support.",
-  footerTagline: "Ideas into embedded innovation.",
+  footerTagline: "Development boards, sensors and IoT kits for your next build.",
   copyrightName: "PandaByte",
 };
 

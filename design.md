@@ -1,5 +1,7 @@
 # PandaByte.in — editable website and design contract
 
+27 October public storefront override: the owner selected **Products · Solutions · Shop · Company** as the four primary labels, compact catalog search/cart/account/theme utilities, Tailark company composition and Motion Primitives product Quick View. Historical navigation/component preferences below remain historical where they conflict. The existing interactive hero, global tokens and Admin interface are protected. See the [implemented public-only refactor](docs/storefront-refactor.md).
+
 Updated 24 October 2026. This defines behavior, editable content and structural blocks for the upgraded company/storefront. The separate UI chat owns Superdesign generation and delivery records. Phase 3 and the account extension are committed; dependency remediation passed as `be2fb66`. Phase 4 is implemented and verified in development with Luna xhigh workers using the selected screens; [verification](docs/verification/phase-4.json) records browser flows and limits. Read [README.md](README.md), [plan.md](plan.md) and [Phase 4 contracts](docs/phase-4-contract.md). Localhost remains a development preview; checkout and deployment are later phases.
 
 ## Scope and content rules

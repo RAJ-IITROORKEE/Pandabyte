@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CartInputLine, CartQuote, CartQuoteLine, CustomerCart } from "@/lib/cart/validation";
 import { cartErrorMessage, loadCustomerCart, quoteCart, replaceCustomerCart } from "./cart-api";
 import { mergeGuestCart, removeCartItem, setCartItemQuantity } from "./cart-utils";
@@ -31,14 +31,15 @@ function formatPaise(value: number | null) {
   return value === null ? "Price unavailable" : money.format(value / 100);
 }
 
-export function CartScreen() {
+export function CartScreen({ embedded = false }: { embedded?: boolean }) {
   const { user, isLoaded } = useUser();
-  if (!isLoaded) return <CartLoading />;
+  if (!isLoaded) return <CartLoading embedded={embedded} />;
   const userId = user?.id ?? null;
-  return <CartSession key={userId ?? "guest"} userId={userId} />;
+  return <CartSession key={userId ?? "guest"} userId={userId} embedded={embedded} />;
 }
 
-function CartLoading() {
+function CartLoading({ embedded }: { embedded: boolean }) {
+  if (embedded) return <section className={`${styles.page} ${styles.embedded}`} aria-label="Cart details"><p className={styles.status} role="status">Loading your cart…</p></section>;
   return <main id="main" className={styles.page} tabIndex={-1}>
     <p className={styles.kicker}>Your basket</p>
     <h1>Cart</h1>
@@ -46,7 +47,8 @@ function CartLoading() {
   </main>;
 }
 
-function CartSession({ userId }: { userId: string | null }) {
+function CartSession({ userId, embedded }: { userId: string | null; embedded: boolean }) {
+  const id = useId();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const [view, setView] = useState<CartView>({ status: "loading" });
   const [busy, setBusy] = useState(false);
@@ -202,9 +204,9 @@ function CartSession({ userId }: { userId: string | null }) {
   };
 
   if (!userId && guest.invalidStoredCart) {
-    return <CartLayout>
-      <section className={styles.notice} aria-labelledby="cart-storage-title">
-        <h2 id="cart-storage-title">Saved guest cart could not be read</h2>
+    return <CartLayout embedded={embedded}>
+      <section className={styles.notice} aria-labelledby={`${id}-storage-title`}>
+        <h2 id={`${id}-storage-title`}>Saved guest cart could not be read</h2>
         <p>Its contents were not changed. Clear that unreadable browser copy to start a new cart.</p>
         {actionError && <p className={styles.fieldError} role="alert">{actionError}</p>}
         <button className={styles.secondaryButton} type="button" onClick={clearUnreadableGuestCart}>
@@ -214,12 +216,12 @@ function CartSession({ userId }: { userId: string | null }) {
     </CartLayout>;
   }
 
-  return <CartLayout>
+  return <CartLayout embedded={embedded}>
     {guest.storageWarning && <p className={styles.storageWarning} role="status">
       This browser could not save the guest cart. Changes are kept in memory until you leave this page.
     </p>}
-    {userId && guest.invalidStoredCart && <section className={styles.notice} aria-labelledby="cart-storage-title">
-      <h2 id="cart-storage-title">Saved guest cart could not be read</h2>
+    {userId && guest.invalidStoredCart && <section className={styles.notice} aria-labelledby={`${id}-storage-title`}>
+      <h2 id={`${id}-storage-title`}>Saved guest cart could not be read</h2>
       <p>Your signed-in cart is separate. Clear the unreadable browser copy if you no longer need it.</p>
       <button className={styles.secondaryButton} type="button" onClick={clearUnreadableGuestCart}>
         Clear unreadable guest cart
@@ -231,9 +233,9 @@ function CartSession({ userId }: { userId: string | null }) {
     </div>}
     {announcement && <p className={styles.srOnly} role="status" aria-live="polite">{announcement}</p>}
 
-    {userId && view.status === "ready" && guest.items.length > 0 && <section className={styles.mergeNotice} aria-labelledby="merge-title">
+    {userId && view.status === "ready" && guest.items.length > 0 && <section className={styles.mergeNotice} aria-labelledby={`${id}-merge-title`}>
       <div>
-        <h2 id="merge-title">Guest items are saved in this browser</h2>
+        <h2 id={`${id}-merge-title`}>Guest items are saved in this browser</h2>
         <p>Review the guest cart and choose whether to merge it into your signed-in cart. Matching items keep the higher quantity.</p>
         <p className={styles.smallText}>{guest.items.length} guest {guest.items.length === 1 ? "item" : "items"} · {view.items.length} signed-in {view.items.length === 1 ? "item" : "items"}</p>
         {mergeGuestCart(view.items, guest.items) === null && <p className={styles.fieldError}>The merged cart can contain at most 50 different items.</p>}
@@ -244,13 +246,14 @@ function CartSession({ userId }: { userId: string | null }) {
     </section>}
 
     {(view.status === "loading" || guestViewStale) && <p className={styles.status} role="status">Refreshing current cart details…</p>}
-    {view.status === "error" && <section className={styles.errorPanel} aria-labelledby="cart-load-error">
-      <h2 id="cart-load-error">Cart details are unavailable</h2>
+    {view.status === "error" && <section className={styles.errorPanel} aria-labelledby={`${id}-load-error`}>
+      <h2 id={`${id}-load-error`}>Cart details are unavailable</h2>
       <p>{view.message}</p>
       <button className={styles.secondaryButton} type="button" onClick={retry}>Try again</button>
     </section>}
     {view.status === "ready" && <CartContents
       view={view}
+      id={id}
       busy={busy}
       locked={busy || reloadRequired || guestViewStale}
       refreshing={guestViewStale}
@@ -260,7 +263,8 @@ function CartSession({ userId }: { userId: string | null }) {
   </CartLayout>;
 }
 
-function CartLayout({ children }: { children: ReactNode }) {
+function CartLayout({ children, embedded }: { children: ReactNode; embedded: boolean }) {
+  if (embedded) return <section className={`${styles.page} ${styles.embedded}`} aria-label="Cart details">{children}</section>;
   return <main id="main" className={styles.page} tabIndex={-1}>
     <header className={styles.heading}>
       <p className={styles.kicker}>Your basket</p>
@@ -271,16 +275,17 @@ function CartLayout({ children }: { children: ReactNode }) {
   </main>;
 }
 
-function CartContents({ view, busy, locked, refreshing, onRemove, onUpdateQuantity }: {
+function CartContents({ view, id, busy, locked, refreshing, onRemove, onUpdateQuantity }: {
   view: Extract<CartView, { status: "ready" }>;
+  id: string;
   busy: boolean;
   locked: boolean;
   refreshing: boolean;
   onRemove: (variantId: string) => void;
   onUpdateQuantity: (variantId: string, quantity: number) => void;
 }) {
-  if (view.quote.lines.length === 0) return <section className={styles.empty} aria-labelledby="cart-empty-title">
-    <h2 id="cart-empty-title">Your cart is empty</h2>
+  if (view.quote.lines.length === 0) return <section className={styles.empty} aria-labelledby={`${id}-empty-title`}>
+    <h2 id={`${id}-empty-title`}>Your cart is empty</h2>
     <p>Explore the catalog and add items you would like to review.</p>
     <Link className={styles.primaryButton} href="/shop">Browse products</Link>
   </section>;
@@ -288,9 +293,9 @@ function CartContents({ view, busy, locked, refreshing, onRemove, onUpdateQuanti
   const itemCount = view.items.reduce((total, item) => total + item.quantity, 0);
 
   return <div className={styles.cartLayout}>
-    <section className={styles.itemsPanel} aria-labelledby="cart-items-title">
+    <section className={styles.itemsPanel} aria-labelledby={`${id}-items-title`}>
       <div className={styles.panelHeading}>
-        <h2 id="cart-items-title">Items</h2>
+        <h2 id={`${id}-items-title`}>Items</h2>
         <span>{itemCount} {itemCount === 1 ? "item" : "items"}</span>
       </div>
       <ul className={styles.itemList}>
@@ -305,8 +310,8 @@ function CartContents({ view, busy, locked, refreshing, onRemove, onUpdateQuanti
       </ul>
     </section>
 
-    <aside className={styles.summary} aria-labelledby="cart-summary-title">
-      <h2 id="cart-summary-title">Order summary</h2>
+    <aside className={styles.summary} aria-labelledby={`${id}-summary-title`}>
+      <h2 id={`${id}-summary-title`}>Order summary</h2>
       <div className={styles.subtotalRow}><span>Current catalog subtotal</span><strong>{view.quote.subtotalPaise === null ? "Unavailable" : formatPaise(view.quote.subtotalPaise)}</strong></div>
       <p className={styles.smallText}>Prices and availability may change before an order is placed. Shipping and GST are not calculated here; final totals must be checked before ordering is enabled.</p>
       <p className={styles.setupNote}>Order placement and payment are not configured in this development build.</p>
@@ -358,7 +363,8 @@ function QuantityEditor({ variantId, quantity, busy, locked, onSave }: {
   const [draft, setDraft] = useState({ quantity, value: String(quantity) });
   const value = draft.quantity === quantity ? draft.value : String(quantity);
   const [error, setError] = useState("");
-  const inputId = `cart-quantity-${variantId}`;
+  const id = useId();
+  const inputId = `${id}-cart-quantity-${variantId}`;
   const errorId = `${inputId}-error`;
 
   return <form className={styles.quantityForm} onSubmit={(event) => {

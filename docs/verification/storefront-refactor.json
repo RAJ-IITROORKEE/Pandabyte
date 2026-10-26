@@ -1,0 +1,178 @@
+{
+  "date": "2026-10-27",
+  "scope": "Public frontend only; Admin excluded",
+  "review": "Sol 6.1 high; Terra 6.1 implementation workers",
+  "hero": {
+    "files": [
+      {
+        "path": "components/home-hero.tsx",
+        "unchanged": true,
+        "sha256": "dc4c9f6788654fc07669b81923d410d680e091d10b5bb6f787f23fd6fc40d3a6"
+      },
+      {
+        "path": "components/home-circuit.tsx",
+        "unchanged": true,
+        "sha256": "7bac1aacaf2bf81cffc88e4e6f3c60b74cfede0591e3abca6b0fd76e38e6b210"
+      },
+      {
+        "path": "components/home-circuit.module.css",
+        "unchanged": true,
+        "sha256": "045949ea471fdc53db9959480e4a27be5635aa11310805c1c0c171d061a4814c"
+      },
+      {
+        "path": "components/home.module.css",
+        "unchanged": true,
+        "sha256": "75f3abaa61e259f2f9c29fabeeef4ecfbdd2e940282200643f8282c3bcff8a83"
+      },
+      {
+        "path": "app/globals.css",
+        "unchanged": true,
+        "sha256": "343eff07d2aef1b71a5d5b6f485a4fcd20155d60cdb1e2862296765adbb5e346"
+      },
+      {
+        "path": "app/theme.css",
+        "unchanged": true,
+        "sha256": "0649fc99fc6ded0397a29734f23bdccd325936e4527c2538ceda6e9286d9f9ee"
+      }
+    ],
+    "subtreeUnchanged": true,
+    "subtreeComparison": "Git-normalized LF line endings",
+    "subtreeSha256": "23464e7c10f6c52dfd5b7a9f342ae80a604c0dd010f1821374ad5e7fd0d6673b",
+    "assetsUnchanged": true
+  },
+  "verification": {
+    "check": "Final lint, TypeScript and production build passed; follow-up npx tsc --noEmit and npm run build passed after concurrent Admin edits settled",
+    "unit": "178 passed",
+    "media": "3 passed",
+    "focused": "34 auth/catalog/navigation/public-record/source-observation/cart tests passed",
+    "shell": "3 public shell/route tests passed on localhost:3001",
+    "footerCopy": "2 focused site-copy tests passed",
+    "sourceReview": "No outstanding must-fix findings",
+    "designDetector": "No findings on changed public UI targets"
+  },
+  "footer": {
+    "linkCount": 7,
+    "groups": [
+      "Explore",
+      "Policies"
+    ],
+    "defaultDescription": "Development boards, sensors and IoT kits for your next build.",
+    "screenshot": ".bootstrap/storefront-refactor/footer.png",
+    "noOverflow": true
+  },
+  "browser": {
+    "responsiveChecks": [
+      {
+        "cards": 12,
+        "header": 76,
+        "overflow": false,
+        "theme": "dark",
+        "width": 320
+      },
+      {
+        "cards": 12,
+        "header": 76,
+        "overflow": false,
+        "theme": "dark",
+        "width": 768
+      },
+      {
+        "cards": 12,
+        "header": 76,
+        "overflow": false,
+        "theme": "dark",
+        "width": 1024
+      },
+      {
+        "cards": 12,
+        "header": 76,
+        "overflow": false,
+        "theme": "dark",
+        "width": 1440
+      },
+      {
+        "header": 76,
+        "overflow": false,
+        "theme": "light",
+        "width": 320
+      },
+      {
+        "header": 76,
+        "overflow": false,
+        "theme": "light",
+        "width": 768
+      },
+      {
+        "header": 76,
+        "overflow": false,
+        "theme": "light",
+        "width": 1024
+      },
+      {
+        "header": 76,
+        "overflow": false,
+        "theme": "light",
+        "width": 1440
+      }
+    ],
+    "routeChecks": [
+      {
+        "mains": 1,
+        "overflow": false,
+        "path": "/products/temperature-humidity-dht11-sensor",
+        "title": "PandaByte Temperature Humidity DHT11 Grove Sensor"
+      },
+      {
+        "mains": 1,
+        "overflow": false,
+        "path": "/about",
+        "title": "About PandaByte"
+      },
+      {
+        "mains": 1,
+        "overflow": false,
+        "path": "/cart",
+        "title": "Cart"
+      },
+      {
+        "mains": 1,
+        "overflow": false,
+        "path": "/checkout",
+        "title": "Checkout"
+      }
+    ],
+    "localhostPort": 3001,
+    "checks": [
+      "Current owner account retained",
+      "Four primary navigation labels",
+      "Company menu within 1024px after fix",
+      "Quick View image thumbnails load at supported 96/960 widths",
+      "Modal focus loop",
+      "Escape and backdrop restore trigger focus and release scroll lock",
+      "Preview navigation to product page releases scroll lock",
+      "Source observations have no Add to cart control",
+      "Mobile category/sort GET submission yields 22 sensors",
+      "Cart drawer reads current signed-in empty cart",
+      "Current account checkout remains unavailable",
+      "Product/company/cart/checkout have one main landmark"
+    ],
+    "snapshot": ".bootstrap/storefront-refactor/quick-view.png"
+  },
+  "notPerformed": [
+    "Admin modifications",
+    "CMS writes or publication",
+    "Browser purchase mutations",
+    "Order/payment/GST/shipping integration",
+    "Runtime system reduced-motion switching",
+    "Real screen-reader speech",
+    "Production deployment",
+    "Load tests",
+    "Recovery operations",
+    "Live email or billing changes"
+  ],
+  "limitations": [
+    "All 42 current catalog products are non-purchasable source observations",
+    "Development Script nonce hydration warning observed; no auth/security policy changed",
+    "Responsive dimensions are DOM/viewport checks, not proof of actual zoom or assistive-technology coverage"
+  ]
+}
