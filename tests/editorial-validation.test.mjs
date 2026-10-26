@@ -21,6 +21,9 @@ test("staff inquiry/media changes require explicit versions and closed fields", 
   assert.equal(parseInquiryPatch({ expectedVersion: 2, status: "new", note: "x".repeat(2001) }), null);
   const patch = { expectedVersion: 1, altText: "Board photo", source: "Owner", published: false };
   assert.deepEqual(parseMediaPatch(patch), patch);
+  assert.deepEqual(parseMediaPatch({ ...patch, publicUseAllowed: false }), { ...patch, publicUseAllowed: false });
+  assert.deepEqual(parseMediaPatch({ ...patch, publicUseAllowed: true }), { ...patch, publicUseAllowed: true });
+  for (const value of [null, "true", 1]) assert.equal(parseMediaPatch({ ...patch, publicUseAllowed: value }), null);
   assert.equal(parseMediaPatch({ ...patch, createdBy: "other" }), null);
   assert.equal(parseMediaPatch({ ...patch, altText: "" }), null);
 });

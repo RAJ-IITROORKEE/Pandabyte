@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { PublishedRecord } from "@/lib/editorial/published";
+import { ProductCardMedia } from "./product-card-media";
 import styles from "./catalog.module.css";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
@@ -15,7 +15,8 @@ function cardPrice(product: PublishedRecord<"products">): string {
 }
 
 export function ProductCard({ product, featured = false }: { product: PublishedRecord<"products">; featured?: boolean }) {
-  const mediaId = product.document.mediaIds[0];
+  const href = `/products/${encodeURIComponent(product.slug)}`;
+  const images = product.document.mediaIds.map((id) => ({ id, alt: "" }));
   const sourceObservation = product.document.sourceObservation;
   const available = product.variants.some((variant) => variant.availability === "available");
   const availabilityLabel = product.variants.length === 0 ? "Availability unavailable" : available ? "Available" : "Unavailable";
@@ -23,17 +24,8 @@ export function ProductCard({ product, featured = false }: { product: PublishedR
 
   return (
     <article className={`${styles.productCard} ${featured ? styles.featuredCard : ""} ${sourceObservation ? styles.sourceObservationCard : ""}`}>
-      <Link className={styles.productCardLink} href={`/products/${encodeURIComponent(product.slug)}`} aria-label={`View product: ${product.title}`}>
-        <div className={styles.productCardImage}>
-          {mediaId ? <Image
-            src={`/api/media/${mediaId}?w=960`}
-            alt=""
-            width={800}
-            height={600}
-            unoptimized
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30vw"
-          /> : <span>No product image published</span>}
-        </div>
+      <ProductCardMedia href={href} title={product.title} images={images} model3d={product.document.model3d} featured={featured} />
+      <Link className={styles.productCardLink} href={href} aria-label={`View product: ${product.title}`}>
         <div className={styles.productCardContent}>
           {featured ? <h3>{product.title}</h3> : <h2>{product.title}</h2>}
           {featured && product.variants.length === 1 && <p className={styles.featuredSku}>SKU: {product.variants[0].sku}</p>}

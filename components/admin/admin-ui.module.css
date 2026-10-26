@@ -430,3 +430,4 @@
 @media (prefers-reduced-motion: reduce) {
   .primaryButton, .secondaryButton, .dangerButton { transition: none; }
 }
+.modelPreview { position: relative; width: 100%; min-width: 0; aspect-ratio: 4 / 3; min-height: 280px; overflow: hidden; border-radius: 8px; }

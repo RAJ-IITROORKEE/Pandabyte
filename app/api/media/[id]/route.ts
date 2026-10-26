@@ -7,7 +7,7 @@ import { editorialError, editorialHeaders } from "@/lib/editorial/http";
 import { EDITORIAL_MEDIA_BUCKET, MAX_MEDIA_BYTES, UUID_PATTERN } from "@/lib/editorial/validation";
 import { parseEditorialImageSize, prepareEditorialDownload } from "@/lib/editorial/media-delivery";
 
-type DownloadMedia = { id: string; objectKey: string; filename: string; mimeType: string; byteSize: number; width: number | null; height: number | null };
+type DownloadMedia = { id: string; objectKey: string; filename: string; mimeType: string; byteSize: number; width: number | null; height: number | null; modelSha256?: string | null };
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const media = result.data.media as DownloadMedia;
     if (imageSize !== undefined && media.mimeType !== "image/webp") return editorialError("invalid_image_size", 400);
     if (media.id !== id || !Number.isSafeInteger(media.byteSize) || media.byteSize < 1 || media.byteSize > MAX_MEDIA_BYTES ||
-      !new RegExp(`^assets/${id}\\.(webp|pdf)$`).test(media.objectKey)) return editorialError("media_unavailable", 503);
+      !new RegExp(`^assets/${id}\\.(webp|pdf|glb)$`).test(media.objectKey)) return editorialError("media_unavailable", 503);
     // Restricted cloud migrations cannot grant anon access to the managed storage schema.
     // This privileged client is confined to an already-published, canonical editorial object.
     const readKey = process.env.INSFORGE_EDITORIAL_STORAGE_READ_KEY;

@@ -23,6 +23,20 @@
       "when": "Plan/review InsForge PostgreSQL migrations, indexes or backfills.",
       "upstreamPath": "skills/database-migrations",
       "installedPath": ".agents/skills/database-migrations"
+    },
+    {
+      "name": "react-performance",
+      "when": "Review lazy rendering, bundle size, React hooks and data fetching.",
+      "upstreamPath": "skills/react-performance",
+      "installedPath": ".agents/skills/react-performance",
+      "installedAt": "2026-10-26"
+    },
+    {
+      "name": "frontend-a11y",
+      "when": "Review carousel/viewer keyboard, focus and accessible interaction.",
+      "upstreamPath": "skills/frontend-a11y",
+      "installedPath": ".agents/skills/frontend-a11y",
+      "installedAt": "2026-10-26"
     }
   ],
   "files": [
@@ -45,6 +59,14 @@
     {
       "file": ".agents/skills/database-migrations/SKILL.md",
       "sha256": "dad2f1964295eee14a96e06213ce3f60992bbcdc1f37a50c828bbc2e1abd79dd"
+    },
+    {
+      "file": ".agents/skills/react-performance/SKILL.md",
+      "sha256": "ac76e8694d4f802a7bccc3c07a73ac68ace6d82a65ea10f10d8b7384dda61a8f"
+    },
+    {
+      "file": ".agents/skills/frontend-a11y/SKILL.md",
+      "sha256": "e00991a3f4d47fcf1529dd74a080afcf46137dc5061e70dc6e3da7b27f2ae3f3"
     }
   ],
   "excluded": [

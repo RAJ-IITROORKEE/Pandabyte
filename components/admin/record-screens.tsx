@@ -21,8 +21,10 @@ import {
   type AdminDocument,
   type AdminModule,
   type ContentBlock,
+  type ProductModel3d,
 } from "@/lib/admin/validation";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { ProductModelViewer } from "@/components/catalog/product-model-viewer";
 import { PublishedDocument } from "@/components/published-document";
 import styles from "./admin-ui.module.css";
 
@@ -59,7 +61,7 @@ type ModuleMeta = { title: string; description: string; singular: string };
 
 const FIELD_LABELS: Record<string, string> = {
   title: "Title", slug: "Slug", summary: "Summary", seoTitle: "SEO title", seoDescription: "SEO description",
-  categoryIds: "Categories", modelNumbers: "Model numbers", variants: "Variants", sku: "SKU", label: "Label",
+  categoryIds: "Categories", modelNumbers: "Model numbers", model3d: "3D model", posterId: "Poster image", variants: "Variants", sku: "SKU", label: "Label",
   specifications: "Specifications", name: "Name", value: "Value", compatibility: "Compatibility", kitContents: "Kit contents",
   resources: "Resources", mediaIds: "Media assets", sourceObservation: "Source observation", sourceReview: "Source review",
   priceText: "Observed price", capturedAt: "Capture time", sourceUrl: "Source URL", author: "Author", tags: "Tags",
@@ -272,7 +274,7 @@ function TokenInput({ label, values, onChange, hint }: { label: string; values: 
   </div>{hint && <span className={styles.fieldHint}>{hint}</span>}</div>;
 }
 
-function RelationPicker({ label, module, values, onChange }: { label: string; module: "categories" | "products" | "media"; values: string[]; onChange: (next: string[]) => void }) {
+function RelationPicker({ label, module, values, onChange, reorderable = false }: { label: string; module: "categories" | "products" | "media"; values: string[]; onChange: (next: string[]) => void; reorderable?: boolean }) {
   const [loaded, setLoaded] = useState<{ module: string; options: Option[] }>({ module, options: [] });
   const options = loaded.module === module ? loaded.options : [];
   const [page, setPage] = useState({ module, offset: 0 });
@@ -287,9 +289,9 @@ function RelationPicker({ label, module, values, onChange }: { label: string; mo
     let alive = true;
     async function load() {
       try {
-        const result = await api<{ items: (RecordListItem & { filename?: string; published?: boolean })[]; total: number }>(`/api/admin/${module}?limit=${limit}&offset=${offset}`);
+        const result = await api<{ items: (RecordListItem & { filename?: string; published?: boolean; mimeType?: string })[]; total: number }>(`/api/admin/${module}?limit=${limit}&offset=${offset}`);
         if (alive) {
-          const incoming = result.items.filter((item) => !item.archived && (module !== "media" || item.published === true)).map((item) => ({ id: item.id, label: module === "media" ? item.filename || item.title : item.title }));
+          const incoming = result.items.filter((item) => !item.archived && (module !== "media" || (item.published === true && item.mimeType === "image/webp"))).map((item) => ({ id: item.id, label: module === "media" ? item.filename || item.title : item.title }));
           setLoaded(previous => ({ module, options: [...new Map([...(offset > 0 && previous.module === module ? previous.options : []), ...incoming].map(item => [item.id, item])).values()] }));
           setHasMore(offset + result.items.length < result.total); setLoadError("");
         }
@@ -303,10 +305,21 @@ function RelationPicker({ label, module, values, onChange }: { label: string; mo
     return () => { alive = false; };
   }, [module, offset, limit, retry]);
   const status = loadingOptions ? `Loading ${module === "media" ? "media assets" : module}…` : loadError || (!options.length ? "No selectable records are available yet." : "");
+  function move(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= values.length) return;
+    const next = [...values];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  }
   return <fieldset className={styles.field} style={{ border: 0, padding: 0, margin: 0 }} aria-busy={loadingOptions}>
     <legend className={styles.fieldLabel}>{label}</legend>
     {status && <p className={styles.fieldHint} role="status" aria-live="polite">{status}</p>}
-    {options.length > 0 && <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div>}
+    {reorderable && values.length > 0 && <div className={styles.checkList} role="list" aria-label="Selected product images in display order">{values.map((id, index) => {
+      const label = options.find((option) => option.id === id)?.label || `Selected image ${index + 1}`;
+      return <div className={styles.relationRow} role="listitem" key={`${id}-${index}`}><span>{label}</span><button className={styles.secondaryButton} type="button" aria-label={`Move ${label} earlier`} onClick={() => move(index, -1)} disabled={index === 0}>Up</button><button className={styles.secondaryButton} type="button" aria-label={`Move ${label} later`} onClick={() => move(index, 1)} disabled={index === values.length - 1}>Down</button><button className={styles.secondaryButton} type="button" aria-label={`Remove ${label}`} onClick={() => onChange(values.filter((_, current) => current !== index))}>Remove</button></div>;
+    })}</div>}
+    {options.length > 0 && <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} disabled={!values.includes(option.id) && values.length >= 100} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div>}
     {((loaded.module === module && hasMore) || loadingOptions || loadError) && <button className={styles.secondaryButton} type="button" disabled={loadingOptions} onClick={() => { setLoading(true); if (loadError) setRetry(n => n + 1); else setPage({ module, offset: offset + limit }); }}>{loadingOptions ? "Loading options…" : loadError ? "Retry loading options" : `Load more ${module === "media" ? "media assets" : module}`}</button>}
   </fieldset>;
 }
@@ -321,13 +334,69 @@ function MediaPicker({ value, onChange, label = "Media asset" }: { value: string
   const [message, setMessage] = useState("Loading media…");
   useEffect(() => {
     let alive = true;
-    void api<{ items: { id: string; filename: string; archived: boolean; published: boolean }[]; total: number }>(`/api/admin/media?limit=50&offset=${offset}`)
-      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived).map(item => ({ id: item.id, label: item.filename || "Unnamed media asset" })); setOptions(previous => [...new Map([...(offset > 0 ? previous : []), ...available].map(item => [item.id, item])).values()]); setHasMore(offset + result.items.length < result.total); setLoadFailed(false); setMessage(available.length ? "Published media assets loaded." : "No published media assets found on this page."); } })
+    void api<{ items: { id: string; filename: string; mimeType: string; archived: boolean; published: boolean }[]; total: number }>(`/api/admin/media?limit=50&offset=${offset}`)
+      .then((result) => { if (alive) { const available = result.items.filter((item) => item.published && !item.archived && item.mimeType === "image/webp").map(item => ({ id: item.id, label: item.filename || "Unnamed media asset" })); setOptions(previous => [...new Map([...(offset > 0 ? previous : []), ...available].map(item => [item.id, item])).values()]); setHasMore(offset + result.items.length < result.total); setLoadFailed(false); setMessage(available.length ? "Published WebP image assets loaded." : "No published WebP images found on this page."); } })
       .catch((error) => { if (alive) { setLoadFailed(true); setMessage(error instanceof Error ? error.message : "Media could not be loaded."); } })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [offset, retry]);
   return <div className={styles.field} aria-busy={loading}><label><span className={styles.fieldLabel}>{label}</span><select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}><option value="">Select an asset</option>{value && !options.some(option => option.id === value) && <option value={value}>Current assigned asset</option>}{options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>{message && <span className={styles.fieldHint} role="status" aria-live="polite">{loading ? "Loading media assets…" : message}</span>}{(hasMore || loadFailed) && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); if (loadFailed) setRetry(n => n + 1); else setOffset(offset + 50); }}>{loading ? "Loading assets…" : loadFailed ? "Retry loading assets" : "Load more media assets"}</button>}</div>;
+}
+
+type ProductModelAssetOption = { id: string; filename: string; altText: string; mimeType: string; published: boolean; archived: boolean; publicUseAllowed: boolean | null };
+
+function ProductModelPicker({ value, onChange, title }: { value?: ProductModel3d; onChange: (next?: ProductModel3d) => void; title: string }) {
+  const [items, setItems] = useState<ProductModelAssetOption[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
+  const [error, setError] = useState("");
+  const [modelId, setModelId] = useState(value?.mediaId ?? "");
+  const [posterId, setPosterId] = useState(value?.posterId ?? "");
+  const [alt, setAlt] = useState(value?.alt ?? "");
+  useEffect(() => {
+    let alive = true;
+    void api<{ items: ProductModelAssetOption[]; total: number }>(`/api/admin/media?limit=50&offset=${offset}`)
+      .then((result) => {
+        if (!alive) return;
+        const available = result.items.filter((item) => !item.archived);
+        setItems((previous) => [...new Map([...(offset ? previous : []), ...available].map((item) => [item.id, item])).values()]);
+        setTotal(result.total);
+        setError("");
+      })
+      .catch((reason: unknown) => { if (alive) setError(reason instanceof Error ? reason.message : "Media assets could not be loaded."); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [offset, retry]);
+
+  const models = items.filter((item) => item.mimeType === "model/gltf-binary");
+  const posters = items.filter((item) => item.mimeType === "image/webp");
+  const selectedModel = models.find((item) => item.id === modelId);
+  const selectedPoster = posters.find((item) => item.id === posterId);
+  function commit(nextModelId: string, nextPosterId: string, nextAlt: string) {
+    setModelId(nextModelId);
+    setPosterId(nextPosterId);
+    setAlt(nextAlt);
+    onChange(nextModelId && nextPosterId ? { mediaId: nextModelId, posterId: nextPosterId, alt: nextAlt } : undefined);
+  }
+  function remove() {
+    setModelId(""); setPosterId(""); setAlt(""); onChange(undefined);
+  }
+
+  return <section className={styles.panel} aria-label="Product 3D model">
+    <div className={styles.sectionHeading}><div><h2>3D model</h2><p>Choose a GLB and a WebP poster. Private media can be selected for draft preview; publication checks media rights and status.</p></div></div>
+    <div className={styles.formGrid}>
+      <label className={styles.field}><span className={styles.fieldLabel}>GLB model</span><select className={styles.input} value={modelId} onChange={(event) => commit(event.target.value, posterId, alt || "3D product model")}><option value="">Select a model</option>{modelId && !selectedModel && <option value={modelId}>Current selected model</option>}{models.map((item) => <option key={item.id} value={item.id}>{item.altText || item.filename || "3D model"} · {item.publicUseAllowed ? "redistribution confirmed" : "private unless permission confirmed"} · {item.published ? "published" : "draft"}</option>)}</select></label>
+      <label className={styles.field}><span className={styles.fieldLabel}>WebP poster</span><select className={styles.input} value={posterId} onChange={(event) => commit(modelId, event.target.value, alt || "3D product model")}><option value="">Select a poster</option>{posterId && !selectedPoster && <option value={posterId}>Current selected poster</option>}{posters.map((item) => <option key={item.id} value={item.id}>{item.altText || item.filename || "WebP image"} · {item.published ? "published" : "draft"}</option>)}</select></label>
+      <Field label="3D alternative text" className={styles.spanTwo}><TextInput value={alt} onChange={(next) => commit(modelId, posterId, next)} maxLength={300} placeholder="Describe the model and its visible subject" /></Field>
+    </div>
+    {loading && <p className={styles.fieldHint} role="status">Loading model and poster choices…</p>}
+    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setRetry((current) => current + 1); }}>Retry</button></div>}
+    {total !== null && offset + 50 < total && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); setOffset((current) => current + 50); }}>Load more media assets</button>}
+    {value && <div className={`${styles.spanTwo} ${styles.modelPreview}`}><ProductModelViewer model={value} title={title} /></div>}
+    {value && <button className={styles.secondaryButton} type="button" onClick={remove}>Remove 3D model</button>}
+  </section>;
 }
 
 function ParentCategoryPicker({ value, currentId, onChange }: { value: string | null; currentId?: string; onChange: (next: string | null) => void }) {
@@ -468,7 +537,8 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
     {(module === "learn" || module === "videos") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "learn" ? "Resource details" : "Video details"}</h2></div></div><div className={styles.formGrid}><Field label={module === "learn" ? "Resource URL" : "YouTube URL or ID"}><TextInput value={str("url")} onChange={(value) => set("url", value)} placeholder={module === "learn" ? "https://… or /learn/…" : "https://youtube.com/watch?v=…"} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><RelationPicker label="Related products" module="products" values={arr("productIds")} onChange={(value) => set("productIds", value)} /></div></section>}
 
     {module === "learn" && <Field label="Learning collection"><select className={styles.input} value={str("collection") || "embedded-systems"} onChange={(event) => set("collection", event.target.value)}><option value="embedded-systems">Embedded systems resources</option><option value="product-specs">Product specifications</option><option value="kit-guides">PandaByte kit guides</option></select></Field>}
-    {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Media</h2><p>Only published media can appear on public pages.</p></div></div><RelationPicker label="Media assets" module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} /></section>}
+    {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Media</h2><p>Only published WebP images can appear in image galleries.</p></div></div><RelationPicker label={module === "products" ? "Product images" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} /></section>}
+    {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
     <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />
     <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>

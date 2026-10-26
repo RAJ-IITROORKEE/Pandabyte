@@ -42,7 +42,7 @@ export default async function ProductDetail({ params }: ProductPageProps) {
 
   return <ProductOverview
     product={product}
-    gallery={<ProductGallery key={product.id} images={images} />}
+    gallery={<ProductGallery key={product.id} images={images} model3d={product.document.model3d} title={product.title} />}
     panel={<ProductVariantPanel key={product.id} variants={product.variants} observation={product.document.sourceObservation} />}
   >
     <ProductDetails product={product} />

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 import sharp from "sharp";
 import { MAX_MEDIA_BYTES } from "../lib/editorial/validation.ts";
@@ -6,6 +7,25 @@ import { parseEditorialImageSize, prepareEditorialDownload } from "../lib/editor
 
 const WIDTH = 48;
 const HEIGHT = 32;
+
+test("delivers immutable registered GLB bytes inline without image resizing and rejects tampering", async () => {
+  const bytes = Buffer.alloc(28);
+  bytes.write("glTF"); bytes.writeUInt32LE(2, 4); bytes.writeUInt32LE(bytes.length, 8);
+  const media = { mimeType: "model/gltf-binary", byteSize: bytes.length, width: null, height: null,
+    modelSha256: createHash("sha256").update(bytes).digest("hex") };
+  const delivered = await prepareEditorialDownload(bytes, media);
+  assert.ok(delivered);
+  assert.equal(delivered.mimeType, "model/gltf-binary");
+  assert.deepEqual(delivered.bytes, bytes);
+  assert.equal(await prepareEditorialDownload(bytes, media, 960), null);
+  assert.equal(await prepareEditorialDownload(bytes, { ...media, modelSha256: null }), null);
+  assert.equal(await prepareEditorialDownload(bytes, { ...media, width: 1 }), null);
+  const modified = Buffer.from(bytes); modified[24] = 1;
+  assert.equal(await prepareEditorialDownload(modified, media), null);
+  const wrongVersion = Buffer.from(bytes); wrongVersion.writeUInt32LE(1, 4);
+  assert.equal(await prepareEditorialDownload(wrongVersion, { ...media,
+    modelSha256: createHash("sha256").update(wrongVersion).digest("hex") }), null);
+});
 
 function pixels(channels = 3, offset = 0, width = WIDTH, height = HEIGHT) {
   const data = Buffer.alloc(width * height * channels);

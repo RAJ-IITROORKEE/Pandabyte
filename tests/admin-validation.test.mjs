@@ -52,6 +52,30 @@ test("product documents normalize known fields and reject price, stock, and exec
   assert.equal(htmlBlock.ok, false);
 });
 
+test("product 3D references are optional, closed, distinct and bounded", () => {
+  const posterId = "bd4eeb12-1e5e-4f91-ae29-e70ee507b1ee";
+  const legacy = parseDocument("products", { ...common, mediaIds: [uuid] });
+  assert.equal(legacy.ok, true);
+  if (legacy.ok) assert.equal("model3d" in legacy.value, false);
+
+  const parsed = parseDocument("products", {
+    ...common,
+    model3d: { mediaId: uuid.toUpperCase(), posterId, alt: "  Board model  " },
+  });
+  assert.equal(parsed.ok, true);
+  if (parsed.ok) assert.deepEqual(parsed.value.model3d, { mediaId: uuid, posterId, alt: "Board model" });
+
+  for (const model3d of [
+    null,
+    { mediaId: uuid, posterId: uuid, alt: "Same asset" },
+    { mediaId: "invalid", posterId, alt: "Model" },
+    { mediaId: uuid, posterId, alt: "" },
+    { mediaId: uuid, posterId, alt: "x".repeat(301) },
+    { mediaId: uuid, posterId, alt: "Model", published: true },
+  ]) assert.equal(parseDocument("products", { ...common, model3d }).ok, false);
+  assert.equal(parseDocument("pages", { ...common, model3d: { mediaId: uuid, posterId, alt: "Model" } }).ok, false);
+});
+
 test("typed documents validate nested links and deterministic singleton slugs", () => {
   assert.equal(parseDocument("contact", { ...common, slug: "company-contact" }).ok, false);
   assert.equal(parseDocument("navigation", { ...common, slug: "header" }).ok, false);

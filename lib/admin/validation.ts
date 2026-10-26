@@ -34,6 +34,7 @@ export type ContentBlock =
 
 export type DocumentLink = { label: string; url: string };
 export type SourceObservation = { priceText: string; capturedAt: string; sourceUrl: string };
+export type ProductModel3d = { mediaId: string; posterId: string; alt: string };
 export type AdminDocumentByModule = {
   products: CommonDocument & {
     categoryIds: string[];
@@ -44,6 +45,7 @@ export type AdminDocumentByModule = {
     kitContents: { productId?: string; title: string; quantity: number }[];
     resources: DocumentLink[];
     mediaIds: string[];
+    model3d?: ProductModel3d;
     sourceObservation?: SourceObservation;
     sourceReview?: string[];
   };
@@ -73,7 +75,7 @@ const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDescription"] as const;
 
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
-  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "sourceObservation", "sourceReview"],
+  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "model3d", "sourceObservation", "sourceReview"],
   categories: ["parentId", "position", "mediaIds"],
   blog: ["author", "tags", "mediaIds"],
   pages: [],
@@ -366,6 +368,19 @@ function parseSourceObservation(value: unknown, fields: FieldError[]): SourceObs
     : undefined;
 }
 
+function parseProductModel3d(value: unknown, fields: FieldError[]): ProductModel3d | undefined {
+  if (!isObject(value)) {
+    add(fields, "document.model3d", "invalid", "Enter a 3D model and poster selection.");
+    return undefined;
+  }
+  hasOnlyKeys(value, ["mediaId", "posterId", "alt"], "document.model3d", fields);
+  const mediaId = uuidValue(value.mediaId, "document.model3d.mediaId", fields);
+  const posterId = uuidValue(value.posterId, "document.model3d.posterId", fields);
+  const alt = textValue(value, "alt", "document.model3d.alt", fields, 300, { required: true, nonEmpty: true });
+  if (mediaId && posterId && mediaId === posterId) add(fields, "document.model3d.posterId", "invalid", "Choose a different poster asset.");
+  return mediaId && posterId && mediaId !== posterId && alt !== undefined ? { mediaId, posterId, alt } : undefined;
+}
+
 function parseSpecifications(value: unknown, fields: FieldError[]) {
   return objectArray(value, "specifications", fields, 100, (item, path, errors) => {
     hasOnlyKeys(item, ["name", "value"], path, errors);
@@ -488,10 +503,12 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const kitContents = parseKitContents(value.kitContents, fields);
     const resources = parseResourceLinks(value.resources, fields);
     const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields);
+    const model3d = value.model3d === undefined ? undefined : parseProductModel3d(value.model3d, fields);
     const sourceObservation = value.sourceObservation === undefined ? undefined : parseSourceObservation(value.sourceObservation, fields);
     const sourceReview = value.sourceReview === undefined ? undefined : textArray(value.sourceReview, "document.sourceReview", fields, 64, 2000);
     if (sourceReview !== undefined && sourceObservation === undefined) add(fields, "document.sourceReview", "invalid", "Staff review notes require a source observation.");
     Object.assign(document, { categoryIds, modelNumbers, variants, specifications, compatibility, kitContents, resources, mediaIds });
+    if (model3d !== undefined) Object.assign(document, { model3d });
     if (sourceObservation !== undefined) Object.assign(document, { sourceObservation });
     if (sourceReview !== undefined) Object.assign(document, { sourceReview });
   } else if (module === "categories") {

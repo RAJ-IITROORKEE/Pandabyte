@@ -1,7 +1,8 @@
 import sharp from "sharp";
+import { createHash } from "node:crypto";
 import { MAX_MEDIA_BYTES } from "./validation.ts";
 
-type StoredMedia = { mimeType: string; byteSize: number; width: number | null; height: number | null };
+type StoredMedia = { mimeType: string; byteSize: number; width: number | null; height: number | null; modelSha256?: string | null };
 type EditorialImageSize = 96 | 960;
 
 export function parseEditorialImageSize(params: URLSearchParams): EditorialImageSize | undefined | null {
@@ -15,6 +16,13 @@ export function parseEditorialImageSize(params: URLSearchParams): EditorialImage
 export async function prepareEditorialDownload(input: Buffer, media: StoredMedia, size?: EditorialImageSize) {
   if (size !== undefined && size !== 96 && size !== 960) return null;
   if (!Number.isSafeInteger(media.byteSize) || media.byteSize < 1 || media.byteSize > MAX_MEDIA_BYTES || input.length !== media.byteSize) return null;
+  if (media.mimeType === "model/gltf-binary") {
+    // Immutable registered objects were structurally validated before registration; verify their exact bytes on every read.
+    return size === undefined && media.width === null && media.height === null && input.length >= 20 &&
+      input.toString("ascii", 0, 4) === "glTF" && input.readUInt32LE(4) === 2 && input.readUInt32LE(8) === input.length &&
+      /^[0-9a-f]{64}$/.test(media.modelSha256 ?? "") && createHash("sha256").update(input).digest("hex") === media.modelSha256
+      ? { bytes: input, mimeType: "model/gltf-binary", extension: "glb", width: null, height: null } : null;
+  }
   if (media.mimeType === "application/pdf") {
     return size === undefined && input.length <= 2 * 1024 * 1024 && input.subarray(0, 5).toString("latin1") === "%PDF-" && media.width === null && media.height === null
       ? { bytes: input, mimeType: "application/pdf", extension: "pdf", width: null, height: null } : null;

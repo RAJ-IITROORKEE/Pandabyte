@@ -1,10 +1,15 @@
 import "server-only";
 import sharp from "sharp";
 import { MAX_MEDIA_BYTES } from "./validation.ts";
+import { validateProductGlb } from "./glb-validation.ts";
 
 export async function prepareEditorialFile(file: File) {
   if (!/^[\p{L}\p{N}][\p{L}\p{N} ._()-]{0,119}$/u.test(file.name) || file.size < 1 || file.size > MAX_MEDIA_BYTES) return null;
   const input = Buffer.from(await file.arrayBuffer());
+  if (["", "application/octet-stream", "model/gltf-binary"].includes(file.type) && /\.glb$/i.test(file.name)) {
+    const model = await validateProductGlb(input);
+    return model ? { bytes: input, mimeType: "model/gltf-binary", extension: "glb", width: null, height: null, model } : null;
+  }
   if (file.type === "application/pdf" && /\.pdf$/i.test(file.name)) {
     return file.size <= 2 * 1024 * 1024 && input.subarray(0, 5).toString("ascii") === "%PDF-"
       ? { bytes: input, mimeType: "application/pdf", extension: "pdf", width: null, height: null } : null;

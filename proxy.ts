@@ -8,6 +8,9 @@ export default clerkMiddleware({
       "object-src": ["'none'"],
       "frame-ancestors": ["'none'"],
       "script-src-attr": ["'none'"],
+      // GLTFLoader decodes validated embedded textures through local Blob URLs.
+      "connect-src": ["blob:"],
+      "img-src": ["blob:"],
       "frame-src": ["https://www.youtube-nocookie.com"],
     },
   },

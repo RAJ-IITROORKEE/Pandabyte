@@ -16,12 +16,14 @@ export function boundedText(value: unknown, max: number, required = false): stri
 }
 
 export function parseMediaPatch(value: unknown) {
-  if (!objectWithKeys(value, ["expectedVersion", "altText", "source", "published"]) ||
+  if (!objectWithKeys(value, ["expectedVersion", "altText", "source", "published", "publicUseAllowed"]) ||
     !Number.isSafeInteger(value.expectedVersion) || Number(value.expectedVersion) < 1 || typeof value.published !== "boolean") return null;
+  if ("publicUseAllowed" in value && typeof value.publicUseAllowed !== "boolean") return null;
   const altText = boundedText(value.altText, 300, true);
   const source = boundedText(value.source, 500);
   return altText !== null && source !== null
-    ? { expectedVersion: Number(value.expectedVersion), altText, source, published: value.published } : null;
+    ? { expectedVersion: Number(value.expectedVersion), altText, source, published: value.published,
+      ...("publicUseAllowed" in value ? { publicUseAllowed: value.publicUseAllowed as boolean } : {}) } : null;
 }
 
 export function parseInquiryInput(value: unknown) {
