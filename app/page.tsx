@@ -33,7 +33,7 @@ export default async function HomePage() {
   const [homeResult, categoryResult, products, faqs, contactResult] = await Promise.all([
     getPublishedRecord("pages", "home"),
     listPublishedRecords("categories", { limit: 100, offset: 0 }),
-    listCatalogProducts({ sort: "newest", limit: 2 }),
+    listCatalogProducts({ sort: "newest", limit: 6 }),
     listPublishedRecords("faqs", { placement: "home", limit: 6, offset: 0 }),
     getPublishedRecord("contact", "contact"),
   ]);
@@ -117,7 +117,7 @@ export default async function HomePage() {
           </div>
           {products.items.length ? (
             <div className={sections.productGrid}>
-              {products.items.map((product) => <ProductCard key={product.id} product={product} featured />)}
+              {products.items.map((product) => <ProductCard key={product.id} product={product} categories={categoryResult.items} featured />)}
             </div>
           ) : (
             <EmptyState title="No products are published yet" href="/shop" label="Browse the shop">

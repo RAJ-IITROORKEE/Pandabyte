@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { Box } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import type { ProductModel3d } from "@/lib/admin/validation";
 import styles from "./catalog.module.css";
@@ -79,8 +80,8 @@ export function ProductModelViewer({ model, title, compact = false, onActiveChan
         sizes={compact ? "(max-width: 640px) 100vw, 30vw" : "(max-width: 900px) 100vw, 50vw"}
       />
       {active ? <ProductModelEngine src={modelSrc} alt={model.alt} compact={compact} onClose={() => setActive(false)} /> : <>
-        <button ref={triggerRef} className={styles.productModelActivate} type="button" onClick={activate}>
-          View in 3D
+        <button ref={triggerRef} className={styles.productModelActivate} type="button" onClick={activate} aria-label={`View ${title} in 3D`}>
+          <Box aria-hidden="true" size={18} /> {compact ? "3D" : "View in 3D"}
         </button>
       </>}
     </div>

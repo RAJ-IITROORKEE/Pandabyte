@@ -87,18 +87,16 @@
 .productCardImage img { position: absolute; inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); object-fit: contain; }
 .productCardImage > span { padding: 20px; font-size: 14px; text-align: center; }
 .productCardSlideLink { position: absolute; inset: 0; display: grid; }
-.productCardMediaControls { position: absolute; z-index: 4; inset: auto 10px 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.productCardMediaControls button { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; gap: 5px; padding: 8px 10px; color: #171717; background: rgb(255 255 255 / 96%); border: 1px solid #737373; border-radius: 8px; cursor: pointer; font: inherit; }
+.productCardMediaControls { position: absolute; z-index: 4; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; pointer-events: none; }
+.productCardMediaControls button { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; padding: 0; color: #171717; background: rgb(255 255 255 / 78%); border: 1px solid rgb(82 82 82 / 45%); border-radius: 50%; backdrop-filter: blur(8px); cursor: pointer; pointer-events: auto; }
 .productCardMediaControls button:focus-visible, .productModelActivate:focus-visible, .productModelEngineControls button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.productCardMediaControls button:disabled { color: #404040; background: #f5f5f5; cursor: not-allowed; }
-.productCardMediaCount { min-width: 44px; padding: 7px 8px; color: #171717; background: rgb(255 255 255 / 96%); border: 1px solid #737373; border-radius: 8px; font-size: 12px; font-weight: 650; text-align: center; }
-.productCardMediaPause { margin-left: auto; }
-.productCardMediaPause span { display: none; }
+.productCardMediaCount { position: absolute; bottom: 10px; left: 50%; padding: 3px 8px; transform: translateX(-50%); color: #171717; background: rgb(255 255 255 / 88%); border: 1px solid rgb(82 82 82 / 35%); border-radius: 999px; font-size: 12px; font-weight: 650; text-align: center; }
 .featuredProductCardImage { aspect-ratio: auto; height: 320px; padding: 20px; }
 .productModelViewer { position: absolute; inset: 0; display: grid; overflow: hidden; background: #fff; }
 .productModelViewerCompact { border-radius: 0; }
 .productModelPoster { z-index: 0; object-fit: contain; background: #fff; }
-.productModelActivate { position: absolute; z-index: 2; top: 50%; left: 50%; min-height: 48px; padding: 11px 18px; transform: translate(-50%, -50%); color: var(--action-text); background: var(--accent); border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; font: inherit; font-weight: 650; }
+.productModelActivate { position: absolute; z-index: 2; top: 50%; left: 50%; display: inline-flex; min-height: 48px; align-items: center; gap: 8px; padding: 11px 18px; transform: translate(-50%, -50%); color: var(--action-text); background: var(--accent); border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; font: inherit; font-weight: 650; }
+.productModelViewerCompact .productModelActivate { min-height: 44px; gap: 5px; padding: 8px 12px; color: #171717; background: rgb(255 255 255 / 82%); border-color: rgb(82 82 82 / 45%); border-radius: 999px; backdrop-filter: blur(8px); }
 .productModelEngine { position: absolute; inset: 0; overflow: hidden; background: #fff; }
 .productModelEngineCompact { border-radius: 0; }
 .productModelCanvas { display: block; width: 100%; height: 100%; touch-action: pan-y; }

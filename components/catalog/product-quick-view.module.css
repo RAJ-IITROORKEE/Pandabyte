@@ -1,10 +1,11 @@
 .card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; background: var(--surface); border: 1px solid var(--divider); }
 .cardBody { display: flex; min-width: 0; flex: 1; flex-direction: column; padding: 20px; }
 .cardBody h2, .cardBody h3 { margin: 0; font-size: 18px; font-weight: 650; line-height: 1.35; }
-.subtitle { min-height: 1.5em; margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
-.pricing, .observation { display: grid; gap: 6px; margin-top: 18px; }
-.pricing span, .observation p, .observation small { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
-.pricing strong, .observation strong { font-size: 17px; line-height: 1.4; overflow-wrap: anywhere; }
+.categories { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.categories span { padding: 4px 8px; color: var(--muted); border: 1px solid var(--divider); border-radius: 6px; font-size: 12px; line-height: 1.3; overflow-wrap: anywhere; }
+.pricing { display: grid; gap: 6px; margin-top: 18px; }
+.pricing span { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.pricing strong { font-size: 17px; line-height: 1.4; overflow-wrap: anywhere; }
 .cardActions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-top: auto; padding-top: 20px; }
 .cardActions a, .detailsLink { display: inline-flex; min-height: 44px; align-items: center; color: var(--foreground); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
 .cardActions a:hover, .detailsLink:hover { color: var(--accent); }
@@ -12,15 +13,11 @@
 .trigger:hover { border-color: var(--accent); color: var(--accent); }
 .dialog { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .previewMedia { position: sticky; top: 0; grid-column: 1; grid-row: 1; display: grid; min-width: 0; min-height: 320px; place-items: center; overflow: hidden; padding: 20px; color: #525252; background: #fff; }
-.previewMedia img { display: block; width: 100%; max-height: 480px; object-fit: contain; }
+.previewMedia > div { width: 100%; }
 .previewBody { grid-column: 2; grid-row: 1; min-width: 0; padding: clamp(24px, 4vw, 40px); }
 .previewTitle { margin: 0; padding-right: 36px; font-size: clamp(26px, 3vw, 34px); font-weight: 650; line-height: 1.16; letter-spacing: -.03em; }
 .previewSubtitle { margin-top: 10px; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 .description { margin: 20px 0; color: var(--muted); line-height: 1.65; }
-.thumbnails { display: flex; gap: 8px; overflow-x: auto; margin: 0 40px 20px 0; padding: 2px; }
-.thumbnails button { width: 56px; height: 56px; flex: 0 0 56px; padding: 3px; background: #fff; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
-.thumbnails button[aria-pressed="true"] { border: 2px solid var(--accent); }
-.thumbnails img { width: 100%; height: 100%; object-fit: contain; }
 .specifications { margin: 20px 0; font-size: 14px; }
 .specifications div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--divider); }
 .specifications dt { color: var(--muted); }
@@ -31,7 +28,7 @@
 @media (max-width: 767px) {
   .dialog { grid-template-columns: minmax(0, 1fr); }
   .previewMedia { position: static; min-height: 220px; max-height: 36dvh; }
-  .previewMedia img { max-height: calc(36dvh - 40px); }
+  .previewMedia > div { max-height: calc(36dvh - 40px); }
   .previewBody { grid-column: 1; grid-row: 2; padding: 24px; }
   .close { grid-column: 1; }
 }

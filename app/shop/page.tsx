@@ -199,7 +199,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
           </div>
 
           {products.items.length ? <div className={`${styles.productGrid} ${presentation.grid}`}>
-            {products.items.map((product) => <ProductCard key={product.id} product={product} />)}
+            {products.items.map((product) => <ProductCard key={product.id} product={product} categories={categories} />)}
           </div> : <EmptyState
             title={query.q || query.categories.length || query.minPaise !== null || query.maxPaise !== null || query.availability !== "all" ? "No products match these filters" : "No products are published yet"}
             href="/shop"

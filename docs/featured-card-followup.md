@@ -1,0 +1,7 @@
+# Featured hardware and product gallery — 27 October 2026
+
+The public homepage requests six published products and presents them in a responsive three-, two-, or one-column grid. Cards display published category names and omit SKU and source-observation details. A historical source amount is not presented as a current price; source records remain non-purchasable and their context remains available in the product preview and details.
+
+Product cards use compact side controls and a 3D activation control. When motion is allowed, a visible untouched card advances once after three seconds and then stops; focus, manual navigation, reduced motion and hidden/offscreen state prevent or stop that change. Quick view uses the same gallery, starts on the selected image or model, and suspends the card viewer behind it. Model loading remains opt-in.
+
+The production build was tested locally against the development project. The browser showed six cards with one, two and three cards per row at 320, 768, 1024 and 1440 CSS pixels respectively, without horizontal overflow. The DHT11 preview opened its 3D model and returned focus to the quick-view trigger on close. Category labels, product images, and non-purchasable source context were checked. Focused lint, typecheck, build and 16 catalog/source tests passed. Actual screen-reader speech and runtime reduced-motion switching were not tested. No Admin interface, catalog records, homepage hero, commerce or production deployment was changed.
