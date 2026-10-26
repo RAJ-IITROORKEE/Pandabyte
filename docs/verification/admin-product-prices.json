@@ -85,7 +85,8 @@
       ],
       "viewportOverrideReset": true
     },
-    "disposableCleanup": "passed; fixture marker absent"
+    "disposableCleanup": "passed; fixture marker absent",
+    "migrationWhitespace": "Two applied SQL files retain trailing blank lines; original applied bytes are preserved."
   },
   "source": {
     "products": 44,
@@ -152,5 +153,6 @@
     "OS reduced-motion runtime switching",
     "screen-reader speech",
     "physical-device testing"
-  ]
+  ],
+  "implementationCommit": "96acfe9"
 }

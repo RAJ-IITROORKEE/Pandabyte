@@ -100,3 +100,5 @@ The guarded development importer matches the existing 42 SKU-backed products to 
 Import result: 42 price pairs saved and fully post-verified, zero unpriced/conflicting products; two missing-SKU records remain outside CMS. Actual-price minimum/average/maximum: ₹60 / ₹2,039.52 / ₹40,000. Both development migrations are applied, including the database publication pair guard. No product was published by this task.
 
 Final price/statistics verification: lint, TypeScript and production build pass; 174 unit checks and ten auth/security/diagnostics HTTP checks pass. Sixteen measured table/editor reflow/theme cases pass, including both mobile color palettes; no page overflow or final console errors. The real filtered discount and unchanged global cards were browser-checked. Final screenshots are ignored under `.bootstrap/admin-price-followup/`; the Products preview is open with viewport override reset. All disposable fixtures are cleaned up.
+
+Product prices/statistics implementation: **96acfe9** — `feat: add required product prices and catalog statistics`.
