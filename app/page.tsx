@@ -78,11 +78,13 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <section className={sections.contentSection} aria-labelledby="categories-title">
+        <section className={`${sections.contentSection} ${sections.categorySection}`} aria-labelledby="categories-title">
           <div className={sections.sectionHeading}>
             <div>
               <h2 id="categories-title">Explore Categories</h2>
+              <p className={sections.categoryIntro}>Find the hardware for your next build.</p>
             </div>
+            <Link className={sections.sectionLink} href="/shop">View all products <ChevronRight aria-hidden="true" /></Link>
           </div>
           {categories.length ? (
             <nav aria-label="Published product categories" className={sections.categoryGrid}>

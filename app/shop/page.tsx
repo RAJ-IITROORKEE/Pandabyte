@@ -92,7 +92,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
   const rawMin = firstParam(raw.min);
   const rawMax = firstParam(raw.max);
 
-  return <PublicPage eyebrow="Shop" title="Catalog" description="Browse published IoT and embedded products." wide>
+  return <PublicPage title="Catalog" description="Browse published IoT and embedded products." wide>
     <div className={presentation.catalogPage}>
     {categories.length > 0 && <nav className={`${styles.categorySection} ${presentation.categorySection}`} aria-label="Browse product categories">
       <h2 className={styles.categoryHeading}>Browse categories</h2>

@@ -7,7 +7,7 @@ import { PublishedDocument } from "@/components/published-document";
 import { TeamGrid } from "@/components/editorial/team-grid";
 import { EditorialPagination } from "@/components/editorial/editorial-pagination";
 import { editorialPageNumber } from "@/components/editorial/public-utils";
-import styles from "@/components/editorial/company.module.css";
+import styles from "@/components/storefront/about-page.module.css";
 import { getPublishedRecord, listPublishedRecords } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
 
@@ -47,12 +47,15 @@ export default async function AboutPage({ searchParams }: AboutPageProps) {
       <header className={styles.heading}>
         <p className="section-kicker">Company · PandaByte.in</p>
         <h1 id="about-title">{document?.title ?? "About PandaByte"}</h1>
-        {document?.summary && <p className={styles.lede}>{document.summary}</p>}
+        <p className={styles.lede}>{document?.summary || "PandaByte is an IoT and embedded hardware company. Explore development boards, sensors, shields, accessories and IoT kits in our catalog."}</p>
         <div className={styles.actions}>
           <Link href="/shop" className={styles.primary}>Explore the catalog <ArrowRight size={18} aria-hidden="true" /></Link>
           <Link href="/contact" className={styles.secondary}>Contact PandaByte</Link>
         </div>
       </header>
+    </section>
+    <section className={styles.companySection} aria-label="Company information">
+      <p className={styles.sectionLabel}>About PandaByte</p>
       {document ? <div className={styles.companyContent}><PublishedDocument document={{ ...document, summary: "" }} hideTitle /></div>
         : <Card as="section" className={`${styles.panel} ${styles.empty}`} aria-labelledby="company-empty-title">
           <Building2 size={28} aria-hidden="true" />
@@ -61,7 +64,7 @@ export default async function AboutPage({ searchParams }: AboutPageProps) {
         </Card>}
     </section>
     <section className={styles.section} aria-labelledby="team-title">
-      <div className={styles.sectionHeading}><h2 id="team-title">The team</h2></div>
+      <div className={styles.sectionHeading}><p className={styles.sectionLabel}>People</p><h2 id="team-title">The team</h2></div>
       {team.total > 0 ? <>
           <TeamGrid items={team.items} />
           <EditorialPagination
