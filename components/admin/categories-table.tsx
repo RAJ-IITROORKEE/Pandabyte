@@ -1,6 +1,7 @@
 "use client";
 
-import { IconArrowLeft, IconArrowRight, IconPencil, IconRefresh, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowRight, IconEye, IconPencil, IconRefresh, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -61,6 +62,9 @@ export function CategoriesTable() {
   const [errorState, setErrorState] = useState<{ key: string; message: string } | null>(null);
   const [reload, setReload] = useState(0);
   const [archiveTarget, setArchiveTarget] = useState<CategoryTableRow | null>(null);
+  const [preview, setPreview] = useState<{ title: string; mediaId: string; alt: string } | null>(null);
+  const [previewError, setPreviewError] = useState(false);
+  const imageDialog = useRef<HTMLDialogElement>(null);
   const [archiveError, setArchiveError] = useState("");
   const [archiving, setArchiving] = useState(false);
   const archiveDialog = useRef<HTMLDialogElement>(null);
@@ -79,6 +83,13 @@ export function CategoriesTable() {
     const timer = window.setTimeout(() => replaceTableQuery({ ...query, q: searchText.trim(), offset: 0 }), 300);
     return () => window.clearTimeout(timer);
   }, [query, searchText]);
+
+  useEffect(() => {
+    const dialog = imageDialog.current;
+    if (!dialog) return;
+    if (preview && !dialog.open) dialog.showModal();
+    if (!preview && dialog.open) dialog.close();
+  }, [preview]);
 
   useEffect(() => {
     const dialog = archiveDialog.current;
@@ -183,18 +194,22 @@ export function CategoriesTable() {
     <div ref={tableScroller} className={tableStyles.tableScroller} role="region" aria-label="Categories" tabIndex={0} aria-busy={loading}>
       <table className={tableStyles.table}>
         <thead><tr>
-          <th scope="col" className={tableStyles.numberHeading}>No.</th><th scope="col">Category</th><th scope="col">Parent</th>
+          <th scope="col" className={tableStyles.numberHeading}>No.</th><th scope="col">Image</th><th scope="col">Category</th><th scope="col">Parent</th>
           <th scope="col">Products</th><th scope="col">Status</th><th scope="col">Updated</th><th scope="col"><span className={tableStyles.visuallyHidden}>Actions</span></th>
         </tr></thead>
         <tbody>
-          {loading && <tr><td className={tableStyles.tableMessage} colSpan={7}>Loading categories…</td></tr>}
-          {!loading && !error && rows.length === 0 && <tr><td className={tableStyles.tableMessage} colSpan={7}>{query.q || query.status !== "all" ? "No categories match these filters." : "No categories yet. Create the first category."}</td></tr>}
+          {loading && <tr><td className={tableStyles.tableMessage} colSpan={8}>Loading categories…</td></tr>}
+          {!loading && !error && rows.length === 0 && <tr><td className={tableStyles.tableMessage} colSpan={8}>{query.q || query.status !== "all" ? "No categories match these filters." : "No categories yet. Create the first category."}</td></tr>}
           {!loading && rows.map((row, index) => {
             const title = row.title || "Untitled category";
             const updated = formatUpdated(row.updatedAt);
             const editHref = `/admin/categories/${encodeURIComponent(row.id)}`;
             return <tr key={row.id}>
               <td className={tableStyles.rowNumber}>{query.offset + index + 1}</td>
+              <td>{row.image ? <div className={tableStyles.thumbnail}>
+                <Image unoptimized src={`/api/media/${encodeURIComponent(row.image.mediaId)}?w=96`} alt="" width={48} height={48} loading="lazy" />
+                <button type="button" className={tableStyles.previewButton} aria-label={`Preview image for ${title}`} onClick={() => { setPreviewError(false); setPreview({ title, mediaId: row.image!.mediaId, alt: row.image!.alt || title }); }}><IconEye aria-hidden="true" size={16} /></button>
+              </div> : <span className={tableStyles.noImage}>No image</span>}</td>
               <td className={styles.categoryCell}>
                 <Link className={styles.categoryTitle} href={editHref} title={title}>{title}</Link>
                 <span className={styles.categorySlug} title={row.slug}>{row.slug}</span>
@@ -221,6 +236,12 @@ export function CategoriesTable() {
         <button className={tableStyles.controlButton} type="button" onClick={() => updateQuery({ offset: query.offset + query.limit })} disabled={loading || total === null || query.offset + query.limit >= total || query.offset + query.limit > 10_000}>Next <IconArrowRight aria-hidden="true" size={16} /></button>
       </div>
     </nav>
+
+    <dialog ref={imageDialog} className={tableStyles.dialog} aria-labelledby="category-image-title" onClose={() => setPreview(null)}>
+      {preview && <><header className={tableStyles.dialogHeader}><h2 id="category-image-title">{preview.title}</h2><button type="button" className={tableStyles.iconButton} aria-label="Close image preview" onClick={() => imageDialog.current?.close()}><IconX aria-hidden="true" size={18} /></button></header>
+        <div className={tableStyles.imagePreview}>{previewError ? <p role="alert">The image could not be loaded.</p> : <Image unoptimized src={`/api/media/${encodeURIComponent(preview.mediaId)}?w=960`} alt={preview.alt} width={1200} height={900} sizes="(max-width: 760px) calc(100vw - 56px), 720px" onError={() => setPreviewError(true)} />}</div>
+      </>}
+    </dialog>
 
     <dialog ref={archiveDialog} className={`${tableStyles.dialog} ${tableStyles.confirmDialog}`} aria-labelledby="archive-category-title" aria-describedby="archive-category-warning" onClose={() => {
       const invoker = archiveInvoker.current;

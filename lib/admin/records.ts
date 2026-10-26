@@ -619,7 +619,7 @@ export async function adminListInventory(request: Request): Promise<Response> {
   if ("response" in access) return access.response;
   const query = parseListQuery(new URL(request.url).searchParams);
   if (!query.ok) return validationResponse(query.fields);
-  const result = await rpc(access.client, "admin_list_variants", {
+  const result = await rpc(access.client, "admin_list_inventory", {
     p_query: query.value.q,
     p_limit: query.value.limit,
     p_offset: query.value.offset,
@@ -628,7 +628,12 @@ export async function adminListInventory(request: Request): Promise<Response> {
   if (!isObject(result.data) || !Array.isArray(result.data.items) || !Number.isSafeInteger(result.data.total) || (result.data.total as number) < 0) {
     return errorResponse("backend_unavailable", 503);
   }
-  const items = result.data.items.map(parseVariantDto);
+  const items = result.data.items.map((value) => {
+    if (!isObject(value) || typeof value.sourceOnly !== "boolean") return null;
+    const variant = parseVariantDto(value);
+    if (!variant || (value.sourceOnly && (variant.stock !== null || variant.stockVersion !== null))) return null;
+    return { ...variant, sourceOnly: value.sourceOnly };
+  });
   if (items.some((item) => item === null)) return errorResponse("backend_unavailable", 503);
   return json({ items, total: result.data.total });
 }

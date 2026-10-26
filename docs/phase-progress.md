@@ -346,3 +346,9 @@ The local Categories failure was caused by a running production server reading `
 ## Development category descriptions — 27 October 2026
 
 Published source-grounded rich descriptions for Accessories, Dev Boards, IoT Kits, Sensors and Shields in development using owner-authorized, version-checked Admin APIs. Existing category fields and images were preserved; all five public records matched the saved content. Restored visible list markers in the shared rich-content renderer. The isolated production build passed and browser checks covered all five descriptions, both themes and Shields at 320/768/1024/1440 CSS pixels. [Source and verification notes](category-rich-descriptions.md). No production publication or deployment occurred.
+
+## Admin operations and category images — 27 October 2026
+
+Orders, Inventory and Inquiries now use separate Mono screens; Categories shows image thumbnails and a click-to-preview dialog. Orders remains disconnected with honest disabled controls. Inventory supports title/exact-SKU search and pagination, and marks source observations as unverified with adjustments unavailable. Inquiries supports search/status/pagination with newest-first ordering. Existing permissions, version checks and notification safeguards remain intact.
+
+Two narrow read-only development RPC migrations were applied. Build, targeted lint/type checks, category and source tests, draft-only source/normal inventory fixtures and browser checks passed. Fixtures were cleaned; no real data was changed. [Scope and limits](admin-operations-followup.md).

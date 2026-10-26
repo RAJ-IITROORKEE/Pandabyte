@@ -189,16 +189,27 @@ async function verifySourceObservation(context, state, auth, anon) {
     sourceUrl: "https://example.invalid/source-observation-fixture",
   };
   const normal = await createProduct(context, state, auth, "normal-unpriced");
-  const normalPublish = await request(context, `/api/admin/products/${normal.record.id}/publish`, auth.staff.appToken, "POST", {
-    expectedVersion: normal.record.version,
-  });
-  await responseBody(normalPublish, 409, "normal_unpriced_publish");
-  ensure((await request(context, `/api/published/products/${normal.record.slug}`, null)).status === 404, "normal_unpriced_product_became_public");
+  if (!process.argv.includes("--inventory-draft-only")) {
+    const normalPublish = await request(context, `/api/admin/products/${normal.record.id}/publish`, auth.staff.appToken, "POST", {
+      expectedVersion: normal.record.version,
+    });
+    await responseBody(normalPublish, 409, "normal_unpriced_publish");
+    ensure((await request(context, `/api/published/products/${normal.record.slug}`, null)).status === 404, "normal_unpriced_product_became_public");
+  }
 
   const source = await createProduct(context, state, auth, "source-observation", {
     sourceObservation,
     sourceReview: [note],
   });
+  if (process.argv.includes("--inventory-draft-only")) {
+    for (const [fixture, expected] of [[normal, false], [source, true]]) {
+      const response = await request(context, `/api/admin/inventory?q=${encodeURIComponent(fixture.variant.sku)}&limit=10`, auth.staff.appToken);
+      const body = await responseBody(response, 200, "draft_inventory");
+      const item = body.items?.find((entry) => entry.id === fixture.variant.id);
+      ensure(item?.sourceOnly === expected && (!expected || (item.stock === null && item.stockVersion === null)), "draft_inventory_source_state_invalid");
+    }
+    return;
+  }
   const savedResponse = await request(context, `/api/admin/products/${source.record.id}`, auth.staff.appToken, "PATCH", {
     expectedVersion: source.record.version,
     document: { ...source.record.document, summary: `Saved source fixture ${state.runId}.` },
@@ -226,6 +237,12 @@ async function verifySourceObservation(context, state, auth, anon) {
   ensure(listedVariant?.regularPricePaise === null && listedVariant.effectivePricePaise === null &&
     listedVariant.availability === "unavailable" && listedVariant.purchasable === false, "source_observation_catalog_variant_not_masked");
   ensure(!("sourceReview" in listed.document) && !JSON.stringify(listed).includes(note), "source_review_leaked_to_catalog");
+
+  const inventoryResponse = await request(context, `/api/admin/inventory?q=${encodeURIComponent(source.variant.sku)}&limit=10`, auth.staff.appToken);
+  const inventoryBody = await responseBody(inventoryResponse, 200, "source_observation_inventory");
+  const inventoryVariant = inventoryBody.items?.find((item) => item.id === source.variant.id);
+  ensure(inventoryVariant?.sourceOnly === true && inventoryVariant.stock === null && inventoryVariant.stockVersion === null,
+    "source_observation_inventory_stock_not_masked");
 
   const detailResponse = await request(context, `/api/published/products/${source.record.slug}`, null);
   const detailBody = await responseBody(detailResponse, 200, "source_observation_detail");
@@ -350,7 +367,7 @@ async function run(context) {
 
 async function main() {
   const args = new Set(process.argv.slice(2));
-  if ([...args].some((arg) => arg !== "--cleanup") || args.size > 1) {
+  if ([...args].some((arg) => !["--cleanup", "--inventory-draft-only"].includes(arg)) || args.size > 1) {
     console.error("Source observation integration harness stopped safely: invalid_command_line.");
     process.exitCode = 2;
     return;

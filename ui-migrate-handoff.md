@@ -124,3 +124,7 @@ Catalog category links now show published image thumbnails and a single selected
 ## Development category descriptions — 27 October 2026
 
 Five source-grounded category rich descriptions are published in development and verified on the storefront. Existing category images and other fields were preserved; list markers were fixed. See [source and verification notes](docs/category-rich-descriptions.md). No production publication or deployment occurred.
+
+## Admin operations and category images — 27 October 2026
+
+Categories now includes an image thumbnail/preview column. Orders has a disconnected Mono table design; Inventory and Inquiries retain their existing server-backed capabilities and responsive Mono styling. Source-observation inventory is explicitly unverified and cannot be adjusted. Development read-only RPC migrations, draft-only tests, category fixture checks and browser validation passed. See [scope and limits](docs/admin-operations-followup.md). No order/payment workflow, live email, publication or deployment was performed.

@@ -19,6 +19,7 @@ export type CategoryTableItem = {
   parent: { id: string; title: string } | null;
   productCount: number;
   position: number;
+  image: { mediaId: string; alt: string } | null;
 };
 
 export type CategoryTableResult = { items: CategoryTableItem[]; total: number };
@@ -69,11 +70,12 @@ function safeText(value: unknown, max: number): value is string {
 }
 
 export function isCategoryTableItem(value: unknown): value is CategoryTableItem {
-  if (!isObject(value) || Object.keys(value).some((key) => !["id", "title", "slug", "version", "status", "updatedAt", "parent", "productCount", "position"].includes(key)) ||
-    Object.keys(value).length !== 9 || typeof value.id !== "string" || !parseRecordId(value.id) || !safeText(value.title, 160) || !safeText(value.slug, 160) ||
+  if (!isObject(value) || Object.keys(value).some((key) => !["id", "title", "slug", "version", "status", "updatedAt", "parent", "productCount", "position", "image"].includes(key)) ||
+    Object.keys(value).length !== 10 || typeof value.id !== "string" || !parseRecordId(value.id) || !safeText(value.title, 160) || !safeText(value.slug, 160) ||
     !Number.isSafeInteger(value.version) || (value.version as number) < 1 || !["draft", "published", "archived"].includes(String(value.status)) ||
     typeof value.updatedAt !== "string" || value.updatedAt.length > 64 || !Number.isFinite(Date.parse(value.updatedAt)) ||
     !Number.isSafeInteger(value.productCount) || (value.productCount as number) < 0 || !Number.isSafeInteger(value.position) || (value.position as number) < 0) return false;
+  if (value.image !== null && (!isObject(value.image) || Object.keys(value.image).length !== 2 || Object.keys(value.image).some((key) => !["mediaId", "alt"].includes(key)) || typeof value.image.mediaId !== "string" || !parseRecordId(value.image.mediaId) || typeof value.image.alt !== "string" || Array.from(value.image.alt).length > 300 || CONTROL_CHARS.test(value.image.alt))) return false;
   if (value.parent === null) return true;
   return isObject(value.parent) && Object.keys(value.parent).length === 2 && Object.keys(value.parent).every((key) => ["id", "title"].includes(key)) &&
     typeof value.parent.id === "string" && !!parseRecordId(value.parent.id) && safeText(value.parent.title, 160);

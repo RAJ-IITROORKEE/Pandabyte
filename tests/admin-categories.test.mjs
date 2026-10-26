@@ -31,15 +31,17 @@ test("category table DTO enforces exact fields and bounded category/parent data"
   const item = {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", title: "Sensors", slug: "sensors", version: 2,
     status: "published", updatedAt: "2026-10-27T00:00:00.000Z", parent: { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", title: "Electronics" },
-    productCount: 3, position: 4,
+    productCount: 3, position: 4, image: null,
   };
   assert.equal(isCategoryTableItem(item), true);
   assert.equal(isCategoryTableResult({ items: [item], total: 1 }, 10), true);
   assert.equal(isCategoryTableItem({ ...item, parent: null }), true);
+  assert.equal(isCategoryTableItem({ ...item, image: { mediaId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", alt: "Sensor image" } }), true);
   for (const invalid of [
     { ...item, id: "bad" }, { ...item, title: "" }, { ...item, version: 0 }, { ...item, status: "hidden" },
     { ...item, updatedAt: "tomorrow" }, { ...item, productCount: -1 }, { ...item, position: 1.5 },
     { ...item, extra: true }, { ...item, parent: { ...item.parent, id: "bad" } }, { ...item, parent: { ...item.parent, extra: true } },
+    { ...item, image: { mediaId: "bad", alt: "" } }, { ...item, image: { mediaId: item.id, alt: "x", secret: true } },
   ]) assert.equal(isCategoryTableItem(invalid), false);
   assert.equal(isCategoryTableResult({ items: [item], total: 0 }, 10), false);
   assert.equal(isCategoryTableResult({ items: [item, item], total: 2 }, 1), false);
