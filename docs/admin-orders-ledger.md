@@ -1,5 +1,11 @@
 # Admin orders list — 27 October 2026
 
+## Disposable-order follow-up
+
+The owner authorized testing with disposable development orders. `tests/admin-orders-integration.mjs` verifies the linked development target, creates 12 uniquely tagged orders and two temporary Clerk identities, exercises the real API, then removes and verifies the removal of its own fixtures. It passed administrator access, customer and CATALOG denial, anonymous denial, all four sort modes, status and reference search, two-page pagination, malformed inputs, no-store responses, direct RPC authorization and direct-table denial. The owner browser session showed a matching search result, three filtered orders in ascending total order and both pagination pages. Cleanup verified no tagged orders, temporary roles, capabilities or users remained; an independent database count confirmed zero orders.
+
+The follow-up also bounds the raw search string before trimming and rejects C1 control characters. Focused contract tests, targeted lint and an isolated production build passed. No production data, checkout, payments or live orders were involved. Mobile viewport, real screen-reader speech and runtime reduced-motion switching were not checked in this follow-up.
+
 The owner confirmed there are no existing orders and authorized an empty development order system. The isolated Mono Orders page now reads `admin_order_records` through the private `admin_list_orders` RPC and `/api/admin/orders`. Search matches the order reference literally; status, creation date or total sorting, and bounded pagination run in the database. The ledger stores an INR total in integer paise and a limited order status. No customer, payment or shipping data is included in this initial list contract.
 
 Only `staff.manage` can read the list, checked at both the HTTP and database boundaries. `orders.manage` remains an inventory permission also granted to catalog staff and does not authorize this list. Direct runtime table access is revoked and RLS is enabled. Responses are private and no-store. No new role grants or existing business records were changed.

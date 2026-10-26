@@ -25,7 +25,7 @@ test("admin order query applies bounded defaults and accepts supported filters",
 test("admin order query rejects unknown, duplicate, malformed, and unbounded values", () => {
   for (const query of [
     "debug=1", "q=a&q=b", "status=refunded", "sort=random", "limit=25", "offset=-1", "offset=10001",
-    "offset=01", `q=${"x".repeat(121)}`, "q=%0A",
+    "offset=01", `q=${"x".repeat(121)}`, `q=${"+".repeat(121)}`, "q=%0A", "q=%C2%85",
   ]) assert.equal(parseAdminOrderListQuery(new URLSearchParams(query)).ok, false, query);
 });
 

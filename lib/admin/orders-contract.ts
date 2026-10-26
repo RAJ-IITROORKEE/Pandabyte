@@ -22,7 +22,7 @@ export type AdminOrderSummary = {
 type FieldError = { field: string; code: "unknown_field" | "invalid"; message: string };
 type ParseResult<T> = { ok: true; value: T } | { ok: false; fields: FieldError[] };
 
-const CONTROL_CHARS = /[\u0000-\u001f\u007f]/u;
+const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/u;
 const QUERY_KEYS = new Set(["q", "status", "sort", "limit", "offset"]);
 
 export function parseAdminOrderListQuery(search: URLSearchParams): ParseResult<AdminOrderListQuery> {
@@ -34,7 +34,7 @@ export function parseAdminOrderListQuery(search: URLSearchParams): ParseResult<A
 
   const rawQuery = search.get("q") ?? "";
   const q = rawQuery.trim();
-  if (Array.from(q).length > 120 || CONTROL_CHARS.test(rawQuery)) fields.push({ field: "q", code: "invalid", message: "Use at most 120 characters." });
+  if (Array.from(rawQuery).length > 120 || CONTROL_CHARS.test(rawQuery)) fields.push({ field: "q", code: "invalid", message: "Use at most 120 characters." });
 
   const status = search.get("status") ?? "all";
   if (status !== "all" && !(ADMIN_ORDER_STATUSES as readonly string[]).includes(status)) {
