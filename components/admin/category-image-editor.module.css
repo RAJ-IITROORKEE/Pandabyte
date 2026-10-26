@@ -1,0 +1,53 @@
+.dropSurface {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 20px 14px;
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  text-align: center;
+}
+
+.dropSurface[aria-disabled="true"] { opacity: .7; }
+.dropActive { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+.dropTitle { margin: 0; color: var(--foreground); font-size: 13px; font-weight: 600; }
+.dropSurface > p:last-child { margin: 0; }
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.imageList { display: grid; gap: 8px; }
+
+.imageItem {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 104px minmax(100px, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border: 1px solid var(--divider);
+  background: var(--surface);
+}
+
+.imageItem img {
+  width: 104px;
+  height: 76px;
+  object-fit: contain;
+  border: 1px solid var(--divider);
+  background: var(--background);
+}
+
+.imageLabel { min-width: 0; overflow-wrap: anywhere; color: var(--foreground); font-size: 13px; }
+
+@media (max-width: 720px) {
+  .imageItem { grid-template-columns: 72px minmax(0, 1fr); }
+  .imageItem img { width: 72px; height: 56px; }
+  .imageItem button { grid-row: 2; }
+}

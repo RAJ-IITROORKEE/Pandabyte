@@ -36,3 +36,17 @@ test("product-only documents enforce five gallery images and distinct bounded ta
   assert.equal(parseDocument("products", { ...base, tags: ["Board", "board"] }).ok, false);
   assert.equal(parseDocument("pages", { ...base, variants: undefined, richContent: doc([]) }).ok, false);
 });
+
+test("categories accept optional closed rich content and retain legacy blocks", () => {
+  const blocks = [{ type: "paragraph", text: "Legacy category copy" }];
+  const category = { title: base.title, slug: base.slug, summary: base.summary, blocks, seoTitle: base.seoTitle, seoDescription: base.seoDescription,
+    parentId: null, position: 0, mediaIds: [id], richContent: doc([paragraph("Formatted category copy")]) };
+  const parsed = parseDocument("categories", category);
+  assert.equal(parsed.ok, true);
+  assert.deepEqual(parsed.value.blocks, blocks);
+  assert.deepEqual(parsed.value.richContent, category.richContent);
+  assert.equal(parseDocument("categories", { ...category, richContent: doc([{
+    type: "image", attrs: { mediaId: id, alt: "Category image", src: "https://example.com/image.webp" },
+  }]) }).ok, false);
+  assert.equal(parseDocument("categories", { ...category, documentMediaId: id }).ok, false);
+});

@@ -330,3 +330,9 @@ Twenty-four accepted reflow/theme cases cover Categories table/editor and produc
 Concurrent-work boundary: unrelated public storefront/components and dependency edits appeared during this checkpoint and are preserved outside this commit. Only the category unit-test script hunk is staged from `package.json`; no storefront implementation or dependency change is owned by this Admin task. Verification records the built Admin preview, not unverified concurrent working changes.
 
 Categories/chart implementation: **58b3d19** — `feat: upgrade category administration and product charts`.
+
+## Category editor images and description — 27 October 2026
+
+The Admin category editor now uploads PNG or bounded simple SVG images through a drag-and-drop or file chooser, preserves existing attachments, and uses the product rich-text editor with a private draft preview. Transparent uploads are converted to WebP; restricted SVG validation rejects active content and external resources. Parent category remains optional; the existing hierarchy does not inherit product memberships.
+
+Development migration `20261026220738_category-rich-description.sql` is applied. Focused media/content tests, 180 unit tests plus four media tests, lint, TypeScript and production build passed. Disposable development API checks verified PNG/SVG upload, hostile SVG rejection and rich-content draft save/reload; owned fixtures were removed. Browser checks covered file selection, required alt text, rich-description preview, light/dark and 320/768/1024/1440 layout widths. Actual drag-and-drop, screen-reader speech, OS reduced-motion switching and physical devices were not tested. Category image and rich-description display on the public storefront remains unwired; no content was published. Concurrent storefront/design changes remain outside this Admin checkpoint.

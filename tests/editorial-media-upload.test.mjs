@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import sharp from "sharp";
 import { prepareEditorialFile } from "../lib/editorial/media.ts";
 
 function triangleGlb() {
@@ -34,4 +35,17 @@ test("accepts native GLB MIME fallbacks only after full binary validation", asyn
   }
   assert.equal(await prepareEditorialFile(new File([bytes], "sensor.glb", { type: "text/plain" })), null);
   assert.equal(await prepareEditorialFile(new File([bytes], "sensor.txt", { type: "model/gltf-binary" })), null);
+});
+
+test("SVG and PNG uploads become safe transparent WebP images", async () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="#ff0000"/></svg>';
+  const image = await prepareEditorialFile(new File([svg], "category.svg", { type: "image/svg+xml" }));
+  assert.equal(image?.mimeType, "image/webp");
+  assert.equal((await sharp(image.bytes).metadata()).hasAlpha, true);
+  const png = await sharp({ create: { width: 24, height: 24, channels: 4, background: { r: 1, g: 2, b: 3, alpha: 0 } } }).png().toBuffer();
+  const preparedPng = await prepareEditorialFile(new File([png], "category.png", { type: "image/png" }));
+  assert.equal(preparedPng?.mimeType, "image/webp");
+  assert.equal((await sharp(preparedPng.bytes).metadata()).hasAlpha, true);
+  assert.equal(await prepareEditorialFile(new File([svg], "category.png", { type: "image/svg+xml" })), null);
+  assert.equal(await prepareEditorialFile(new File(['<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><script/></svg>'], "bad.svg", { type: "image/svg+xml" })), null);
 });

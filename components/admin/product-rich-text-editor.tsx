@@ -177,7 +177,8 @@ async function uploadProductImage(file: File, altText: string) {
   return id;
 }
 
-export function ProductRichTextEditor({ value, onChange, onValidityChange, onUploadDelta }: { value: ProductRichContent; onChange: (next: ProductRichContent) => void; onValidityChange: (valid: boolean) => void; onUploadDelta: (change: 1 | -1) => void }) {
+export function ProductRichTextEditor({ value, onChange, onValidityChange, onUploadDelta, kind = "product" }: { value: ProductRichContent; onChange: (next: ProductRichContent) => void; onValidityChange: (valid: boolean) => void; onUploadDelta: (change: 1 | -1) => void; kind?: "product" | "category" }) {
+  const descriptionLabel = kind === "category" ? "Category description" : "Product description";
   const capabilities = useAdminCapabilities();
   const canManageMedia = capabilities.includes("media.manage");
   const fileId = useId();
@@ -197,7 +198,7 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        "aria-label": "Product description editor",
+        "aria-label": `${descriptionLabel} editor`,
         "aria-multiline": "true",
         class: "product-rich-editor",
         role: "textbox",
@@ -242,7 +243,7 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
       return;
     }
     if (imageCount >= MAX_INLINE_IMAGES) {
-      setUploadError(`A product description can contain at most ${MAX_INLINE_IMAGES} images.`);
+      setUploadError(`A ${kind} description can contain at most ${MAX_INLINE_IMAGES} images.`);
       return;
     }
     setUploadingImage(true);
@@ -251,7 +252,7 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
     try {
       const mediaId = await uploadProductImage(imageFile, imageAlt.trim());
       editor.chain().focus().insertContent({ type: "image", attrs: { mediaId, alt: imageAlt.trim(), caption: null } }).run();
-      toast.success("Product image uploaded.");
+      toast.success("Description image uploaded.");
       setImageFile(null);
       setImageAlt("");
       if (imageFileRef.current) imageFileRef.current.value = "";
@@ -282,11 +283,11 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
     editor.chain().focus().setLink({ href: value.trim() }).run();
   }
 
-  if (!editor) return <section className={`${styles.panel} ${editorStyles.panel}`} aria-label="Product description"><p className={styles.loadingState} role="status">Loading description editor…</p></section>;
+  if (!editor) return <section className={`${styles.panel} ${editorStyles.panel}`} aria-label={descriptionLabel}><p className={styles.loadingState} role="status">Loading description editor…</p></section>;
 
-  return <section className={`${styles.panel} ${editorStyles.panel}`} aria-label="Product description">
-    <div className={styles.sectionHeading}><div><h2>Product description</h2><p>Format the description and add managed images, tables, and code samples.</p></div></div>
-    <div aria-label="Product description formatting" className={editorStyles.toolbar} role="group">
+  return <section className={`${styles.panel} ${editorStyles.panel}`} aria-label={descriptionLabel}>
+    <div className={styles.sectionHeading}><div><h2>{descriptionLabel}</h2><p>Format the description and add managed images, tables, and code samples.</p></div></div>
+    <div aria-label={`${descriptionLabel} formatting`} className={editorStyles.toolbar} role="group">
       <select aria-label="Block style" className={styles.input} defaultValue="paragraph" onChange={(event) => {
         if (event.target.value === "paragraph") editor.chain().focus().setParagraph().run();
         else editor.chain().focus().toggleHeading({ level: Number(event.target.value) as 2 | 3 | 4 }).run();

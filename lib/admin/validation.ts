@@ -54,7 +54,7 @@ export type AdminDocumentByModule = {
     sourceObservation?: SourceObservation;
     sourceReview?: string[];
   };
-  categories: CommonDocument & { parentId: string | null; position: number; mediaIds: string[] };
+  categories: CommonDocument & { parentId: string | null; position: number; mediaIds: string[]; richContent?: ProductRichContent };
   blog: CommonDocument & { author: string; tags: string[]; mediaIds: string[] };
   pages: CommonDocument;
   faqs: CommonDocument & { answer: string; topic: string; placements: string[]; position: number };
@@ -81,7 +81,7 @@ const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDes
 
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
   products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "model3d", "sourceObservation", "sourceReview", "tags", "richContent", "documentMediaId"],
-  categories: ["parentId", "position", "mediaIds"],
+  categories: ["parentId", "position", "mediaIds", "richContent"],
   blog: ["author", "tags", "mediaIds"],
   pages: [],
   faqs: ["answer", "topic", "placements", "position"],
@@ -528,7 +528,10 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const parentId = value.parentId === undefined ? null : uuidValue(value.parentId, "document.parentId", fields, true);
     const position = parsePosition(value, fields);
     const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields);
+    const richContent = value.richContent === undefined ? undefined : parseProductRichContent(value.richContent);
+    if (richContent === null) add(fields, "document.richContent", "invalid", "Use supported formatting, links and managed images within the document limits.");
     Object.assign(document, { parentId, position, mediaIds });
+    if (richContent) Object.assign(document, { richContent });
   } else if (module === "blog") {
     const author = textValue(value, "author", "document.author", fields, 160) ?? "";
     const tags = textArray(value.tags, "document.tags", fields, 30, 60);

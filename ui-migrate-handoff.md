@@ -112,3 +112,7 @@ The Admin-only Mono Categories upgrade adds private server search/filter/sort/pa
 Concurrent-work boundary: unrelated public storefront/components and dependency edits appeared during this checkpoint and are preserved outside this commit. Only the category unit-test script hunk is staged from `package.json`; no storefront implementation or dependency change is owned by this Admin task. Verification records the built Admin preview, not unverified concurrent working changes.
 
 Categories/chart implementation: **58b3d19** — `feat: upgrade category administration and product charts`.
+
+## Category image upload and description — 27 October 2026
+
+Admin categories now have PNG/simple SVG image upload, a no-background preference, and the same rich-text editor and private preview used by products. Parent categories remain optional and do not automatically inherit products. Development schema validation is applied; uploaded SVGs are strictly validated and converted to WebP. Disposable API checks and browser selection/preview checks passed; the public storefront does not yet display these category fields. Actual file dragging and assistive-technology runtime checks remain open. No real content was modified or published; concurrent storefront changes remain outside this checkpoint.

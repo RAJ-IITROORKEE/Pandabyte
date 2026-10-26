@@ -3,10 +3,12 @@ import sharp from "sharp";
 import { MAX_MEDIA_BYTES } from "./validation.ts";
 import { validateProductGlb } from "./glb-validation.ts";
 import { DOCX_MIME, validateProductDocx } from "./docx-validation.ts";
+import { prepareSafeCategorySvg } from "./safe-category-svg.ts";
 
 export async function prepareEditorialFile(file: File) {
   if (!/^[\p{L}\p{N}][\p{L}\p{N} ._()-]{0,119}$/u.test(file.name) || file.size < 1 || file.size > MAX_MEDIA_BYTES) return null;
   const input = Buffer.from(await file.arrayBuffer());
+  if (file.type === "image/svg+xml" && /\.svg$/i.test(file.name)) return prepareSafeCategorySvg(input);
   if (["", "application/octet-stream", DOCX_MIME].includes(file.type) && /\.docx$/i.test(file.name)) {
     const document = await validateProductDocx(input);
     return document ? { bytes: input, mimeType: DOCX_MIME, extension: "docx", width: null, height: null, document } : null;

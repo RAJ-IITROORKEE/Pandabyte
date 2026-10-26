@@ -17,7 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type Dispatch, type FormEvent, type ReactNode, type SetStateAction } from "react";
 import { toast } from "sonner";
 import { ProductRichContentView } from "@/components/catalog/product-rich-content";
 import { ProductDocumentPreview } from "@/components/catalog/product-document-preview";
@@ -25,6 +25,7 @@ import { legacyBlocksToRichContent, type ProductRichContent } from "@/lib/admin/
 import { productSlugFromTitle } from "./product-editor-utils";
 import { ProductDocumentEditor } from "./product-document-editor";
 import { ProductPricingEditor, type ProductPricingState } from "./product-pricing-editor";
+import { CategoryImageEditor } from "./category-image-editor";
 import galleryStyles from "./product-gallery-editor.module.css";
 import confirmationStyles from "./products-table.module.css";
 import {
@@ -86,7 +87,7 @@ const FIELD_LABELS: Record<string, string> = {
   role: "Role", bio: "Biography", links: "Links", href: "Destination URL", group: "Navigation location", visible: "Visibility",
   email: "Email", phone: "Phone", address: "Address", hours: "Hours", timezone: "Time zone", url: "URL",
   supportTitle: "Support heading", supportText: "Support description", footerTagline: "Footer tagline", copyrightName: "Copyright name",
-  collection: "Collection", text: "Text", type: "Content type", level: "Heading level", items: "List items",
+  collection: "Collection", richContent: "Description", text: "Text", type: "Content type", level: "Heading level", items: "List items",
   headers: "Table headings", rows: "Table rows", code: "Code", language: "Language", mediaId: "Media asset", alt: "Alternative text",
   quantity: "Quantity", productId: "Product",
 };
@@ -488,7 +489,7 @@ function ParentCategoryPicker({ value, currentId, onChange }: { value: string | 
       .catch((error) => { if (alive) setMessage(error instanceof Error ? error.message : "Categories could not be loaded."); });
     return () => { alive = false; };
   }, [currentId]);
-  return <label className={styles.field}><span className={styles.fieldLabel}>Parent category</span><select className={styles.input} value={value ?? ""} onChange={(event) => onChange(event.target.value || null)}><option value="">No parent</option>{options.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}</select>{message && <span className={styles.fieldHint}>{message}</span>}</label>;
+  return <label className={styles.field}><span className={styles.fieldLabel}>Parent category (optional)</span><select className={styles.input} value={value ?? ""} onChange={(event) => onChange(event.target.value || null)}><option value="">No parent</option>{options.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}</select><span className={styles.fieldHint}>Group this category under a broader category, or leave it as a top-level category.</span>{message && <span className={styles.fieldHint}>{message}</span>}</label>;
 }
 
 function RowEditor({ label, rows, columns, onChange, addLabel, onFieldChange }: { label: string; rows: Record<string, unknown>[]; columns: { key: string; label: string; type?: "text" | "number" | "checkbox" | "select"; placeholder?: string; options?: { value: string; label: string }[]; immutableWhenExisting?: boolean }[]; onChange: (next: Record<string, unknown>[]) => void; addLabel: string; onFieldChange?: (key: string, previous: unknown, next: unknown) => void }) {
@@ -543,14 +544,14 @@ function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (
   </section>;
 }
 
-function DraftPreview({ document }: { document: AdminDocument }) {
+function DraftPreview({ document, module }: { document: AdminDocument; module: AdminModule }) {
   const product = "modelNumbers" in document ? document : null;
-  const richContent = product?.richContent;
+  const richContent = "richContent" in document ? document.richContent : undefined;
   const previewDocument = richContent ? { ...document, blocks: [] } as AdminDocument : document;
   return <section className={styles.previewPanel} aria-label="Private draft preview" aria-describedby="draft-preview-privacy">
     <h2>{document.title || "Untitled draft"}</h2>
     <PublishedDocument document={previewDocument} hideTitle />
-    {richContent && <section aria-label="Product description preview"><h3>About this product</h3><ProductRichContentView content={richContent} /></section>}
+    {richContent && <section aria-label={`${module === "categories" ? "Category" : "Product"} description preview`}><h3>{module === "categories" ? "About this category" : "About this product"}</h3><ProductRichContentView content={richContent} /></section>}
     {product?.documentMediaId && <section aria-label="Product Word document preview"><h3>Word document</h3><ProductDocumentPreview mediaId={product.documentMediaId} /></section>}
     <p id="draft-preview-privacy" className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
   </section>;
@@ -559,7 +560,7 @@ function DraftPreview({ document }: { document: AdminDocument }) {
 function DocumentFields({ module, document, setDocument, recordId, slugAuto, setSlugAuto, onPricingChange, pricingRefreshKey, canManageMedia, onRichContentValidityChange, richContentResetKey, onUploadDelta }: {
   module: AdminModule;
   document: AdminDocument;
-  setDocument: (next: AdminDocument) => void;
+  setDocument: Dispatch<SetStateAction<AdminDocument>>;
   recordId?: string;
   slugAuto: boolean;
   setSlugAuto: (value: boolean) => void;
@@ -572,7 +573,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
 }) {
   const doc = document as unknown as Record<string, unknown>;
   const [skuEditKeys, setSkuEditKeys] = useState<Record<string, string>>({});
-  const set = (key: string, value: unknown) => setDocument({ ...doc, [key]: value } as AdminDocument);
+  const set = (key: string, value: unknown) => setDocument((current) => ({ ...current, [key]: value } as AdminDocument));
   const str = (key: string) => String(doc[key] ?? "");
   const num = (key: string) => Number(doc[key] ?? 0);
   const arr = (key: string) => readJson<string[]>(doc[key], []);
@@ -664,13 +665,15 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     {(module === "learn" || module === "videos") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "learn" ? "Resource details" : "Video details"}</h2></div></div><div className={styles.formGrid}><Field label={module === "learn" ? "Resource URL" : "YouTube URL or ID"}><TextInput value={str("url")} onChange={(value) => set("url", value)} placeholder={module === "learn" ? "https://… or /learn/…" : "https://youtube.com/watch?v=…"} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><RelationPicker label="Related products" module="products" values={arr("productIds")} onChange={(value) => set("productIds", value)} /></div></section>}
 
     {module === "learn" && <Field label="Learning collection"><select className={styles.input} value={str("collection") || "embedded-systems"} onChange={(event) => set("collection", event.target.value)}><option value="embedded-systems">Embedded systems resources</option><option value="product-specs">Product specifications</option><option value="kit-guides">PandaByte kit guides</option></select></Field>}
-    {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : "Only published WebP images can appear in image galleries."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} onUploadDelta={onUploadDelta} /></section>}
+    {module === "categories" && <CategoryImageEditor mediaIds={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} request={api} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
+    {(module === "products" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : "Only published WebP images can appear in image galleries."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} onUploadDelta={onUploadDelta} /></section>}
     {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
-    {module === "products" ? <ProductRichTextEditor
+    {module === "products" || module === "categories" ? <ProductRichTextEditor
       key={richContentResetKey}
+      kind={module === "categories" ? "category" : "product"}
       value={doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(readJson<ContentBlock[]>(doc.blocks, []))}
-      onChange={(value) => setDocument({ ...document, blocks: [], richContent: value } as unknown as AdminDocument)}
+      onChange={(value) => setDocument((current) => ({ ...current, blocks: [], richContent: value } as AdminDocument))}
       onValidityChange={onRichContentValidityChange}
       onUploadDelta={onUploadDelta}
     /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />}
@@ -711,7 +714,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const onUploadDelta = useCallback((change: 1 | -1) => setPendingUploads((current) => Math.max(0, current + change)), []);
   const serialized = useMemo(() => JSON.stringify(draft), [draft]);
   const documentDirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
-  const dirty = documentDirty || (module === "products" && (productPricing.dirty || !richContentValid || pendingUploads > 0));
+  const dirty = documentDirty || (module === "products" && productPricing.dirty) || ((module === "products" || module === "categories") && (!richContentValid || pendingUploads > 0));
   const pricingReady = module !== "products" || productPricing.ready;
 
   useEffect(() => {
@@ -742,7 +745,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setBaseline(JSON.stringify(result.record.document));
       setSlugAuto(false);
       setRichContentValid(true);
-      if (module === "products") setRichContentResetKey((value) => value + 1);
+      if (module === "products" || module === "categories") setRichContentResetKey((value) => value + 1);
       setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" });
       if (module === "products") setPricingRefreshKey((value) => value + 1);
       setConflict(false);
@@ -757,7 +760,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     if (isNew) return;
     let active = true;
     void api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`)
-      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setSlugAuto(false); setRichContentValid(true); if (module === "products") setRichContentResetKey((value) => value + 1); setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" }); if (module === "products") setPricingRefreshKey((value) => value + 1); setConflict(false); } })
+      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setSlugAuto(false); setRichContentValid(true); if (module === "products" || module === "categories") setRichContentResetKey((value) => value + 1); setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" }); if (module === "products") setPricingRefreshKey((value) => value + 1); setConflict(false); } })
       .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Record could not be loaded."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -785,8 +788,8 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     setError("");
     setValidationIssues([]);
     setNotice("");
-    if (module === "products" && pendingUploads > 0) {
-      setError("Wait for all product media uploads to finish before saving.");
+    if (pendingUploads > 0) {
+      setError("Wait for all media uploads to finish before saving.");
       return null;
     }
     if (module === "products" && !productPricing.ready) {
@@ -797,8 +800,8 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setValidationIssues(productPricing.errors.map((message) => ({ field: "prices", message })));
       return null;
     }
-    if (module === "products" && !richContentValid) {
-      setError("The product description contains unsupported content or formatting. Correct it before saving.");
+    if ((module === "products" || module === "categories") && !richContentValid) {
+      setError("The description contains unsupported content or formatting. Correct it before saving.");
       return null;
     }
     setBusy(true);
@@ -825,6 +828,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
         toast.success("Product draft saved.");
       }
       if (module === "categories") { setSlugAuto(false); toast.success("Category draft saved."); }
+      if (module === "categories") setRichContentResetKey((value) => value + 1);
       setConflict(false);
       setNotice("Draft saved.");
       if (isNew) router.replace(`/admin/${module}/${result.record.id}`);
@@ -868,6 +872,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setNotice(action === "publish" ? "Record published." : action === "unpublish" ? "Record unpublished." : action === "archive" ? "Record archived." : "Revision restored as a new draft.");
       if (module === "products") toast.success(action === "publish" ? "Product published." : "Product updated.");
       if (module === "categories") toast.success(action === "archive" ? "Category archived. Its history was preserved." : "Category updated.");
+      if (module === "categories") setRichContentResetKey((value) => value + 1);
     } catch (reason) {
       const status = (reason as { status?: number }).status;
       setConflict(status === 409);
@@ -891,7 +896,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
         <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
       </div>
     </div>
-    {previewOpen && <DraftPreview document={draft} />}
+    {previewOpen && <DraftPreview document={draft} module={module} />}
     {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
     {validationIssues.length > 0 && <div id="record-validation-summary" className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}
     {error && <div id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} role="alert" tabIndex={-1}><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
@@ -900,7 +905,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       <fieldset className={styles.editorFieldset} disabled={!canEdit}>
         <DocumentFields key={`${record?.id ?? "new"}:${pricingRefreshKey}`} module={module} document={draft} setDocument={setDraft} recordId={record?.id} slugAuto={slugAuto} setSlugAuto={setSlugAuto} onPricingChange={setProductPricing} pricingRefreshKey={pricingRefreshKey} canManageMedia={canManageMedia} onRichContentValidityChange={setRichContentValid} richContentResetKey={richContentResetKey} onUploadDelta={onUploadDelta} />
       </fieldset>
-      <div className={styles.bottomActions}><span>{pendingUploads > 0 ? "Product media is uploading…" : dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
+      <div className={styles.bottomActions}><span>{pendingUploads > 0 ? "Media is uploading…" : dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
     </form>
     {record && <section className={styles.panel} aria-labelledby="publishing-heading"><div className={styles.sectionHeading}><div><h2 id="publishing-heading">Publishing</h2><p>Publishing is a separate action and requires the right access.</p></div></div>
       <div className={styles.lifecycleActions}>

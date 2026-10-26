@@ -9,6 +9,20 @@ test("published list projection restores empty blocks and rejects private/malfor
   assert.deepEqual(parsePublishedRecord("blog",record).document.blocks,[]);
   for(const patch of [{kind:"page"},{id:"private"},{publishedAt:"not a date"},{document:{...record.document,role:"staff"}}]) assert.throws(()=>parsePublishedRecord("blog",{...record,...patch}));
 });
+test("published category records retain legacy blocks and accept validated rich content", () => {
+  const legacy = [{ type: "paragraph", text: "Legacy category copy" }];
+  const richContent = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Formatted category copy" }] }] };
+  const category = parsePublishedRecord("categories", {
+    id, kind: "category", revisionId: id, publishedAt: "2026-10-24T00:00:00Z",
+    document: { ...doc, parentId: null, position: 0, mediaIds: [], blocks: legacy, richContent },
+  });
+  assert.deepEqual(category.document.blocks, legacy);
+  assert.deepEqual(category.document.richContent, richContent);
+  assert.throws(() => parsePublishedRecord("categories", {
+    id, kind: "category", revisionId: id, publishedAt: "2026-10-24T00:00:00Z",
+    document: { ...category.document, richContent: { type: "doc", content: [{ type: "image", attrs: { mediaId: id, alt: "Photo", src: "https://example.com/photo.webp" } }] } },
+  }));
+});
 test("public prices are bounded coherent paise without stock count fields", () => {
   const variant={id,sku:"X-C6",label:"Board",regularPricePaise:10000,effectivePricePaise:8000,isOnSale:true,saleEndsAt:"2026-11-01T00:00:00Z",availability:"available",stock:100};
   assert.equal(parsePublicVariant(variant).effectivePricePaise,8000);
