@@ -7,6 +7,7 @@ import { createInsforgePublicClient } from "@/lib/insforge/public";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { readBoundedBody } from "@/lib/storage/http";
 import { parseProductPriceWrites, type ProductPriceWrite } from "@/lib/admin/product-contract";
+import { parseAdminInventoryQuery } from "@/lib/admin/inventory-contract";
 import {
   ADMIN_MODULES,
   MAX_ADMIN_BODY_BYTES,
@@ -617,10 +618,12 @@ export async function adminSetVariantPrice(request: Request, rawId: string): Pro
 export async function adminListInventory(request: Request): Promise<Response> {
   const access = await authorizedStaffClient(["orders.manage"]);
   if ("response" in access) return access.response;
-  const query = parseListQuery(new URL(request.url).searchParams);
+  const query = parseAdminInventoryQuery(new URL(request.url).searchParams);
   if (!query.ok) return validationResponse(query.fields);
-  const result = await rpc(access.client, "admin_list_inventory", {
+  const result = await rpc(access.client, "admin_query_inventory", {
     p_query: query.value.q,
+    p_stock: query.value.stock,
+    p_sort: query.value.sort,
     p_limit: query.value.limit,
     p_offset: query.value.offset,
   });

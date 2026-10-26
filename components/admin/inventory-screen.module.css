@@ -23,10 +23,11 @@
 .search input::placeholder { color: var(--muted); opacity: 1; }
 .button { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--foreground); cursor: pointer; font: inherit; font-size: 11px; font-weight: 600; line-height: 1.2; white-space: nowrap; }
 .button:hover:not(:disabled) { background: color-mix(in srgb, var(--foreground) 5%, var(--surface)); }
-.button:focus-visible, .pageSize select:focus-visible, .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.button:focus-visible, .pageSize select:focus-visible, .stockFilter select:focus-visible, .sortBy select:focus-visible, .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .button:disabled { cursor: not-allowed; opacity: .55; }
-.pageSize { display: flex; min-height: 36px; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; font-weight: 600; }
-.pageSize select { min-height: 36px; padding: 5px 22px 5px 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--foreground); font: inherit; font-size: 11px; }
+.pageSize, .stockFilter, .sortBy { display: flex; min-height: 36px; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; font-weight: 600; }
+.pageSize select, .stockFilter select, .sortBy select { min-height: 36px; min-width: 0; padding: 5px 22px 5px 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--foreground); font: inherit; font-size: 11px; }
+.sortBy select { max-width: 180px; }
 .count { margin-left: auto; color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 .errorBanner { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px; padding: 10px; border: 1px solid color-mix(in srgb, light-dark(#b42318, #fda29b) 38%, var(--divider)); border-radius: 5px; color: light-dark(#b42318, #fda29b); font-size: 11px; }
@@ -90,8 +91,10 @@
   .controls { align-items: stretch; }
   .search { width: 100%; min-height: 44px; }
   .search input { min-height: 40px; }
-  .button, .pageSize, .pageSize select { min-height: 44px; }
-  .pageSize { justify-content: space-between; }
+  .button, .pageSize, .pageSize select, .stockFilter, .stockFilter select, .sortBy, .sortBy select { min-height: 44px; }
+  .pageSize, .stockFilter, .sortBy { justify-content: space-between; }
+  .stockFilter, .sortBy { flex: 1 1 42%; }
+  .stockFilter select, .sortBy select { flex: 1; }
   .count { width: 100%; margin: 0; }
   .table th, .table td { padding: 11px 10px; }
   .rowSelect { min-height: 44px; }

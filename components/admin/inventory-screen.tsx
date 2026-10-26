@@ -12,6 +12,8 @@ type InventoryVariant = AdminVariantDto & { sourceOnly: boolean };
 type InventoryList = { items: InventoryVariant[]; total: number };
 type KeyedInventoryList = { key: string; value: InventoryList };
 type KeyedError = { key: string; message: string };
+type InventoryStockFilter = "all" | "unverified" | "in_stock" | "out_of_stock";
+type InventorySort = "updated_desc" | "title_asc" | "title_desc" | "sku_asc" | "sku_desc" | "stock_asc" | "stock_desc";
 
 async function readError(response: Response) {
   const body = await response.json().catch(() => null) as ApiProblem | null;
@@ -28,6 +30,8 @@ export function InventoryScreen() {
   const [listErrorState, setListErrorState] = useState<KeyedError | null>(null);
   const [searchText, setSearchText] = useState("");
   const [query, setQuery] = useState("");
+  const [stockFilter, setStockFilter] = useState<InventoryStockFilter>("all");
+  const [sort, setSort] = useState<InventorySort>("updated_desc");
   const [offset, setOffset] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [selected, setSelected] = useState<InventoryVariant | null>(null);
@@ -39,7 +43,7 @@ export function InventoryScreen() {
   const [refresh, setRefresh] = useState(0);
   const requestId = useRef<string | null>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
-  const requestKey = `${query}\u0000${offset}\u0000${pageSize}#${refresh}`;
+  const requestKey = `${query}\u0000${stockFilter}\u0000${sort}\u0000${offset}\u0000${pageSize}#${refresh}`;
   const response = listState?.key === requestKey ? listState.value : null;
   const items = response?.items ?? [];
   const total = response?.total ?? null;
@@ -53,7 +57,7 @@ export function InventoryScreen() {
   useEffect(() => {
     if (!canAdjust) return;
     const controller = new AbortController();
-    const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset) });
+    const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset), stock: stockFilter, sort });
     if (query) params.set("q", query);
     void fetch(`/api/admin/inventory?${params}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
@@ -70,7 +74,7 @@ export function InventoryScreen() {
         setListErrorState({ key: requestKey, message: reason instanceof Error ? reason.message : "Inventory could not be loaded. Try again." });
       });
     return () => controller.abort();
-  }, [canAdjust, offset, pageSize, query, refresh, requestKey]);
+  }, [canAdjust, offset, pageSize, query, refresh, requestKey, sort, stockFilter]);
 
   function choose(item: InventoryVariant) {
     requestId.current = null;
@@ -170,6 +174,27 @@ export function InventoryScreen() {
                 <option value={100}>100</option>
               </select>
             </label>
+            <label className={styles.stockFilter}>
+              <span>Stock</span>
+              <select value={stockFilter} onChange={(event) => { setStockFilter(event.target.value as InventoryStockFilter); setOffset(0); setSelected(null); }}>
+                <option value="all">All statuses</option>
+                <option value="unverified">Unverified</option>
+                <option value="in_stock">Recorded: above zero</option>
+                <option value="out_of_stock">Recorded: zero</option>
+              </select>
+            </label>
+            <label className={styles.sortBy}>
+              <span>Sort</span>
+              <select value={sort} onChange={(event) => { setSort(event.target.value as InventorySort); setOffset(0); setSelected(null); }}>
+                <option value="updated_desc">Recently updated</option>
+                <option value="title_asc">Product: A–Z</option>
+                <option value="title_desc">Product: Z–A</option>
+                <option value="sku_asc">SKU: A–Z</option>
+                <option value="sku_desc">SKU: Z–A</option>
+                <option value="stock_asc">On hand: low to high</option>
+                <option value="stock_desc">On hand: high to low</option>
+              </select>
+            </label>
             <span className={styles.count} aria-live="polite">{loading ? "Loading inventory…" : total === null ? "Unavailable" : `${total.toLocaleString("en-IN")} ${total === 1 ? "variant" : "variants"}`}</span>
           </form>
 
@@ -180,7 +205,7 @@ export function InventoryScreen() {
               <thead><tr><th scope="col">Product</th><th scope="col">Variant / SKU</th><th scope="col">On hand</th></tr></thead>
               <tbody>
                 {loading && <tr><td colSpan={3} className={styles.tableMessage}>Loading inventory…</td></tr>}
-                {!loading && !listError && items.length === 0 && <tr><td colSpan={3} className={styles.tableMessage}>{query ? "No variants match this search." : "No product variants are available to manage."}</td></tr>}
+                {!loading && !listError && items.length === 0 && <tr><td colSpan={3} className={styles.tableMessage}>{query || stockFilter !== "all" ? "No variants match these filters." : "No product variants are available to manage."}</td></tr>}
                 {!loading && !listError && items.map((item) => (
                   <tr key={item.id} className={selected?.id === item.id ? styles.selectedRow : undefined}>
                     <td>
