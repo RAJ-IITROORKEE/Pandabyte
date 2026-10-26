@@ -4,12 +4,12 @@ import { clampSidebarWidth, readSidebarLayout, sidebarMode } from "./sidebar-lay
 
 test("layout preferences reject corruption and stale versions and only keep layout fields", () => {
   for (const raw of [null, "{", "null", "[]", '{"version":2,"width":350}']) {
-    assert.deepEqual(readSidebarLayout(raw), { version: 1, width: 272, collapsed: false, closedGroups: [] });
+    assert.deepEqual(readSidebarLayout(raw), { version: 1, width: 256, collapsed: false, closedGroups: [] });
   }
   assert.deepEqual(readSidebarLayout(JSON.stringify({ version: 1, width: 999, collapsed: true, closedGroups: ["Assets", "unknown", "Assets"], role: "ADMIN" })), {
     version: 1, width: 360, collapsed: true, closedGroups: ["Assets"],
   });
-  for (const width of [null, "350", NaN, Infinity]) assert.equal(clampSidebarWidth(width), 272);
+  for (const width of [null, "350", NaN, Infinity]) assert.equal(clampSidebarWidth(width), 256);
   assert.equal(clampSidebarWidth(-2), 224);
   assert.equal(clampSidebarWidth(250.7), 251);
 });

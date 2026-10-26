@@ -40,9 +40,12 @@ test("signed-out staff entry preserves the guarded staff destination", async () 
 });
 
 test("signed-out admin entry preserves the guarded admin destination", async () => {
-  const response = await request("/admin");
-  assert.equal(response.status, 307);
-  assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Fadmin");
+  for (const path of ["/admin", "/admin/users", "/admin/workspaces", "/admin/chat", "/admin/ai-chat", "/admin/notifications"]) {
+    const response = await request(path);
+    assert.equal(response.status, 307, path);
+    assert.equal(response.headers.get("location"), "/admin-login", path);
+  }
+  assert.equal((await request("/admin-login")).status, 200);
 });
 
 test("checkout and Agent require an active session while public storefront routes stay open", async () => {

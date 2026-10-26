@@ -38,10 +38,12 @@
   "dependencies": {
     "@clerk/nextjs": "7.9.20",
     "@insforge/sdk": "1.5.2",
+    "@tabler/icons-react": "3.49.0",
     "lucide-react": "1.61.0",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "recharts": "3.10.1",
     "sharp": "0.35.5",
     "three": "0.186.1"
   },

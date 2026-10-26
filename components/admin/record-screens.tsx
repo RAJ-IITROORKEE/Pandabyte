@@ -1,17 +1,18 @@
 "use client";
 
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Eye,
-  Plus,
-  RefreshCw,
-  Save,
-  Search,
-  Trash2,
-} from "lucide-react";
+  IconArrowLeft as ArrowLeft,
+  IconArrowRight as ArrowRight,
+  IconCheck as Check,
+  IconChevronDown as ChevronDown,
+  IconDeviceFloppy as Save,
+  IconEye as Eye,
+  IconPlus as Plus,
+  IconRefresh as RefreshCw,
+  IconSearch as Search,
+  IconTrash as Trash2,
+  IconX as X,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -201,7 +202,6 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
     <div className={styles.screen}>
       <div className={styles.pageHeading}>
         <div>
-          <p className={styles.eyebrow}>Content workspace</p>
           <h1>{meta.title}</h1>
           <p className={styles.lede}>{meta.description}</p>
         </div>
@@ -269,7 +269,7 @@ function TokenInput({ label, values, onChange, hint }: { label: string; values: 
     setEntry("");
   }
   return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span><div className={styles.tokenField}>
-    {values.map((value, index) => <span className={styles.token} key={`${value}-${index}`}>{value}<button type="button" aria-label={`Remove ${value}`} onClick={() => onChange(values.filter((_, current) => current !== index))}>×</button></span>)}
+    {values.map((value, index) => <span className={styles.token} key={`${value}-${index}`}>{value}<button type="button" aria-label={`Remove ${value}`} onClick={() => onChange(values.filter((_, current) => current !== index))}><X aria-hidden="true" size={14} /></button></span>)}
     <input aria-label={`Add ${label}`} value={entry} onChange={(event) => setEntry(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); add(entry); } }} onBlur={() => { if (entry.trim()) add(entry); }} placeholder="Type and press Enter" />
   </div>{hint && <span className={styles.fieldHint}>{hint}</span>}</div>;
 }
@@ -465,7 +465,6 @@ function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (
 
 function DraftPreview({ document }: { document: AdminDocument }) {
   return <section className={styles.previewPanel} aria-label="Private draft preview" aria-describedby="draft-preview-privacy">
-    <p className={styles.eyebrow}>Private draft preview</p>
     <h2>{document.title || "Untitled draft"}</h2>
     <PublishedDocument document={document} hideTitle />
     <p id="draft-preview-privacy" className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
@@ -687,7 +686,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 
   return <div className={styles.screen}>
     <div className={styles.editorHeading}>
-      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><p className={styles.eyebrow}>{isNew ? "New draft" : "Edit content"}</p><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
+      <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
       <div className={styles.editorActions}>
         <button className={styles.secondaryButton} type="button" onClick={() => setPreviewOpen((value) => !value)}><Eye size={16} aria-hidden="true" /> {previewOpen ? "Hide preview" : "Preview draft"}</button>
         <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
@@ -719,9 +718,9 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 }
 
 export function AdminUnavailableScreen({ title, description }: { title: string; description: string }) {
-  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1><p className={styles.lede}>{description}</p></div></div><div className={styles.emptyPanel}><p>This section is not available yet.</p><Link className={styles.secondaryButton} href="/admin">Return to dashboard</Link></div></div>;
+  return <div className={styles.screen}><div className={styles.pageHeading}><div><h1>{title}</h1><p className={styles.lede}>{description}</p></div></div><div className={styles.emptyPanel}><p>This section is not available yet.</p><Link className={styles.secondaryButton} href="/admin">Return to dashboard</Link></div></div>;
 }
 
 export function AdminAccessDeniedScreen({ title }: { title: string }) {
-  return <div className={styles.screen}><div className={styles.pageHeading}><div><p className={styles.eyebrow}>Admin workspace</p><h1>{title}</h1></div></div><div className={styles.errorBanner} role="status"><p>Your role does not allow access to this area.</p></div></div>;
+  return <div className={styles.screen}><div className={styles.pageHeading}><div><h1>{title}</h1></div></div><div className={styles.errorBanner} role="status"><p>Your role does not allow access to this area.</p></div></div>;
 }

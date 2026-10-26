@@ -1,0 +1,25 @@
+.layout { display: grid; grid-template-columns: 1fr 1fr; min-height: 100dvh; color: var(--foreground); background: var(--background); font-size: 14px; }
+.access { min-height: 100dvh; padding: clamp(24px, 8vw, 100px); background: var(--background); color: var(--foreground); }
+.access h1 { font-size: clamp(24px, 4vw, 36px); letter-spacing: -.03em; }
+.access p { color: var(--muted); line-height: 1.7; }
+.intro { display: flex; flex-direction: column; justify-content: space-between; gap: 48px; padding: 40px clamp(24px, 5vw, 80px); border-right: 1px solid var(--divider); background: var(--surface); }
+.brand { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; font-weight: 600; }
+.brand span { display: grid; place-items: center; width: 42px; height: 42px; background: #fff; }
+.introCopy h1 { margin: 0 0 24px; font-size: clamp(30px, 3vw, 48px); letter-spacing: -.035em; line-height: 1.2; font-weight: 600; }
+.introCopy p { max-width: 46ch; margin: 0; color: var(--muted); line-height: 1.8; }
+.introCopy ul { display: grid; gap: 18px; margin: 36px 0 0; padding: 0; list-style: none; }
+.introCopy li { display: flex; align-items: center; gap: 12px; }
+.introCopy svg { width: 18px; height: 18px; }
+.note, .security { color: var(--muted); font-size: 12px; line-height: 1.7; }
+.signIn { display: flex; flex-direction: column; min-width: 0; justify-content: space-between; gap: 32px; padding: 24px clamp(20px, 4vw, 64px); }
+.controls { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; font-size: 12px; }
+.controls a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; }
+.controls label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.controls select { min-height: 40px; padding: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--foreground); font: inherit; }
+.form { width: min(100%, 400px); align-self: center; }
+.form h2 { font-size: 24px; letter-spacing: -.025em; font-weight: 600; }
+.form > p { color: var(--muted); line-height: 1.8; margin-bottom: 28px; }
+.continue { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; background: var(--foreground); color: var(--background); font-weight: 600; text-decoration: none; }
+.security { text-align: center; }
+.layout :is(a, select):focus-visible { outline: 2px solid var(--foreground); outline-offset: 4px; }
+@media (max-width: 767px) { .layout { grid-template-columns: 1fr; } .intro { gap: 24px; padding: 24px; border-right: 0; border-bottom: 1px solid var(--divider); } .introCopy h1 { font-size: 28px; margin-bottom: 14px; } .introCopy ul, .note { display: none; } .signIn { gap: 32px; padding: 24px 20px; } }

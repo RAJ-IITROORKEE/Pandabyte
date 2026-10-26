@@ -1,95 +1,36 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
-  BookOpen,
-  ChevronDown,
-  PanelLeftClose,
-  PanelLeftOpen,
-  RotateCcw,
-  ExternalLink,
-  Boxes,
-  CircleDollarSign,
-  FileText,
-  Globe,
-  HelpCircle,
-  Image,
-  LayoutDashboard,
-  Menu,
-  MessageSquare,
-  Package,
-  ShoppingCart,
-  Tags,
-  Users,
-  Video,
-  X,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+  IconChevronDown,
+  IconBell,
+  IconExternalLink,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconMenu2,
+  IconRefresh,
+  IconX,
+} from "@tabler/icons-react";
 import ImageComponent from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type CSSProperties } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { SIDEBAR_STORAGE_KEY, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH, clampSidebarWidth, readSidebarLayout, sidebarMode } from "./sidebar-layout";
+import { AdminSearch } from "./admin-search";
+import { dashboardItem, navigationGroups, visibleNavigationGroups } from "./admin-navigation";
+import { AdminThemeProvider, AdminThemeSelect, useAdminTheme } from "./admin-theme";
 import styles from "./admin-shell.module.css";
 
 type Capability = string;
 
-type AdminNavItem = {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  capability?: Capability;
-};
-
-const groups: { label: string; items: AdminNavItem[] }[] = [
-  {
-    label: "Products & catalog",
-    items: [
-      { href: "/admin/products", label: "Products", icon: Package, capability: "catalog.edit" },
-      { href: "/admin/categories", label: "Categories", icon: Tags, capability: "catalog.edit" },
-      { href: "/admin/pricing", label: "Pricing", icon: CircleDollarSign, capability: "catalog.edit" },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { href: "/admin/orders", label: "Orders", icon: ShoppingCart, capability: "orders.manage" },
-      { href: "/admin/inventory", label: "Inventory", icon: Boxes, capability: "orders.manage" },
-      { href: "/admin/inquiries", label: "Inquiries", icon: MessageSquare, capability: "inquiries.manage" },
-    ],
-  },
-  {
-    label: "Site content",
-    items: [
-      { href: "/admin/pages", label: "Pages", icon: FileText, capability: "content.edit" },
-      { href: "/admin/blog", label: "Blog", icon: BookOpen, capability: "content.edit" },
-      { href: "/admin/faqs", label: "FAQs", icon: HelpCircle, capability: "content.edit" },
-      { href: "/admin/team", label: "Team", icon: Users, capability: "content.edit" },
-      { href: "/admin/contact", label: "Contact", icon: MessageSquare, capability: "content.edit" },
-      { href: "/admin/navigation", label: "Navigation", icon: Globe, capability: "content.edit" },
-      { href: "/admin/solutions", label: "Solutions", icon: Package, capability: "content.edit" },
-      { href: "/admin/learn", label: "Learn resources", icon: BookOpen, capability: "content.edit" },
-      { href: "/admin/videos", label: "Videos", icon: Video, capability: "content.edit" },
-    ],
-  },
-  {
-    label: "Assets",
-    items: [{ href: "/admin/media", label: "Media", icon: Image, capability: "media.manage" }],
-  },
-  {
-    label: "Access control",
-    items: [{ href: "/admin/users", label: "Users & roles", icon: Users, capability: "staff.manage" }],
-  },
-];
-
 const titles = new Map<string, string>([
-  ["/admin", "Dashboard"],
-  ["/admin/pricing", "Pricing"],
-  ["/admin/inventory", "Inventory"],
-  ["/admin/orders", "Orders"],
-  ["/admin/users", "Users & roles"],
-  ...groups.flatMap((group) => group.items.map((item) => [item.href, item.label] as const)),
+  [dashboardItem.href, dashboardItem.label],
+  ["/admin/notifications", "Notifications"],
+  ...navigationGroups.flatMap((group) => group.items.map((item) => [item.href, item.label] as const)),
+]);
+
+const groupTitles = new Map<string, string>([
+  ...navigationGroups.flatMap((group) => group.items.map((item) => [item.href, group.label] as const)),
 ]);
 
 const CapabilitiesContext = createContext<readonly Capability[]>([]);
@@ -98,11 +39,26 @@ export function useAdminCapabilities() {
   return useContext(CapabilitiesContext);
 }
 
-export function AdminShell({ capabilities, children }: {
+export function AdminShell({ capabilities, children, fontFamily }: {
   capabilities: Capability[];
   children: ReactNode;
+  fontFamily: string;
+}) {
+  return (
+    <AdminThemeProvider className={styles.root} fontFamily={fontFamily}>
+      <AdminShellContent capabilities={capabilities} fontFamily={fontFamily}>{children}</AdminShellContent>
+    </AdminThemeProvider>
+  );
+}
+
+function AdminShellContent({ capabilities, children, fontFamily }: {
+  capabilities: Capability[];
+  children: ReactNode;
+  fontFamily: string;
 }) {
   const pathname = usePathname();
+  const { resolvedTheme } = useAdminTheme();
+  const { isLoaded, user } = useUser();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [viewport, setViewport] = useState(1440);
@@ -150,6 +106,36 @@ export function AdminShell({ capabilities, children }: {
   const sidebarRef = useRef<HTMLElement>(null);
   const pathBase = pathname.split("/").slice(0, 3).join("/");
   const title = titles.get(pathname) ?? titles.get(pathBase) ?? "Admin workspace";
+  const sectionTitle = pathname === "/admin" ? "Workspace" : groupTitles.get(pathname) ?? groupTitles.get(pathBase) ?? "Workspace";
+  const visibleGroups = visibleNavigationGroups(capabilities);
+  const DashboardIcon = dashboardItem.icon;
+  const displayName = user?.fullName ?? user?.username ?? "Signed-in user";
+  const displayEmail = user?.primaryEmailAddress?.emailAddress;
+  const dark = resolvedTheme === "dark";
+  const clerkVariables = {
+    fontFamily,
+    borderRadius: "0",
+    colorPrimary: dark ? "#f5f5f5" : "#171717",
+    colorPrimaryForeground: dark ? "#0a0a0a" : "#ffffff",
+    colorBackground: dark ? "#1b1b1b" : "#ffffff",
+    colorForeground: dark ? "#f5f5f5" : "#171717",
+    colorMutedForeground: dark ? "#a3a3a3" : "#525252",
+    colorInput: dark ? "#0a0a0a" : "#ffffff",
+    colorInputForeground: dark ? "#f5f5f5" : "#171717",
+    colorBorder: "#737373",
+  };
+  const clerkPrimaryButton = {
+    backgroundColor: dark ? "#f5f5f5" : "#171717",
+    backgroundImage: "none",
+    color: dark ? "#0a0a0a" : "#ffffff",
+    borderRadius: "0",
+    minHeight: "44px",
+  };
+  const userButtonAppearance = {
+    variables: clerkVariables,
+    elements: { userButtonTrigger: styles.userButtonTrigger, userButtonPopoverCard: styles.accountPopover, formButtonPrimary: clerkPrimaryButton },
+  };
+  const userProfileAppearance = { variables: clerkVariables, elements: { rootBox: styles.accountModal, formButtonPrimary: clerkPrimaryButton } };
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -177,6 +163,8 @@ export function AdminShell({ capabilities, children }: {
     window.requestAnimationFrame(() => closeRef.current?.focus());
 
     function handleKeyDown(event: KeyboardEvent) {
+      // Clerk owns focus while its account controls are portaled outside the drawer.
+      if ([...document.querySelectorAll(`.${styles.accountPopover}, .${styles.accountModal}`)].some((element) => element.getClientRects().length > 0)) return;
       if (event.key === "Escape") {
         event.preventDefault();
         setMobileOpen(false);
@@ -214,7 +202,7 @@ export function AdminShell({ capabilities, children }: {
 
   return (
     <CapabilitiesContext.Provider value={capabilities}>
-      <div className={styles.root}>
+      <>
         <a className={styles.skipLink} href="#main">Skip to admin content</a>
         {isMobile && mobileOpen && (
           <button
@@ -261,11 +249,11 @@ export function AdminShell({ capabilities, children }: {
                   triggerRef.current?.focus();
                 }}
               >
-                <X aria-hidden="true" />
+                <IconX aria-hidden="true" />
               </button>
             </div>
 
-            <nav className={styles.nav} aria-label="Workspace">
+            <nav className={styles.nav} aria-label="Admin workspace">
               <Link
                 className={`${styles.navLink} ${pathname === "/admin" ? styles.activeLink : ""}`}
                 href="/admin"
@@ -273,26 +261,25 @@ export function AdminShell({ capabilities, children }: {
                 aria-label="Dashboard"
                 onClick={() => setMobileOpen(false)}
               >
-                <LayoutDashboard aria-hidden="true" />
+                <DashboardIcon aria-hidden="true" />
                 <span>Dashboard</span>
               </Link>
-              {groups.map((group) => {
-                const visibleItems = group.items.filter((item) => !item.capability || capabilities.includes(item.capability));
-                if (!visibleItems.length) return null;
+              {visibleGroups.map((group) => {
+                const groupIndex = navigationGroups.findIndex((entry) => entry.label === group.label);
                 return (
                   <section className={styles.navGroup} key={group.label}>
                     <h2>
                       <button type="button" className={styles.groupToggle}
                         aria-expanded={rail || !layout.closedGroups.includes(group.label)}
-                        aria-controls={`admin-group-${groups.indexOf(group)}`}
+                        aria-controls={`admin-group-${groupIndex}`}
                         onClick={() => setLayout((current) => ({ ...current, closedGroups: current.closedGroups.includes(group.label)
                           ? current.closedGroups.filter((label) => label !== group.label) : [...current.closedGroups, group.label] }))}>
-                        {group.label}<ChevronDown aria-hidden="true" />
+                        {group.label}<IconChevronDown aria-hidden="true" />
                       </button>
                     </h2>
-                    <div id={`admin-group-${groups.indexOf(group)}`} className={styles.groupItems}
+                    <div id={`admin-group-${groupIndex}`} className={styles.groupItems}
                       hidden={!rail && layout.closedGroups.includes(group.label)}>
-                    {visibleItems.map((item) => {
+                    {group.items.map((item) => {
                       const Icon = item.icon;
                       const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                       return (
@@ -301,11 +288,14 @@ export function AdminShell({ capabilities, children }: {
                           href={item.href}
                           key={item.href}
                           aria-current={active ? "page" : undefined}
-                          aria-label={item.label}
+                          aria-label={item.comingSoon ? `${item.label}, coming soon` : item.label}
                           onClick={() => setMobileOpen(false)}
                         >
                           <Icon aria-hidden="true" />
-                          <span>{item.label}</span>
+                          <span className={styles.navLabel}>
+                            <span>{item.label}</span>
+                            {item.comingSoon && <small>Coming soon</small>}
+                          </span>
                         </Link>
                       );
                     })}
@@ -316,7 +306,14 @@ export function AdminShell({ capabilities, children }: {
             </nav>
 
             <div className={styles.sidebarFooter}>
-              <Link href="/" className={`${styles.storeLink} ${styles.navLink}`} aria-label="Open storefront"><ExternalLink aria-hidden="true" /><span>Open storefront</span></Link>
+              <div className={styles.userFooter}>
+                {isLoaded && user && <div className={styles.userIdentity}>
+                  <span className={styles.userName}>{displayName}</span>
+                  {displayEmail && <span className={styles.userEmail}>{displayEmail}</span>}
+                </div>}
+                <UserButton appearance={userButtonAppearance} userProfileProps={{ appearance: userProfileAppearance }} />
+              </div>
+              <Link href="/" className={`${styles.storeLink} ${styles.navLink}`} aria-label="Open storefront"><IconExternalLink aria-hidden="true" /><span>Open storefront</span></Link>
             </div>
           </aside>
 
@@ -372,31 +369,33 @@ export function AdminShell({ capabilities, children }: {
                   aria-controls="admin-navigation"
                   onClick={() => setMobileOpen(true)}
                 >
-                  <Menu aria-hidden="true" />
+                  <IconMenu2 aria-hidden="true" />
                 </button>
                 <button type="button" className={styles.layoutButton}
                   aria-label={layout.collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
                   aria-expanded={!layout.collapsed} aria-controls="admin-navigation"
                   onClick={() => setLayout((current) => ({ ...current, collapsed: !current.collapsed }))}>
-                  {layout.collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
+                  {layout.collapsed ? <IconLayoutSidebarLeftExpand aria-hidden="true" /> : <IconLayoutSidebarLeftCollapse aria-hidden="true" />}
                 </button>
                 <button type="button" className={styles.layoutButton} aria-label="Reset admin sidebar layout"
-                  onClick={() => setLayout(readSidebarLayout(null))}><RotateCcw aria-hidden="true" /></button>
+                  onClick={() => setLayout(readSidebarLayout(null))}><IconRefresh aria-hidden="true" /></button>
                 <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
-                  <span>Workspace</span>
+                  <Link href="/admin">Workspace</Link>
                   <span aria-hidden="true">/</span>
+                  {sectionTitle !== "Workspace" && <><span>{sectionTitle}</span><span aria-hidden="true">/</span></>}
                   <span aria-current="page">{title}</span>
                 </nav>
               </div>
               <div className={styles.topbarActions}>
-                <ThemeToggle />
-                <UserButton appearance={{ elements: { userButtonTrigger: styles.userButtonTrigger } }} />
+                <AdminSearch capabilities={capabilities} disableShortcut={isMobile && mobileOpen} />
+                <AdminThemeSelect />
+                <Link className={styles.notificationLink} href="/admin/notifications" aria-label="Notifications, coming soon"><IconBell aria-hidden="true" size={18} /></Link>
               </div>
             </header>
             <main className={styles.main} id="main" tabIndex={-1}>{children}</main>
           </div>
         </div>
-      </div>
+      </>
     </CapabilitiesContext.Provider>
   );
 }

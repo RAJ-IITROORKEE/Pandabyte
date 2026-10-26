@@ -280,7 +280,6 @@ function RoleSession({ user }: { user: SignedInUser }) {
 
   if (!canManage) {
     return <div className={ui.screen}><section className={ui.panel}>
-      <p className={ui.eyebrow}>Access control</p>
       <h1 className={styles.deniedTitle}>Access denied</h1>
       <p className={ui.lede}>Your role does not allow you to view or change staff access.</p>
     </section></div>;
@@ -288,7 +287,6 @@ function RoleSession({ user }: { user: SignedInUser }) {
 
   return <div className={ui.screen}>
     <div className={ui.pageHeading}><div>
-      <p className={ui.eyebrow}>Access control</p>
       <h1>Users &amp; roles</h1>
       <p className={ui.lede}>Assign one role to an existing verified account.</p>
     </div></div>

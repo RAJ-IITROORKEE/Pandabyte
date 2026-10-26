@@ -1,0 +1,202 @@
+.dashboard {
+  display: grid;
+  width: min(100%, 1440px);
+  gap: clamp(18px, 2.4vw, 26px);
+  margin-inline: auto;
+  color: var(--admin-foreground, var(--foreground));
+}
+
+.heading,
+.panelHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.heading h1 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 650;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+
+.heading p,
+.panelHeading p {
+  margin: 7px 0 0;
+  color: var(--admin-muted, var(--muted));
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.refreshButton {
+  display: inline-flex;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--admin-border, var(--border));
+  border-radius: 0;
+  background: var(--admin-surface, var(--surface));
+  color: var(--admin-foreground, var(--foreground));
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.refreshButton:hover:not(:disabled) { background: color-mix(in srgb, var(--admin-foreground, var(--foreground)) 5%, var(--admin-surface, var(--surface))); }
+.refreshButton:focus-visible { outline: 2px solid var(--admin-accent, var(--accent)); outline-offset: 3px; }
+.refreshButton:disabled { cursor: wait; opacity: .65; }
+.refreshButton svg { color: var(--admin-muted, var(--muted)); }
+
+.errorNotice {
+  margin: -8px 0 0;
+  color: var(--admin-error, light-dark(#b42318, #fda29b));
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric {
+  display: grid;
+  min-width: 0;
+  min-height: 152px;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
+  padding: clamp(14px, 1.8vw, 20px);
+  border: 1px solid var(--admin-divider, var(--divider));
+  border-radius: 0;
+  background: var(--admin-surface, var(--surface));
+}
+
+.metricHeading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  color: var(--admin-muted, var(--muted));
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.metricHeading svg { flex: 0 0 auto; color: var(--admin-muted, var(--muted)); }
+
+.metric strong {
+  align-self: center;
+  color: var(--admin-foreground, var(--foreground));
+  font-family: inherit;
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.04em;
+  line-height: 1;
+}
+
+.metric a,
+.accessList a {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  color: var(--admin-foreground, var(--foreground));
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.metric a:hover,
+.accessList a:hover { color: var(--admin-accent, var(--accent)); text-decoration: underline; }
+.metric a:focus-visible,
+.accessList a:focus-visible { outline: 2px solid var(--admin-accent, var(--accent)); outline-offset: 3px; border-radius: 0; }
+.metric a svg,
+.accessList a svg { color: var(--admin-muted, var(--muted)); }
+
+.emptyMetrics {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 22px;
+  color: var(--admin-muted, var(--muted));
+  font-size: 13px;
+}
+
+.lowerPanels {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.panel {
+  display: grid;
+  min-width: 0;
+  min-height: 288px;
+  align-content: start;
+  gap: 16px;
+  padding: clamp(16px, 2vw, 21px);
+  border: 1px solid var(--admin-divider, var(--divider));
+  border-radius: 0;
+  background: var(--admin-surface, var(--surface));
+}
+
+.panelHeading { margin: 0; }
+.panelHeading h2 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -.02em; line-height: 1.35; }
+.panelHeading p { margin-top: 5px; font-size: 11px; }
+.panelState { display: grid; min-height: 184px; place-items: center; margin: 0; padding: 18px; color: var(--admin-muted, var(--muted)); font-size: 12px; line-height: 1.6; text-align: center; }
+.chartFrame { min-width: 0; overflow-x: auto; }
+.chartFrame:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.chart { width: 100%; height: 250px; min-width: 0; }
+@media (max-width: 480px) { .chart { min-width: 440px; } }
+.panelNote { margin: 0; padding-top: 12px; border-top: 1px solid var(--admin-divider, var(--divider)); color: var(--admin-muted, var(--muted)); font-size: 11px; line-height: 1.55; }
+.accessList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; margin: -2px 0 0; padding: 0; list-style: none; }
+.accessList li { display: flex; min-width: 0; align-items: center; border-bottom: 1px solid var(--admin-divider, var(--divider)); }
+.accessList a { width: 100%; min-height: 42px; justify-content: space-between; gap: 6px; overflow-wrap: anywhere; }
+.accessList a svg { flex: 0 0 auto; }
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+  border: 0;
+}
+
+@media (max-width: 1060px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lowerPanels { grid-template-columns: minmax(0, 1fr); }
+  .panel { min-height: 0; }
+  .accessList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .heading { align-items: flex-start; flex-direction: column; }
+  .refreshButton { align-self: flex-start; }
+  .accessList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chart { height: 220px; }
+}
+
+@media (max-width: 360px) {
+  .metric { padding: 12px; }
+  .metricHeading { font-size: 11px; }
+  .metric a { font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refreshButton { transition: none; }
+}

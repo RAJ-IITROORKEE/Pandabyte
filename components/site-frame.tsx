@@ -10,7 +10,8 @@ export function SiteFrame({ children, header, footer }: {
 }) {
   const pathname = usePathname();
   const staffWorkspace = pathname === "/staff" || pathname.startsWith("/staff/") ||
-    pathname === "/admin" || pathname.startsWith("/admin/");
+    pathname === "/admin" || pathname.startsWith("/admin/") ||
+    pathname === "/admin-login" || pathname.startsWith("/admin-login/");
 
   if (staffWorkspace) return children;
 

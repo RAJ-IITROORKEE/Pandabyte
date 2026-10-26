@@ -1,5 +1,11 @@
 # PandaByte UI migration handoff
 
+## Admin Mono follow-up — 27 October 2026
+
+The owner approved the separate Kiranism Mono Admin migration on 26 October. Its [contract](docs/admin-mono-migration.md) supersedes the earlier Admin-only appearance described below. Admin now has Geist Mono, Tabler icons, independent light/dark/system preferences, a 256px default sidebar, command search, scoped Clerk account/sign-in presentation, refreshed tables/forms, real-count overview charts and clearly labeled upcoming workspace/chat/AI/notification screens. Public logo, hero, styling and Lucide icons remain unchanged; the only shared-shell change excludes the new `/admin-login` entry from public chrome.
+
+The built-in browser has 104 accepted reflow/theme cases across 13 page families at measured 320/768/1024/1440 widths. Incorrect viewport and loading attempts remain outside the accepted set. Search/keyboard, sidebar resize/bounds/persistence, nested account focus, draft validation and storefront theme isolation are checked without saving records or changing roles. Final checks, screenshots and local commit are recorded in [Admin evidence](docs/verification/admin-mono.json) and [phase progress](docs/phase-progress.md). Full interactive signed-out sign-in, screen-reader speech, actual zoom and OS reduced-motion switching remain manual gates.
+
 Updated 26 October 2026. The owner resumed implementation after the planning checkpoint. C1–C5 are complete for the bounded UI migration, with the manual accessibility and content gates below. Read [the plan](ui-migrate-plan.md), [C1 evidence](docs/verification/ui-migrate-c1.json) and [final evidence](docs/verification/ui-migrate-final.json).
 
 ## Checkpoints

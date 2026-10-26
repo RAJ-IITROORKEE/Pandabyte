@@ -36,7 +36,7 @@ function directives(policy) {
 
 test("production documents use fresh trusted nonces on framework, theme and Clerk scripts", async () => {
   const nonces = new Set();
-  for (const route of ["/", "/", "/contact", "/sign-in", "/account", "/admin/users"]) {
+  for (const route of ["/", "/", "/contact", "/sign-in", "/admin-login", "/account", "/admin/users"]) {
     // Empty development handshake token lets Clerk render its genuine signed-out branch.
     const response = await fetch(`http://localhost:3000${route}?__clerk_db_jwt=`, {
       redirect: "manual", signal: AbortSignal.timeout(20_000),
@@ -58,7 +58,8 @@ test("production documents use fresh trusted nonces on framework, theme and Cler
     assert(policy.get("frame-src").includes("https://www.youtube-nocookie.com"), route);
     assert.equal(response.headers.get("content-security-policy-report-only"), null, route);
     if ([301, 302, 303, 307, 308].includes(response.status)) {
-      assert.match(response.headers.get("location"), /sign-in/, route);
+      if (route.startsWith("/admin/")) assert.equal(response.headers.get("location"), "/admin-login", route);
+      else assert.match(response.headers.get("location"), /sign-in/, route);
       continue;
     }
     assert.equal(response.status, 200, route);

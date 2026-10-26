@@ -106,6 +106,8 @@ Routes are the proposed implementation contract; reconcile actual prototype path
 
 ## Admin editability and publication matrix
 
+**Latest Admin visual selection, 26 October 2026:** the owner selected the Kiranism dashboard's Mono theme, Geist Mono and Tabler icons for an isolated Admin interface. This supersedes the previous Admin-only visual reference and icon direction; the public storefront retains its existing tokens, logo, hero and Lucide icons. Admin has independent light/dark preferences. See [migration contract](docs/admin-mono-migration.md) for source, component mapping, licensing and verification. Existing capabilities and backend/publication rules below remain in force.
+
 All modules need list/search/filter, create/edit, validation, explicit save state, draft/preview/publish where relevant, recoverable errors and permission-denied states. Destructive changes need dependency-aware archive behavior; referenced products/orders must not vanish from history.
 
 | Admin area | Required editable fields/workflows | Public effect |

@@ -1,8 +1,8 @@
 export const SIDEBAR_STORAGE_KEY = "pandabyte-admin-layout-v1";
-export const SIDEBAR_DEFAULT_WIDTH = 272;
+export const SIDEBAR_DEFAULT_WIDTH = 256;
 export const SIDEBAR_MIN_WIDTH = 224;
 export const SIDEBAR_MAX_WIDTH = 360;
-export const SIDEBAR_GROUPS = ["Products & catalog", "Operations", "Site content", "Assets", "Access control"] as const;
+export const SIDEBAR_GROUPS = ["Workspace", "Products & catalog", "Operations", "Site content", "Assets", "Access control"] as const;
 
 export function clampSidebarWidth(width: unknown): number {
   return typeof width === "number" && Number.isFinite(width)

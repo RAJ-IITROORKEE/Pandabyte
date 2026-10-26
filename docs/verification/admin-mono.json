@@ -1,0 +1,1969 @@
+{
+  "date": "2026-10-27",
+  "scope": "Admin-only Mono migration",
+  "source": {
+    "repository": "https://github.com/Kiranism/next-shadcn-dashboard-starter",
+    "commit": "9084ffd954d24591d9b1d279c4b18e119b02b34e",
+    "theme": "Mono",
+    "font": "Geist Mono",
+    "icons": "@tabler/icons-react 3.49.0",
+    "charts": "recharts 3.10.1"
+  },
+  "baseCommit": "33800be",
+  "checks": {
+    "lint": "passed: npm run lint on final source; a stalled final focused command was stopped and replaced by this standard check",
+    "typecheck": "passed",
+    "productionBuild": "passed on final source",
+    "unit": {
+      "shared": 144,
+      "mediaUpload": 1,
+      "adminThemeNavigationLayout": 4
+    },
+    "http": {
+      "authRoutes": 7,
+      "securityHeaders": 2,
+      "diagnostics": 1
+    },
+    "impeccableDetector": "no findings",
+    "installAudit": {
+      "packages": 458,
+      "vulnerabilities": 0,
+      "when": "exact package installation during this checkpoint"
+    }
+  },
+  "browser": {
+    "surface": "Codex built-in browser",
+    "acceptedCases": 104,
+    "widths": [
+      320,
+      768,
+      1024,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "layouts": [
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 320,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 320,
+        "theme": "dark",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 753,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 753,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "dark",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "dark",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1425,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1425,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1425,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1425,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1425,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1425,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1425,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "dark",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "dark",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1427,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1427,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1427,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1427,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1427,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1427,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1427,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1427,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1427,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1427,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1427,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1427,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1440,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 1440,
+        "rootTheme": "dark",
+        "scrollWidth": 1440,
+        "theme": "light",
+        "width": 1440,
+        "pass": true
+      },
+      {
+        "clientWidth": 1012,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1012,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1012,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1012,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1012,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1012,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1012,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1012,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1012,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1012,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1012,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1012,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 1024,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1024,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Products"
+        ],
+        "loading": false,
+        "path": "/admin/products",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Users & roles"
+        ],
+        "loading": false,
+        "path": "/admin/users",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Media library"
+        ],
+        "loading": false,
+        "path": "/admin/media",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inquiries"
+        ],
+        "loading": false,
+        "path": "/admin/inquiries",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Pricing"
+        ],
+        "loading": false,
+        "path": "/admin/pricing",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 756,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Inventory"
+        ],
+        "loading": false,
+        "path": "/admin/inventory",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 756,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Workspaces"
+        ],
+        "loading": false,
+        "path": "/admin/workspaces",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Team chat"
+        ],
+        "loading": false,
+        "path": "/admin/chat",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "AI chat"
+        ],
+        "loading": false,
+        "path": "/admin/ai-chat",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Notifications"
+        ],
+        "loading": false,
+        "path": "/admin/notifications",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 768,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Your workspace.Everything in order."
+        ],
+        "loading": false,
+        "path": "/admin-login",
+        "publicHeader": false,
+        "requestedWidth": 768,
+        "rootTheme": "dark",
+        "scrollWidth": 768,
+        "theme": "light",
+        "width": 768,
+        "pass": true
+      },
+      {
+        "clientWidth": 1009,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 1024,
+        "rootTheme": "dark",
+        "scrollWidth": 1009,
+        "theme": "light",
+        "width": 1024,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Create product"
+        ],
+        "loading": false,
+        "path": "/admin/products/new",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      },
+      {
+        "clientWidth": 305,
+        "expectedTheme": "light",
+        "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+        "h1": [
+          "Admin overview"
+        ],
+        "loading": false,
+        "path": "/admin",
+        "publicHeader": false,
+        "requestedWidth": 320,
+        "rootTheme": "dark",
+        "scrollWidth": 305,
+        "theme": "light",
+        "width": 320,
+        "pass": true
+      }
+    ],
+    "notes": [
+      "151 raw attempts retained in ignored .bootstrap/admin-mono/browser-layout-attempts.json; loading, pre-hydration and wrong measured viewport attempts are not counted as accepted cases.",
+      "Viewport overrides changed measured size during the run; each accepted row records actual innerWidth and document/client width.",
+      "After the matrix, final changes removed the portal font-inheritance override, increased dark input-border contrast and removed the hidden chart keyboard stop; final portal/contrast/chart smoke checks are recorded separately.",
+      "Final 12 palette samples pass: normal text minimum 6.83:1 and input border/surface minimum 3.63:1. This is not a full accessibility audit.",
+      "Final chart smoke confirms the visual chart is rendered and has no focusable SVG inside aria-hidden content. All viewport overrides were reset before handoff."
+    ],
+    "journeys": [
+      "Command search: no-result state, Users navigation by Enter, Ctrl+K, ArrowDown, Escape and focus return.",
+      "Sidebar: 224/360 keyboard bounds, reset to 256, collapse/expand and grouped navigation.",
+      "Pointer drag changes width from 256 to 296; saved 264px keyboard adjustment verified after hydrated reload, then reset.",
+      "Mobile drawer: blocked search shortcut while open, Escape focus return and body-scroll restoration.",
+      "Clerk popover: mobile Tab reaches Sign out without drawer interference; first Escape closes popover, second closes drawer. No sign-out performed.",
+      "Clerk UserProfile: scoped Geist Mono and monochrome primary button; Update profile form opened and canceled without edits.",
+      "Empty product draft: validation summary receives focus and reports Title/Slug before any API write.",
+      "Mobile role table scrolls by keyboard within its contained 640px table."
+    ],
+    "storefrontIsolation": {
+      "before": {
+        "accent": "#72e3ad",
+        "background": "rgb(20, 20, 20)",
+        "font": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "headingFont": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "theme": "dark"
+      },
+      "admin": {
+        "root": "dark",
+        "theme": "light"
+      },
+      "storefront": {
+        "accent": "#72e3ad",
+        "background": "rgb(20, 20, 20)",
+        "font": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "headingFont": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "theme": "dark"
+      },
+      "unchanged": true
+    },
+    "finalSmoke": {
+      "chartRendered": true,
+      "font": "\"Geist Mono\", \"Geist Mono Fallback\"",
+      "hiddenChartStops": 0,
+      "overflow": false,
+      "theme": "dark"
+    },
+    "paletteContrastSamples": [
+      {
+        "theme": "dark",
+        "pair": "foreground/background",
+        "ratio": 18.16,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "dark",
+        "pair": "foreground/surface",
+        "ratio": 15.8,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "dark",
+        "pair": "muted/background",
+        "ratio": 7.85,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "dark",
+        "pair": "muted/surface",
+        "ratio": 6.83,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "dark",
+        "pair": "action-text/accent",
+        "ratio": 18.16,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "dark",
+        "pair": "border/surface",
+        "ratio": 3.63,
+        "minimum": 3,
+        "pass": true
+      },
+      {
+        "theme": "light",
+        "pair": "foreground/background",
+        "ratio": 17.93,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "light",
+        "pair": "foreground/surface",
+        "ratio": 17.93,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "light",
+        "pair": "muted/background",
+        "ratio": 7.81,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "light",
+        "pair": "muted/surface",
+        "ratio": 7.81,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "light",
+        "pair": "action-text/accent",
+        "ratio": 17.93,
+        "minimum": 4.5,
+        "pass": true
+      },
+      {
+        "theme": "light",
+        "pair": "border/surface",
+        "ratio": 4.74,
+        "minimum": 3,
+        "pass": true
+      }
+    ],
+    "consoleErrorsObserved": 0,
+    "screenshots": [
+      ".bootstrap/admin-mono/admin-overview-dark.png",
+      ".bootstrap/admin-mono/admin-products-light.png"
+    ]
+  },
+  "boundaries": {
+    "backendCodeChanged": false,
+    "providerConfigurationChanged": false,
+    "recordsSaved": false,
+    "rolesChanged": false,
+    "contentPublished": false,
+    "deployment": false,
+    "commerce": false
+  },
+  "limitations": [
+    "No full signed-out interactive Clerk sign-in flow was repeated; signed-out HTTP rendering/guard/security checks and signed-in account presentation were tested.",
+    "Screen-reader speech, actual zoom/text enlargement and runtime OS reduced-motion preference switching were not tested.",
+    "Loading/empty/error presentation retained; no provider outage or live error injected.",
+    "Workspaces, Chat, AI Chat and Notifications remain clearly labeled future previews. No live integrations, demo records, revenue or sales history imported."
+  ]
+}
