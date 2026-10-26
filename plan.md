@@ -140,6 +140,8 @@ Exit: tests cover price/sale changes, multiple buyers on the last unit, failed/c
 
 ## Phase 6 — migration, capacity and launch readiness
 
+26 October operational-documentation continuation after `1ed5c23`: [environment checklist, incident playbook and owner decision register](docs/phase-6-operational-readiness.md), reviewed with three Luna xhigh workers and verified offline. No application or service configuration changes. Monitoring ownership, retention and RPO/RTO remain undecided; full Phase 6 exit remains open.
+
 26 October accessibility continuation after `91109c5`: [bounded follow-up and remaining manual gates](docs/phase-6-accessibility-followup.md). Form/preview/circuit fixes and forty final reflow cases are verified; genuine zoom, runtime reduced-motion switching and real screen-reader speech are still unverified. No content publication, checkout/payments, load test, recovery or deployment is added. Operational-readiness documentation and owner content decisions remain independent next work; full Phase 6 exit is open.
 
 26 October code follow-up after `c84ea71`: the [three content-control fixes](docs/site-content-controls.md) are implemented and development-tested with Luna xhigh workers. Matching navigation overrides, optional bounded support/brand fields and clearer private note formatting retain publication/privacy gates. No content publication or imported-note backfill occurred; owner content decisions remain the next gate. Checkout/payments, load tests, recovery operations and deployment stay deferred.
@@ -153,6 +155,8 @@ Status, 25 October 2026: authorized and in progress. The [non-commerce audit che
 After `eb2be19`, the owner resumed the remaining work: [original-byte media delivery and offline preflight](docs/phase-6-media-followup.md), renewed access checks and a [bounded capacity profile](docs/phase-6-capacity-profile.md). The owner confirmed 100 simultaneous visitors, mostly browsing; detailed workload/provider scope and measurements remain gates. RPO/RTO are undecided.
 
 Latest decision: **restore is explicitly deferred**. Keep the runbook and open release gate; no backup/export/restore or recovery-target provisioning is part of this checkpoint.
+
+The following are future roadmap/exit criteria, not an instruction to execute deferred work. Current authorization covers operational documentation only; content publication, checkout/payments, load tests, deployment and recovery operations remain held.
 
 - Reconcile source exports with actual variants, original media, rights and corrected technical claims. Fix the broken RGB Matrix route; do not import contradictions as verified specifications. Owner-approved new catalog content is valid beyond the audit snapshot.
 - Dry-run idempotent imports; record row/error counts and rollback approach. Resolve whether/how old customers/orders migrate. Never invent transferable Wix passwords or expose private exports in Git.

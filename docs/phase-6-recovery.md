@@ -29,6 +29,8 @@ The owner must approve or replace these values, retention periods, backup locati
 
 ## Operator runbook
 
+**Preparatory only:** the latest checkpoint authorizes documentation, not these actions. Backup/export/copy/restore and recovery-target provisioning remain deferred. See the [operational decision register](phase-6-operational-readiness.md); RPO/RTO are unapproved. Steps below require separately resumed recovery scope.
+
 Use this only after the owner has approved the target, recovery point, operator, and any destructive action. Keep exports, manifests, identity mappings, and provider diagnostics in an encrypted, access-controlled recovery location; never place them in Git, issue text, screenshots, or general logs.
 
 1. **Declare and scope the incident.** Record incident owner, UTC start, affected environment, suspected failure window, and whether the issue is limited to code, a database record set, storage objects, or provider identity access. Use bounded application diagnostics from [the operational contract](operational-diagnostics.md); retain only allowlisted event class, area, status, time, and response reference. Do not collect raw customer requests, provider payloads, tokens, or database/session identifiers in the incident record.
