@@ -458,6 +458,10 @@
   aspect-ratio: auto;
 }
 
+.videoFrameCompact:has(.videoPoster) { aspect-ratio: 16 / 9; }
+.videoFrameCompact .videoPoster { min-height: 0; height: 100%; padding: 16px; }
+.videoButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+
 .videoFrame iframe {
   display: block;
   width: 100%;

@@ -1,0 +1,62 @@
+.library {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.libraryHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: clamp(28px, 5vw, 48px);
+  border-top: 1px solid var(--divider);
+}
+
+.libraryHeader h2,
+.libraryHeader p,
+.card h3,
+.card p {
+  margin: 0;
+}
+
+.libraryHeader h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: -.035em;
+  line-height: 1.2;
+}
+
+.libraryHeader p,
+.count,
+.card p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.libraryHeader p { margin-top: 8px; }
+.count { margin: 0; font-size: 14px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px 24px;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+}
+
+.card h3 { font-size: 18px; line-height: 1.4; }
+.card h3 a { color: var(--foreground); text-decoration: none; }
+.card h3 a:hover { color: var(--accent); }
+.card h3 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.card p { font-size: 14px; }
+
+@media (max-width: 960px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }

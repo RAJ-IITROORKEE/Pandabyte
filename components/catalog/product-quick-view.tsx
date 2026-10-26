@@ -13,6 +13,7 @@ import {
 } from "@/components/core/morphing-dialog";
 import { ProductCardMedia, type ProductCardMediaImage } from "./product-card-media";
 import { ProductVariantPanel } from "./product-variant-panel";
+import { cardPricing } from "./card-pricing";
 import styles from "./product-quick-view.module.css";
 
 type Props = {
@@ -28,16 +29,11 @@ type Props = {
   featured?: boolean;
 };
 
-const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
-
 export function ProductQuickView({ title, href, summary, categories, images, model3d, specifications, variants, observation, featured = false }: Props) {
   const [open, setOpen] = useState(false);
   const [slide, setSlide] = useState<string | undefined>(images[0]?.id);
   const handleSlideChange = useCallback((id: string | undefined) => setSlide(id), []);
-  const prices = variants.map((variant) => variant.effectivePricePaise);
-  const price = !prices.length || prices.some((value) => value === null) ? "Price unavailable" :
-    `${Math.min(...prices as number[]) !== Math.max(...prices as number[]) ? "From " : ""}${money.format(Math.min(...prices as number[]) / 100)}`;
-  const available = variants.some((variant) => variant.availability === "available");
+  const { price, availability, originalPrice, sourcePrice } = cardPricing(variants, observation?.priceText);
   const singleVariant = variants.length === 1 && !observation && variants[0].purchasable !== false ? variants[0] : null;
 
   return <MorphingDialog transition={{ type: "spring", bounce: 0.05, duration: 0.25 }} onOpenChange={setOpen}>
@@ -46,10 +42,10 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
       <div className={styles.cardBody}>
         <MorphingDialogTitle>{featured ? <h3>{title}</h3> : <h2>{title}</h2>}</MorphingDialogTitle>
         {categories.length > 0 && <div className={styles.categories} aria-label="Product categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}
-        {!observation && <div className={styles.pricing}>
-          <span>{variants.length ? available ? "Available" : "Unavailable" : "Availability unavailable"}</span>
-          <strong>{price}</strong>
-        </div>}
+        <div className={styles.pricing}>
+          <span>{availability}</span>
+          <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>Sale</span></>}</div>
+        </div>
         <div className={styles.cardActions}>
           <Link href={href}>View product</Link>
           <MorphingDialogTrigger className={styles.trigger} aria-label={`Quick view: ${title}`}><Plus aria-hidden="true" size={18} /> Quick view</MorphingDialogTrigger>

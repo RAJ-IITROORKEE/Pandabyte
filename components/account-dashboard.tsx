@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { UserAvatar, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { ArrowRight, Settings } from "lucide-react";
+import { ChevronDown, FolderLock, Settings } from "lucide-react";
 import { AccountProfile } from "@/components/account-profile";
 import { AccountFiles } from "@/components/account-files";
 import { AccountAddresses } from "@/components/account-addresses";
@@ -47,7 +47,9 @@ export function AccountDashboard() {
 
       <details className={styles.moreDetails}>
         <summary>
-          Private account files <ArrowRight aria-hidden="true" size={15} />
+          <span className={styles.sectionIcon}><FolderLock aria-hidden="true" size={19} /></span>
+          <span className={styles.summaryText}><strong>Private account files</strong><small>Manage files saved to your account.</small></span>
+          <ChevronDown className={styles.summaryChevron} aria-hidden="true" size={19} />
         </summary>
         <div className={styles.detailContent}>
           <Suspense fallback={<p className={styles.loadingState} role="status">Loading account files…</p>}>

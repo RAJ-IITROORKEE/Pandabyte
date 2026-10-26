@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Pencil, Phone } from "lucide-react";
 import styles from "@/components/account.module.css";
 
 type Profile = {
@@ -35,16 +36,27 @@ function parseProfileResponse(value: unknown): Profile | null | undefined {
 
 export function AccountProfile() {
   const [phone, setPhone] = useState("");
+  const [savedPhone, setSavedPhone] = useState("");
+  const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("Loading your contact details.");
   const [error, setError] = useState("");
   const formErrorRef = useRef<HTMLDivElement>(null);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const focusEditAfterSave = useRef(false);
 
   useEffect(() => {
     if (loaded && error) formErrorRef.current?.focus();
   }, [error, loaded]);
+
+  useEffect(() => {
+    if (!saving && focusEditAfterSave.current) {
+      focusEditAfterSave.current = false;
+      editButtonRef.current?.focus();
+    }
+  }, [saving]);
 
   const loadProfile = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -55,6 +67,7 @@ export function AccountProfile() {
       if (profile === undefined) throw new Error("Your contact details could not be loaded.");
 
       setPhone(profile?.phone ?? "");
+      setSavedPhone(profile?.phone ?? "");
       setLoaded(true);
       setError("");
       setStatus(profile ? "Contact details loaded." : "No contact details saved yet.");
@@ -78,6 +91,7 @@ export function AccountProfile() {
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!editing) return;
     setSaving(true);
     setError("");
     setStatus("");
@@ -99,6 +113,9 @@ export function AccountProfile() {
       if (!profile) throw new Error("Your saved contact details could not be confirmed. Reload and try again.");
 
       setPhone(profile.phone);
+      setSavedPhone(profile.phone);
+      setEditing(false);
+      focusEditAfterSave.current = true;
       setStatus("Contact details saved.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Your contact details could not be saved. Please try again.");
@@ -110,10 +127,22 @@ export function AccountProfile() {
   return (
     <section className={styles.section} aria-labelledby="account-profile-heading">
       <div className={styles.sectionHeading}>
-        <div>
-          <h2 id="account-profile-heading">Contact details</h2>
-          <p>These details are saved to your PandaByte account profile.</p>
+        <div className={styles.sectionTitle}>
+          <span className={styles.sectionIcon}><Phone aria-hidden="true" size={19} /></span>
+          <div>
+            <h2 id="account-profile-heading">Contact details</h2>
+            <p>These details are saved to your PandaByte account profile.</p>
+          </div>
         </div>
+        {loaded && <button ref={editButtonRef} className={styles.secondaryAction} type="button" disabled={saving} onClick={() => {
+          if (editing) {
+            setPhone(savedPhone);
+            setError("");
+          }
+          setEditing(!editing);
+        }}>
+          <Pencil aria-hidden="true" size={16} /> {editing ? "Cancel editing" : "Edit details"}
+        </button>}
       </div>
 
       <form className={styles.contactForm} onSubmit={saveProfile} aria-describedby={loaded && error ? "account-contact-error" : undefined} aria-busy={saving}>
@@ -147,9 +176,11 @@ export function AccountProfile() {
                 type="tel"
                 autoComplete="tel"
                 maxLength={48}
+                placeholder={editing ? "" : "No contact phone saved"}
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 aria-describedby="account-contact-phone-help"
+                readOnly={!editing}
                 disabled={saving}
               />
               <small id="account-contact-phone-help">Optional contact detail, not verified here. Leave blank and save to clear it.</small>
@@ -164,11 +195,11 @@ export function AccountProfile() {
                 <p>{error}</p>
               </div>
             )}
-            <div className={styles.formActions}>
+            {editing && <div className={styles.formActions}>
               <button className={styles.primaryAction} type="submit" disabled={saving}>
                 {saving ? "Saving…" : "Save contact details"}
               </button>
-            </div>
+            </div>}
           </div>
         )}
         {!loading && loaded && !error && status && <p className={styles.liveStatus} role="status" aria-live="polite">{status}</p>}

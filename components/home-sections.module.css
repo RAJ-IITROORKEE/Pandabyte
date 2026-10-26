@@ -16,15 +16,18 @@
 .categoryCardTitle { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .productGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .productGrid > * { min-width: 0; }
-.supportPanel { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .6fr); gap: 48px; margin-bottom: 80px; padding-block: 44px; border-block: 1px solid var(--divider); }
+.supportPanel { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 48px; margin-bottom: 80px; padding: clamp(24px, 4vw, 48px); background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; }
 .supportPanel > div { max-width: 600px; }
+.supportIcon { display: grid; width: 48px; height: 48px; margin-bottom: 24px; place-items: center; color: var(--accent); border: 1px solid var(--divider); border-radius: 12px; }
+.supportIcon svg { width: 22px; height: 22px; }
 .supportPanel h2 + p { margin: 16px 0 24px; color: var(--muted); line-height: 1.7; }
 .supportAction { min-height: 48px; padding-inline: 20px; }
 .supportAction svg { width: 20px; height: 20px; }
-.supportContact { align-self: end; min-width: 0; color: var(--muted); font-size: 14px; font-style: normal; line-height: 1.6; }
-.supportContact p { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.supportContact { align-self: center; min-width: 0; padding: 24px; color: var(--muted); background: var(--background); border: 1px solid var(--divider); border-radius: 12px; font-size: 14px; font-style: normal; line-height: 1.6; }
+.supportContact p { display: grid; grid-template-columns: 18px minmax(44px, auto) minmax(0, 1fr); align-items: start; gap: 12px; margin: 0 0 18px; }
 .supportContact p:last-child { margin-bottom: 0; }
-.supportContact p > span { min-width: 48px; }
+.supportContact svg { width: 18px; height: 18px; margin-top: 2px; color: var(--accent); }
+.supportContact p > span:last-child { color: var(--foreground); overflow-wrap: anywhere; }
 .supportContact a { color: var(--foreground); text-decoration: none; overflow-wrap: anywhere; }
 .supportContact a:hover { color: var(--accent); text-decoration: underline; }
 .faqSection { max-width: 896px; }

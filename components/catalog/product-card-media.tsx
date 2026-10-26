@@ -41,9 +41,20 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   const [autoDone, setAutoDone] = useState(false);
   const [viewerActive, setViewerActive] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  const [transition, setTransition] = useState<{ image?: ProductCardMediaImage; direction: number }>();
+  const transitionTimer = useRef<number | undefined>(undefined);
   const currentIndex = Math.min(activeIndex, Math.max(0, slides.length - 1));
   const activeSlide = slides[currentIndex];
+  const activeImage = activeSlide?.type === "image" ? activeSlide.image : undefined;
   const onViewerActiveChange = useCallback((active: boolean) => setViewerActive(active), []);
+
+  useEffect(() => () => window.clearTimeout(transitionTimer.current), []);
+
+  const animateSlide = useCallback((direction: number) => {
+    window.clearTimeout(transitionTimer.current);
+    setTransition({ image: activeImage, direction });
+    transitionTimer.current = window.setTimeout(() => setTransition(undefined), 350);
+  }, [activeImage]);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -71,11 +82,12 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   useEffect(() => {
     if (modal || suspend || autoDone || engaged || viewerActive || reducedMotion || !inView || !documentVisible || slides.length < 2) return;
     const timer = window.setTimeout(() => {
+      animateSlide(1);
       setActiveIndex((current) => (Math.min(current, slides.length - 1) + 1) % slides.length);
       setAutoDone(true);
     }, 3000);
     return () => window.clearTimeout(timer);
-  }, [modal, suspend, autoDone, engaged, viewerActive, reducedMotion, inView, documentVisible, slides.length]);
+  }, [modal, suspend, autoDone, engaged, viewerActive, reducedMotion, inView, documentVisible, slides.length, animateSlide]);
 
   const activeImageId = activeSlide?.type === "image" ? activeSlide.image.id : undefined;
   useEffect(() => {
@@ -92,6 +104,7 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
     setAutoDone(true);
     const next = (currentIndex + offset + slides.length) % slides.length;
     const slide = slides[next];
+    animateSlide(offset);
     setActiveIndex(next);
     setAnnouncement(`${slide.type === "image" ? slide.image.alt || title : "3D preview"}, ${next + 1} of ${slides.length}`);
   }
@@ -106,6 +119,8 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
       onMouseLeave={() => setEngaged(false)}
       onFocusCapture={() => setAutoDone(true)}
     >
+      {transition?.image && !reducedMotion && <Image className={styles.productCardOutgoing} src={`/api/media/${encodeURIComponent(transition.image.id)}?w=960`} alt="" width={800} height={600} unoptimized aria-hidden="true" />}
+      <div key={activeSlideId} className={`${styles.productCardSlide} ${transition && !reducedMotion ? transition.direction > 0 ? styles.productCardSlideNext : styles.productCardSlidePrevious : ""}`}>
       {activeSlide?.type === "image" ? (modal ? <div className={styles.productCardSlideLink}>
         <Image src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=960`} alt={activeSlide.image.alt} width={800} height={600} unoptimized sizes="(max-width: 900px) 100vw, 50vw" />
       </div> : <Link className={styles.productCardSlideLink} href={href} aria-label={`View product: ${title}`}>
@@ -125,6 +140,7 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30vw"
         />}
       </Link>) : activeSlide?.type === "model" && model3d ? (suspend ? <Image src={`/api/media/${encodeURIComponent(model3d.posterId)}?w=960`} alt={model3d.alt} width={800} height={600} unoptimized /> : <ProductModelViewer model={model3d} title={title} compact onActiveChange={onViewerActiveChange} />) : images.length === 0 && !model3d ? <span>No product image published</span> : null}
+      </div>
 
       {slides.length > 1 && !viewerActive && <div className={styles.productCardMediaControls} role="group" aria-label={`${title} media controls`}>
         <button type="button" aria-label="Previous product media" onClick={() => moveSlide(-1)}>

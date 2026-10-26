@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { MapPin, Plus, Trash2 } from "lucide-react";
 import type { CustomerAddress as Address } from "@/lib/account/addresses";
 import styles from "@/components/account.module.css";
 
@@ -273,9 +273,12 @@ export function AccountAddresses() {
   return (
     <section className={styles.section} aria-labelledby="addresses-heading">
       <div className={styles.sectionHeading}>
-        <div>
-          <h2 id="addresses-heading">Addresses</h2>
-          <p>Save delivery details and choose separate shipping and billing defaults.</p>
+        <div className={styles.sectionTitle}>
+          <span className={styles.sectionIcon}><MapPin aria-hidden="true" size={19} /></span>
+          <div>
+            <h2 id="addresses-heading">Addresses</h2>
+            <p>Save delivery details and choose separate shipping and billing defaults.</p>
+          </div>
         </div>
         {!editing && (
           <button ref={addAddressRef} className={styles.primaryAction} type="button" onClick={(event) => startNewAddress(event.currentTarget)} disabled={loading || saving}>

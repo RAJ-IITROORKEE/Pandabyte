@@ -62,7 +62,7 @@ export function ProductVariantPanel({ variants, observation }: { variants: Publi
         <input className={styles.input} id={`${fieldId}-quantity`} type="number" min={1} max={99} step={1} inputMode="numeric" value={quantity} onChange={event => setQuantity(event.currentTarget.value)} aria-invalid={!validQuantity} aria-describedby={!validQuantity ? `${fieldId}-quantity-error` : undefined} />
         {!validQuantity && <p id={`${fieldId}-quantity-error`} role="alert">Enter a whole number from 1 to 99.</p>}
       </div>
-      <AddToCartButton variantId={selected.id} quantity={quantityValue} available={selected.availability === "available" && selected.effectivePricePaise !== null} />
+      <AddToCartButton variantId={selected.id} quantity={quantityValue} available={selected.availability === "available" && selected.effectivePricePaise !== null} showBuyNow />
     </>}
     <p className={styles.purchaseNotice}>
       Cart totals use current catalog prices. Shipping, GST, final availability checks, and order placement are not configured yet.

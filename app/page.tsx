@@ -3,7 +3,7 @@ import Image from "next/image";
 import { HomeCircuit } from "@/components/home-circuit";
 import { HomeBrands } from "@/components/home-brands";
 import { HomeHero } from "@/components/home-hero";
-import { ArrowRight, ChevronRight, Mail } from "lucide-react";
+import { ArrowRight, ChevronRight, Clock3, Mail, MessageSquareText, Phone } from "lucide-react";
 import { ProductCard } from "@/components/catalog/product-card";
 import { FaqList } from "@/components/storefront/faq-list";
 import { EmptyState } from "@/components/storefront/page-frame";
@@ -128,14 +128,15 @@ export default async function HomePage() {
 
         <section className={sections.supportPanel} aria-labelledby="support-title">
           <div>
+            <span className={sections.supportIcon}><MessageSquareText aria-hidden="true" /></span>
             <h2 id="support-title">{siteCopy.supportTitle}</h2>
             <p>{siteCopy.supportText}</p>
             <Link className={`${styles.primaryAction} ${sections.supportAction}`} href="/contact"><Mail aria-hidden="true" />Contact Support</Link>
           </div>
-          {contact && <address className={sections.supportContact}>
-            {contact.phone && <p><span>Phone</span><a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`}>{contact.phone}</a></p>}
-            {contact.email && <p><span>Email</span><a href={`mailto:${contact.email}`}>{contact.email}</a></p>}
-            {contact.hours && <p>{contact.hours}{contact.timezone ? ` (${contact.timezone})` : ""}</p>}
+          {contact && (contact.phone || contact.email || contact.hours) && <address className={sections.supportContact}>
+            {contact.phone && <p><Phone aria-hidden="true" /><span>Phone</span><a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`}>{contact.phone}</a></p>}
+            {contact.email && <p><Mail aria-hidden="true" /><span>Email</span><a href={`mailto:${contact.email}`}>{contact.email}</a></p>}
+            {contact.hours && <p><Clock3 aria-hidden="true" /><span>Hours</span><span>{contact.hours}{contact.timezone ? ` (${contact.timezone})` : ""}</span></p>}
           </address>}
         </section>
 

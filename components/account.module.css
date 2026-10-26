@@ -36,6 +36,10 @@
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 24px;
+  padding: clamp(20px, 4vw, 32px);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 16px;
 }
 
 .identity {
@@ -162,7 +166,11 @@
 }
 
 .section {
-  margin-top: 32px;
+  margin-top: 18px;
+  padding: clamp(20px, 4vw, 28px);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 16px;
 }
 
 .sectionHeading {
@@ -171,6 +179,23 @@
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 16px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.sectionIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  color: var(--accent);
+  background: var(--status-soft);
+  border-radius: 12px;
 }
 
 .sectionHeading h2 {
@@ -190,8 +215,8 @@
 .contactForm {
   display: grid;
   gap: 16px;
-  padding: clamp(16px, 3vw, 24px);
-  background: var(--surface);
+  padding: clamp(16px, 3vw, 20px);
+  background: var(--background);
   border: 1px solid var(--divider);
   border-radius: 12px;
 }
@@ -228,7 +253,7 @@
 .addressCard {
   min-width: 0;
   padding: 18px;
-  background: var(--surface);
+  background: var(--background);
   border: 1px solid var(--divider);
   border-radius: 12px;
 }
@@ -386,6 +411,11 @@
   font-size: 14px;
 }
 
+.field input[readonly] {
+  background: var(--surface);
+  border-color: var(--divider);
+}
+
 .field textarea {
   min-height: 74px;
   resize: vertical;
@@ -463,17 +493,36 @@
 }
 
 .moreDetails {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid var(--divider);
+  margin-top: 18px;
+  padding: clamp(20px, 4vw, 28px);
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 16px;
 }
 
 .moreDetails summary {
-  width: fit-content;
-  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  list-style: none;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 620;
+}
+
+.moreDetails summary::-webkit-details-marker { display: none; }
+
+.summaryText {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+}
+
+.summaryText strong { font-size: 18px; font-weight: 620; }
+.summaryText small { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.summaryChevron { flex: 0 0 auto; color: var(--muted); transition: transform 180ms ease; }
+.moreDetails[open] .summaryChevron { transform: rotate(180deg); }
+
+.moreDetails summary:hover .summaryChevron {
+  color: var(--accent);
 }
 
 .detailContent {
@@ -533,7 +582,8 @@
   .secondaryAction,
   .primaryAction,
   .dangerAction,
-  .textAction {
+  .textAction,
+  .summaryChevron {
     transition: none;
   }
 }

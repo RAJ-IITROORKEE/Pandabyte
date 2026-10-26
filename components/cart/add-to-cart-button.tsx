@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CartInputLine } from "@/lib/cart/validation";
 import { cartErrorMessage, loadCustomerCart, replaceCustomerCart } from "./cart-api";
@@ -9,14 +10,15 @@ import { addCartItem } from "./cart-utils";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, saveGuestCart, subscribeGuestCart } from "./guest-cart-store";
 import styles from "./cart.module.css";
 
-export function AddToCartButton({ variantId, available, quantity = 1 }: { variantId: string; available: boolean; quantity?: number }) {
+export function AddToCartButton({ variantId, available, quantity = 1, showBuyNow = false }: { variantId: string; available: boolean; quantity?: number; showBuyNow?: boolean }) {
   const { user, isLoaded } = useUser();
   if (!isLoaded) return <button className={styles.addButton} type="button" disabled>Loading account…</button>;
   const userId = user?.id ?? null;
-  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} />;
+  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} showBuyNow={showBuyNow} />;
 }
 
-function AddToCartButtonSession({ variantId, available, quantity, userId }: { variantId: string; available: boolean; quantity: number; userId: string | null }) {
+function AddToCartButtonSession({ variantId, available, quantity, userId, showBuyNow }: { variantId: string; available: boolean; quantity: number; userId: string | null; showBuyNow: boolean }) {
+  const router = useRouter();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -27,7 +29,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId }: { va
 
   useEffect(() => () => activeController.current?.abort(), []);
 
-  const addGuestLine = (items: CartInputLine[]) => {
+  const addGuestLine = (items: CartInputLine[], checkout: boolean) => {
     if (guest.invalidStoredCart) {
       setError("Your saved guest cart needs review. Open the cart and clear its unreadable saved copy before adding items.");
       return;
@@ -49,9 +51,10 @@ function AddToCartButtonSession({ variantId, available, quantity, userId }: { va
     }
     setAdded(true);
     setMessage(result.persisted ? "Added to your cart." : "Added for this page session. Browser storage is unavailable, so this cart may not persist after you leave.");
+    if (checkout && result.persisted) router.push("/cart");
   };
 
-  const addSignedInLine = async () => {
+  const addSignedInLine = async (checkout: boolean) => {
     const controller = new AbortController();
     activeController.current = controller;
     let updateAttempted = false;
@@ -68,6 +71,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId }: { va
       if (!controller.signal.aborted) {
         setAdded(true);
         setMessage("Added to your signed-in cart. Current catalog pricing and availability are shown there.");
+        if (checkout) router.push("/checkout");
       }
     } catch (requestError) {
       if (!controller.signal.aborted) {
@@ -80,7 +84,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId }: { va
     }
   };
 
-  const handleAdd = () => {
+  const handleAdd = (checkout = false) => {
     if (needsReview) return;
     setError("");
     setMessage("");
@@ -90,11 +94,11 @@ function AddToCartButtonSession({ variantId, available, quantity, userId }: { va
         setError("Your cart is still loading. Please try again in a moment.");
         return;
       }
-      addGuestLine(guest.items);
+      addGuestLine(guest.items, checkout);
       return;
     }
     setBusy(true);
-    void addSignedInLine();
+    void addSignedInLine(checkout);
   };
 
   const validQuantity = Number.isInteger(quantity) && quantity >= 1 && quantity <= 99;
@@ -105,9 +109,10 @@ function AddToCartButtonSession({ variantId, available, quantity, userId }: { va
       ? "Preparing your guest cart…"
       : "";
   return <div className={styles.addToCart}>
-    <button className={styles.addButton} type="button" onClick={handleAdd} disabled={disabled}>
+    <button className={styles.addButton} type="button" onClick={() => handleAdd()} disabled={disabled}>
       {busy ? "Adding…" : needsReview ? "Review cart before retrying" : initialNotice ? "Cart needs attention" : available ? "Add to cart" : "Currently unavailable"}
     </button>
+    {showBuyNow && <button className={styles.buyButton} type="button" onClick={() => handleAdd(true)} disabled={disabled}>{busy ? "Adding…" : "Buy now"}</button>}
     {error && <p className={styles.addError} role="alert">{error}</p>}
     {initialNotice && <p className={styles.addMessage} role="status">{initialNotice}</p>}
     {message && <p className={styles.addMessage} role="status" aria-live="polite">{message}</p>}
