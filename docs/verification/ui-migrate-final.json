@@ -1726,5 +1726,7 @@
     "light": "Luna6 xhigh: account/cart CSS",
     "review": "Sol6.1 xhigh integrated source and accessibility re-review",
     "fast": "No Fast/service-tier parameter exposed; not claimed"
-  }
+  },
+  "implementationCommit": "a0ce26d",
+  "foundationCommit": "0b328f6"
 }

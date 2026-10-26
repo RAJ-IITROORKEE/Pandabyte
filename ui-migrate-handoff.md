@@ -11,7 +11,7 @@ Updated 26 October 2026. The owner resumed implementation after the planning che
 | C2 — priority pages | Passed | Lower homepage, Contact/About, catalog and product overview integrated. Real data and non-purchasable source observations preserved. |
 | C3 — remaining families / Admin shell | Passed | Editorial, account/cart CSS; Admin groups, collapse/reset, bounded pointer/keyboard width and local layout preferences. Two focused tests pass. |
 | C4 — Admin workflows | Passed, no-write scope | Existing workflow presentation retained; overflow fixed and record, pricing/inventory, inquiry and media tables have named focusable scrollers. Invalid editor validation, private preview, media keyboard selection, owner protection and unavailable Orders checked without saving. |
-| C5 — integration | Passed, bounded | Final lint/typecheck/production build; 143 shared unit + 2 sidebar + 13 read-only HTTP tests; 96 accepted reflow/theme cases across 12 families. Local commit recorded after the staging audit. |
+| C5 — integration | Passed, bounded | Final lint/typecheck/production build; 143 shared unit + 2 sidebar + 13 read-only HTTP tests; 96 accepted reflow/theme cases across 12 families. Local implementation commit **a0ce26d**; UI-only staging audit passed. |
 
 No Phase 6 exit, commerce completion, deployment or full accessibility certification is implied.
 
@@ -39,6 +39,7 @@ The already-installed frontend-a11y skill matched reviewed ECC blob a39419935900
 - Sol 6.1 xhigh: integrated React/accessibility review and fixes review. No material findings remain in the scoped source review.
 - Root: shared integration, actual browser, builds, evidence, staging and commits.
 - Fast/service-tier control is not exposed by the tool and was not claimed.
+- Luna 6 xhigh final read-only evidence/link/capture/matrix check found no material inconsistency.
 
 The separate active 3D/media task retains package/lockfile, API/lib/schema, gallery/card, model tooling and assets. Root made only four named-table wrapper attribute changes inside the shared Admin workflow files. Its other edits are retained. The UI commit stages those attributes against HEAD independently; it excludes the other task’s model props, Admin model controls, modelPreview CSS, packages and backend changes. No other-chat message was sent and no design/CAD artifact was regenerated, moved or deleted.
 
@@ -70,4 +71,4 @@ The separate active 3D/media task retains package/lockfile, API/lib/schema, gall
 ## Local commits
 
 - C1 foundation: **0b328f6** — feat: establish reviewed UI migration foundation.
-- C2–C5 implementation: pending final scoped staging audit; recorded immediately after commit.
+- C2–C5 implementation: **a0ce26d** — feat: migrate approved PandaByte UI across storefront and admin.
