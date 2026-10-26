@@ -1,0 +1,455 @@
+{
+  "date": "2026-10-27",
+  "status": "verified",
+  "baseCommit": "7f22cdc",
+  "scope": "Admin products table/editor and inline pricing; required product rich-content/DOCX rendering only on storefront",
+  "workers": {
+    "model": "gpt-6-luna",
+    "reasoning": "xhigh",
+    "parallel": true,
+    "fastTier": "Not independently selectable with this tool; no Fast-tier claim."
+  },
+  "checks": {
+    "unit": {
+      "passed": 165,
+      "failed": 0
+    },
+    "authHttp": {
+      "passed": 7,
+      "failed": 0
+    },
+    "securityHttp": {
+      "passed": 2,
+      "failed": 0
+    },
+    "diagnosticsHttp": {
+      "passed": 1,
+      "failed": 0
+    },
+    "publicRegressionRoutes": {
+      "passed": 5,
+      "failed": 0,
+      "catalogTotal": 42,
+      "richBodiesAbsentFromSummary": true
+    },
+    "api": {
+      "strictTableQueryAndScopedPriceRead": true,
+      "staleAtomicPriceWriteRolledBackProduct": true,
+      "customerProductAndPriceAccessDenied": true,
+      "sourceObservationPricesMaskedAndWriteRejected": true,
+      "invalidRichContentMissingMediaAndGalleryOverFiveRejected": true,
+      "sqlInvalidPortAndMissingRichRootRejected": true,
+      "astralRichTextRoundTripped": true,
+      "docxStaffDeliveryPreservedBytesAndPrivateNoStore": true,
+      "docxAnonymousDeliveryAndStorageDenied": true,
+      "browserBoldListsAndTables": true,
+      "browserWordPreview": true,
+      "browserGalleryAndInlineImageUploads": true,
+      "browserAtomicPriceSave": true,
+      "imageUploadMetadataAndUploaderMatch": true,
+      "imageByteHashAndSharpRoundTrip": true,
+      "fixtureDraftAndRevisionImageReferencesConfirmed": true,
+      "cleanupRequiresGlobalNoReferences": true,
+      "ownerSessionChanged": false,
+      "cleanupPerformed": true,
+      "fixtureDocumentAndBrowserMediaAbsent": true,
+      "temporaryFixtureCapabilitiesRemoved": true,
+      "anonymousFixtureMedia404": true,
+      "ownerAccessMutated": false
+    },
+    "cleanup": {
+      "status": "removed_after_exact_checks",
+      "requiresProductRecordsRemoved": true
+    },
+    "responsive": {
+      "accepted": 24,
+      "cases": [
+        {
+          "client": 305,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 305,
+          "theme": "light",
+          "width": 320
+        },
+        {
+          "client": 305,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 305,
+          "theme": "dark",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 753,
+          "theme": "light",
+          "width": 768
+        },
+        {
+          "client": 753,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 753,
+          "theme": "dark",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 1009,
+          "theme": "light",
+          "width": 1024
+        },
+        {
+          "client": 1009,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 1009,
+          "theme": "dark",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 1425,
+          "theme": "light",
+          "width": 1440
+        },
+        {
+          "client": 1425,
+          "mainCount": 1,
+          "page": "create",
+          "scroll": 1425,
+          "theme": "dark",
+          "width": 1440
+        },
+        {
+          "client": 305,
+          "frameWidth": 246.40625,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 305,
+          "theme": "light",
+          "width": 320
+        },
+        {
+          "client": 305,
+          "frameWidth": 246.40625,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 305,
+          "theme": "dark",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "frameWidth": 607,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 753,
+          "theme": "light",
+          "width": 768
+        },
+        {
+          "client": 753,
+          "frameWidth": 607,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 753,
+          "theme": "dark",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "frameWidth": 702.0625,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 1009,
+          "theme": "light",
+          "width": 1024
+        },
+        {
+          "client": 1009,
+          "frameWidth": 702.0625,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 1009,
+          "theme": "dark",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "frameWidth": 1103,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 1425,
+          "theme": "light",
+          "width": 1440
+        },
+        {
+          "client": 1425,
+          "frameWidth": 1103,
+          "mainCount": 1,
+          "page": "edit-document-open",
+          "scroll": 1425,
+          "theme": "dark",
+          "width": 1440
+        },
+        {
+          "client": 305,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 305,
+          "scrollerWidth": 277,
+          "tableWidth": 1010,
+          "theme": "light",
+          "width": 320
+        },
+        {
+          "client": 305,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 305,
+          "scrollerWidth": 277,
+          "tableWidth": 1010,
+          "theme": "dark",
+          "width": 320
+        },
+        {
+          "client": 753,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 753,
+          "scrollerWidth": 641,
+          "tableWidth": 1010,
+          "theme": "light",
+          "width": 768
+        },
+        {
+          "client": 753,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 753,
+          "scrollerWidth": 641,
+          "tableWidth": 1010,
+          "theme": "dark",
+          "width": 768
+        },
+        {
+          "client": 1009,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 1009,
+          "scrollerWidth": 744.0625,
+          "tableWidth": 1010,
+          "theme": "light",
+          "width": 1024
+        },
+        {
+          "client": 1009,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 1009,
+          "scrollerWidth": 744.0625,
+          "tableWidth": 1010,
+          "theme": "dark",
+          "width": 1024
+        },
+        {
+          "client": 1425,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 1425,
+          "scrollerWidth": 1145,
+          "tableWidth": 1143,
+          "theme": "light",
+          "width": 1440
+        },
+        {
+          "client": 1425,
+          "mainCount": 1,
+          "page": "table",
+          "scroll": 1425,
+          "scrollerWidth": 1145,
+          "tableWidth": 1143,
+          "theme": "dark",
+          "width": 1440
+        }
+      ]
+    },
+    "contrast": {
+      "samples": 10,
+      "cases": [
+        {
+          "name": "body",
+          "ratio": 7.81,
+          "theme": "light"
+        },
+        {
+          "name": "title",
+          "ratio": 17.93,
+          "theme": "light"
+        },
+        {
+          "name": "status",
+          "ratio": 16.44,
+          "theme": "light"
+        },
+        {
+          "name": "input text",
+          "ratio": 17.93,
+          "theme": "light"
+        },
+        {
+          "name": "input border",
+          "ratio": 4.74,
+          "theme": "light"
+        },
+        {
+          "name": "body",
+          "ratio": 7.85,
+          "theme": "dark"
+        },
+        {
+          "name": "title",
+          "ratio": 15.8,
+          "theme": "dark"
+        },
+        {
+          "name": "status",
+          "ratio": 15.8,
+          "theme": "dark"
+        },
+        {
+          "name": "input text",
+          "ratio": 15.8,
+          "theme": "dark"
+        },
+        {
+          "name": "input border",
+          "ratio": 3.63,
+          "theme": "dark"
+        }
+      ],
+      "minimumText": 7.81,
+      "minimumInputBorder": 3.63
+    },
+    "browserJourneys": [
+      "combined category/status/sort",
+      "empty search and clearing",
+      "pagination serial 21 after offset 20",
+      "image dialog, Escape and trigger focus return",
+      "archive warning and cancel without mutation",
+      "new title plus automatic/manual slug",
+      "rich bold/list/table save and reload",
+      "gallery upload, preview and save",
+      "managed inline image upload/save",
+      "separate scriptless DOCX preview",
+      "inline price update retained while adding/removing variant",
+      "sale input event persistence and reload",
+      "paired sale price/discount display on disposable fixture",
+      "Pricing redirect and absent sidebar/command entry",
+      "private draft rich-content/document rendering",
+      "existing model rotate/close/focus and 320px containment",
+      "public homepage/circuit and separate Admin theme scope",
+      "text and highlight color controls; supported palette validated"
+    ],
+    "modelPreview": {
+      "viewport": 320,
+      "canvasWidth": 243,
+      "pageOverflow": false,
+      "controlsEnabled": true,
+      "closeRestoresFocus": true
+    },
+    "lint": "passed",
+    "typecheck": "passed",
+    "audit": {
+      "vulnerabilities": 0
+    },
+    "productionBuild": "passed",
+    "finalPreview": {
+      "url": "http://localhost:3000/admin/products",
+      "tabKeptOpen": true,
+      "viewportOverrideReset": true,
+      "thumbnailLoadsConfirmed": true,
+      "consoleErrors": 0,
+      "pricingNavigationAbsent": true
+    },
+    "editorColorModes": [
+      {
+        "errors": [],
+        "mark": [
+          {
+            "background": "rgb(254, 240, 138)",
+            "color": "rgb(23, 23, 23)"
+          }
+        ],
+        "span": [
+          {
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(107, 114, 128)"
+          }
+        ],
+        "theme": "light"
+      },
+      {
+        "errors": [],
+        "mark": [
+          {
+            "background": "rgb(254, 240, 138)",
+            "color": "rgb(23, 23, 23)"
+          }
+        ],
+        "span": [
+          {
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(107, 114, 128)"
+          }
+        ],
+        "theme": "dark"
+      }
+    ]
+  },
+  "migrations": [
+    "20261026194448_admin-product-editor.sql",
+    "20261026195407_admin-product-guards.sql",
+    "20261026195921_product-content-parity.sql",
+    "20261026200505_product-save-boundaries.sql",
+    "20261026202540_product-catalog-projection.sql",
+    "20261026203202_product-list-summaries.sql"
+  ],
+  "resolvedFailures": [
+    "Initial rich-validator CASE syntax stopped migration; fixed before successful apply.",
+    "Catalog projection JSON operator precedence caused HTTP 500; compensating migration applied and public/auth/security routes retested.",
+    "Title/slug state update collision found and fixed in browser.",
+    "Datetime input needed input-event handling; corrected and saved dates verified after reload.",
+    "Disposable cleanup type/field assumptions failed closed; corrected before successful bounded cleanup.",
+    "Inline highlight inherited a low-contrast color; foreground override retested in light/dark: #171717 on #fef08a, selected gray text on white."
+  ],
+  "data": {
+    "productsRemaining": 42,
+    "fixtureProducts": 0,
+    "fixtureServiceMedia": 0,
+    "temporaryFixtureGrants": 0,
+    "ownerSessionRetained": true,
+    "realCatalogPriceStockPublicationMutations": false,
+    "sourceArtifactsTouched": false
+  },
+  "limits": [
+    "DOCX preview supports common HTML-representable Word layout, not complete Word fidelity; original bytes/download retained.",
+    "No new-content publication/withdrawal exercise was performed; new media references use the reviewed inherited guards.",
+    "Actual zoom/text enlargement, OS reduced-motion switching and screen-reader speech not tested.",
+    "No physical-mobile GPU, production capacity/load, commerce, email/billing, recovery or deployment checks."
+  ],
+  "deployment": false,
+  "artifacts": {
+    "dark": ".bootstrap/admin-products/products-dark.png",
+    "light": ".bootstrap/admin-products/products-light.png",
+    "ignored": true
+  }
+}

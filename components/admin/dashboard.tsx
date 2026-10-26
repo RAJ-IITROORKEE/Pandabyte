@@ -42,7 +42,7 @@ const summaryItems = [
 type CountValue = number | null;
 
 const accessLinks = [
-  { capability: "catalog.edit", links: [{ label: "Products", href: "/admin/products" }, { label: "Categories", href: "/admin/categories" }, { label: "Pricing", href: "/admin/pricing" }] },
+  { capability: "catalog.edit", links: [{ label: "Products", href: "/admin/products" }, { label: "Categories", href: "/admin/categories" }] },
   { capability: "content.edit", links: [{ label: "Blog", href: "/admin/blog" }, { label: "Pages", href: "/admin/pages" }, { label: "FAQs", href: "/admin/faqs" }] },
   { capability: "media.manage", links: [{ label: "Media library", href: "/admin/media" }] },
   { capability: "inquiries.manage", links: [{ label: "Inquiries", href: "/admin/inquiries" }] },

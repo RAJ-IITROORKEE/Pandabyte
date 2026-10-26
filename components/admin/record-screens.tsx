@@ -15,7 +15,17 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import Image from "next/image";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { toast } from "sonner";
+import { ProductRichContentView } from "@/components/catalog/product-rich-content";
+import { ProductDocumentPreview } from "@/components/catalog/product-document-preview";
+import { legacyBlocksToRichContent, type ProductRichContent } from "@/lib/admin/product-content";
+import { productSlugFromTitle } from "./product-editor-utils";
+import { ProductDocumentEditor } from "./product-document-editor";
+import { ProductPricingEditor, type ProductPricingState } from "./product-pricing-editor";
+import galleryStyles from "./product-gallery-editor.module.css";
 import {
   ADMIN_MODULES,
   parseDocument,
@@ -28,6 +38,11 @@ import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { ProductModelViewer } from "@/components/catalog/product-model-viewer";
 import { PublishedDocument } from "@/components/published-document";
 import styles from "./admin-ui.module.css";
+
+const ProductRichTextEditor = dynamic(
+  () => import("./product-rich-text-editor").then((module) => module.ProductRichTextEditor),
+  { ssr: false, loading: () => <section className={styles.panel} aria-label="Product description"><p className={styles.loadingState} role="status">Loading description editor…</p></section> },
+);
 
 type RecordListItem = {
   id: string;
@@ -65,7 +80,7 @@ const FIELD_LABELS: Record<string, string> = {
   categoryIds: "Categories", modelNumbers: "Model numbers", model3d: "3D model", posterId: "Poster image", variants: "Variants", sku: "SKU", label: "Label",
   specifications: "Specifications", name: "Name", value: "Value", compatibility: "Compatibility", kitContents: "Kit contents",
   resources: "Resources", mediaIds: "Media assets", sourceObservation: "Source observation", sourceReview: "Source review",
-  priceText: "Observed price", capturedAt: "Capture time", sourceUrl: "Source URL", author: "Author", tags: "Tags",
+  priceText: "Observed price", prices: "Prices", capturedAt: "Capture time", sourceUrl: "Source URL", author: "Author", tags: "Tags",
   answer: "Answer", topic: "Topic", placements: "Placements", parentId: "Parent category", position: "Position",
   role: "Role", bio: "Biography", links: "Links", href: "Destination URL", group: "Navigation location", visible: "Visibility",
   email: "Email", phone: "Phone", address: "Address", hours: "Hours", timezone: "Time zone", url: "URL",
@@ -112,7 +127,7 @@ const META: Record<AdminModule, ModuleMeta> = {
 function freshDocument(module: AdminModule): AdminDocument {
   const common = { title: "", slug: "", summary: "", blocks: [] as ContentBlock[], seoTitle: "", seoDescription: "" };
   switch (module) {
-    case "products": return { ...common, categoryIds: [], modelNumbers: [], variants: [], specifications: [], compatibility: [], kitContents: [], resources: [], mediaIds: [] };
+    case "products": return { ...common, categoryIds: [], modelNumbers: [], variants: [], specifications: [], compatibility: [], kitContents: [], resources: [], mediaIds: [], tags: [] };
     case "categories": return { ...common, parentId: null, position: 0, mediaIds: [] };
     case "blog": return { ...common, author: "", tags: [], mediaIds: [] };
     case "pages": case "solutions": return common;
@@ -261,20 +276,25 @@ function TextArea({ value, onChange, rows = 4, placeholder, maxLength }: { value
   return <textarea className={styles.textarea} value={value} onChange={(event) => onChange(event.target.value)} rows={rows} placeholder={placeholder} maxLength={maxLength} />;
 }
 
-function TokenInput({ label, values, onChange, hint }: { label: string; values: string[]; onChange: (next: string[]) => void; hint?: string }) {
+function TokenInput({ label, values, onChange, hint, maxItems = Number.POSITIVE_INFINITY, maxLength = Number.POSITIVE_INFINITY }: { label: string; values: string[]; onChange: (next: string[]) => void; hint?: string; maxItems?: number; maxLength?: number }) {
   const [entry, setEntry] = useState("");
+  const [error, setError] = useState("");
   function add(raw: string) {
-    const next = raw.split(",").map((part) => part.trim()).filter(Boolean);
-    if (next.length) onChange([...new Set([...values, ...next])]);
+    const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
+    const overlong = parts.find((part) => Array.from(part).length > maxLength);
+    const unique = [...new Set([...values, ...parts.filter((part) => Array.from(part).length <= maxLength)])];
+    const overflow = unique.length > maxItems;
+    setError(overlong ? `Use at most ${maxLength} characters per tag.` : overflow ? `Use at most ${maxItems} entries.` : "");
+    if (parts.length && !overlong && !overflow) onChange(unique);
     setEntry("");
   }
   return <div className={styles.field}><span className={styles.fieldLabel}>{label}</span><div className={styles.tokenField}>
     {values.map((value, index) => <span className={styles.token} key={`${value}-${index}`}>{value}<button type="button" aria-label={`Remove ${value}`} onClick={() => onChange(values.filter((_, current) => current !== index))}><X aria-hidden="true" size={14} /></button></span>)}
-    <input aria-label={`Add ${label}`} value={entry} onChange={(event) => setEntry(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); add(entry); } }} onBlur={() => { if (entry.trim()) add(entry); }} placeholder="Type and press Enter" />
-  </div>{hint && <span className={styles.fieldHint}>{hint}</span>}</div>;
+    <input aria-label={`Add ${label}`} value={entry} onChange={(event) => setEntry(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); add(entry); } }} onBlur={() => { if (entry.trim()) add(entry); }} placeholder="Type and press Enter" disabled={values.length >= maxItems} maxLength={Number.isFinite(maxLength) ? maxLength : undefined} />
+  </div>{hint && <span className={styles.fieldHint}>{hint}</span>}{error && <span className={styles.inlineError} role="alert">{error}</span>}</div>;
 }
 
-function RelationPicker({ label, module, values, onChange, reorderable = false }: { label: string; module: "categories" | "products" | "media"; values: string[]; onChange: (next: string[]) => void; reorderable?: boolean }) {
+function RelationPicker({ label, module, values, onChange, reorderable = false, maxSelections = 100, canManageMedia = false, uploadOnly = false, onUploadDelta }: { label: string; module: "categories" | "products" | "media"; values: string[]; onChange: (next: string[]) => void; reorderable?: boolean; maxSelections?: number; canManageMedia?: boolean; uploadOnly?: boolean; onUploadDelta?: (change: 1 | -1) => void }) {
   const [loaded, setLoaded] = useState<{ module: string; options: Option[] }>({ module, options: [] });
   const options = loaded.module === module ? loaded.options : [];
   const [page, setPage] = useState({ module, offset: 0 });
@@ -284,8 +304,18 @@ function RelationPicker({ label, module, values, onChange, reorderable = false }
   const [loading, setLoading] = useState(true);
   const [retry, setRetry] = useState(0);
   const [loadError, setLoadError] = useState("");
-  const loadingOptions = loading || loaded.module !== module;
+  const [uploadedOptions, setUploadedOptions] = useState<Option[]>([]);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadAltText, setUploadAltText] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const uploadInputId = useId();
+  const loadingOptions = !uploadOnly && (loading || loaded.module !== module);
+  const availableOptions = [...options, ...uploadedOptions.filter((item) => !options.some((option) => option.id === item.id))];
+  const valuesRef = useRef(values);
+  useEffect(() => { valuesRef.current = values; }, [values]);
   useEffect(() => {
+    if (uploadOnly) return;
     let alive = true;
     async function load() {
       try {
@@ -303,8 +333,49 @@ function RelationPicker({ label, module, values, onChange, reorderable = false }
     }
     void load();
     return () => { alive = false; };
-  }, [module, offset, limit, retry]);
-  const status = loadingOptions ? `Loading ${module === "media" ? "media assets" : module}…` : loadError || (!options.length ? "No selectable records are available yet." : "");
+  }, [module, offset, limit, retry, uploadOnly]);
+  const status = uploadOnly ? "" : loadingOptions ? `Loading ${module === "media" ? "media assets" : module}…` : loadError || (!options.length ? "No selectable records are available yet." : "");
+  async function uploadGalleryImage() {
+    if (!uploadFile || !uploadAltText.trim() || !canManageMedia || valuesRef.current.length >= maxSelections || module !== "media") return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(uploadFile.type)) {
+      setUploadError("Choose a PNG, JPEG, or WebP image.");
+      return;
+    }
+    if (uploadFile.size < 1 || uploadFile.size > 4 * 1024 * 1024) {
+      setUploadError("Choose an image that is 4 MB or smaller.");
+      return;
+    }
+    setUploadError("");
+    setUploading(true);
+    onUploadDelta?.(1);
+    try {
+      const form = new FormData();
+      form.append("file", uploadFile);
+      form.append("altText", uploadAltText.trim());
+      form.append("source", "");
+      const response = await fetch("/api/admin/media", { method: "POST", cache: "no-store", body: form });
+      const body = await response.json().catch(() => null) as { media?: { id?: string; filename?: string; mimeType?: string }; error?: { message?: string } } | null;
+      if (!response.ok) throw new Error(body?.error?.message || "The gallery image could not be uploaded. Try again.");
+      const media = body?.media;
+      if (!media || typeof media.id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(media.id) || media.mimeType !== "image/webp") {
+        throw new Error("The gallery image upload response was incomplete. Refresh the page before retrying.");
+      }
+      const latestValues = valuesRef.current;
+      if (latestValues.length >= maxSelections) throw new Error("The gallery is full. Remove an image before adding another.");
+      setUploadedOptions((current) => [...current.filter((item) => item.id !== media.id), { id: media.id!, label: media.filename || uploadFile.name }]);
+      onChange([...latestValues, media.id]);
+      setUploadFile(null);
+      setUploadAltText("");
+      toast.success("Gallery image uploaded.");
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : "The gallery image could not be uploaded.";
+      setUploadError(message);
+      toast.error(message);
+    } finally {
+      setUploading(false);
+      onUploadDelta?.(-1);
+    }
+  }
   function move(index: number, direction: -1 | 1) {
     const target = index + direction;
     if (target < 0 || target >= values.length) return;
@@ -316,10 +387,17 @@ function RelationPicker({ label, module, values, onChange, reorderable = false }
     <legend className={styles.fieldLabel}>{label}</legend>
     {status && <p className={styles.fieldHint} role="status" aria-live="polite">{status}</p>}
     {reorderable && values.length > 0 && <div className={styles.checkList} role="list" aria-label="Selected product images in display order">{values.map((id, index) => {
-      const label = options.find((option) => option.id === id)?.label || `Selected image ${index + 1}`;
-      return <div className={styles.relationRow} role="listitem" key={`${id}-${index}`}><span>{label}</span><button className={styles.secondaryButton} type="button" aria-label={`Move ${label} earlier`} onClick={() => move(index, -1)} disabled={index === 0}>Up</button><button className={styles.secondaryButton} type="button" aria-label={`Move ${label} later`} onClick={() => move(index, 1)} disabled={index === values.length - 1}>Down</button><button className={styles.secondaryButton} type="button" aria-label={`Remove ${label}`} onClick={() => onChange(values.filter((_, current) => current !== index))}>Remove</button></div>;
+      const label = availableOptions.find((option) => option.id === id)?.label || `Attached image ${index + 1}`;
+      return <div className={`${styles.relationRow} ${galleryStyles.selectedImage}`} role="listitem" key={`${id}-${index}`}><Image src={`/api/media/${encodeURIComponent(id)}`} alt="" width={88} height={64} unoptimized /><span>{label}</span><button className={styles.secondaryButton} type="button" aria-label={`Move ${label} earlier`} onClick={() => move(index, -1)} disabled={uploading || index === 0}>Up</button><button className={styles.secondaryButton} type="button" aria-label={`Move ${label} later`} onClick={() => move(index, 1)} disabled={uploading || index === values.length - 1}>Down</button><button className={styles.secondaryButton} type="button" aria-label={`Remove ${label}`} onClick={() => onChange(values.filter((_, current) => current !== index))} disabled={uploading}>Remove</button></div>;
     })}</div>}
-    {options.length > 0 && <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} disabled={!values.includes(option.id) && values.length >= 100} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div>}
+    {!uploadOnly && options.length > 0 && <div className={styles.checkList}>{options.map((option) => <label key={option.id}><input type="checkbox" checked={values.includes(option.id)} disabled={uploading || (!values.includes(option.id) && values.length >= maxSelections)} onChange={(event) => onChange(event.target.checked ? [...new Set([...values, option.id])] : values.filter((id) => id !== option.id))} /><span>{option.label || (module === "media" ? "Unnamed media asset" : `Untitled ${module === "products" ? "product" : "category"}`)}</span></label>)}</div>}
+    {module === "media" && maxSelections === 5 && <div className={galleryStyles.uploadPanel}>
+      <div><label className={styles.field} htmlFor={uploadInputId}><span className={styles.fieldLabel}>Add a gallery image</span><input accept="image/png,image/jpeg,image/webp" className={styles.input} disabled={!canManageMedia || uploading || values.length >= maxSelections} id={uploadInputId} onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} type="file" /></label></div>
+      <label className={styles.field}><span className={styles.fieldLabel}>Image alternative text</span><input className={styles.input} disabled={!canManageMedia || uploading || values.length >= maxSelections} maxLength={300} onChange={(event) => setUploadAltText(event.target.value)} value={uploadAltText} /></label>
+      <button className={styles.secondaryButton} disabled={!canManageMedia || uploading || !uploadFile || !uploadAltText.trim() || values.length >= maxSelections} onClick={() => void uploadGalleryImage()} type="button">{uploading ? "Uploading image…" : `Upload image (${values.length}/${maxSelections})`}</button>
+      <p className={styles.fieldHint}>{canManageMedia ? "Uploads create private draft media. Publish the image separately before publishing this product." : "Gallery image uploads require the Media manager permission."}</p>
+      {uploadError && <p className={styles.inlineError} role="alert">{uploadError}</p>}
+    </div>}
     {((loaded.module === module && hasMore) || loadingOptions || loadError) && <button className={styles.secondaryButton} type="button" disabled={loadingOptions} onClick={() => { setLoading(true); if (loadError) setRetry(n => n + 1); else setPage({ module, offset: offset + limit }); }}>{loadingOptions ? "Loading options…" : loadError ? "Retry loading options" : `Load more ${module === "media" ? "media assets" : module}`}</button>}
   </fieldset>;
 }
@@ -412,7 +490,7 @@ function ParentCategoryPicker({ value, currentId, onChange }: { value: string | 
   return <label className={styles.field}><span className={styles.fieldLabel}>Parent category</span><select className={styles.input} value={value ?? ""} onChange={(event) => onChange(event.target.value || null)}><option value="">No parent</option>{options.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}</select>{message && <span className={styles.fieldHint}>{message}</span>}</label>;
 }
 
-function RowEditor({ label, rows, columns, onChange, addLabel }: { label: string; rows: Record<string, unknown>[]; columns: { key: string; label: string; type?: "text" | "number" | "checkbox" | "select"; placeholder?: string; options?: { value: string; label: string }[]; immutableWhenExisting?: boolean }[]; onChange: (next: Record<string, unknown>[]) => void; addLabel: string }) {
+function RowEditor({ label, rows, columns, onChange, addLabel, onFieldChange }: { label: string; rows: Record<string, unknown>[]; columns: { key: string; label: string; type?: "text" | "number" | "checkbox" | "select"; placeholder?: string; options?: { value: string; label: string }[]; immutableWhenExisting?: boolean }[]; onChange: (next: Record<string, unknown>[]) => void; addLabel: string; onFieldChange?: (key: string, previous: unknown, next: unknown) => void }) {
   function update(index: number, key: string, value: unknown) {
     onChange(rows.map((row, rowIndex) => rowIndex === index ? { ...row, [key]: value } : row));
   }
@@ -423,7 +501,8 @@ function RowEditor({ label, rows, columns, onChange, addLabel }: { label: string
        {columns.map((column) => {
          const locked = Boolean(column.immutableWhenExisting && typeof row.id === "string");
           const accessibleName = `${label} row ${index + 1}: ${column.label}`;
-          return <label className={column.type === "checkbox" ? styles.inlineCheck : styles.rowField} key={column.key}><span>{column.label}</span>{column.type === "checkbox" ? <input type="checkbox" aria-label={accessibleName} checked={Boolean(row[column.key])} onChange={(event) => update(index, column.key, event.target.checked)} /> : column.type === "select" ? <select className={styles.input} aria-label={accessibleName} value={String(row[column.key] ?? "header")} onChange={(event) => update(index, column.key, event.target.value)}>{column.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select> : <input type={column.type === "number" ? "number" : "text"} aria-label={accessibleName} value={String(row[column.key] ?? "")} placeholder={column.placeholder} disabled={locked} onChange={(event) => update(index, column.key, column.type === "number" ? Number(event.target.value) : event.target.value)} />}{locked && <span className={styles.fieldHint}>Existing SKU is locked. Add another variant to correct it.</span>}</label>;
+          const fieldChange = (next: unknown) => { update(index, column.key, next); onFieldChange?.(column.key, row[column.key], next); };
+          return <label className={column.type === "checkbox" ? styles.inlineCheck : styles.rowField} key={column.key}><span>{column.label}</span>{column.type === "checkbox" ? <input type="checkbox" aria-label={accessibleName} checked={Boolean(row[column.key])} onChange={(event) => fieldChange(event.target.checked)} /> : column.type === "select" ? <select className={styles.input} aria-label={accessibleName} value={String(row[column.key] ?? "header")} onChange={(event) => fieldChange(event.target.value)}>{column.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select> : <input type={column.type === "number" ? "number" : "text"} aria-label={accessibleName} value={String(row[column.key] ?? "")} placeholder={column.placeholder} disabled={locked} onChange={(event) => fieldChange(column.type === "number" ? Number(event.target.value) : event.target.value)} />}{locked && <span className={styles.fieldHint}>Existing SKU is locked. Add another variant to correct it.</span>}</label>;
        })}
       <button className={styles.iconButton} type="button" aria-label={`Remove ${label} row ${index + 1}`} onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}><Trash2 size={16} aria-hidden="true" /></button>
     </div>)}
@@ -464,15 +543,34 @@ function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (
 }
 
 function DraftPreview({ document }: { document: AdminDocument }) {
+  const product = "modelNumbers" in document ? document : null;
+  const richContent = product?.richContent;
+  const previewDocument = richContent ? { ...document, blocks: [] } as AdminDocument : document;
   return <section className={styles.previewPanel} aria-label="Private draft preview" aria-describedby="draft-preview-privacy">
     <h2>{document.title || "Untitled draft"}</h2>
-    <PublishedDocument document={document} hideTitle />
+    <PublishedDocument document={previewDocument} hideTitle />
+    {richContent && <section aria-label="Product description preview"><h3>About this product</h3><ProductRichContentView content={richContent} /></section>}
+    {product?.documentMediaId && <section aria-label="Product Word document preview"><h3>Word document</h3><ProductDocumentPreview mediaId={product.documentMediaId} /></section>}
     <p id="draft-preview-privacy" className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
   </section>;
 }
 
-function DocumentFields({ module, document, setDocument, recordId }: { module: AdminModule; document: AdminDocument; setDocument: (next: AdminDocument) => void; recordId?: string }) {
+function DocumentFields({ module, document, setDocument, recordId, slugAuto, setSlugAuto, onPricingChange, pricingRefreshKey, canManageMedia, onRichContentValidityChange, richContentResetKey, onUploadDelta }: {
+  module: AdminModule;
+  document: AdminDocument;
+  setDocument: (next: AdminDocument) => void;
+  recordId?: string;
+  slugAuto: boolean;
+  setSlugAuto: (value: boolean) => void;
+  onPricingChange: (next: ProductPricingState) => void;
+  pricingRefreshKey: number;
+  canManageMedia: boolean;
+  onRichContentValidityChange: (valid: boolean) => void;
+  richContentResetKey: number;
+  onUploadDelta: (change: 1 | -1) => void;
+}) {
   const doc = document as unknown as Record<string, unknown>;
+  const [skuEditKeys, setSkuEditKeys] = useState<Record<string, string>>({});
   const set = (key: string, value: unknown) => setDocument({ ...doc, [key]: value } as AdminDocument);
   const str = (key: string) => String(doc[key] ?? "");
   const num = (key: string) => Number(doc[key] ?? 0);
@@ -482,14 +580,44 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
     <section className={styles.panel}>
       <div className={styles.sectionHeading}><div><h2>Record details</h2><p>Use confirmed, owner-approved content.</p></div></div>
       <div className={styles.formGrid}>
-        <Field label="Title"><TextInput value={str("title")} onChange={(value) => set("title", value)} maxLength={240} /></Field>
-        <Field label="Slug" hint="Lowercase letters, numbers, and hyphens."><TextInput value={str("slug")} onChange={(value) => set("slug", value)} maxLength={180} /></Field>
-        <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>
+        <Field label="Title"><TextInput value={str("title")} onChange={(value) => { if (module === "products" && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
+        <Field label="Slug" hint={module === "products" ? slugAuto ? "Generated from the title until you edit it." : "Manual slug override." : "Lowercase letters, numbers, and hyphens."}><TextInput value={str("slug")} onChange={(value) => { set("slug", value); if (module === "products") setSlugAuto(false); }} maxLength={160} /></Field>
+        {module !== "products" && <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>}
       </div>
+      {module === "products" && !slugAuto && <button className={styles.secondaryButton} onClick={() => { setSlugAuto(true); set("slug", productSlugFromTitle(str("title"))); }} type="button">Generate slug from title</button>}
     </section>
 
+    {module === "products" && <section className={styles.panel}>
+      <div className={styles.sectionHeading}><div><h2>Variants</h2><p>Prices below apply to these product variants. Existing SKUs stay fixed.</p></div></div>
+      <RowEditor label="Variants" addLabel="Add variant" rows={rows("variants")} columns={[{ key: "sku", label: "SKU", immutableWhenExisting: true }, { key: "label", label: "Variant label" }]} onChange={(value) => set("variants", value)} onFieldChange={(key, previous, next) => {
+        if (key === "sku" && typeof previous === "string" && previous && typeof next === "string" && next && previous !== next) {
+          setSkuEditKeys((current) => ({ ...current, [next]: current[previous] ?? previous }));
+        }
+      }} />
+    </section>}
+
+    {module === "products" && <ProductPricingEditor
+      productId={recordId ?? "new"}
+      variants={rows("variants") as { id?: string; sku: string; label: string }[]}
+      skuEditKeys={skuEditKeys}
+      sourceObservation={doc.sourceObservation !== undefined}
+      refreshKey={pricingRefreshKey}
+      request={api}
+      onChange={onPricingChange}
+    />}
+
+    {module === "products" && <section className={styles.panel}>
+      <div className={styles.sectionHeading}><div><h2>Summary</h2><p>A concise product introduction.</p></div></div>
+      <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>
+    </section>}
+    {module === "products" && <ProductDocumentEditor value={typeof doc.documentMediaId === "string" ? doc.documentMediaId : undefined} onChange={(value) => set("documentMediaId", value)} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
+    {module === "products" && <section className={styles.panel}>
+      <div className={styles.sectionHeading}><div><h2>Tags</h2><p>Optional labels that describe or group this product.</p></div></div>
+      <TokenInput label="Product tags" values={arr("tags")} onChange={(value) => set("tags", value)} maxItems={30} maxLength={60} hint="Up to 30 tags, 60 characters each." />
+    </section>}
+
     {(module === "products" || module === "categories") && <section className={styles.panel}>
-      <div className={styles.sectionHeading}><div><h2>Catalog details</h2><p>Price and inventory are managed in their separate operational screens.</p></div></div>
+      <div className={styles.sectionHeading}><div><h2>Catalog details</h2><p>Add categories, specifications, compatibility and resources. Inventory is managed separately.</p></div></div>
       <div className={styles.formGrid}>
         {module === "products" && <RelationPicker label="Categories" module="categories" values={arr("categoryIds")} onChange={(value) => set("categoryIds", value)} />}
         {module === "categories" && <>
@@ -497,7 +625,6 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
           <Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field>
         </>}
         {module === "products" && <>
-          <RowEditor label="Variants" addLabel="Add variant" rows={rows("variants")} columns={[{ key: "sku", label: "SKU", immutableWhenExisting: true }, { key: "label", label: "Variant label" }]} onChange={(value) => set("variants", value)} />
           <section className={styles.panel} aria-label="Source observation">
             <label className={styles.inlineCheck}><input type="checkbox" checked={doc.sourceObservation !== undefined} onChange={(event) => {
               if (event.target.checked) set("sourceObservation", { priceText: "", capturedAt: "", sourceUrl: "" });
@@ -536,10 +663,16 @@ function DocumentFields({ module, document, setDocument, recordId }: { module: A
     {(module === "learn" || module === "videos") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "learn" ? "Resource details" : "Video details"}</h2></div></div><div className={styles.formGrid}><Field label={module === "learn" ? "Resource URL" : "YouTube URL or ID"}><TextInput value={str("url")} onChange={(value) => set("url", value)} placeholder={module === "learn" ? "https://… or /learn/…" : "https://youtube.com/watch?v=…"} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><RelationPicker label="Related products" module="products" values={arr("productIds")} onChange={(value) => set("productIds", value)} /></div></section>}
 
     {module === "learn" && <Field label="Learning collection"><select className={styles.input} value={str("collection") || "embedded-systems"} onChange={(event) => set("collection", event.target.value)}><option value="embedded-systems">Embedded systems resources</option><option value="product-specs">Product specifications</option><option value="kit-guides">PandaByte kit guides</option></select></Field>}
-    {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Media</h2><p>Only published WebP images can appear in image galleries.</p></div></div><RelationPicker label={module === "products" ? "Product images" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} /></section>}
+    {(module === "products" || module === "categories" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : "Only published WebP images can appear in image galleries."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} onUploadDelta={onUploadDelta} /></section>}
     {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
-    <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />
+    {module === "products" ? <ProductRichTextEditor
+      key={richContentResetKey}
+      value={doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(readJson<ContentBlock[]>(doc.blocks, []))}
+      onChange={(value) => setDocument({ ...document, blocks: [], richContent: value } as unknown as AdminDocument)}
+      onValidityChange={onRichContentValidityChange}
+      onUploadDelta={onUploadDelta}
+    /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />}
     <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
   </>;
 }
@@ -564,8 +697,19 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const [conflict, setConflict] = useState(false);
   const [restoreId, setRestoreId] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [slugAuto, setSlugAuto] = useState(isNew);
+  const [richContentValid, setRichContentValid] = useState(true);
+  const [richContentResetKey, setRichContentResetKey] = useState(0);
+  const [pendingUploads, setPendingUploads] = useState(0);
+  const [pricingRefreshKey, setPricingRefreshKey] = useState(0);
+  const [productPricing, setProductPricing] = useState<ProductPricingState>(() => ({ writes: [], dirty: false, errors: [], ready: module !== "products" || isNew }));
+  const canManageMedia = capabilities.includes("media.manage");
+  const onUploadDelta = useCallback((change: 1 | -1) => setPendingUploads((current) => Math.max(0, current + change)), []);
   const serialized = useMemo(() => JSON.stringify(draft), [draft]);
-  const dirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
+  const documentDirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
+  const dirty = documentDirty || (module === "products" && (productPricing.dirty || !richContentValid || pendingUploads > 0));
+  const hasProductSourceObservation = module === "products" && "sourceObservation" in draft;
+  const pricingReady = module !== "products" || hasProductSourceObservation || productPricing.ready;
 
   useEffect(() => {
     if (validationIssues.length) validationSummaryRef.current?.focus();
@@ -582,6 +726,11 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setRecord(result.record);
       setDraft(result.record.document);
       setBaseline(JSON.stringify(result.record.document));
+      setSlugAuto(false);
+      setRichContentValid(true);
+      if (module === "products") setRichContentResetKey((value) => value + 1);
+      setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" });
+      if (module === "products") setPricingRefreshKey((value) => value + 1);
       setConflict(false);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Record could not be loaded.");
@@ -594,7 +743,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     if (isNew) return;
     let active = true;
     void api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`)
-      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setConflict(false); } })
+      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setSlugAuto(false); setRichContentValid(true); if (module === "products") setRichContentResetKey((value) => value + 1); setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" }); if (module === "products") setPricingRefreshKey((value) => value + 1); setConflict(false); } })
       .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Record could not be loaded."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -619,23 +768,48 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 
   async function save(event?: FormEvent) {
     event?.preventDefault();
-    setBusy(true);
     setError("");
     setValidationIssues([]);
     setNotice("");
+    if (module === "products" && pendingUploads > 0) {
+      setError("Wait for all product media uploads to finish before saving.");
+      return null;
+    }
+    if (module === "products" && !hasProductSourceObservation && !productPricing.ready) {
+      setError("Wait for variant prices to load, or retry the price read, before saving this product.");
+      return null;
+    }
+    if (module === "products" && !hasProductSourceObservation && productPricing.errors.length) {
+      setValidationIssues(productPricing.errors.map((message) => ({ field: "prices", message })));
+      return null;
+    }
+    if (module === "products" && !richContentValid) {
+      setError("The product description contains unsupported content or formatting. Correct it before saving.");
+      return null;
+    }
+    setBusy(true);
     const parsed = parseDocument(module, draft);
     if (!parsed.ok) {
       setValidationIssues(parsed.fields);
       setBusy(false);
       return null;
     }
+    const prices = module === "products" && !("sourceObservation" in parsed.value) ? productPricing.writes : [];
     try {
       const result = isNew
-        ? await api<{ record: AdminRecord }>(`/api/admin/${module}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ document: parsed.value }) })
-        : await api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expectedVersion: record?.version, document: parsed.value }) });
+        ? await api<{ record: AdminRecord }>(`/api/admin/${module}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ document: parsed.value, ...(prices.length ? { prices } : {}) }) })
+        : await api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expectedVersion: record?.version, document: parsed.value, ...(prices.length ? { prices } : {}) }) });
       setRecord(result.record);
       setDraft(result.record.document);
       setBaseline(JSON.stringify(result.record.document));
+      setRichContentValid(true);
+      if (module === "products") {
+        if (isNew) setSlugAuto(false);
+        setProductPricing({ writes: [], dirty: false, errors: [], ready: false });
+        setPricingRefreshKey((value) => value + 1);
+        setRichContentResetKey((value) => value + 1);
+        toast.success("Product draft saved.");
+      }
       setConflict(false);
       setNotice("Draft saved.");
       if (isNew) router.replace(`/admin/${module}/${result.record.id}`);
@@ -646,6 +820,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setConflict(status === 409);
       if (Array.isArray(fields) && fields.length) setValidationIssues(fields);
       else setError(reason instanceof Error ? reason.message : "The draft could not be saved.");
+      if (module === "products") toast.error(reason instanceof Error ? reason.message : "The product draft could not be saved.");
       return null;
     } finally {
       setBusy(false);
@@ -668,12 +843,20 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setRecord(result.record);
       setDraft(result.record.document);
       setBaseline(JSON.stringify(result.record.document));
+      setRichContentValid(true);
+      if (module === "products") {
+        setProductPricing({ writes: [], dirty: false, errors: [], ready: false });
+        setPricingRefreshKey((value) => value + 1);
+        setRichContentResetKey((value) => value + 1);
+      }
       setConflict(false);
       setNotice(action === "publish" ? "Record published." : action === "unpublish" ? "Record unpublished." : action === "archive" ? "Record archived." : "Revision restored as a new draft.");
+      if (module === "products") toast.success(action === "publish" ? "Product published." : "Product updated.");
     } catch (reason) {
       const status = (reason as { status?: number }).status;
       setConflict(status === 409);
       setError(reason instanceof Error ? reason.message : "The action could not be completed.");
+      if (module === "products") toast.error(reason instanceof Error ? reason.message : "The product action could not be completed.");
     } finally {
       setBusy(false);
     }
@@ -689,7 +872,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       <div><Link className={styles.backLink} href={`/admin/${module}`}><ArrowLeft aria-hidden="true" size={16} /> {meta.title}</Link><h1>{isNew ? `Create ${meta.singular}` : draft.title || `Edit ${meta.singular}`}</h1><div className={styles.headingMeta}>{record && <span className={`${styles.statusPill} ${status === "Published" ? styles.statusPublished : status === "Archived" ? styles.statusArchived : ""}`}>{status}</span>}{record && <span>Updated {formatDate(record.updatedAt)}</span>}{dirty && <span className={styles.unsaved}>Unsaved changes</span>}</div></div>
       <div className={styles.editorActions}>
         <button className={styles.secondaryButton} type="button" onClick={() => setPreviewOpen((value) => !value)}><Eye size={16} aria-hidden="true" /> {previewOpen ? "Hide preview" : "Preview draft"}</button>
-        <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
+        <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
       </div>
     </div>
     {previewOpen && <DraftPreview document={draft} />}
@@ -699,15 +882,15 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     {notice && <p className={styles.successBanner} role="status"><Check size={16} aria-hidden="true" /> {notice}</p>}
     <form className={styles.editorForm} onSubmit={save} aria-busy={busy} aria-describedby={validationIssues.length && error ? "record-validation-summary record-editor-error" : validationIssues.length ? "record-validation-summary" : error ? "record-editor-error" : undefined}>
       <fieldset className={styles.editorFieldset} disabled={!canEdit}>
-        <DocumentFields module={module} document={draft} setDocument={setDraft} recordId={record?.id} />
+        <DocumentFields key={`${record?.id ?? "new"}:${pricingRefreshKey}`} module={module} document={draft} setDocument={setDraft} recordId={record?.id} slugAuto={slugAuto} setSlugAuto={setSlugAuto} onPricingChange={setProductPricing} pricingRefreshKey={pricingRefreshKey} canManageMedia={canManageMedia} onRichContentValidityChange={setRichContentValid} richContentResetKey={richContentResetKey} onUploadDelta={onUploadDelta} />
       </fieldset>
-      <div className={styles.bottomActions}><span>{dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
+      <div className={styles.bottomActions}><span>{pendingUploads > 0 ? "Product media is uploading…" : dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
     </form>
     {record && <section className={styles.panel} aria-labelledby="publishing-heading"><div className={styles.sectionHeading}><div><h2 id="publishing-heading">Publishing</h2><p>Publishing is a separate action and requires the right access.</p></div></div>
       <div className={styles.lifecycleActions}>
-        <button className={styles.primaryButton} type="button" onClick={() => void transition("publish")} disabled={!canPublish || busy || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
-        {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || record.archived}>Unpublish</button>}
-        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy}>Archive</button>}
+        <button className={styles.primaryButton} type="button" onClick={() => void transition("publish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
+        {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>Unpublish</button>}
+        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady}>Archive</button>}
       </div>
       {!canPublish && <p className={styles.fieldHint}>Your role does not include publishing, unpublishing, or archiving.</p>}
       {record.revisions && record.revisions.length > 0 && <div className={styles.revisionPicker}><label className={styles.field}><span className={styles.fieldLabel}>Restore a published revision as a draft</span><select className={styles.input} value={restoreId} onChange={(event) => setRestoreId(event.target.value)}><option value="">Select a revision</option>{record.revisions.map((revision) => <option value={revision.id} key={revision.id}>Revision {revision.revisionNumber} · {revision.title} · {formatDate(revision.publishedAt)}</option>)}</select></label><button className={styles.secondaryButton} type="button" disabled={!restoreId || !canEdit || busy} onClick={() => void transition("restore", restoreId)}>Restore draft</button></div>}

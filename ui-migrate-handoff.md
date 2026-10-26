@@ -78,3 +78,13 @@ The separate active 3D/media task retains package/lockfile, API/lib/schema, gall
 
 - C1 foundation: **0b328f6** — feat: establish reviewed UI migration foundation.
 - C2–C5 implementation: **a0ce26d** — feat: migrate approved PandaByte UI across storefront and admin.
+
+## Product editor/table follow-up — 27 October 2026
+
+The owner expanded this checkpoint to product backend support and selected a separate supported-layout Word preview. The Admin stays Mono/Geist Mono/Tabler. Pricing belongs to product add/edit after product information; the sidebar, command search and overview omit Pricing, and `/admin/pricing` redirects to Products. Existing pricing APIs remain compatible.
+
+The product table, direct five-image gallery, slug generation/manual override, optional tags, rich description, DOCX preview and existing 3D controls are implemented. Browser-tested saves/uploads use unpublished disposable fixtures only. Product/pricing changes commit atomically; source observations never supply operational price/stock. Existing public layout/theme/logo/hero remain unchanged; product details gain only the requested content/document rendering.
+
+[Product contract](docs/admin-products.md) and [verification](docs/verification/admin-products.json) contain the API/media limits, retained licenses, six forward development migrations, checks and resolved failures. Lint/typecheck/build, 165 unit tests, ten auth/security/diagnostics HTTP checks, development API checks and 24 responsive/theme cases are covered. All disposable service records/media/users/grants are cleaned up; 42 real products remain. Local screenshot artifacts are ignored under `.bootstrap/admin-products/`. Final preview/commit status is recorded with the verification file.
+
+The earlier UI-only statement that no backend or accepted-upload checks were performed is historical for that checkpoint; the current product authorization explicitly covers those changes/tests. Publication, production deployment, commerce, live email/billing, load/recovery work and actual zoom/OS motion/screen-reader speech testing remain outside this checkpoint. Word preview preserves supported layout; download retains the original, and complete Word fidelity is not claimed.

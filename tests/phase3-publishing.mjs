@@ -23,6 +23,7 @@ const singletonModules = new Set(["contact", "navigation"]);
 const modules = ["products", "categories", "blog", "pages", "faqs", "team", "navigation", "contact", "solutions", "learn", "videos"];
 const mediaBucketName = "editorial-media";
 const privateBucketName = "private-account-files";
+const docxMediaMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 class HarnessFailure extends Error {
   constructor(label) {
@@ -793,11 +794,15 @@ export async function ensureOwnedCleanup(context, state) {
       state.records.push({ id: row.id, module: kindToModule[row.kind], kind: row.kind, slug: row.slug });
     }
   }
-  const actorMedia = await table(context.admin, "cms_media").select("id,object_key,created_by,alt_text").eq("created_by", staffId).limit(1000);
+  const actorMedia = await table(context.admin, "cms_media").select("id,object_key,created_by,alt_text,mime_type,published,archived,document_sha256").eq("created_by", staffId).limit(1000);
   ensure(!actorMedia.error, "cleanup_actor_media_discovery_failed");
   for (const row of asArray(actorMedia.data)) {
     if (row.alt_text?.includes(runId) && !state.media.some((media) => media.id === row.id)) {
-      ensure(row.object_key === `assets/${row.id}.webp` || row.object_key === `assets/${row.id}.pdf`, "cleanup_discovered_media_key_invalid");
+      const isWebp = row.object_key === `assets/${row.id}.webp` && row.mime_type === "image/webp";
+      const isPdf = row.object_key === `assets/${row.id}.pdf` && row.mime_type === "application/pdf";
+      const isPrivateDocx = row.object_key === `assets/${row.id}.docx` && row.mime_type === docxMediaMime &&
+        row.published === false && row.archived === false && /^[0-9a-f]{64}$/.test(row.document_sha256 ?? "");
+      ensure(isWebp || isPdf || isPrivateDocx, "cleanup_discovered_media_key_invalid");
       state.media.push({ id: row.id, key: row.object_key });
     }
   }
@@ -810,16 +815,22 @@ export async function ensureOwnedCleanup(context, state) {
   const ids = [...new Set(state.records.map((record) => record.id))];
   const mediaIds = [...new Set(state.media.map((media) => media.id))];
   const inquiryIds = [...new Set(state.inquiries.map((inquiry) => inquiry.id))];
-  for (const item of state.media) ensure(item.key === `assets/${item.id}.webp` || item.key === `assets/${item.id}.pdf`, "cleanup_media_key_tracker_mismatch");
+  for (const item of state.media) ensure(item.key === `assets/${item.id}.webp` || item.key === `assets/${item.id}.pdf` || item.key === `assets/${item.id}.docx`, "cleanup_media_key_tracker_mismatch");
   for (const item of state.storageKeys) ensure(item?.key === `assets/${item?.id}.webp` || item?.key === `assets/${item?.id}.pdf`, "cleanup_orphan_key_tracker_mismatch");
   const mediaKeys = [...new Set([...state.media.map((item) => item.key), ...state.storageKeys.map((item) => item.key)])];
-  for (const key of mediaKeys) ensure(/^assets\/[0-9a-f-]{36}\.(webp|pdf)$/i.test(key), "cleanup_media_key_invalid");
+  for (const key of mediaKeys) ensure(/^assets\/[0-9a-f-]{36}\.(webp|pdf|docx)$/i.test(key), "cleanup_media_key_invalid");
   let verifiedObjectKeys = [];
+  const docxMediaIds = new Set();
   if (mediaIds.length) {
-    const media = await table(context.admin, "cms_media").select("id,object_key,created_by,alt_text").in("id", mediaIds);
+    const media = await table(context.admin, "cms_media").select("id,object_key,created_by,alt_text,mime_type,published,archived,document_sha256").in("id", mediaIds);
     ensure(!media.error, "cleanup_media_ownership_read_failed");
     for (const row of asArray(media.data)) {
       ensure(row.created_by === staffId && row.alt_text?.includes(runId) && state.media.some(({ id, key }) => id === row.id && key === row.object_key), "cleanup_media_ownership_mismatch");
+      if (row.object_key.endsWith(".docx")) {
+        ensure(row.object_key === `assets/${row.id}.docx` && row.mime_type === docxMediaMime && row.published === false && row.archived === false &&
+          /^[0-9a-f]{64}$/.test(row.document_sha256 ?? ""), "cleanup_docx_metadata_mismatch");
+        docxMediaIds.add(row.id);
+      }
     }
   }
   const unregisteredKeys = [...new Set(state.storageKeys.map((item) => item.key))];
@@ -920,6 +931,10 @@ export async function ensureOwnedCleanup(context, state) {
     await deleteBy("cms_records", "id", ids);
   }
   if (inquiryIds.length) await deleteBy("inquiries", "id", inquiryIds);
+  for (const id of docxMediaIds) {
+    const references = await rpc(context.admin, "media_referenced", { p_id: id, p_live_only: false });
+    ensure(!references.error && references.data === false, "cleanup_docx_media_still_referenced");
+  }
   if (mediaIds.length) await deleteBy("cms_media", "id", mediaIds);
   if (verifiedObjectKeys.length) {
     const { error } = await context.admin.storage.from(mediaBucketName).remove(verifiedObjectKeys);

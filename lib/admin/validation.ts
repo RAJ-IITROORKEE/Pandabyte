@@ -1,3 +1,5 @@
+import { parseProductRichContent, type ProductRichContent } from "./product-content.ts";
+
 export const ADMIN_MODULES = {
   products: { kind: "product", editCapability: "catalog.edit" },
   categories: { kind: "category", editCapability: "catalog.edit" },
@@ -45,6 +47,9 @@ export type AdminDocumentByModule = {
     kitContents: { productId?: string; title: string; quantity: number }[];
     resources: DocumentLink[];
     mediaIds: string[];
+    tags?: string[];
+    richContent?: ProductRichContent;
+    documentMediaId?: string;
     model3d?: ProductModel3d;
     sourceObservation?: SourceObservation;
     sourceReview?: string[];
@@ -75,7 +80,7 @@ const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDescription"] as const;
 
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
-  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "model3d", "sourceObservation", "sourceReview"],
+  products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "model3d", "sourceObservation", "sourceReview", "tags", "richContent", "documentMediaId"],
   categories: ["parentId", "position", "mediaIds"],
   blog: ["author", "tags", "mediaIds"],
   pages: [],
@@ -502,13 +507,21 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const compatibility = textArray(value.compatibility, "document.compatibility", fields, 50, 240);
     const kitContents = parseKitContents(value.kitContents, fields);
     const resources = parseResourceLinks(value.resources, fields);
-    const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields);
+    const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields, 5);
+    const tags = value.tags === undefined ? undefined : textArray(value.tags, "document.tags", fields, 30, 60);
+    if (tags && new Set(tags.map(tag => tag.toLowerCase())).size !== tags.length) add(fields, "document.tags", "invalid", "Remove duplicate tags.");
+    const richContent = value.richContent === undefined ? undefined : parseProductRichContent(value.richContent);
+    if (richContent === null) add(fields, "document.richContent", "invalid", "Use supported formatting, links and managed images within the document limits.");
+    const documentMediaId = value.documentMediaId === undefined ? undefined : uuidValue(value.documentMediaId, "document.documentMediaId", fields);
     const model3d = value.model3d === undefined ? undefined : parseProductModel3d(value.model3d, fields);
     const sourceObservation = value.sourceObservation === undefined ? undefined : parseSourceObservation(value.sourceObservation, fields);
     const sourceReview = value.sourceReview === undefined ? undefined : textArray(value.sourceReview, "document.sourceReview", fields, 64, 2000);
     if (sourceReview !== undefined && sourceObservation === undefined) add(fields, "document.sourceReview", "invalid", "Staff review notes require a source observation.");
     Object.assign(document, { categoryIds, modelNumbers, variants, specifications, compatibility, kitContents, resources, mediaIds });
     if (model3d !== undefined) Object.assign(document, { model3d });
+    if (tags !== undefined) Object.assign(document, { tags });
+    if (richContent) Object.assign(document, { richContent });
+    if (documentMediaId) Object.assign(document, { documentMediaId });
     if (sourceObservation !== undefined) Object.assign(document, { sourceObservation });
     if (sourceReview !== undefined) Object.assign(document, { sourceReview });
   } else if (module === "categories") {

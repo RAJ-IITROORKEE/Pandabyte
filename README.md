@@ -12,6 +12,8 @@
 
 # PandaByte.in — single project context
 
+27 October product administration checkpoint: pricing now belongs to product add/edit; the standalone Pricing page redirects to Products. The Mono product table adds scoped search/filter/sort/pagination, image previews, concise metadata and confirmed archival. The editor adds safe slug generation, five-image uploads, tags, structured rich text, separate supported-layout DOCX previews and retained 3D controls. Development API/schema changes preserve capability, version, private-media and source-observation boundaries. [Contract](docs/admin-products.md) · [verification](docs/verification/admin-products.json).
+
 27 October Admin UI checkpoint: the owner selected a separate Kiranism Mono Admin interface with Geist Mono, Tabler icons and independent appearance controls. The public storefront keeps its logo, hero and existing styling. Existing Clerk/InsForge permissions and data flows remain authoritative; workspace/chat/AI/notification additions are upcoming previews. See [the Admin migration contract](docs/admin-mono-migration.md) and [verification](docs/verification/admin-mono.json).
 
 26 October accessibility follow-up after `91109c5`: [form focus/live semantics, preview headings, circuit feedback and narrow file-input fixes](docs/phase-6-accessibility-followup.md) pass bounded development checks. Actual browser zoom, reduced-motion preference switching and real screen-reader speech remain manual gates. No content was published or real customer data changed; commerce, load tests, recovery operations and deployment remain deferred.

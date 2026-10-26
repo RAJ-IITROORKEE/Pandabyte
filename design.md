@@ -142,6 +142,8 @@ Contact details and FAQ content are editable independently from inquiry records.
 
 Provide a real rich editor with headings, paragraphs, lists, links, images/alt text, code blocks and tables when needed for technical articles. Propose Tiptap's MIT core and selected open-source extensions; keep the editor loaded only in admin and render safe structured content on public pages. Commercial collaboration/AI extensions are not assumed. [Tiptap editor](https://tiptap.dev/docs/editor/getting-started/overview).
 
+27 October product implementation: the Mono product editor uses lazy-loaded TipTap 3.32.0 and closed structured JSON with a separate original-byte DOCX layout preview. Pricing is inline after product information; no standalone Pricing navigation remains. Gallery uploads allow five images, rich descriptions manage their own bounded image references, and existing GLB/poster previews stay available. Source observations remain price-read-only and non-purchasable. Other editorial modules retain their existing block editor. See [the product contract](docs/admin-products.md).
+
 Save drafts separately from published revisions. Authenticated staff preview is private/noindex and bypasses shared cache. Publish validates required fields, records an immutable revision, exposes only published content and refreshes affected pages/search/metadata. Prevent silent overwrites by checking revision versions; warn about unsaved edits. Restoring an old revision creates a new auditable draft/publication. Slug changes generate a reviewed redirect. Scheduled publishing is optional unless selected; if added, it needs a real durable scheduling path and retry evidence.
 
 ## Accessibility, performance and design acceptance

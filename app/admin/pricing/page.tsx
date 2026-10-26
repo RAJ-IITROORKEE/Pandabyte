@@ -1,5 +1,5 @@
-import { PricingScreen } from "@/components/admin/operations";
+import { redirect } from "next/navigation";
 
 export default function AdminPricingPage() {
-  return <PricingScreen />;
+  redirect("/admin/products");
 }

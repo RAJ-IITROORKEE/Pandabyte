@@ -1,0 +1,2 @@
+.documentAttachment { display: grid; min-width: 0; gap: 10px; }
+.documentAttachment > button { justify-self: start; }

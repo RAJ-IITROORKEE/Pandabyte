@@ -1,8 +1,9 @@
 import sharp from "sharp";
 import { createHash } from "node:crypto";
 import { MAX_MEDIA_BYTES } from "./validation.ts";
+import { DOCX_MIME } from "./docx-validation.ts";
 
-type StoredMedia = { mimeType: string; byteSize: number; width: number | null; height: number | null; modelSha256?: string | null };
+type StoredMedia = { mimeType: string; byteSize: number; width: number | null; height: number | null; modelSha256?: string | null; documentSha256?: string | null };
 type EditorialImageSize = 96 | 960;
 
 export function parseEditorialImageSize(params: URLSearchParams): EditorialImageSize | undefined | null {
@@ -16,6 +17,10 @@ export function parseEditorialImageSize(params: URLSearchParams): EditorialImage
 export async function prepareEditorialDownload(input: Buffer, media: StoredMedia, size?: EditorialImageSize) {
   if (size !== undefined && size !== 96 && size !== 960) return null;
   if (!Number.isSafeInteger(media.byteSize) || media.byteSize < 1 || media.byteSize > MAX_MEDIA_BYTES || input.length !== media.byteSize) return null;
+  if (media.mimeType === DOCX_MIME) {
+    return size === undefined && media.width === null && media.height === null && /^[0-9a-f]{64}$/.test(media.documentSha256 ?? "") && createHash("sha256").update(input).digest("hex") === media.documentSha256
+      ? { bytes: input, mimeType: DOCX_MIME, extension: "docx", width: null, height: null } : null;
+  }
   if (media.mimeType === "model/gltf-binary") {
     // Immutable registered objects were structurally validated before registration; verify their exact bytes on every read.
     return size === undefined && media.width === null && media.height === null && input.length >= 20 &&

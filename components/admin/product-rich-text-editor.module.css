@@ -1,0 +1,37 @@
+.panel { display: grid; gap: 14px; }
+.toolbar { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border: 1px solid var(--divider); background: var(--background); }
+.toolButton { display: inline-flex; min-width: 36px; min-height: 36px; align-items: center; justify-content: center; gap: 5px; padding: 6px 8px; border: 1px solid var(--divider); border-radius: 2px; background: var(--surface); color: var(--foreground); font: inherit; font-size: 11px; cursor: pointer; }
+.toolButton:hover:not(:disabled), .toolButtonActive { border-color: var(--accent); background: var(--status-soft); color: var(--accent); }
+.toolButton:disabled { opacity: .5; cursor: not-allowed; }
+.toolbar select { width: auto; min-height: 36px; padding: 6px 8px; font-size: 11px; }
+.editorSurface { min-height: 280px; overflow-x: auto; border: 1px solid var(--border); background: var(--background); }
+.editorSurface:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editorSurface :global(.product-rich-editor) { min-height: 280px; padding: 18px; outline: none; color: var(--foreground); font-size: 14px; line-height: 1.7; }
+.editorSurface :global(.product-rich-editor:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editorSurface :global(.product-rich-editor p) { min-height: 1.5em; margin: 0 0 12px; }
+.editorSurface :global(.product-rich-editor h2), .editorSurface :global(.product-rich-editor h3), .editorSurface :global(.product-rich-editor h4) { margin: 18px 0 8px; line-height: 1.25; }
+.editorSurface :global(.product-rich-editor h2) { font-size: 22px; }
+.editorSurface :global(.product-rich-editor h3) { font-size: 18px; }
+.editorSurface :global(.product-rich-editor h4) { font-size: 16px; }
+.editorSurface :global(.product-rich-editor ul), .editorSurface :global(.product-rich-editor ol) { margin: 0 0 12px; padding-left: 24px; }
+.editorSurface :global(.product-rich-editor blockquote) { margin: 12px 0; padding: 8px 14px; border-left: 1px solid var(--accent); background: var(--status-soft); }
+.editorSurface :global(.product-rich-editor pre) { overflow-x: auto; margin: 12px 0; padding: 12px; background: color-mix(in srgb, var(--foreground) 7%, var(--background)); }
+.editorSurface :global(.product-rich-editor table) { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.editorSurface :global(.product-rich-editor th), .editorSurface :global(.product-rich-editor td) { min-width: 80px; padding: 7px; border: 1px solid var(--divider); vertical-align: top; }
+.editorSurface :global(.product-rich-editor th) { background: var(--status-soft); text-align: left; }
+.editorSurface :global(.product-rich-editor a) { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.editorSurface :global(.product-rich-editor mark) { color: #171717 !important; }
+.editorSurface :global(.product-rich-editor span[style*="color"]) { background-color: #ffffff; }
+.editorSurface :global(.product-rich-editor img) { display: block; max-width: min(100%, 600px); max-height: 380px; margin: 10px auto; object-fit: contain; }
+.editorSurface :global(.product-rich-image) { margin: 12px 0; }
+.editorSurface :global(.product-rich-image figcaption) { color: var(--muted); font-size: 12px; text-align: center; }
+.imageUpload { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, .8fr) auto; align-items: end; gap: 10px; padding: 12px; border: 1px solid var(--divider); background: var(--surface); }
+.imageUpload > p { grid-column: 1 / -1; }
+.imageUpload input[type="file"] { min-height: 42px; padding: 6px; }
+.imageProperties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) auto; align-items: end; gap: 10px; }
+.imageProperties > button { justify-self: start; }
+
+@media (max-width: 720px) {
+  .imageUpload, .imageProperties { grid-template-columns: minmax(0, 1fr); }
+  .imageUpload > p { grid-column: auto; }
+}

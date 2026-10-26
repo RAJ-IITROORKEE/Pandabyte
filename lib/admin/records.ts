@@ -6,6 +6,7 @@ import { requireCapability, type StaffCapability } from "@/lib/authorization";
 import { createInsforgePublicClient } from "@/lib/insforge/public";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { readBoundedBody } from "@/lib/storage/http";
+import { parseProductPriceWrites, type ProductPriceWrite } from "@/lib/admin/product-contract";
 import {
   ADMIN_MODULES,
   MAX_ADMIN_BODY_BYTES,
@@ -23,6 +24,7 @@ import {
   type AdminModule,
   type AdminVariantDto,
   type CmsKind,
+  type FieldError,
   type RecordAction,
 } from "@/lib/admin/validation";
 
@@ -67,6 +69,7 @@ type StaffClientResult =
   | { client: Awaited<ReturnType<typeof createInsforgeServerClient>> }
   | { response: Response };
 type BoundedJsonResult = { ok: true; value: unknown } | { ok: false; status: 400 | 413 };
+type ProductPriceEnvelope = { ok: true; body: unknown; prices?: ProductPriceWrite[] } | { ok: false; fields: unknown };
 
 function isObject(value: unknown): value is JsonObject {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -324,6 +327,24 @@ async function mutationBody(request: Request): Promise<{ ok: true; value: unknow
   return body;
 }
 
+function splitProductPrices(module: AdminModule, value: unknown): ProductPriceEnvelope {
+  if (module !== "products" || !isObject(value) || !Object.prototype.hasOwnProperty.call(value, "prices")) {
+    return { ok: true, body: value };
+  }
+  const parsed = parseProductPriceWrites(value.prices);
+  if (!parsed.ok) return { ok: false, fields: parsed.fields };
+  const body = { ...value };
+  delete body.prices;
+  return { ok: true, body, prices: parsed.value };
+}
+
+function validateProductPriceSkus(document: unknown, prices: readonly ProductPriceWrite[]): FieldError[] {
+  if (!isObject(document) || !Array.isArray(document.variants)) return [{ field: "prices", code: "invalid", message: "Prices must match variants in this product." }];
+  const skus = new Set(document.variants.filter(isObject).map((variant) => typeof variant.sku === "string" ? variant.sku.toLowerCase() : ""));
+  const missing = prices.filter((price) => !skus.has(price.sku.toLowerCase()));
+  return missing.map((price) => ({ field: "prices", code: "invalid", message: `Price row does not match variant ${price.sku}.` }));
+}
+
 export async function adminList(request: Request, rawModule: string): Promise<Response> {
   const adminModule = parseAdminModule(rawModule);
   if (!adminModule) return errorResponse("not_found", 404);
@@ -353,14 +374,25 @@ export async function adminCreate(request: Request, rawModule: string): Promise<
   if ("response" in access) return access.response;
   const body = await mutationBody(request);
   if (!body.ok) return body.response;
-  const parsed = parseCreateInput(adminModule, body.value);
+  const productInput = splitProductPrices(adminModule, body.value);
+  if (!productInput.ok) return validationResponse(productInput.fields);
+  const parsed = parseCreateInput(adminModule, productInput.body);
   if (!parsed.ok) return validationResponse(parsed.fields);
-  const result = await rpc(access.client, "admin_save_record", {
-    p_id: null,
-    p_kind: ADMIN_MODULES[adminModule].kind,
-    p_expected_version: null,
-    p_document: parsed.value.document,
-  });
+  const priceFields = productInput.prices?.length ? validateProductPriceSkus(parsed.value.document, productInput.prices) : [];
+  if (priceFields.length) return validationResponse(priceFields);
+  if (productInput.prices?.length && isObject(parsed.value.document) && "sourceObservation" in parsed.value.document) {
+    return validationResponse([{ field: "prices", code: "invalid", message: "Source observations cannot have operational prices." }]);
+  }
+  const result = productInput.prices?.length
+    ? await rpc(access.client, "admin_save_product_with_prices", {
+      p_id: null, p_expected_version: null, p_document: parsed.value.document, p_prices: productInput.prices,
+    })
+    : await rpc(access.client, "admin_save_record", {
+      p_id: null,
+      p_kind: ADMIN_MODULES[adminModule].kind,
+      p_expected_version: null,
+      p_document: parsed.value.document,
+    });
   if (result.error) return rpcErrorResponse(result.error);
   const record = isObject(result.data) ? parseAdminRecord(result.data.record, adminModule) : null;
   if (!record) return errorResponse("backend_unavailable", 503);
@@ -391,14 +423,25 @@ export async function adminUpdate(request: Request, rawModule: string, rawId: st
   if ("response" in access) return access.response;
   const body = await mutationBody(request);
   if (!body.ok) return body.response;
-  const parsed = parseUpdateInput(adminModule, body.value);
+  const productInput = splitProductPrices(adminModule, body.value);
+  if (!productInput.ok) return validationResponse(productInput.fields);
+  const parsed = parseUpdateInput(adminModule, productInput.body);
   if (!parsed.ok) return validationResponse(parsed.fields);
-  const result = await rpc(access.client, "admin_save_record", {
-    p_id: id,
-    p_kind: ADMIN_MODULES[adminModule].kind,
-    p_expected_version: parsed.value.expectedVersion,
-    p_document: parsed.value.document,
-  });
+  const priceFields = productInput.prices?.length ? validateProductPriceSkus(parsed.value.document, productInput.prices) : [];
+  if (priceFields.length) return validationResponse(priceFields);
+  if (productInput.prices?.length && isObject(parsed.value.document) && "sourceObservation" in parsed.value.document) {
+    return validationResponse([{ field: "prices", code: "invalid", message: "Source observations cannot have operational prices." }]);
+  }
+  const result = productInput.prices?.length
+    ? await rpc(access.client, "admin_save_product_with_prices", {
+      p_id: id, p_expected_version: parsed.value.expectedVersion, p_document: parsed.value.document, p_prices: productInput.prices,
+    })
+    : await rpc(access.client, "admin_save_record", {
+      p_id: id,
+      p_kind: ADMIN_MODULES[adminModule].kind,
+      p_expected_version: parsed.value.expectedVersion,
+      p_document: parsed.value.document,
+    });
   if (result.error) return rpcErrorResponse(result.error);
   const record = isObject(result.data) ? parseAdminRecord(result.data.record, adminModule) : null;
   if (!record) return errorResponse("backend_unavailable", 503);

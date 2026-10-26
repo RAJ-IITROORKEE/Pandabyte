@@ -2,7 +2,6 @@ import {
   IconBook2,
   IconBriefcase2,
   IconBoxMultiple,
-  IconCurrencyRupee,
   IconFileText,
   IconHelpCircle,
   IconLayoutDashboard,
@@ -48,7 +47,6 @@ export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
     items: [
       { href: "/admin/products", label: "Products", icon: IconPackage, capability: "catalog.edit", group: "Products & catalog" },
       { href: "/admin/categories", label: "Categories", icon: IconTags, capability: "catalog.edit", group: "Products & catalog" },
-      { href: "/admin/pricing", label: "Pricing", icon: IconCurrencyRupee, capability: "catalog.edit", group: "Products & catalog" },
     ],
   },
   {

@@ -34,10 +34,11 @@ export async function POST(request: Request) {
     if (!prepared) return editorialError("invalid_media_file", 400);
     const publicUse = form.get("publicUseAllowed");
     const model = "model" in prepared ? prepared.model : undefined;
+    const document = "document" in prepared ? prepared.document : undefined;
     const isModel = Boolean(model);
     if ((publicUse !== null && !["true", "false"].includes(String(publicUse))) || (!isModel && publicUse !== null)) return editorialError("invalid_upload", 400);
     const validationKey = process.env.PRODUCT_MODEL_VALIDATION_KEY;
-    if (isModel && !/^[0-9a-f]{64}$/.test(validationKey ?? "")) return editorialError("upload_unavailable", 503);
+    if ((isModel || document) && !/^[0-9a-f]{64}$/.test(validationKey ?? "")) return editorialError("upload_unavailable", 503);
     const id = randomUUID(), objectKey = `assets/${id}.${prepared.extension}`;
     const client = await createInsforgeServerClient(), bucket = client.storage.from(EDITORIAL_MEDIA_BUCKET);
     compensate = async () => {
@@ -60,6 +61,8 @@ export async function POST(request: Request) {
       ? await client.database.schema("public").rpc("admin_register_model_media", { ...registration,
         p_sha256: model.sha256, p_triangles: model.triangles,
         p_public_allowed: publicUse === "true", p_validation_key: validationKey })
+      : document ? await client.database.schema("public").rpc("admin_register_document_media", { ...registration,
+        p_sha256: document.sha256, p_validation_key: validationKey })
       : await client.database.schema("public").rpc("admin_register_media", { ...registration,
         p_mime: prepared.mimeType, p_width: prepared.width, p_height: prepared.height });
     if (error) {

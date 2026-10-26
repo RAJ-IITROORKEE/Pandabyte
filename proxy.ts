@@ -11,7 +11,7 @@ export default clerkMiddleware({
       // GLTFLoader decodes validated embedded textures through local Blob URLs.
       "connect-src": ["blob:"],
       "img-src": ["blob:"],
-      "frame-src": ["https://www.youtube-nocookie.com"],
+      "frame-src": ["'self'", "https://www.youtube-nocookie.com"],
     },
   },
 });

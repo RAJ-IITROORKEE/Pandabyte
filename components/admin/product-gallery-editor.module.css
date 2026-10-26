@@ -1,0 +1,12 @@
+.uploadPanel { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto; align-items: end; gap: 10px; padding: 12px; border: 1px solid var(--divider); background: var(--surface); }
+.uploadPanel > p { grid-column: 1 / -1; }
+.selectedImage { grid-template-columns: 88px minmax(100px, 1fr) repeat(3, auto); align-items: center; }
+.selectedImage img { width: 88px; height: 64px; object-fit: contain; background: var(--background); border: 1px solid var(--divider); }
+
+@media (max-width: 720px) {
+  .uploadPanel { grid-template-columns: minmax(0, 1fr); }
+  .uploadPanel > p { grid-column: auto; }
+  .selectedImage { grid-template-columns: 72px minmax(0, 1fr); }
+  .selectedImage img { width: 72px; height: 54px; }
+  .selectedImage button { grid-row: 2; }
+}

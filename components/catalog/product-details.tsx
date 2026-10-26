@@ -2,6 +2,8 @@ import Image from "next/image";
 import type { ContentBlock } from "@/lib/admin/validation";
 import type { PublishedRecord } from "@/lib/editorial/published";
 import styles from "./catalog.module.css";
+import { ProductRichContentView } from "./product-rich-content";
+import { ProductDocumentPreview } from "./product-document-preview";
 
 function ContentBlockView({ block }: { block: ContentBlock }) {
   switch (block.type) {
@@ -27,9 +29,9 @@ export function ProductDetails({ product }: { product: PublishedRecord<"products
   const hasKitContents = document.kitContents.length > 0;
   const hasResources = document.resources.length > 0;
   const blocks = document.sourceObservation ? document.blocks.filter(block => block.type !== "image" || !document.mediaIds.includes(block.mediaId)) : document.blocks;
-  const hasBlocks = blocks.length > 0;
+  const hasBlocks = blocks.length > 0 || Boolean(document.richContent?.content.length);
 
-  if (!hasSpecs && !hasModels && !hasCompatibility && !hasKitContents && !hasResources && !hasBlocks) return null;
+  if (!hasSpecs && !hasModels && !hasCompatibility && !hasKitContents && !hasResources && !hasBlocks && !document.documentMediaId && !document.tags?.length) return null;
 
   return <div className={styles.productSections}>
     {(hasSpecs || hasModels) && <section className={styles.productSection} aria-labelledby="product-specifications">
@@ -55,7 +57,9 @@ export function ProductDetails({ product }: { product: PublishedRecord<"products
     </section>}
     {hasBlocks && <section className={styles.productSection}>
       <h2>About this product</h2>
-      <article className={styles.contentBlock}>{blocks.map((block, index) => <ContentBlockView block={block} key={index} />)}</article>
+      <article className={styles.contentBlock}>{document.richContent ? <ProductRichContentView content={document.richContent} /> : blocks.map((block, index) => <ContentBlockView block={block} key={index} />)}</article>
     </section>}
+    {document.documentMediaId && <section className={styles.productSection}><h2>Product document</h2><ProductDocumentPreview mediaId={document.documentMediaId} /></section>}
+    {Boolean(document.tags?.length) && <section className={styles.productSection}><h2>Tags</h2><ul className={styles.detailList}>{document.tags?.map(tag => <li key={tag}>{tag}</li>)}</ul></section>}
   </div>;
 }

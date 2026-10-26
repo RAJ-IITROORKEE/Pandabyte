@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { ADMIN_THEME_STORAGE_KEY, readAdminThemePreference, resolveAdminTheme, type AdminThemePreference } from "./admin-theme-preference";
 import styles from "./admin-theme.module.css";
+import { Toaster } from "sonner";
 
 type AdminThemeValue = {
   preference: AdminThemePreference;
@@ -49,6 +50,8 @@ export function AdminThemeProvider({ children, className, fontFamily }: {
       <div className={`${styles.scope} ${className ?? ""}`} data-admin-theme={preference}
         style={fontFamily ? { fontFamily } as CSSProperties : undefined}>
         {children}
+        <Toaster theme={value.resolvedTheme} position="bottom-right" closeButton richColors={false}
+          toastOptions={{ style: { fontFamily: "inherit", background: "var(--surface)", color: "var(--foreground)", border: "1px solid var(--border)", borderRadius: "8px" } }} />
       </div>
     </AdminThemeContext.Provider>
   );
