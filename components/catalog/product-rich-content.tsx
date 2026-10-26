@@ -35,7 +35,7 @@ function NodeView({ node }: { node: RichNode }) {
     case "horizontalRule": return <hr />;
     case "hardBreak": return <br />;
     case "image": return <figure><Image src={`/api/media/${a.mediaId}?w=960`} alt={String(a.alt)} width={1200} height={900} unoptimized sizes="(max-width: 760px) 100vw, 760px" />{a.caption && <figcaption>{String(a.caption)}</figcaption>}</figure>;
-    case "table": return <div className={styles.tableWrap} role="region" aria-label="Product content table" tabIndex={0}><table><tbody>{children}</tbody></table></div>;
+    case "table": return <div className={styles.tableWrap} role="region" aria-label="Content table" tabIndex={0}><table><tbody>{children}</tbody></table></div>;
     case "tableRow": return <tr>{children}</tr>;
     case "tableHeader": return <th colSpan={Number(a.colspan ?? 1)} rowSpan={Number(a.rowspan ?? 1)}>{children}</th>;
     case "tableCell": return <td colSpan={Number(a.colspan ?? 1)} rowSpan={Number(a.rowspan ?? 1)}>{children}</td>;
@@ -44,6 +44,6 @@ function NodeView({ node }: { node: RichNode }) {
 }
 
 export function ProductRichContentView({ content }: { content: ProductRichContent }) {
-  if (!parseProductRichContent(content)) return <p>Product content is unavailable.</p>;
+  if (!parseProductRichContent(content)) return <p>Content is unavailable.</p>;
   return <div className={styles.content}><NodeView node={content} /></div>;
 }

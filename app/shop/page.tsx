@@ -1,11 +1,13 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Search } from "lucide-react";
 import { listCatalogProducts } from "@/lib/catalog/published";
 import { parseCatalogQuery, type CatalogQuery } from "@/lib/catalog/query";
-import { listPublishedRecords } from "@/lib/editorial/published";
+import { getPublishedRecord, listPublishedRecords } from "@/lib/editorial/published";
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { ProductCard } from "@/components/catalog/product-card";
+import { CategoryDetails } from "@/components/catalog/category-details";
 import { CatalogFilters } from "@/components/catalog/catalog-filters";
 import styles from "@/components/catalog/catalog.module.css";
 import presentation from "@/components/catalog/catalog-presentation.module.css";
@@ -77,6 +79,11 @@ export default async function ShopPage({ searchParams }: PageProps) {
   const selectedCategories = new Set(query?.categories ?? categories.flatMap((category) =>
     submittedCategories.has(category.slug) || submittedCategories.has(category.id) ? [category.slug, category.id] : [],
   ));
+  const activeCategory = query?.categories.length === 1
+    ? categories.find((category) => category.slug === query.categories[0] || category.id === query.categories[0])
+    : undefined;
+  const activeCategoryRecord = activeCategory ? await getPublishedRecord("categories", activeCategory.slug) : null;
+  const categoryDetails = activeCategoryRecord && "document" in activeCategoryRecord ? activeCategoryRecord : null;
   const availabilityOptions = ["all", "available", "unavailable"] as const;
   const submittedAvailability = firstParam(raw.availability);
   const availability = query?.availability ?? (availabilityOptions.includes(submittedAvailability as typeof availabilityOptions[number])
@@ -98,13 +105,26 @@ export default async function ShopPage({ searchParams }: PageProps) {
       <h2 className={styles.categoryHeading}>Browse categories</h2>
       <div className={`${styles.categoryCards} ${presentation.categoryCards}`}>
         {categories.map((category) => <Link className={styles.categoryCard} href={categoryHref(category.slug, query)} key={category.id}>
-          {category.title}
+          {category.document.mediaIds[0] && <Image
+            className={styles.categoryImage}
+            src={`/api/media/${encodeURIComponent(category.document.mediaIds[0])}?w=96`}
+            alt=""
+            aria-hidden="true"
+            width={64}
+            height={48}
+            unoptimized
+            loading="lazy"
+            sizes="64px"
+          />}
+          <span>{category.title}</span>
         </Link>)}
       </div>
       {categoryResult.total > categories.length && <p className={styles.categoryLimit}>
         Showing the first {categories.length} published categories.
       </p>}
     </nav>}
+
+    {categoryDetails && <CategoryDetails category={categoryDetails} />}
 
     {!parsed.ok && <section className={styles.queryErrors} aria-labelledby="catalog-filter-error" role="alert">
       <h2 id="catalog-filter-error">Some catalog filters need attention</h2>
