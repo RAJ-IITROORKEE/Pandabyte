@@ -451,5 +451,6 @@
     "dark": ".bootstrap/admin-products/products-dark.png",
     "light": ".bootstrap/admin-products/products-light.png",
     "ignored": true
-  }
+  },
+  "implementationCommit": "2d8ab0c"
 }
