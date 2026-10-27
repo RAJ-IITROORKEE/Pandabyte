@@ -511,7 +511,7 @@ function RowEditor({ label, rows, columns, onChange, addLabel, onFieldChange }: 
   </section>;
 }
 
-function BlockEditor({ blocks, onChange, reorderable = false }: { blocks: ContentBlock[]; onChange: (next: ContentBlock[]) => void; reorderable?: boolean }) {
+function BlockEditor({ blocks, onChange, reorderable = false, contentLabel = "Page content" }: { blocks: ContentBlock[]; onChange: (next: ContentBlock[]) => void; reorderable?: boolean; contentLabel?: "Page content" | "Article content" }) {
   function update(index: number, patch: Record<string, unknown>) {
     onChange(blocks.map((block, blockIndex) => blockIndex === index ? { ...block, ...patch } as ContentBlock : block));
   }
@@ -532,8 +532,8 @@ function BlockEditor({ blocks, onChange, reorderable = false }: { blocks: Conten
     onChange([...blocks, values[type]]);
   }
   return <section className={styles.blocks}>
-    <div className={styles.sectionHeading}><div><h2>Page content</h2><p>Add blocks in the order they should appear.</p></div></div>
-    {blocks.length === 0 && <p className={styles.emptyBlocks}>No content blocks yet. Add a block to build the page.</p>}
+    <div className={styles.sectionHeading}><div><h2>{contentLabel}</h2><p>Add blocks in the order they should appear.</p></div></div>
+    {blocks.length === 0 && <p className={styles.emptyBlocks}>No content blocks yet. Add a block to build the {contentLabel === "Article content" ? "article" : "page"}.</p>}
     {blocks.map((block, index) => <fieldset className={`${styles.blockCard} ${reorderable ? styles.reorderableBlocks : ""}`} key={`${block.type}-${index}`}>
       <legend><span>Block {index + 1}: {block.type === "bulletList" || block.type === "orderedList" ? block.type === "bulletList" ? "Bullet list" : "Numbered list" : block.type[0].toUpperCase() + block.type.slice(1)}</span>{reorderable ? <span className={styles.blockActions}>
           <button className={styles.secondaryButton} type="button" aria-label={`Move block ${index + 1} up`} onClick={() => move(index, -1)} disabled={index === 0}>Move up</button>
@@ -669,7 +669,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
       </div>
     </section>}
 
-    {module === "blog" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Article details</h2></div></div><div className={styles.formGrid}><Field label="Author"><TextInput value={str("author")} onChange={(value) => set("author", value)} /></Field><TokenInput label="Tags" values={arr("tags")} onChange={(value) => set("tags", value)} /></div></section>}
+    {module === "blog" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Article details</h2></div></div><div className={styles.formGrid}><Field label="Author"><TextInput value={str("author")} onChange={(value) => set("author", value)} maxLength={160} /></Field><TokenInput label="Tags" values={arr("tags")} onChange={(value) => set("tags", value)} maxItems={30} maxLength={60} hint="Up to 30 tags, 60 characters each." /></div></section>}
     {module === "faqs" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>FAQ details</h2></div></div><div className={styles.formGrid}><Field label="Topic"><TextInput value={str("topic")} onChange={(value) => set("topic", value)} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><TokenInput label="Placements" values={arr("placements")} onChange={(value) => set("placements", value)} /><Field label="Answer" className={styles.spanTwo}><TextArea value={str("answer")} onChange={(value) => set("answer", value)} rows={6} /></Field></div></section>}
     {module === "team" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Profile details</h2><p>Use real or owner-approved identities and biographies.</p></div></div><div className={styles.formGrid}><Field label="Name"><TextInput value={str("name")} onChange={(value) => set("name", value)} /></Field><Field label="Role"><TextInput value={str("role")} onChange={(value) => set("role", value)} /></Field><Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field><Field label="Biography" className={styles.spanTwo}><TextArea value={str("bio")} onChange={(value) => set("bio", value)} rows={5} /></Field><RowEditor label="Profile links" addLabel="Add link" rows={rows("links")} columns={[{ key: "label", label: "Label" }, { key: "url", label: "HTTPS URL" }]} onChange={(value) => set("links", value)} /></div></section>}
     {module === "navigation" && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Navigation links</h2><p>Use the exact existing destination to rename, reorder or hide a core link within its menu group. New header links appear under About; new footer links appear under Company & policies. Missing entries keep defaults.</p></div></div><RowEditor label="Links" addLabel="Add navigation link" rows={rows("links")} columns={[{ key: "label", label: "Label" }, { key: "href", label: "Path or HTTPS URL" }, { key: "group", label: "Group", type: "select", options: [{ value: "header", label: "Header" }, { value: "footer", label: "Footer" }] }, { key: "position", label: "Position", type: "number" }, { key: "visible", label: "Visible", type: "checkbox" }]} onChange={(value) => set("links", value.map((row) => ({ ...row, group: row.group === "footer" ? "footer" : "header" })))} /></section>}
@@ -689,7 +689,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
       onChange={(value) => setDocument((current) => ({ ...current, blocks: [], richContent: value } as AdminDocument))}
       onValidityChange={onRichContentValidityChange}
       onUploadDelta={onUploadDelta}
-    /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} reorderable={module === "pages"} />}
+    /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog"} contentLabel={module === "blog" ? "Article content" : "Page content"} />}
     <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
   </>;
 }

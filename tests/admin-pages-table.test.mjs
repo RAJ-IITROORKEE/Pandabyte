@@ -20,7 +20,7 @@ test("Pages table query defaults and accepts bounded filters, sorts, limits, and
 test("Pages table query rejects unknown, duplicate, malformed, and unbounded values", () => {
   for (const query of [
     "extra=1", "q=a&q=b", "status=visible", "sort=random", "limit=15", "offset=-1", "offset=10001", "offset=01",
-    `q=${"a".repeat(121)}`, "q=%00",
+    `q=${"a".repeat(121)}`, `q=${"+".repeat(121)}`, "q=%00", "q=%C2%85",
   ]) assert.equal(parsePagesTableQuery(new URLSearchParams(query)).ok, false, query);
 });
 
