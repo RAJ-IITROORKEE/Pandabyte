@@ -1,62 +1,115 @@
 "use client";
 
-import { Suspense } from "react";
-import { UserAvatar, useUser } from "@clerk/nextjs";
+import { Suspense, useState, useSyncExternalStore } from "react";
+import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { ChevronDown, FolderLock, Settings } from "lucide-react";
+import { CreditCard, FolderLock, Heart, LayoutDashboard, LogOut, MapPin, Package, Settings, UserRound } from "lucide-react";
 import { AccountProfile } from "@/components/account-profile";
 import { AccountFiles } from "@/components/account-files";
 import { AccountAddresses } from "@/components/account-addresses";
-import styles from "@/components/account.module.css";
+import { FavoritesList } from "@/components/favorites/favorites-list";
+import { getFavoritesSnapshot, getFavoritesServerSnapshot, subscribeFavorites, parseFavorites } from "@/components/favorites/favorites-store";
+import styles from "@/components/account-dashboard.module.css";
+
+const sections = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "profile", label: "Profile", icon: UserRound },
+  { id: "addresses", label: "Addresses", icon: MapPin },
+  { id: "favorites", label: "Favorites", icon: Heart },
+  { id: "orders", label: "Orders", icon: Package },
+  { id: "billing", label: "Billing", icon: CreditCard },
+  { id: "files", label: "Private files", icon: FolderLock },
+];
+
+function subscribeToHash(callback: () => void) {
+  window.addEventListener("hashchange", callback);
+  return () => window.removeEventListener("hashchange", callback);
+}
 
 export function AccountDashboard() {
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const [signOutError, setSignOutError] = useState("");
+  const hash = useSyncExternalStore(subscribeToHash, () => window.location.hash.slice(1), () => "");
+  const saved = useSyncExternalStore(subscribeFavorites, getFavoritesSnapshot, getFavoritesServerSnapshot);
+  const favoriteCount = parseFavorites(saved)?.length;
+  const activeSection = sections.some((section) => section.id === hash) ? hash : "overview";
 
-  if (!isLoaded) {
-    return <p className={styles.loadingState} role="status">Loading your account…</p>;
+  async function handleSignOut() {
+    setSignOutError("");
+    try {
+      await signOut({ redirectUrl: "/" });
+    } catch {
+      setSignOutError("Could not sign you out. Please try again.");
+    }
   }
 
-  if (!user) {
-    return <p className={styles.errorState} role="alert">Your account details could not be loaded. Refresh the page or sign in again.</p>;
-  }
+  if (!isLoaded) return <p className={styles.message} role="status">Loading your account…</p>;
+  if (!user) return <p className={styles.message} role="alert">Your account details could not be loaded. Refresh the page or sign in again.</p>;
 
   const name = user.fullName?.trim() || user.firstName?.trim() || "Your account";
+  const greeting = user.firstName?.trim() || user.fullName?.trim();
   const email = user.primaryEmailAddress?.emailAddress ?? "";
+
   return (
-    <div className={styles.dashboard}>
-      <div className={styles.dashboardHeader}>
+    <div key={user.id} className={styles.dashboard}>
+      <aside className={styles.sidebar}>
         <div className={styles.identity}>
-          <span className={styles.avatar} aria-hidden="true">
-            <UserAvatar rounded appearance={{ elements: { avatarBox: styles.avatarBox, avatarImage: styles.avatarImage } }} />
-          </span>
-          <div>
-            <p className={styles.eyebrow}>My account</p>
-            <h1>{name}</h1>
-            {email && <p className={styles.email}>{email}</p>}
-          </div>
+          <span className={styles.avatar} aria-hidden="true"><UserAvatar rounded appearance={{ elements: { avatarBox: styles.avatarBox, avatarImage: styles.avatarImage } }} /></span>
+          <div><strong>{name}</strong>{email && <span>{email}</span>}</div>
         </div>
-        <Link className={styles.settingsLink} href="/account/settings">
-          <Settings aria-hidden="true" size={17} />
-          Settings
-        </Link>
+        <nav className={styles.navigation} aria-label="Account sections">
+          {sections.map(({ id, label, icon: Icon }) => (
+            <a key={id} href={`#${id}`} aria-current={activeSection === id ? "location" : undefined}>
+              <Icon size={18} aria-hidden="true" />{label}
+            </a>
+          ))}
+        </nav>
+        <div className={styles.sidebarActions}>
+          <Link href="/account/settings"><Settings size={18} aria-hidden="true" />Settings</Link>
+          <button type="button" onClick={() => void handleSignOut()}><LogOut size={18} aria-hidden="true" />Log out</button>
+          {signOutError && <p role="alert">{signOutError}</p>}
+        </div>
+      </aside>
+
+      <div className={styles.content}>
+        <header id="overview" className={styles.overview}>
+          <p className={styles.eyebrow}>My account</p>
+          <h1>{greeting ? `Hello, ${greeting}` : "Welcome to your account"}</h1>
+          <p>Manage your profile, addresses and saved products in one place.</p>
+          <Link href="/shop">Explore the shop <span aria-hidden="true">→</span></Link>
+        </header>
+
+        <div className={styles.shortcuts}>
+          <a href="#favorites"><Heart aria-hidden="true" size={20} /><strong>{favoriteCount === undefined ? "Favorites unavailable" : `${favoriteCount} saved products`}</strong><span>Saved in this browser</span></a>
+          <a href="#addresses"><MapPin aria-hidden="true" size={20} /><strong>Address book</strong><span>Manage delivery and billing addresses</span></a>
+          <a href="#orders"><Package aria-hidden="true" size={20} /><strong>Order activity</strong><span>Order history is not available yet</span></a>
+        </div>
+
+        <section id="profile" aria-label="Profile">
+          <AccountProfile />
+          <p className={styles.identityNote}>Manage your name, email and profile photo in <Link href="/account/settings">account settings</Link>.</p>
+        </section>
+        <section id="addresses" aria-label="Addresses"><AccountAddresses /></section>
+        <section id="favorites" className={styles.panel} aria-labelledby="favorites-heading">
+          <h2 id="favorites-heading">Favorites</h2>
+          <p>Products saved on this browser.</p>
+          <FavoritesList />
+        </section>
+        <section id="orders" className={styles.panel} aria-labelledby="orders-heading">
+          <h2 id="orders-heading">Orders</h2>
+          <p>Order history is not available yet.</p>
+        </section>
+        <section id="billing" className={styles.panel} aria-labelledby="billing-heading">
+          <h2 id="billing-heading">Billing</h2>
+          <p>Billing history is not available yet.</p>
+        </section>
+        <section id="files" className={styles.panel} aria-labelledby="files-heading">
+          <h2 id="files-heading">Private account files</h2>
+          <p>Manage files saved to your account.</p>
+          <Suspense fallback={<p role="status">Loading account files…</p>}><AccountFiles /></Suspense>
+        </section>
       </div>
-
-      <AccountProfile />
-
-      <AccountAddresses />
-
-      <details className={styles.moreDetails}>
-        <summary>
-          <span className={styles.sectionIcon}><FolderLock aria-hidden="true" size={19} /></span>
-          <span className={styles.summaryText}><strong>Private account files</strong><small>Manage files saved to your account.</small></span>
-          <ChevronDown className={styles.summaryChevron} aria-hidden="true" size={19} />
-        </summary>
-        <div className={styles.detailContent}>
-          <Suspense fallback={<p className={styles.loadingState} role="status">Loading account files…</p>}>
-            <AccountFiles />
-          </Suspense>
-        </div>
-      </details>
     </div>
   );
 }

@@ -27,7 +27,7 @@ for (const available of [true, false]) test(`final removal focuses ${available ?
       useState: initial => { const index = cursor++; if (!(index in hooks)) hooks[index] = initial; return [hooks[index], value => { hooks[index] = value; }]; },
       useEffect: (callback, deps) => { const index = cursor++; const old = hooks[index]; if (!old || (deps && deps.some((v, i) => !Object.is(v, old[i])))) { hooks[index] = deps; effects.push(callback); } },
     },
-    "./cart-api": {}, "./customer-cart-store": {},
+    "./cart-api": {}, "./customer-cart-store": {}, "./buy-now-store": {},
     "./cart-utils": { removeCartItem: items => items.filter(item => item.variantId !== "a"), setCartItemQuantity: () => null },
     "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: 2 }; return { persisted: true }; } },
     "./cart.module.css": { default: {} },

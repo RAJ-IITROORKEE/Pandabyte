@@ -8,6 +8,7 @@ import { getGuestCartServerSnapshot, getGuestCartSnapshot, subscribeGuestCart } 
 import { getCustomerCartServerSnapshot, getCustomerCartSnapshot, prepareCustomerCart, subscribeCustomerCart } from "@/components/cart/customer-cart-store";
 import type { ProductModel3d, SourceObservation } from "@/lib/admin/validation";
 import type { PublicVariant } from "@/lib/editorial/public-record";
+import { FavoritesButton } from "@/components/favorites/favorites-button";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import {
   MorphingDialog, MorphingDialogCard, MorphingDialogTrigger, MorphingDialogContent,
@@ -20,6 +21,8 @@ import { cardPricing } from "./card-pricing";
 import styles from "./product-quick-view.module.css";
 
 type Props = {
+  productId: string;
+  slug: string;
   title: string;
   href: string;
   summary: string;
@@ -32,7 +35,7 @@ type Props = {
   featured?: boolean;
 };
 
-export function ProductQuickView({ title, href, summary, categories, images, model3d, specifications, variants, observation, featured = false }: Props) {
+export function ProductQuickView({ productId, slug, title, href, summary, categories, images, model3d, specifications, variants, observation, featured = false }: Props) {
   const { user } = useUser();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const customer = useSyncExternalStore(subscribeCustomerCart, getCustomerCartSnapshot, getCustomerCartServerSnapshot);
@@ -50,17 +53,16 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
     <MorphingDialogCard className={styles.card} style={{ borderRadius: 12 }}>
       <ProductCardMedia href={href} title={title} images={images} model3d={model3d} featured={featured} morphing suspend={open} onSlideChange={handleSlideChange} />
       <div className={styles.cardBody}>
-        <MorphingDialogTitle>{featured ? <h3>{title}</h3> : <h2>{title}</h2>}</MorphingDialogTitle>
+        <div className={styles.titleRow}><MorphingDialogTitle>{featured ? <h3><Link href={href}>{title}</Link></h3> : <h2><Link href={href}>{title}</Link></h2>}</MorphingDialogTitle><FavoritesButton productId={productId} slug={slug} title={title} /></div>
         {categories.length > 0 && <div className={styles.categories} aria-label="Product categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}
         <div className={styles.purchaseRow}>
           <div className={styles.pricing}>
             <span>{availability}</span>
             <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>{discount}</span></>}</div>
           </div>
-          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} /> : canChooseVariant ? <MorphingDialogTrigger className={`${styles.cartButton} ${multiCount ? styles.cartButtonActive : ""}`} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title={multiCount ? `${multiCount} in cart; choose a variant` : "Choose a variant"}><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></button>}
+          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} showBuyNow /> : canChooseVariant ? <MorphingDialogTrigger className={`${styles.cartButton} ${multiCount ? styles.cartButtonActive : ""}`} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title={multiCount ? `${multiCount} in cart; choose a variant` : "Choose a variant"}><ShoppingCart aria-hidden="true" size={18} /> Choose options</MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={18} /> Unavailable</button>}
         </div>
         <div className={styles.cardActions}>
-          <Link href={href}>View product</Link>
           <MorphingDialogTrigger className={styles.trigger} aria-label={`Quick view: ${title}`}><Plus aria-hidden="true" size={18} /> Quick view</MorphingDialogTrigger>
         </div>
       </div>

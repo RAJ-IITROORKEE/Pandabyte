@@ -4,6 +4,8 @@ import { ProductQuickView } from "./product-quick-view";
 
 export function ProductCard({ product, categories, featured = false }: { product: PublishedRecord<"products">; categories: PublishedRecord<"categories">[]; featured?: boolean }) {
   return <ProductQuickView
+    productId={product.id}
+    slug={product.slug}
     title={product.title}
     href={`/products/${encodeURIComponent(product.slug)}`}
     summary={product.summary}

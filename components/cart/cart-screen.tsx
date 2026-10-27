@@ -253,7 +253,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     </CartLayout>;
   }
 
-  return <CartLayout embedded={embedded}>
+  return <CartLayout embedded={embedded} itemCount={view.status === "ready" ? view.items.reduce((total, item) => total + item.quantity, 0) : undefined}>
     {guest.storageWarning && <p className={styles.storageWarning} role="status">
       This browser could not save the guest cart. Changes are kept in memory until you leave this page.
     </p>}
@@ -300,13 +300,12 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
   </CartLayout>;
 }
 
-function CartLayout({ children, embedded }: { children: ReactNode; embedded: boolean }) {
+function CartLayout({ children, embedded, itemCount }: { children: ReactNode; embedded: boolean; itemCount?: number }) {
   if (embedded) return <section className={`${styles.page} ${styles.embedded}`} aria-label="Cart details">{children}</section>;
   return <main id="main" className={styles.page} tabIndex={-1}>
     <header className={styles.heading}>
-      <p className={styles.kicker}>Your basket</p>
-      <h1>Cart</h1>
-      <p>Review items and their current catalog prices.</p>
+      <h1>Shopping Cart</h1>
+      <p>{itemCount === undefined ? "Review items and their current catalog prices." : `${itemCount} ${itemCount === 1 ? "item" : "items"} in your cart`}</p>
     </header>
     {children}
   </main>;
@@ -348,8 +347,13 @@ function CartContents({ view, id, locked, refreshing, headingRef, onRemove, onUp
 
     <aside className={styles.summary} aria-labelledby={`${id}-summary-title`}>
       <h2 id={`${id}-summary-title`}>Order summary</h2>
-      <div className={styles.subtotalRow}><span>Current catalog subtotal</span><strong>{view.quote.subtotalPaise === null ? "Unavailable" : formatPaise(view.quote.subtotalPaise)}</strong></div>
-      <p className={styles.smallText}>Prices and availability may change before an order is placed. Shipping and GST are not calculated here; final totals must be checked before ordering is enabled.</p>
+      <div className={styles.summaryRows}>
+        <div><span>Subtotal</span><strong>{view.quote.subtotalPaise === null ? "Unavailable" : formatPaise(view.quote.subtotalPaise)}</strong></div>
+        <div><span>Shipping</span><span>Pending</span></div>
+        <div><span>GST</span><span>Pending</span></div>
+        <div className={styles.summaryTotal}><strong>Total</strong><strong>Pending</strong></div>
+      </div>
+      <p className={styles.smallText}>Prices and availability may change. Shipping and GST must be checked before ordering is enabled.</p>
       <p className={styles.setupNote}>Order placement and payment are not configured in this development build.</p>
       {locked
         ? <button className={styles.primaryButton} type="button" disabled>{refreshing ? "Refreshing current cart…" : "Wait for cart updates before checkout"}</button>
@@ -390,17 +394,20 @@ function CartLine({ line, locked, onRemove, onUpdateQuantity }: {
     <div className={styles.itemImage}>{image?.key === imageKey ? <Image src={`/api/media/${encodeURIComponent(image.id)}?w=96`} alt="" width={96} height={96} unoptimized onError={() => setImage(null)} /> : <span>No image</span>}</div>
     <div className={styles.itemDetails}>
       <h3>{line.slug ? <Link href={`/products/${encodeURIComponent(line.slug)}`}>{title}</Link> : title}</h3>
-      {variant && <p className={styles.itemMeta}>{variant.label} · SKU {variant.sku}</p>}
+      {variant && <p className={styles.itemMeta}>{variant.label !== title && `${variant.label} · `}SKU {variant.sku}</p>}
+      {variant?.effectivePricePaise !== null && variant?.effectivePricePaise !== undefined && <p className={styles.itemPrice}>{formatPaise(variant.effectivePricePaise)} each {variant.regularPricePaise !== null && variant.regularPricePaise > variant.effectivePricePaise && <del>{formatPaise(variant.regularPricePaise)}</del>}</p>}
       {line.issue === "not_available" && <p className={styles.itemIssue}>This item is no longer available in the published catalog.</p>}
       {line.issue === "price_unavailable" && <p className={styles.itemIssue}>A current price is not available.</p>}
       {line.issue === "quantity_unavailable" && <p className={styles.itemIssue}>{line.variant?.cartEligible === true ? "Stock is unverified for this item." : "This variant is currently unavailable."}</p>}
+    </div>
+    <div className={styles.itemActions}>
+      {(line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true))
+        ? <QuantityEditor title={title} quantity={line.quantity} locked={locked} onSave={onUpdateQuantity} />
+        : <p className={styles.quantityValue}>Quantity {line.quantity}</p>}
       <button className={styles.removeButton} type="button" onClick={onRemove} disabled={locked} aria-label={`Remove ${removeLabel} from your cart`}>
         Remove
       </button>
     </div>
-    {(line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true))
-      ? <QuantityEditor title={title} quantity={line.quantity} locked={locked} onSave={onUpdateQuantity} />
-      : <p className={styles.quantityValue}>Quantity {line.quantity}</p>}
     <p className={styles.lineTotal}>{formatPaise(line.lineTotalPaise)}</p>
   </li>;
 }

@@ -153,3 +153,40 @@
 .checkoutNotice { padding-block: 32px; border-top: 1px solid var(--divider); }
 .checkoutNotice h2 { margin: 0 0 16px; font-size: clamp(23px, 3vw, 30px); font-weight: 600; letter-spacing: -.025em; }
 .checkoutNotice p { max-width: 60ch; color: var(--muted); line-height: 1.7; }
+
+/* Cart cards and summary */
+.heading { text-align: center; }
+.heading h1 { margin-top: 0; }
+.panelHeading { border-bottom: 0; }
+.itemList { display: grid; gap: 14px; }
+.item, .item:last-child { padding: 20px; background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; }
+.itemPrice { margin: 8px 0 0; font-size: 14px; font-weight: 650; }
+.itemPrice del { margin-left: 6px; color: var(--muted); font-weight: 400; }
+.summaryRows { display: grid; gap: 14px; margin-top: 24px; font-size: 14px; }
+.summaryRows > div { display: flex; justify-content: space-between; gap: 12px; }
+.summaryRows > div > span:first-child { color: var(--muted); }
+.summaryTotal { padding-top: 18px; border-top: 1px solid var(--divider); font-size: 16px; }
+.embedded .item, .embedded .item:last-child { padding: 14px; }
+.embedded .summary { padding: 20px; }
+.embedded .summaryRows { gap: 10px; margin-top: 16px; }
+@media (max-width: 560px) {
+  .item, .item:last-child { padding: 16px; }
+}
+
+.itemActions { display: grid; justify-items: start; }
+@media (max-width: 560px) { .itemActions { grid-column: 2; } }
+.embedded .itemActions { grid-column: 2; }
+
+/* Keep controls and totals below the photo on narrow cards and drawers. */
+.embedded .item { grid-template-columns: 64px minmax(0, 1fr); }
+.embedded .itemImage { grid-row: auto; }
+.embedded .itemDetails { grid-column: 2; }
+.embedded .itemActions, .embedded .lineTotal { grid-column: 1 / -1; }
+.embedded .itemActions { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+@media (max-width: 560px) {
+  .item { grid-template-columns: 64px minmax(0, 1fr); }
+  .itemImage { grid-row: auto; }
+  .itemDetails { grid-column: 2; }
+  .itemActions, .lineTotal { grid-column: 1 / -1; }
+  .itemActions { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+}

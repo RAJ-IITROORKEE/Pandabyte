@@ -48,7 +48,7 @@ export function ProductVariantPanel({ variants, observation }: { variants: Publi
     {selected && (selected.cartEligible === true || selected.purchasable !== false) && <>
       <div className={styles.variantField}>
         <label className={styles.fieldLabel} htmlFor={`${fieldId}-quantity`}>Quantity</label>
-        <input className={styles.input} id={`${fieldId}-quantity`} type="number" min={1} max={99} step={1} inputMode="numeric" value={quantity} onChange={event => setQuantity(event.currentTarget.value)} aria-invalid={!validQuantity} aria-describedby={!validQuantity ? `${fieldId}-quantity-error` : undefined} />
+        <div className={styles.quantityControl}><button type="button" aria-label="Decrease quantity" disabled={validQuantity && quantityValue <= 1} onClick={() => setQuantity(String(validQuantity ? Math.max(1, quantityValue - 1) : 1))}>−</button><input className={styles.input} id={`${fieldId}-quantity`} type="number" min={1} max={99} step={1} inputMode="numeric" value={quantity} onChange={event => setQuantity(event.currentTarget.value)} aria-invalid={!validQuantity} aria-describedby={!validQuantity ? `${fieldId}-quantity-error` : undefined} /><button type="button" aria-label="Increase quantity" disabled={validQuantity && quantityValue >= 99} onClick={() => setQuantity(String(validQuantity ? Math.min(99, quantityValue + 1) : 1))}>+</button></div>
         {!validQuantity && <p id={`${fieldId}-quantity-error`} role="alert">Enter a whole number from 1 to 99.</p>}
       </div>
       <AddToCartButton variantId={selected.id} quantity={quantityValue} available={selected.cartEligible === true || (selected.purchasable !== false && selected.availability === "available" && selected.effectivePricePaise !== null)} showBuyNow />

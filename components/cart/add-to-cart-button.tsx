@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CartInputLine } from "@/lib/cart/validation";
 import { cartErrorMessage, loadCustomerCart, replaceCustomerCart } from "./cart-api";
 import { addCartItem, removeCartItem, setCartItemQuantity } from "./cart-utils";
+import { setBuyNowSelection } from "./buy-now-store";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, saveGuestCart, subscribeGuestCart } from "./guest-cart-store";
 import { getCustomerCartServerSnapshot, getCustomerCartSnapshot, prepareCustomerCart, publishCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
 import styles from "./cart.module.css";
@@ -36,7 +37,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
 
   useEffect(() => () => activeController.current?.abort(), []);
 
-  const addGuestLine = (items: CartInputLine[], checkout: boolean) => {
+  const addGuestLine = (items: CartInputLine[]) => {
     if (guest.invalidStoredCart) {
       setError("Your saved guest cart needs review. Open the cart and clear its unreadable saved copy before adding items.");
       return;
@@ -58,10 +59,9 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
     }
     setAdded(true);
     setMessage(result.persisted ? "Added to your cart." : "Added for this page session. Browser storage is unavailable, so this cart may not persist after you leave.");
-    if (checkout && result.persisted) router.push("/cart");
   };
 
-  const addSignedInLine = async (checkout: boolean) => {
+  const addSignedInLine = async () => {
     const controller = new AbortController();
     activeController.current = controller;
     let updateAttempted = false;
@@ -79,7 +79,6 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       if (!controller.signal.aborted) {
         setAdded(true);
         setMessage("Added to your signed-in cart. Current catalog pricing and availability are shown there.");
-        if (checkout) router.push("/checkout");
       }
     } catch (requestError) {
       if (!controller.signal.aborted) {
@@ -93,6 +92,15 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
   };
 
   const handleAdd = (checkout = false) => {
+    if (checkout) {
+      if (!available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
+      if (!setBuyNowSelection([{ variantId, quantity }])) {
+        setError("This browser could not save your checkout selection. Enable session storage and try again.");
+        return;
+      }
+      router.push("/checkout?mode=buy-now");
+      return;
+    }
     if (needsReview) return;
     setError("");
     setMessage("");
@@ -102,11 +110,11 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
         setError("Your cart is still loading. Please try again in a moment.");
         return;
       }
-      addGuestLine(guest.items, checkout);
+      addGuestLine(guest.items);
       return;
     }
     setBusy(true);
-    void addSignedInLine(checkout);
+    void addSignedInLine();
   };
 
   const currentItems = userId ? (customer.userId === userId ? customer.cart?.items : undefined) : guest.items;
@@ -165,11 +173,11 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       <span aria-live="polite">{currentQuantity}</span>
       <button type="button" onClick={() => void changeCompactQuantity(1)} disabled={busy || needsReview || !available || currentQuantity >= 99} aria-label={`Add one ${compactLabel} to cart`}><Plus size={16} aria-hidden="true" /></button>
     </div><Link className={`${styles.compactButton} ${styles.compactActive}`} href="/cart" aria-label={`View cart: ${compactLabel}, quantity ${currentQuantity}`} title="View cart"><ShoppingCart aria-hidden="true" size={19} /></Link></div> : <button ref={compactLabel ? compactAddRef : undefined} className={compactLabel ? styles.compactButton : styles.addButton} type="button" onClick={() => handleAdd()} disabled={disabled || compactUnavailable} aria-label={compactLabel ? `${buttonText}: ${compactLabel}` : undefined} title={compactLabel ? buttonText : undefined}>
-      {compactLabel ? <><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></> : buttonText}
+      <ShoppingCart aria-hidden="true" size={18} /> {buttonText}
     </button>}
-    {compactLabel && currentQuantity === 0 && <span ref={removalStatusRef} tabIndex={-1} className={styles.srOnly}>Removed {compactLabel} from your cart. {available ? "Cart controls are unavailable." : "This product is currently unavailable."}</span>}
+    {compactLabel && currentQuantity === 0 && <span ref={removalStatusRef} tabIndex={-1} className={styles.srOnly}>Cart quantity is zero for {compactLabel}. {available ? "Use Add to cart to select this product." : "This product is currently unavailable."}</span>}
     {compactUnavailable && customer.error && <p className={styles.addError} role="alert">Could not load your cart. <Link href="/cart">Open cart to review</Link></p>}
-    {showBuyNow && <button className={styles.buyButton} type="button" onClick={() => handleAdd(true)} disabled={disabled}>{busy ? "Adding…" : "Buy now"}</button>}
+    {showBuyNow && <button className={styles.buyButton} type="button" onClick={() => handleAdd(true)} disabled={!available || !validQuantity || busy}>Buy now</button>}
     {error && <p className={styles.addError} role="alert">{error}</p>}
     {initialNotice && <p className={styles.addMessage} role="status">{initialNotice}</p>}
     {message && <p className={styles.addMessage} role="status" aria-live="polite">{message}</p>}
