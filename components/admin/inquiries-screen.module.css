@@ -52,16 +52,6 @@
   line-height: 1.6;
 }
 
-.orderHint {
-  flex: 0 0 auto;
-  margin: 0;
-  padding: 7px 10px;
-  border: 1px solid var(--divider);
-  border-radius: 2px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .toolbar {
   min-width: 0;
   flex-wrap: wrap;
@@ -228,7 +218,9 @@
 .emptyPanel p { margin: 0; }
 
 .pagination { justify-content: space-between; gap: 14px; color: var(--muted); font-size: 13px; }
-.pagination > div { display: flex; gap: 8px; }
+.pagination > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pageSizeField { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.pageSizeField .select { width: 72px; }
 
 .visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { AdminAccessDeniedScreen } from "@/components/admin/record-screens";
 import styles from "./inquiries-screen.module.css";
 
 type ApiProblem = { error?: { message?: string } };
 type InquiryStatus = "new" | "in_progress" | "resolved" | "spam";
+type InquirySort = "created_desc" | "created_asc" | "name_asc" | "name_desc";
 type NotificationStatus = "unconfigured" | "leased" | "sending" | "accepted" | "failed" | "uncertain" | "suppressed";
 type InquiryNotification = { status: NotificationStatus; version: number; attempts: number; lastAttemptAt: string | null; acceptedAt: string | null };
 type Inquiry = { id: string; name: string; email: string; phone: string | null; subject: string; message: string; status: InquiryStatus; version: number; createdAt: string; notificationStatus: NotificationStatus; notification: InquiryNotification };
@@ -44,22 +45,24 @@ function date(value: string) {
 
 export function InquiriesScreen() {
   const capabilities = useAdminCapabilities();
-  const [items, setItems] = useState<Inquiry[]>([]);
-  const [total, setTotal] = useState<number | null>(null);
+  const canManage = capabilities.includes("inquiries.manage");
   const [offset, setOffset] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InquiryStatus | "">("");
+  const [sort, setSort] = useState<InquirySort>("created_desc");
+  const [listState, setListState] = useState<{ key: string; value: { items: Inquiry[]; total: number } } | null>(null);
+  const [listErrorState, setListErrorState] = useState<{ key: string; message: string } | null>(null);
   const [selected, setSelected] = useState<Inquiry | null>(null);
   const [notes, setNotes] = useState<InquiryNote[]>([]);
   const [nextStatus, setNextStatus] = useState<InquiryStatus>("new");
   const [note, setNote] = useState("");
-  const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notificationBusy, setNotificationBusy] = useState(false);
   const [notificationRefreshing, setNotificationRefreshing] = useState(false);
-  const [error, setError] = useState("");
+  const [detailError, setDetailError] = useState("");
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
   const [notificationAvailable, setNotificationAvailable] = useState<boolean | null>(null);
@@ -68,56 +71,40 @@ export function InquiriesScreen() {
   const [refresh, setRefresh] = useState(0);
   const detailRequest = useRef(0);
   const formErrorRef = useRef<HTMLParagraphElement>(null);
-  const pageSize = 20;
+  const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset), sort });
+  params.set("q", search);
+  if (statusFilter) params.set("status", statusFilter);
+  const requestUrl = `/api/admin/inquiries?${params.toString()}`;
+  const requestKey = `${requestUrl}#${refresh}`;
+  const result = listState?.key === requestKey ? listState.value : null;
+  const items = result?.items ?? [];
+  const total = result?.total ?? null;
+  const error = listErrorState?.key === requestKey ? listErrorState.message : "";
+  const loading = canManage && !result && !error;
 
   useEffect(() => { if (formError) formErrorRef.current?.focus(); }, [formError]);
 
-  const load = useCallback(async (nextOffset = 0, q = search, status = statusFilter) => {
-    try {
-      const params = new URLSearchParams({ limit: String(pageSize), offset: String(nextOffset) });
-      if (q) params.set("q", q);
-      if (status) params.set("status", status);
-      const result = await request<{ items: Inquiry[]; total: number }>(`/api/admin/inquiries?${params}`);
-      setItems(result.items);
-      setTotal(result.total);
-      setOffset(nextOffset);
-      if (selected) {
-        const latest = result.items.find((item) => item.id === selected.id);
-        if (latest) setSelected((current) => current?.id === latest.id ? { ...current, notification: latest.notification, notificationStatus: latest.notificationStatus } : current);
-      }
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Inquiries could not be loaded.");
-      setItems([]);
-      setTotal(null);
-    } finally { setLoading(false); }
-  }, [search, selected, statusFilter]);
-
   useEffect(() => {
-    let active = true;
-    const params = new URLSearchParams({ limit: String(pageSize), offset: "0" });
-    if (search) params.set("q", search);
-    if (statusFilter) params.set("status", statusFilter);
-    request<{ items: Inquiry[]; total: number }>(`/api/admin/inquiries?${params}`)
-      .then((result) => {
-        if (!active) return;
-        setItems(result.items);
-        setTotal(result.total);
-        setOffset(0);
+    if (!canManage) return;
+    const controller = new AbortController();
+    void request<{ items: Inquiry[]; total: number }>(requestUrl, { signal: controller.signal })
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setListState({ key: requestKey, value });
+        const lastOffset = value.total === 0 ? 0 : Math.min(Math.floor((value.total - 1) / pageSize) * pageSize, 1_000_000);
+        setOffset((current) => current > lastOffset ? lastOffset : current);
         setSelected((current) => {
           if (!current) return current;
-          const latest = result.items.find((item) => item.id === current.id);
-          return latest ? { ...current, notification: latest.notification, notificationStatus: latest.notificationStatus } : current;
+          const latest = value.items.find((item) => item.id === current.id);
+          if (!latest || current.notification.version > latest.notification.version) return current;
+          return { ...current, notification: latest.notification, notificationStatus: latest.notificationStatus };
         });
       })
       .catch((reason: unknown) => {
-        if (!active) return;
-        setError(reason instanceof Error ? reason.message : "Inquiries could not be loaded.");
-        setItems([]);
-        setTotal(null);
-      })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [search, statusFilter, refresh]);
+        if (!controller.signal.aborted) setListErrorState({ key: requestKey, message: reason instanceof Error ? reason.message : "Inquiries could not be loaded." });
+      });
+    return () => controller.abort();
+  }, [canManage, pageSize, requestKey, requestUrl]);
 
   async function open(item: Inquiry) {
     if (busy) return;
@@ -128,7 +115,7 @@ export function InquiriesScreen() {
     setNextStatus(item.status);
     setNote("");
     setNotice("");
-    setError("");
+    setDetailError("");
     setFormError("");
     setNotificationError("");
     setNotificationNotice("");
@@ -141,7 +128,7 @@ export function InquiriesScreen() {
       setNotes(result.inquiry.notes ?? []);
       setNotificationAvailable(result.notificationAvailable);
     } catch (reason) {
-      if (requestId === detailRequest.current) setError(reason instanceof Error ? reason.message : "Inquiry details could not be loaded.");
+      if (requestId === detailRequest.current) setDetailError(reason instanceof Error ? reason.message : "Inquiry details could not be loaded.");
     } finally { if (requestId === detailRequest.current) setDetailLoading(false); }
   }
 
@@ -223,8 +210,6 @@ export function InquiriesScreen() {
 
   function submitSearch(event: FormEvent) {
     event.preventDefault();
-    setLoading(true);
-    setError("");
     setSearch(query.trim());
     setOffset(0);
     setRefresh((value) => value + 1);
@@ -234,38 +219,42 @@ export function InquiriesScreen() {
     setQuery("");
     setSearch("");
     setStatusFilter("");
-    setLoading(true);
-    setError("");
+    setSort("created_desc");
+    setOffset(0);
     setRefresh((value) => value + 1);
   }
 
-  if (!capabilities.includes("inquiries.manage")) return <AdminAccessDeniedScreen title="Inquiries" />;
+  if (!canManage) return <AdminAccessDeniedScreen title="Inquiries" />;
 
   return <div className={styles.screen}>
     <header className={styles.heading}>
       <div><p className={styles.eyebrow}>Operations</p><h1>Inquiries</h1><p className={styles.lede}>Review messages, update their status, and leave private notes.</p></div>
-      <p className={styles.orderHint}>Newest first</p>
     </header>
 
-    <form className={styles.toolbar} onSubmit={submitSearch} role="search">
+    <form className={styles.toolbar} onSubmit={submitSearch} role="search" aria-label="Search and filter inquiries">
       <label className={styles.searchBox}>
-        <span className={styles.visuallyHidden}>Search inquiries by email or subject</span>
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search email or subject" />
+        <span className={styles.visuallyHidden}>Search inquiries by name, email, or subject</span>
+        <input type="search" maxLength={100} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, email, or subject" />
       </label>
       <label className={styles.filterField}><span className={styles.visuallyHidden}>Filter by status</span>
-        <select className={styles.select} value={statusFilter} onChange={(event) => { setLoading(true); setError(""); setOffset(0); setStatusFilter(event.target.value as InquiryStatus | ""); }}>
+        <select className={styles.select} value={statusFilter} onChange={(event) => { setOffset(0); setStatusFilter(event.target.value as InquiryStatus | ""); }}>
           <option value="">All statuses</option><option value="new">New</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option><option value="spam">Spam</option>
         </select>
       </label>
+      <label className={styles.filterField}><span className={styles.visuallyHidden}>Sort inquiries</span>
+        <select className={styles.select} value={sort} onChange={(event) => { setSort(event.target.value as InquirySort); setOffset(0); }}>
+          <option value="created_desc">Newest first</option><option value="created_asc">Oldest first</option><option value="name_asc">Name: A–Z</option><option value="name_desc">Name: Z–A</option>
+        </select>
+      </label>
       <button className={styles.button} type="submit">Search</button>
-      {(search || statusFilter || query) && <button className={styles.clearButton} type="button" onClick={clearFilters}>Clear</button>}
+      {(search || statusFilter || sort !== "created_desc" || query) && <button className={styles.clearButton} type="button" onClick={clearFilters}>Clear filters</button>}
       <span className={styles.resultCount} aria-live="polite">{loading ? "Loading…" : total === null ? "Unavailable" : `${total} ${total === 1 ? "inquiry" : "inquiries"}`}</span>
     </form>
 
-    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button type="button" className={styles.button} onClick={() => { setLoading(true); setError(""); setRefresh((value) => value + 1); }}>Try again</button></div>}
+    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button type="button" className={styles.button} onClick={() => setRefresh((value) => value + 1)}>Try again</button></div>}
 
     <div className={styles.layout}>
-      <section className={styles.listPanel} aria-labelledby="inquiry-list-heading">
+      <section className={styles.listPanel} aria-labelledby="inquiry-list-heading" aria-busy={loading}>
         <div className={styles.panelHeading}><div><h2 id="inquiry-list-heading">Inbox</h2><p>Customer messages</p></div></div>
         <div className={styles.tableFrame} role="region" aria-label="Inquiry list" tabIndex={0}>
           <table className={styles.table}>
@@ -289,6 +278,7 @@ export function InquiriesScreen() {
           <span className={`${styles.status} ${styles[`status_${selected.status}`]}`}>{statusLabels[selected.status]}</span>
         </header>
         {detailLoading && <p className={styles.loadingNote} role="status">Loading inquiry details…</p>}
+        {detailError && <p className={styles.inlineError} role="alert">{detailError}</p>}
         <div className={styles.messageBody}>{selected.message}</div>
 
         <div className={styles.notificationPanel}>
@@ -317,8 +307,12 @@ export function InquiriesScreen() {
     </div>
 
     <nav className={styles.pagination} aria-label="Inquiry pages">
-      <span>{total === null || total === 0 ? "" : `${offset + 1}–${Math.min(offset + items.length, total)} of ${total}`}</span>
-      <div><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); void load(Math.max(0, offset - pageSize)); }} disabled={loading || offset === 0}>Previous</button><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); void load(offset + pageSize); }} disabled={loading || total === null || offset + pageSize >= total}>Next</button></div>
+      <span aria-live="polite">{total === null || total === 0 ? "" : `${offset + 1}–${Math.min(offset + items.length, total)} of ${total}`}</span>
+      <div>
+        <label className={styles.pageSizeField}><span>Rows per page</span><select className={styles.select} value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setOffset(0); }}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label>
+        <button className={styles.secondaryButton} type="button" onClick={() => setOffset((current) => Math.max(0, current - pageSize))} disabled={loading || offset === 0}>Previous</button>
+        <button className={styles.secondaryButton} type="button" onClick={() => setOffset((current) => Math.min(current + pageSize, 1_000_000))} disabled={loading || total === null || offset + pageSize >= total || offset >= 1_000_000}>Next</button>
+      </div>
     </nav>
   </div>;
 }

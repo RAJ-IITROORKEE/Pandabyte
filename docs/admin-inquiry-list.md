@@ -1,0 +1,9 @@
+# Admin inquiries list — 27 October 2026
+
+The Admin inbox uses real private inquiry records. Search now matches name, email or subject as a case-insensitive literal; status filters, four date/name sorts and bounded pagination run in the database. The UI offers 10, 20 or 50 rows per page and retains the existing detail, versioned status/notes and notification safeguards. List refresh reconciles notification state without overwriting the open inquiry's edit version or note draft.
+
+The additive development migration `20261027173000_admin-inquiry-query.sql` creates a separate, `inquiries.manage`-gated RPC. The API repeats the capability check and retains private/no-store responses. No real inquiry or notification was changed. Rollback uses a forward migration after returning the route to the existing list RPC; preserve all inquiry data.
+
+Targeted lint, parser tests and an isolated production build passed. Development integration used five uniquely owned synthetic database fixtures and temporary Clerk users; it verified search fields, status filters, all four sorts, pagination, invalid queries and anonymous/customer denial. The built-in browser checked populated search, status and name sorting, inquiry details and disabled email notification state. Fixture cleanup verified zero remaining inquiries, notes and notifications, and removed the ownership journal. No email was sent. After cleanup the browser again showed the actual empty inbox.
+
+The contact submission/Turnstile path was not retested: its configured localhost origin differs from this preview, so the list test used development Admin SDK fixtures without changing contact configuration. Multi-page navigation was verified through the API, not with a populated browser list; actual screen-reader speech, mobile viewport checks and reduced-motion runtime switching remain unverified.
