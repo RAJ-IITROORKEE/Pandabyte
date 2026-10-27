@@ -19,7 +19,12 @@ export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().foote
     { title: "Policies", hrefs: ["/policies#shipping", "/policies#terms", "/policies#privacy"] },
   ].map(group => ({ title: group.title, links: group.hrefs.flatMap(href => {
     const link = availableLinks.find(item => item.href === href);
-    return link ? [link] : [];
+    const policyDestinations: Record<string, string> = {
+      "/policies#shipping": "/shipping-and-returns",
+      "/policies#terms": "/terms-and-conditions",
+      "/policies#privacy": "/privacy-policy",
+    };
+    return link ? [{ ...link, href: policyDestinations[href] ?? link.href }] : [];
   }) })).filter(group => group.links.length > 0);
   return (
     <footer className="pb-site-footer">

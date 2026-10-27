@@ -1,0 +1,9 @@
+# Policy pages
+
+The three public routes use article text captured on 28 October 2026 from the owner's existing PandaByte privacy, terms and shipping/returns pages. Their article content contains respectively 12/18, 20/23 and 8/18 headings/paragraphs. Source navigation, the historical minimum-order banner and footer were excluded. The original email links are retained; source references to My Orders and support tickets were plain text.
+
+The static content lives in `components/policies/policy-content.ts`; the shared layout renders it server-side without a policy API call or runtime scraping. The application root layout remains request-rendered for its CSP nonce, published site shell and Clerk session, so the routes are not fully pre-rendered static HTML. These snapshots do not automatically reflect CMS edits or withdrawal; content updates require a code change. The combined `/policies` page remains available with links to each full article.
+
+The original privacy article contains payment-card storage, encryption and PCI-DSS claims that have not been verified for the planned Razorpay integration. The shipping article contains operational claims and timeframes that require owner review before production. These statements were preserved, not independently validated. Payments and orders remain disabled.
+
+Browser checks covered all three routes at 320/768/1024/1440 CSS pixels in both themes, with no page overflow and matching heading/paragraph counts. Mobile contents navigation closed and focused the selected heading; a direct Terms section hash reached its heading, and the footer linked to all three routes. The full existing unit/media suite, focused content test, typecheck and build passed; lint retained one existing warning in an unrelated Admin test. Actual screen-reader speech and browser zoom were not tested.

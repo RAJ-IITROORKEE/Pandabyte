@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { permanentRedirect } from "next/navigation";
 import { PublishedDocument } from "@/components/published-document";
 import styles from "@/components/editorial/editorial.module.css";
@@ -43,8 +44,9 @@ export default async function PoliciesPage() {
   return <PublicPage eyebrow="Company" title={document?.title ?? "Policies"}>
     <div className={styles.stack}>
       {document && <PublishedDocument document={document} hideTitle />}
-      {policies.map(({ id, title, record }) => <section className={styles.policySection} id={id} key={id}>
+      {policies.map(({ id, slug, title, record }) => <section className={styles.policySection} id={id} key={id}>
         <h2>{record ? record.title : title}</h2>
+        <p><Link href={`/${slug}`}>Read the full {title}</Link></p>
         {record
           ? <PublishedDocument document={record.document} hideTitle />
           : <EmptyState title="Policy copy has not been published.">This section is unavailable until its current text is approved and published.</EmptyState>}
