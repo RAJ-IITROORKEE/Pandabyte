@@ -316,7 +316,7 @@ async function verifySourceObservation(context, state, auth, anon) {
     !cart.quote.readyForCheckout, "source_cart_quantity_invalid");
 
   const priceFiltered = await rpc(anon, "published_list_products", publicProductQuery(source.variant.sku, { p_min_price_paise: 1 }));
-  ensure(!priceFiltered.error && !priceFiltered.data.items.some((item) => item.id === published.id), "source_observation_price_filter_match");
+  ensure(!priceFiltered.error && priceFiltered.data.items.some((item) => item.id === published.id), "source_observation_price_filter_missing");
   for (const availability of ["available", "unavailable"]) {
     const filtered = await rpc(anon, "published_list_products", publicProductQuery(source.variant.sku, { p_availability: availability }));
     ensure(!filtered.error && !filtered.data.items.some((item) => item.id === published.id), `source_observation_${availability}_filter_match`);

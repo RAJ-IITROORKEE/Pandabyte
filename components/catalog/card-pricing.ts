@@ -6,7 +6,7 @@ export function cardPricing(variants: PublicVariant[], sourcePriceText?: string)
   const unverified = sourcePriceText !== undefined || variants.some((variant) => variant.purchasable === false);
   const priced = variants.length > 0 && variants.every((variant) => variant.effectivePricePaise !== null && (!unverified || variant.cartEligible === true));
   const prices = variants.map((variant) => variant.effectivePricePaise as number);
-  const sourcePrice = unverified && (priced || !!sourcePriceText?.trim());
+  const sourcePrice = unverified && !priced && !!sourcePriceText?.trim();
   const price = priced ? `${Math.min(...prices) !== Math.max(...prices) ? "From " : ""}${money.format(Math.min(...prices) / 100)}` :
     sourcePriceText?.trim() || "Price unavailable";
   const availability = unverified ? "Availability unverified" : !variants.length ? "Availability unavailable" :

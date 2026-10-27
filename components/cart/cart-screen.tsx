@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import type { CartInputLine, CartQuote, CartQuoteLine, CustomerCart } from "@/lib/cart/validation";
 import { cartErrorMessage, loadCustomerCart, quoteCart, replaceCustomerCart } from "./cart-api";
 import { mergeGuestCart, removeCartItem, setCartItemQuantity } from "./cart-utils";
@@ -57,7 +57,19 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
   const [actionError, setActionError] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const activeActions = useRef(new Set<AbortController>());
+  const removedVariantId = useRef<string | null>(null);
+  const contentsHeading = useRef<HTMLHeadingElement>(null);
   const guestViewStale = !userId && view.status === "ready" && view.guestRevision !== guest.revision;
+
+  useEffect(() => {
+    if (view.status !== "ready") {
+      removedVariantId.current = null;
+      return;
+    }
+    if (guestViewStale || removedVariantId.current === null || view.items.some(item => item.variantId === removedVariantId.current)) return;
+    removedVariantId.current = null;
+    contentsHeading.current?.focus();
+  }, [view, guestViewStale]);
 
   useEffect(() => () => {
     for (const controller of activeActions.current) controller.abort();
@@ -105,7 +117,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     if (cleared && !userId) setView({ status: "loading" });
   };
 
-  const changeItems = async (nextItems: CartInputLine[], successText: string) => {
+  const changeItems = async (nextItems: CartInputLine[], successText: string, removedId?: string) => {
     if (view.status !== "ready" || busy || reloadRequired) return;
     setBusy(true);
     setActionError("");
@@ -126,6 +138,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
             : "This browser could not verify the saved cart, so no edit was saved. Review the cart and try again.");
         return;
       }
+      removedVariantId.current = removedId ?? null;
       setAnnouncement(successText);
       return;
     }
@@ -135,6 +148,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     try {
       const cart = await replaceCustomerCart(view.version ?? 0, nextItems, controller.signal);
       if (!controller.signal.aborted) {
+        removedVariantId.current = removedId ?? null;
         setView(viewOfCustomerCart(cart));
         setAnnouncement(successText);
         setReloadRequired(false);
@@ -151,7 +165,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
   };
 
   const remove = (variantId: string) => {
-    if (view.status === "ready") void changeItems(removeCartItem(view.items, variantId), "Item removed from your cart.");
+    if (view.status === "ready") void changeItems(removeCartItem(view.items, variantId), "Item removed from your cart.", variantId);
   };
 
   const updateQuantity = (variantId: string, quantity: number) => {
@@ -248,7 +262,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     {(view.status === "loading" || guestViewStale) && <p className={styles.status} role="status">Refreshing current cart details…</p>}
     {view.status === "error" && <section className={styles.errorPanel} aria-labelledby={`${id}-load-error`}>
       <h2 id={`${id}-load-error`}>Cart details are unavailable</h2>
-      <p>{view.message}</p>
+      <p role="alert">{view.message}</p>
       <button className={styles.secondaryButton} type="button" onClick={retry}>Try again</button>
     </section>}
     {view.status === "ready" && <CartContents
@@ -257,6 +271,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
       busy={busy}
       locked={busy || reloadRequired || guestViewStale}
       refreshing={guestViewStale}
+      headingRef={contentsHeading}
       onRemove={remove}
       onUpdateQuantity={updateQuantity}
     />}
@@ -275,17 +290,18 @@ function CartLayout({ children, embedded }: { children: ReactNode; embedded: boo
   </main>;
 }
 
-function CartContents({ view, id, busy, locked, refreshing, onRemove, onUpdateQuantity }: {
+function CartContents({ view, id, busy, locked, refreshing, headingRef, onRemove, onUpdateQuantity }: {
   view: Extract<CartView, { status: "ready" }>;
   id: string;
   busy: boolean;
   locked: boolean;
   refreshing: boolean;
+  headingRef: RefObject<HTMLHeadingElement | null>;
   onRemove: (variantId: string) => void;
   onUpdateQuantity: (variantId: string, quantity: number) => void;
 }) {
   if (view.quote.lines.length === 0) return <section className={styles.empty} aria-labelledby={`${id}-empty-title`}>
-    <h2 id={`${id}-empty-title`}>Your cart is empty</h2>
+    <h2 id={`${id}-empty-title`} ref={headingRef} tabIndex={-1}>Your cart is empty</h2>
     <p>Explore the catalog and add items you would like to review.</p>
     <Link className={styles.primaryButton} href="/shop">Browse products</Link>
   </section>;
@@ -295,7 +311,7 @@ function CartContents({ view, id, busy, locked, refreshing, onRemove, onUpdateQu
   return <div className={styles.cartLayout}>
     <section className={styles.itemsPanel} aria-labelledby={`${id}-items-title`}>
       <div className={styles.panelHeading}>
-        <h2 id={`${id}-items-title`}>Items</h2>
+        <h2 id={`${id}-items-title`} ref={headingRef} tabIndex={-1}>Items</h2>
         <span>{itemCount} {itemCount === 1 ? "item" : "items"}</span>
       </div>
       <ul className={styles.itemList}>

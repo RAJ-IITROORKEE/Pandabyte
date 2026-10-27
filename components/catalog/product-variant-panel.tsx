@@ -34,7 +34,6 @@ export function ProductVariantPanel({ variants, observation }: { variants: Publi
     </div>}
 
     {selected ? <div className={styles.selectedPrice} aria-live="polite">
-      {observation && <span>Source price</span>}
       <span className={styles.currentPrice}>
         {selected.effectivePricePaise === null ? "Price unavailable" : money.format(selected.effectivePricePaise / 100)}
       </span>

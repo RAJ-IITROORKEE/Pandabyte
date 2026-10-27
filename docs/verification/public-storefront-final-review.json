@@ -1,0 +1,43 @@
+{
+  "verifiedOn": "2026-10-27",
+  "scope": "public catalog consistency and cart accessibility",
+  "migration": "20261027173001_source-catalog-price-filters.sql",
+  "productionBuild": "passed with isolated .bootstrap/frontend-next-review output",
+  "focusedTestsPassed": 24,
+  "targetedLint": "passed",
+  "designDetectorFindings": 0,
+  "apiChecks": {
+    "developmentOrigin": "http://localhost:3001",
+    "temporaryProductionOrigin": "http://localhost:3003",
+    "priceRangeInr": [100, 500],
+    "matchingSourceProductsBeforeFix": 0,
+    "matchingSourceProductsAfterFix": 22,
+    "priceAscendingAndDescending": "passed",
+    "unknownStockExcludedFromKnownAvailabilityFilters": true,
+    "productionModeSourceQuoteAndTamperChecks": "passed for all 42 imported products"
+  },
+  "browserChecks": [
+    "keyboard Enter removes DHT11 and focuses Items heading while another row remains",
+    "keyboard Enter removes final LED item and focuses empty-cart heading",
+    "next Tab focuses Browse products",
+    "initial empty signed-in cart restored after verification",
+    "development price range renders 22 cards with current numeric prices",
+    "local production build renders same filtered catalog, loaded images and enabled cart controls",
+    "no hydration warning observed in the production verification tab"
+  ],
+  "adminFrontendChanged": false,
+  "homepageHeroChanged": false,
+  "cmsContentPublished": false,
+  "realProductDataChanged": false,
+  "stockChanged": false,
+  "paymentEnabled": false,
+  "ordersCreated": false,
+  "productionDeployed": false,
+  "limits": [
+    "actual screen-reader speech not tested",
+    "runtime reduced-motion switching not tested",
+    "signed-out browser sign-in/merge journey not rerun",
+    "updated disposable source-observation harness not rerun in this checkpoint; source-cart checkpoint retains its preceding live run",
+    "company/contact/policy/editorial content and operational shipping/GST/stock decisions remain open"
+  ]
+}
