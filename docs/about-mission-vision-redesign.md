@@ -1,0 +1,7 @@
+# About mission and vision refinement — 27 October 2026
+
+The owner requested a Superdesign preview and refinement of the public About mission and vision section. The [existing About draft](https://p.superdesign.dev/draft/7338e138-5c6c-442e-8c24-71f89d06c05d) was refined to version 9 using Gemini 3.1 Pro, the PandaByte design system and the current About page source. Its exact original logo remains in the fetched draft. The free [About 29 reference](https://www.shadcnblocks.com/block/about29) informed the mission panel and ruled values; no external component or dependency was installed.
+
+The implementation adapts that direction as a shared split surface: mission is visually emphasized, vision is adjacent, and the existing values flow in three columns below. At narrow widths the columns stack. The published CMS documents remain the source of all text and block order; there are no CMS writes or new public claims. The homepage hero and Admin are unchanged.
+
+Validation: About grouping and editorial utility tests, targeted ESLint, TypeScript and the mechanical design detector passed. Anonymous localhost:3000 HTML returned the existing mission, vision and values with one H1; the served stylesheet included the updated layout. Browser visual, keyboard and theme checks remain outstanding because local browser use was disabled in Work settings. Source inspection and HTTP checks are not substitutes for a rendered browser review.

@@ -20,12 +20,15 @@
 .ecosystem > p { margin-bottom: 20px; text-align: center; }
 .sectionLabel { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .companySection { padding-block: 0 clamp(80px, 9vw, 112px); }
-.companyContent { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
-.companyContent :global(.published-document) { min-width: 0; max-width: none; padding: clamp(24px, 3vw, 36px); background: var(--surface); border: 1px solid var(--divider); border-radius: 14px; }
+.companyContent { display: grid; min-width: 0; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 1px; overflow: hidden; background: var(--divider); border: 1px solid var(--divider); border-radius: 16px; }
+.companyContent :global(.published-document) { min-width: 0; max-width: none; padding: clamp(28px, 4vw, 56px); background: var(--surface); }
+.companyContent :global(.published-document):first-child { background: var(--status-soft); }
 .companyContent :global(.published-document):last-child:nth-child(odd) { grid-column: 1 / -1; }
-.companyContent :global(.published-document h2) { font-size: clamp(24px, 3vw, 32px); letter-spacing: -.03em; line-height: 1.2; }
-.companyContent :global(.published-document p), .companyContent :global(.published-document li) { color: var(--muted); line-height: 1.75; }
+.companyContent :global(.published-document h2) { margin-bottom: 22px; font-size: clamp(28px, 3.4vw, 42px); letter-spacing: -.035em; line-height: 1.12; }
+.companyContent :global(.published-document p), .companyContent :global(.published-document li) { max-width: 60ch; color: var(--muted); line-height: 1.75; }
 .companyContent :global(.published-document li) + li { margin-top: 12px; }
+.companyContent :global(.published-document):last-child:nth-child(odd) ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 0; list-style: none; }
+.companyContent :global(.published-document):last-child:nth-child(odd) li { margin: 0; padding-top: 18px; border-top: 1px solid var(--divider); }
 .companyContent :global(.published-document) > :first-child { margin-top: 0; }
 .companyContent :global(.published-document) > :last-child { margin-bottom: 0; }
 .panel { padding: clamp(24px, 3vw, 36px); }
@@ -48,6 +51,7 @@
 .page a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 @media (max-width: 767px) {
   .aboutHero, .companyContent { grid-template-columns: minmax(0, 1fr); }
+  .companyContent :global(.published-document):last-child:nth-child(odd) ul { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .heroImage { max-width: 620px; }
   .contactCallout { align-items: start; flex-direction: column; }
 }
