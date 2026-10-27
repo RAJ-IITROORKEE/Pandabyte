@@ -12,3 +12,10 @@ test("selects reviewed front and rear in order, only if still published", () => 
   assert.deepEqual(cardImageIds("unmapped", ["other", front]), ["other", front]);
   assert.deepEqual(cardImageIds(product, []), []);
 });
+
+test("uses a reviewed single view without adding unrelated published images", () => {
+  const product = "43dd32fe-f280-4f01-b580-2c4ba744fd3b";
+  const front = "38e5bf5c-f08d-4c96-93fe-ba35a5ae1622";
+  assert.deepEqual(cardImageIds(product, ["other", front]), [front]);
+  assert.deepEqual(cardImageIds(product, ["other"]), ["other"]);
+});

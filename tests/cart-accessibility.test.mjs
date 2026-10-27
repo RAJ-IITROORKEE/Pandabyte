@@ -26,7 +26,7 @@ function find(node, predicate) {
   return find(node.props?.children, predicate);
 }
 
-function cartHarness({ signedIn = true, readError = false, items = initialItems } = {}) {
+function cartHarness({ signedIn = true, readError = false, items = initialItems, cached = false } = {}) {
   const hooks = [];
   let cursor = 0, effects = [], headingRef, tree;
   let guest = { ready: true, items: signedIn ? [] : items, revision: 1, invalidStoredCart: false };
@@ -42,7 +42,7 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems 
       useSyncExternalStore: () => guest,
       useState: initial => {
         const index = cursor++;
-        if (!(index in hooks)) hooks[index] = initial;
+        if (!(index in hooks)) hooks[index] = typeof initial === "function" ? initial() : initial;
         return [hooks[index], value => { hooks[index] = typeof value === "function" ? value(hooks[index]) : value; }];
       },
       useRef: initial => {
@@ -64,7 +64,7 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems 
       quoteCart: (...args) => requestQuote(...args),
       cartErrorMessage: () => "Cart could not load",
     },
-    "./customer-cart-store": { activateCustomerCart: () => {}, publishCustomerCart: () => {}, getCustomerCartSnapshot: () => ({ userId: null, cart: null }), subscribeCustomerCart: () => () => {} },
+    "./customer-cart-store": { activateCustomerCart: () => {}, publishCustomerCart: () => {}, getCustomerCartSnapshot: () => cached ? ({ userId: "customer", cart: cart(items) }) : ({ userId: null, cart: null }), subscribeCustomerCart: () => () => {} },
     "./cart-utils": {
       removeCartItem: (items, id) => items.filter(item => item.variantId !== id),
       setCartItemQuantity: (items, id, quantity) => items.map(item => item.variantId === id ? { ...item, quantity } : item),
@@ -73,12 +73,14 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems 
       saveGuestCart: items => { guest = { ...guest, items, revision: guest.revision + 1 }; return { persisted: true }; },
     },
     "./cart.module.css": { default: {} },
+    "@/components/catalog/card-image-selection": { cardImageIds: (_id, ids) => ids },
   };
-  runInNewContext(`${compiled}\nexports.CartSession = CartSession; exports.CartContents = CartContents;`, {
+  runInNewContext(`${compiled}\nexports.CartSession = CartSession; exports.CartContents = CartContents; exports.QuantityEditor = QuantityEditor;`, {
     exports, require: name => dependencies[name] ?? require(name), AbortController,
   });
   return {
     focused,
+    quantityEditor: props => exports.QuantityEditor(props),
     replace: value => { replace = value; },
     requestQuote: value => { requestQuote = value; },
     render: () => {
@@ -99,6 +101,28 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems 
     find: predicate => find(tree, predicate),
   };
 }
+
+test("cached signed-in cart is visible but locked until its fresh read completes", async () => {
+  const review = cartHarness({ cached: true });
+  assert.equal(review.render().locked, true);
+  await flush();
+  assert.equal(review.render().locked, false);
+});
+
+test("quantity buttons save immediately and respect bounds and locks", () => {
+  const review = cartHarness();
+  const saved = [];
+  const buttons = (quantity, locked = false) => {
+    const tree = review.quantityEditor({ title: "Sensor", quantity, locked, onSave: value => saved.push(value) });
+    return [find(tree, node => node.props?.["aria-label"] === "Decrease quantity of Sensor"), find(tree, node => node.props?.["aria-label"] === "Increase quantity of Sensor")];
+  };
+  buttons(2)[0].props.onClick();
+  buttons(2)[1].props.onClick();
+  buttons(1)[0].props.onClick();
+  buttons(99)[1].props.onClick();
+  buttons(2, true)[1].props.onClick();
+  assert.deepEqual(saved, [1, 3]);
+});
 
 test("cart load failures announce an alert", async () => {
   const review = cartHarness({ readError: true });

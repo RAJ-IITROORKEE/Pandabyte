@@ -2,6 +2,8 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import Image from "next/image";
+import { Minus, Plus } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import type { CartInputLine, CartQuote, CartQuoteLine, CustomerCart } from "@/lib/cart/validation";
 import { cartErrorMessage, loadCustomerCart, quoteCart, replaceCustomerCart } from "./cart-api";
@@ -16,6 +18,7 @@ import {
 } from "./guest-cart-store";
 import { getCustomerCartSnapshot, activateCustomerCart, publishCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
 import styles from "./cart.module.css";
+import { cardImageIds } from "@/components/catalog/card-image-selection";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
 
@@ -51,8 +54,12 @@ function CartLoading({ embedded }: { embedded: boolean }) {
 function CartSession({ userId, embedded }: { userId: string | null; embedded: boolean }) {
   const id = useId();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
-  const [view, setView] = useState<CartView>({ status: "loading" });
+  const [view, setView] = useState<CartView>(() => {
+    const customer = getCustomerCartSnapshot();
+    return userId && customer.userId === userId && customer.cart ? viewOfCustomerCart(customer.cart) : { status: "loading" };
+  });
   const [busy, setBusy] = useState(false);
+  const [customerRefreshing, setCustomerRefreshing] = useState(!!userId);
   const [reloadRequired, setReloadRequired] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [actionError, setActionError] = useState("");
@@ -87,9 +94,10 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
         const latest = getCustomerCartSnapshot();
         setView(viewOfCustomerCart(latest.userId === userId && latest.cart ? latest.cart : cart));
         setReloadRequired(false);
+        setCustomerRefreshing(false);
       }
     }).catch((error: unknown) => {
-      if (!controller.signal.aborted) setView({ status: "error", message: cartErrorMessage(error) });
+      if (!controller.signal.aborted) { setCustomerRefreshing(false); setView({ status: "error", message: cartErrorMessage(error) }); }
     });
     return () => controller.abort();
   }, [userId, reloadKey]);
@@ -119,6 +127,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
   const retry = () => {
     setActionError("");
     setReloadRequired(false);
+    if (userId) setCustomerRefreshing(true);
     setView({ status: "loading" });
     setReloadKey((value) => value + 1);
   };
@@ -130,7 +139,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
   };
 
   const changeItems = async (nextItems: CartInputLine[], successText: string, removedId?: string) => {
-    if (view.status !== "ready" || busy || reloadRequired) return;
+    if (view.status !== "ready" || busy || reloadRequired || customerRefreshing || guestViewStale) return;
     setBusy(true);
     setActionError("");
     setAnnouncement("");
@@ -189,7 +198,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
   };
 
   const merge = async () => {
-    if (view.status !== "ready" || !userId || busy || reloadRequired) return;
+    if (view.status !== "ready" || !userId || busy || reloadRequired || customerRefreshing) return;
     const guestItems = guest.items.map((item) => ({ ...item }));
     const guestRevision = guest.revision;
     const items = mergeGuestCart(view.items, guestItems);
@@ -268,12 +277,12 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
         <p className={styles.smallText}>{guest.items.length} guest {guest.items.length === 1 ? "item" : "items"} · {view.items.length} signed-in {view.items.length === 1 ? "item" : "items"}</p>
         {mergeGuestCart(view.items, guest.items) === null && <p className={styles.fieldError}>The merged cart can contain at most 50 different items.</p>}
       </div>
-      <button className={styles.secondaryButton} type="button" onClick={() => void merge()} disabled={busy || reloadRequired || mergeGuestCart(view.items, guest.items) === null}>
+      <button className={styles.secondaryButton} type="button" onClick={() => void merge()} disabled={busy || reloadRequired || customerRefreshing || mergeGuestCart(view.items, guest.items) === null}>
         {busy ? "Merging…" : "Merge guest cart"}
       </button>
     </section>}
 
-    {(view.status === "loading" || guestViewStale) && <p className={styles.status} role="status">Refreshing current cart details…</p>}
+    {(view.status === "loading" || guestViewStale || customerRefreshing) && <p className={styles.status} role="status">Refreshing current cart details…</p>}
     {view.status === "error" && <section className={styles.errorPanel} aria-labelledby={`${id}-load-error`}>
       <h2 id={`${id}-load-error`}>Cart details are unavailable</h2>
       <p role="alert">{view.message}</p>
@@ -282,9 +291,8 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     {view.status === "ready" && <CartContents
       view={view}
       id={id}
-      busy={busy}
-      locked={busy || reloadRequired || guestViewStale}
-      refreshing={guestViewStale}
+      locked={busy || reloadRequired || guestViewStale || customerRefreshing}
+      refreshing={guestViewStale || customerRefreshing}
       headingRef={contentsHeading}
       onRemove={remove}
       onUpdateQuantity={updateQuantity}
@@ -304,10 +312,9 @@ function CartLayout({ children, embedded }: { children: ReactNode; embedded: boo
   </main>;
 }
 
-function CartContents({ view, id, busy, locked, refreshing, headingRef, onRemove, onUpdateQuantity }: {
+function CartContents({ view, id, locked, refreshing, headingRef, onRemove, onUpdateQuantity }: {
   view: Extract<CartView, { status: "ready" }>;
   id: string;
-  busy: boolean;
   locked: boolean;
   refreshing: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
@@ -332,7 +339,6 @@ function CartContents({ view, id, busy, locked, refreshing, headingRef, onRemove
         {view.quote.lines.map((line) => <CartLine
           key={line.variantId}
           line={line}
-          busy={busy}
           locked={locked}
           onRemove={() => onRemove(line.variantId)}
           onUpdateQuantity={(quantity) => onUpdateQuantity(line.variantId, quantity)}
@@ -355,9 +361,8 @@ function CartContents({ view, id, busy, locked, refreshing, headingRef, onRemove
   </div>;
 }
 
-function CartLine({ line, busy, locked, onRemove, onUpdateQuantity }: {
+function CartLine({ line, locked, onRemove, onUpdateQuantity }: {
   line: CartQuoteLine;
-  busy: boolean;
   locked: boolean;
   onRemove: () => void;
   onUpdateQuantity: (quantity: number) => void;
@@ -365,7 +370,24 @@ function CartLine({ line, busy, locked, onRemove, onUpdateQuantity }: {
   const title = line.title ?? "Unavailable catalog item";
   const variant = line.variant;
   const removeLabel = variant ? `${title}, ${variant.label}` : title;
+  const imageKey = `${line.productId}:${line.revisionId}:${line.slug}`;
+  const [image, setImage] = useState<{ key: string; id: string } | null>(null);
+  useEffect(() => {
+    if (!line.slug || !line.productId || !line.revisionId) return;
+    const controller = new AbortController();
+    void fetch(`/api/published/products/${encodeURIComponent(line.slug)}`, { signal: controller.signal, cache: "no-store" })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        const record = data?.record;
+        if (controller.signal.aborted || record?.id !== line.productId || record?.revisionId !== line.revisionId || !Array.isArray(record.document?.mediaIds)) return;
+        const ids = record.document.mediaIds.filter((id: unknown): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id));
+        const id = cardImageIds(line.productId!, ids)[0];
+        if (id) setImage({ key: imageKey, id });
+      }).catch(() => {});
+    return () => controller.abort();
+  }, [imageKey, line.slug, line.productId, line.revisionId]);
   return <li className={styles.item}>
+    <div className={styles.itemImage}>{image?.key === imageKey ? <Image src={`/api/media/${encodeURIComponent(image.id)}?w=96`} alt="" width={96} height={96} unoptimized onError={() => setImage(null)} /> : <span>No image</span>}</div>
     <div className={styles.itemDetails}>
       <h3>{line.slug ? <Link href={`/products/${encodeURIComponent(line.slug)}`}>{title}</Link> : title}</h3>
       {variant && <p className={styles.itemMeta}>{variant.label} · SKU {variant.sku}</p>}
@@ -377,42 +399,24 @@ function CartLine({ line, busy, locked, onRemove, onUpdateQuantity }: {
       </button>
     </div>
     {(line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true))
-      ? <QuantityEditor variantId={line.variantId} quantity={line.quantity} busy={busy} locked={locked} onSave={onUpdateQuantity} />
+      ? <QuantityEditor title={title} quantity={line.quantity} locked={locked} onSave={onUpdateQuantity} />
       : <p className={styles.quantityValue}>Quantity {line.quantity}</p>}
     <p className={styles.lineTotal}>{formatPaise(line.lineTotalPaise)}</p>
   </li>;
 }
 
-function QuantityEditor({ variantId, quantity, busy, locked, onSave }: {
-  variantId: string;
+function QuantityEditor({ title, quantity, locked, onSave }: {
+  title: string;
   quantity: number;
-  busy: boolean;
   locked: boolean;
   onSave: (quantity: number) => void;
 }) {
-  const [draft, setDraft] = useState({ quantity, value: String(quantity) });
-  const value = draft.quantity === quantity ? draft.value : String(quantity);
-  const [error, setError] = useState("");
-  const id = useId();
-  const inputId = `${id}-cart-quantity-${variantId}`;
-  const errorId = `${inputId}-error`;
-
-  return <form className={styles.quantityForm} onSubmit={(event) => {
-    event.preventDefault();
-    if (busy || locked) return;
-    const next = Number(value);
-    if (!Number.isInteger(next) || next < 1 || next > 99) {
-      setError("Enter a whole number from 1 to 99.");
-      return;
-    }
-    setError("");
-    onSave(next);
-  }}>
-    <label htmlFor={inputId}>Quantity</label>
+  return <div className={styles.quantityForm}>
+    <span>Quantity</span>
     <div className={styles.quantityControls}>
-      <input id={inputId} type="number" min={1} max={99} step={1} value={value} readOnly={busy || locked} onChange={(event) => setDraft({ quantity, value: event.currentTarget.value })} aria-disabled={busy || locked} aria-invalid={!!error} aria-describedby={error ? errorId : undefined} />
-      <button className={styles.quantityButton} type="submit" aria-disabled={busy || locked}>{busy ? "Saving…" : "Update"}</button>
+      <button type="button" aria-label={`Decrease quantity of ${title}`} aria-disabled={locked || quantity <= 1} onClick={() => { if (!locked && quantity > 1) onSave(quantity - 1); }}><Minus size={16} aria-hidden="true" /></button>
+      <span aria-live="polite">{quantity}</span>
+      <button type="button" aria-label={`Increase quantity of ${title}`} aria-disabled={locked || quantity >= 99} onClick={() => { if (!locked && quantity < 99) onSave(quantity + 1); }}><Plus size={16} aria-hidden="true" /></button>
     </div>
-    {error && <span id={errorId} className={styles.fieldError} role="alert">{error}</span>}
-  </form>;
+  </div>;
 }

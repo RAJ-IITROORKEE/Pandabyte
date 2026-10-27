@@ -17,7 +17,9 @@
 .panelHeading h2, .summary h2, .empty h2, .errorPanel h2, .notice h2 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -.02em; }
 .panelHeading span { color: var(--muted); font-size: 14px; }
 .itemList { margin: 0; padding: 0; list-style: none; }
-.item { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) minmax(90px, 120px); gap: 20px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--divider); }
+.item { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto minmax(70px, 110px); gap: 20px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--divider); }
+.itemImage { display: grid; width: 96px; height: 96px; place-items: center; overflow: hidden; color: var(--muted); background: var(--background); border: 1px solid var(--divider); border-radius: 8px; font-size: 12px; }
+.itemImage img { width: 100%; height: 100%; object-fit: contain; }
 .item:last-child { padding-bottom: 0; border-bottom: 0; }
 .itemDetails { min-width: 0; }
 .itemDetails h3 { margin: 0; font-size: 17px; font-weight: 620; line-height: 1.4; overflow-wrap: anywhere; }
@@ -28,9 +30,11 @@
 .removeButton { min-height: 40px; margin-top: 8px; padding: 7px 2px; color: var(--muted); background: transparent; border: 0; font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; transition: color 150ms ease; }
 .removeButton:hover:not(:disabled) { color: var(--foreground); }
 .quantityForm { min-width: 0; }
-.quantityForm label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 13px; }
+.quantityForm > span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 13px; }
 .quantityValue { margin: 0; color: var(--muted); font-size: 13px; }
-.quantityControls { display: flex; min-width: 0; gap: 8px; }
+.quantityControls { display: inline-flex; min-width: 0; align-items: center; border: 1px solid var(--border); border-radius: 8px; }
+.quantityControls button { display: grid; width: 44px; height: 44px; place-items: center; color: var(--foreground); background: transparent; border: 0; cursor: pointer; }
+.quantityControls span { min-width: 26px; text-align: center; font-size: 14px; }
 .quantityControls input { width: 78px; min-width: 0; min-height: 44px; padding: 8px; color: var(--foreground); background: var(--background); border: 1px solid var(--border); border-radius: 8px; font: inherit; }
 .quantityButton, .secondaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 9px 13px; color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; }
 .quantityButton:hover:not(:disabled):not([aria-disabled="true"]), .secondaryButton:hover:not(:disabled) { border-color: var(--accent); background: var(--status-soft); }
@@ -110,10 +114,11 @@
 
 @media (max-width: 560px) {
   .page { padding-top: 32px; padding-bottom: 56px; }
-  .item { grid-template-columns: minmax(0, 1fr) auto; gap: 14px 18px; align-items: start; }
-  .itemDetails { grid-column: 1 / -1; }
-  .quantityForm { grid-column: 1; }
-  .lineTotal { grid-column: 2; align-self: center; }
+  .item { grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+  .itemImage { width: 64px; height: 64px; grid-row: span 2; }
+  .itemDetails { grid-column: 2 / -1; }
+  .quantityForm { grid-column: 2; }
+  .lineTotal { grid-column: 3; align-self: center; }
   .mergeNotice { align-items: stretch; padding: 18px; }
   .mergeNotice > div { min-width: 0; }
   .mergeNotice .secondaryButton { width: 100%; }
@@ -121,9 +126,6 @@
 
 @media (max-width: 360px) {
   .item { gap: 12px; }
-  .quantityControls { flex-wrap: wrap; }
-  .quantityControls input { width: 100%; }
-  .quantityButton { width: 100%; }
   .lineTotal { text-align: right; }
 }
 
@@ -142,10 +144,11 @@
 .embedded { width: 100%; padding: 24px; }
 .embedded .cartLayout { grid-template-columns: minmax(0, 1fr); }
 .embedded .summary { position: static; }
-.embedded .item { grid-template-columns: minmax(0, 1fr) auto; gap: 14px 18px; align-items: start; }
-.embedded .itemDetails { grid-column: 1 / -1; }
-.embedded .quantityForm { grid-column: 1; }
-.embedded .lineTotal { grid-column: 2; align-self: center; }
+.embedded .item { grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.embedded .itemImage { width: 64px; height: 64px; grid-row: span 2; }
+.embedded .itemDetails { grid-column: 2 / -1; }
+.embedded .quantityForm { grid-column: 2; }
+.embedded .lineTotal { grid-column: 3; align-self: center; }
 .embedded .mergeNotice > div { min-width: 0; }
 .checkoutNotice { padding-block: 32px; border-top: 1px solid var(--divider); }
 .checkoutNotice h2 { margin: 0 0 16px; font-size: clamp(23px, 3vw, 30px); font-weight: 600; letter-spacing: -.025em; }
