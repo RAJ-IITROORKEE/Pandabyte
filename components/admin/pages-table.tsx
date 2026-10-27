@@ -24,6 +24,7 @@ const TABLE_COPY = {
   team: { title: "Team", description: "Manage approved team profiles and their publication status.", singular: "profile", plural: "profiles", row: "Profile", loading: "Loading profiles…", error: "Profiles could not be loaded. Try again.", empty: "Create the first profile when approved details are ready." },
   solutions: { title: "Solutions", description: "Manage solution pages and their publication status.", singular: "solution", plural: "solutions", row: "Solution", loading: "Loading solutions…", error: "Solutions could not be loaded. Try again.", empty: "Create the first solution when approved content is ready." },
   learn: { title: "Learn resources", description: "Manage learning resources and their publication status.", singular: "resource", plural: "resources", row: "Resource", loading: "Loading resources…", error: "Resources could not be loaded. Try again.", empty: "Create the first resource when approved content is ready." },
+  videos: { title: "Videos", description: "Manage approved YouTube videos and their publication status.", singular: "video", plural: "videos", row: "Video", loading: "Loading videos…", error: "Videos could not be loaded. Try again.", empty: "Create the first video when approved content is ready." },
 } as const;
 
 type ContentTableStatus = (typeof STATUSES)[number];
@@ -82,7 +83,7 @@ function formatUpdated(value: string) {
 
 export function ContentTable({ module = "pages" }: { module?: ContentTableModule }) {
   const copy = TABLE_COPY[module];
-  const kind = module === "pages" ? "page" : module === "blog" ? "blog" : module === "faqs" ? "faq" : module === "team" ? "team" : module === "solutions" ? "solution" : "resource";
+  const kind = module === "pages" ? "page" : module === "blog" ? "blog" : module === "faqs" ? "faq" : module === "team" ? "team" : module === "solutions" ? "solution" : module === "videos" ? "video" : "resource";
   const capabilities = useAdminCapabilities();
   const canEdit = capabilities.includes(ADMIN_MODULES[module].editCapability);
   const searchParams = useSearchParams();

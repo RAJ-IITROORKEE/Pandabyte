@@ -17,5 +17,6 @@ export default async function AdminModulePage({ params }: PageProps<"/admin/[mod
   if (adminModule === "team") return <ContentTable module="team" />;
   if (adminModule === "solutions") return <ContentTable module="solutions" />;
   if (adminModule === "learn") return <ContentTable module="learn" />;
+  if (adminModule === "videos") return <ContentTable module="videos" />;
   return <RecordListScreen key={adminModule} module={adminModule} />;
 }

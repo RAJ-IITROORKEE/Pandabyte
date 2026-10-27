@@ -30,7 +30,7 @@ Audit date: 27 October 2026 (Asia/Calcutta). Scope: development Admin UI, its AP
 | Navigation settings | Fixed singleton slug and versioned publishing; visibility/label/order overrides resolved by exact destination | Header/footer read resolved data but restrict it through fixed presentation | Header fixed Products/Solutions/Shop/Company labels/order bypass primary controls; footer whitelist omits Admin-supported/default Blog/Learn/product/custom links. Coordinate both with FRONTENT-UI |
 | Solutions | CRUD/publication and server table controls | Solutions index/detail read published records | No records entered; future products remain Coming soon |
 | Learn resources | CRUD/publication, collection/product associations and server table controls | Collections and resource pages consume published content | No resources entered; Admin collection filter absent; related-product associations are not rendered on product pages |
-| Videos | CRUD/publication and generic Admin list | Three published videos feed YouTube index/detail and embeds | Admin still uses generic list rather than upgraded table controls; related-product associations lack a product-page consumer |
+| Videos | CRUD/publication and private server-backed table with search, status, sort and pagination | Published videos feed YouTube index/detail and embeds | Related-product associations lack a product-page consumer; review existing differences between Admin, database and public YouTube URL parsers |
 | Media | Authorized upload/metadata/publication/archive and private/published delivery; image/DOCX/GLB validation | Published media references render across catalog/editorial pages | Least-privilege production credential review; recheck preview consistency when adding new upload surfaces; rights holds remain private |
 | Workspaces, Chat, AI Chat, notification bell page | Explicit preview routes | No live services | Future scope, not a baseline backend defect. Inquiry email outbox is distinct from the notification bell page |
 
@@ -40,7 +40,7 @@ Audit date: 27 October 2026 (Asia/Calcutta). Scope: development Admin UI, its AP
 
 0. **Completed:** Orders sidebar/command search now use the authoritative `staff.manage` screen/API guard; role labels clarify Inventory and Orders access. Historical operations documentation points to the current contracts.
 1. Agree the current header/footer contract with FRONTENT-UI. Keep Admin destination/label/visibility/order semantics consistent with the new menu grouping and remove or deliberately document the footer destination restriction. That chat implements public rendering; this chat handles schema/API/editor adjustments if needed.
-2. Add the missing Admin Videos table controls by reusing the bounded content-table pattern. Preserve the existing video publishing and YouTube URL allowlist.
+2. **Completed:** Admin Videos reuses the bounded content table with search, status, sort and pagination; existing video publishing and YouTube URL validation remain in place.
 3. Add the Learn collection filter with matching query validation and database filtering before pagination.
 4. Replace duplicate singleton creation affordances with Open/Edit for existing Contact and Navigation records; retain database uniqueness/version protections.
 5. Review Blog author/tag normalization at the direct database boundary. Align SQL and API validation; inspect existing records before tightening it. Improve cover order/alt metadata through a reviewed minimal contract if required.
