@@ -31,14 +31,20 @@
 .supportContact p > span:last-child { color: var(--foreground); overflow-wrap: anywhere; }
 .supportContact a { color: var(--foreground); text-decoration: none; overflow-wrap: anywhere; }
 .supportContact a:hover { color: var(--accent); text-decoration: underline; }
-.faqSection { max-width: 896px; }
-.faqTitle { display: flex; align-items: center; gap: 12px; }
-.faqTitle svg { width: 28px; height: 28px; flex: none; color: var(--accent); }
-.sectionLink:focus-visible, .categoryCard:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.faqSection { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; gap: clamp(32px, 6vw, 96px); }
+.faqIntro { max-width: 420px; }
+.faqEyebrow { display: inline-flex; padding: 7px 14px; color: var(--accent); border: 1px solid var(--divider); border-radius: 999px; font-size: 13px; font-weight: 600; }
+.faqIntro h2 { margin: 22px 0 16px; color: var(--foreground); font-size: clamp(36px, 4vw, 56px); font-weight: 600; line-height: 1.08; letter-spacing: -.04em; text-wrap: balance; }
+.faqIntro p { margin: 0 0 24px; color: var(--muted); line-height: 1.7; }
+.faqLink { display: inline-flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 18px; color: var(--foreground); border: 1px solid var(--divider); border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; }
+.faqLink:hover { color: var(--accent); border-color: var(--accent); }
+.faqLink svg { width: 18px; height: 18px; }
+.sectionLink:focus-visible, .categoryCard:focus-visible, .faqLink:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (min-width: 1024px) { .homeContent, .contentSection, .supportPanel { margin-bottom: 112px; } }
 @media (max-width: 767px) {
   .categoryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .supportPanel { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .faqSection { grid-template-columns: minmax(0, 1fr); }
   .supportContact { padding: 24px 0 0; border-top: 1px solid var(--divider); border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .supportAction svg { transition: none; } .supportAction:hover svg, .supportAction:focus-visible svg { transform: none; } }

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { HomeCircuit } from "@/components/home-circuit";
 import { HomeBrands } from "@/components/home-brands";
 import { HomeHero } from "@/components/home-hero";
-import { ArrowRight, ChevronRight, CircleHelp, Clock3, Mail, MessageSquareText, Phone } from "lucide-react";
+import { ArrowRight, ChevronRight, Clock3, Mail, MessageSquareText, Phone } from "lucide-react";
 import { ProductCard } from "@/components/catalog/product-card";
 import { FaqList } from "@/components/storefront/faq-list";
 import { EmptyState } from "@/components/storefront/page-frame";
@@ -141,11 +141,11 @@ export default async function HomePage() {
         </section>
 
         <section className={`${sections.contentSection} ${sections.faqSection}`} aria-labelledby="faq-title">
-          <div className={sections.sectionHeading}>
-            <div>
-              <h2 id="faq-title" className={sections.faqTitle}><CircleHelp aria-hidden="true" />Frequently asked questions</h2>
-            </div>
-            <Link href="/help" className={sections.sectionLink}>View all FAQs <ArrowRight aria-hidden="true" /></Link>
+          <div className={sections.faqIntro}>
+            <span className={sections.faqEyebrow}>FAQs</span>
+            <h2 id="faq-title">Frequently asked questions</h2>
+            <p>Find answers to common questions, or visit our help centre for more.</p>
+            <Link href="/help" className={sections.faqLink}>More FAQs <ArrowRight aria-hidden="true" /></Link>
           </div>
           {faqs.items.length ? <FaqList items={faqs.items} /> : (
             <EmptyState title="No frequently asked questions are published yet">
