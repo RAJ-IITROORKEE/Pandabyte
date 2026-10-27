@@ -5,9 +5,10 @@ import { FaqList } from "@/components/storefront/faq-list";
 import { helpPageHref, helpTopic } from "@/components/storefront/help-filters";
 import { EditorialPagination } from "@/components/editorial/editorial-pagination";
 import { editorialPageNumber, editorialSearchQuery } from "@/components/editorial/public-utils";
-import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
+import { EmptyState } from "@/components/storefront/page-frame";
 import { PublishedDocument } from "@/components/published-document";
 import styles from "@/components/editorial/editorial.module.css";
+import helpStyles from "./help.module.css";
 import { getPublishedRecord, listPublishedFaqs } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
 
@@ -40,16 +41,20 @@ export default async function HelpPage({ searchParams }: {
   const resultCap = MAX_PAGE * PAGE_SIZE;
   if (page && "redirectTo" in page) permanentRedirect(`/${page.redirectTo}`);
   const document = page && !("redirectTo" in page) ? page.document : null;
-  return <PublicPage eyebrow="Support" title={document?.title ?? "Help Center"} wide>
-    <div className={styles.stack}>
-      {document && <PublishedDocument document={document} hideTitle />}
-      <form className={styles.searchForm} action="/help" method="get" role="search">
+  return <main id="main" tabIndex={-1} className={helpStyles.page}>
+    <header className={helpStyles.heading}>
+      <h1>How Can We Help?</h1>
+      <p>Search our frequently asked questions or get in touch with our team.</p>
+      <form className={`${styles.searchForm} ${helpStyles.search}`} action="/help" method="get" role="search">
         {topic && <input type="hidden" name="topic" value={topic} />}
         <label>Search FAQs<input name="q" type="search" maxLength={120} defaultValue={query} /></label>
         <button type="submit">Search</button>
         {query && <Link href={helpPageHref("", 1, topic)} className={styles.filterLink}>Clear search</Link>}
       </form>
-      <p className={styles.muted}>Search questions, topics and answers.</p>
+    </header>
+    <div className={helpStyles.content}>
+      {document && <section><h2>{document.title}</h2><PublishedDocument document={document} hideTitle /></section>}
+      <h2>Frequently asked questions</h2>
       {topics.length > 0 && <form className={styles.searchForm} action="/help" method="get">
         {query && <input type="hidden" name="q" value={query} />}
         <label>Topic<select name="topic" defaultValue={topic}>
@@ -74,6 +79,10 @@ export default async function HelpPage({ searchParams }: {
         itemLabel="help articles"
         hrefForPage={(page) => helpPageHref(query, page, topic)}
       />
+      <section className={helpStyles.contact}>
+        <div><h2>Still need help?</h2><p>Send us a message and our team can help with your question.</p></div>
+        <Link href="/contact">Contact the team</Link>
+      </section>
     </div>
-  </PublicPage>;
+  </main>;
 }
