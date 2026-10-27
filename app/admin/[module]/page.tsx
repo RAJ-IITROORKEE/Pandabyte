@@ -3,6 +3,7 @@ import { RecordListScreen } from "@/components/admin/record-screens";
 import { parseAdminModule } from "@/lib/admin/validation";
 import { ProductsTable } from "@/components/admin/products-table";
 import { CategoriesTable } from "@/components/admin/categories-table";
+import { PagesTable } from "@/components/admin/pages-table";
 
 export default async function AdminModulePage({ params }: PageProps<"/admin/[module]">) {
   const { module: rawModule } = await params;
@@ -10,5 +11,6 @@ export default async function AdminModulePage({ params }: PageProps<"/admin/[mod
   if (!adminModule) notFound();
   if (adminModule === "products") return <ProductsTable />;
   if (adminModule === "categories") return <CategoriesTable />;
+  if (adminModule === "pages") return <PagesTable />;
   return <RecordListScreen key={adminModule} module={adminModule} />;
 }

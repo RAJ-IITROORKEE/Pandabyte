@@ -511,9 +511,16 @@ function RowEditor({ label, rows, columns, onChange, addLabel, onFieldChange }: 
   </section>;
 }
 
-function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (next: ContentBlock[]) => void }) {
+function BlockEditor({ blocks, onChange, reorderable = false }: { blocks: ContentBlock[]; onChange: (next: ContentBlock[]) => void; reorderable?: boolean }) {
   function update(index: number, patch: Record<string, unknown>) {
     onChange(blocks.map((block, blockIndex) => blockIndex === index ? { ...block, ...patch } as ContentBlock : block));
+  }
+  function move(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= blocks.length) return;
+    const next = [...blocks];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
   }
   function add(type: ContentBlock["type"]) {
     const values: Record<ContentBlock["type"], ContentBlock> = {
@@ -527,8 +534,12 @@ function BlockEditor({ blocks, onChange }: { blocks: ContentBlock[]; onChange: (
   return <section className={styles.blocks}>
     <div className={styles.sectionHeading}><div><h2>Page content</h2><p>Add blocks in the order they should appear.</p></div></div>
     {blocks.length === 0 && <p className={styles.emptyBlocks}>No content blocks yet. Add a block to build the page.</p>}
-    {blocks.map((block, index) => <fieldset className={styles.blockCard} key={`${block.type}-${index}`}>
-      <legend><span>Block {index + 1}: {block.type === "bulletList" || block.type === "orderedList" ? block.type === "bulletList" ? "Bullet list" : "Numbered list" : block.type[0].toUpperCase() + block.type.slice(1)}</span><button className={styles.iconButton} type="button" aria-label={`Remove block ${index + 1}`} onClick={() => onChange(blocks.filter((_, current) => current !== index))}><Trash2 aria-hidden="true" size={15} /></button></legend>
+    {blocks.map((block, index) => <fieldset className={`${styles.blockCard} ${reorderable ? styles.reorderableBlocks : ""}`} key={`${block.type}-${index}`}>
+      <legend><span>Block {index + 1}: {block.type === "bulletList" || block.type === "orderedList" ? block.type === "bulletList" ? "Bullet list" : "Numbered list" : block.type[0].toUpperCase() + block.type.slice(1)}</span>{reorderable ? <span className={styles.blockActions}>
+          <button className={styles.secondaryButton} type="button" aria-label={`Move block ${index + 1} up`} onClick={() => move(index, -1)} disabled={index === 0}>Move up</button>
+          <button className={styles.secondaryButton} type="button" aria-label={`Move block ${index + 1} down`} onClick={() => move(index, 1)} disabled={index === blocks.length - 1}>Move down</button>
+          <button className={styles.iconButton} type="button" aria-label={`Remove block ${index + 1}`} onClick={() => onChange(blocks.filter((_, current) => current !== index))}><Trash2 aria-hidden="true" size={15} /></button>
+        </span> : <button className={styles.iconButton} type="button" aria-label={`Remove block ${index + 1}`} onClick={() => onChange(blocks.filter((_, current) => current !== index))}><Trash2 aria-hidden="true" size={15} /></button>}</legend>
       {block.type === "paragraph" && <Field label={`Paragraph text, block ${index + 1}`}><TextArea value={block.text} onChange={(text) => update(index, { text })} rows={4} placeholder="Write a paragraph" /></Field>}
       {block.type === "heading" && <div className={styles.headingFields}><label className={styles.field}><span className={styles.fieldLabel}>Heading level, block {index + 1}</span><select className={styles.input} value={block.level} onChange={(event) => update(index, { level: Number(event.target.value) })}><option value={1}>Heading 1</option><option value={2}>Heading 2</option><option value={3}>Heading 3</option></select></label><Field label={`Heading text, block ${index + 1}`}><TextInput value={block.text} onChange={(text) => update(index, { text })} /></Field></div>}
       {(block.type === "bulletList" || block.type === "orderedList") && <Field label={`List items, block ${index + 1}`} hint="One item per line."><TextArea value={block.items.join("\n")} onChange={(text) => update(index, { items: text.split("\n") })} rows={Math.max(3, Math.min(8, block.items.length + 1))} /></Field>}
@@ -550,6 +561,7 @@ function DraftPreview({ document, module }: { document: AdminDocument; module: A
   const previewDocument = richContent ? { ...document, blocks: [] } as AdminDocument : document;
   return <section className={styles.previewPanel} aria-label="Private draft preview" aria-describedby="draft-preview-privacy">
     <h2>{document.title || "Untitled draft"}</h2>
+    {module === "pages" && <p className={styles.fieldHint}>This preview shows this page record only. The live Home, About, Help, and Policies routes also combine route-specific layouts or separately managed content such as team profiles, FAQs, and individual policy pages.</p>}
     <PublishedDocument document={previewDocument} hideTitle />
     {richContent && <section aria-label={`${module === "categories" ? "Category" : "Product"} description preview`}><h3>{module === "categories" ? "About this category" : "About this product"}</h3><ProductRichContentView content={richContent} /></section>}
     {product?.documentMediaId && <section aria-label="Product Word document preview"><h3>Word document</h3><ProductDocumentPreview mediaId={product.documentMediaId} /></section>}
@@ -585,6 +597,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
         <Field label="Title"><TextInput value={str("title")} onChange={(value) => { if ((module === "products" || module === "categories") && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
         <Field label="Slug" hint={module === "products" || module === "categories" ? slugAuto ? "Generated from the title until you edit it." : "Manual slug override." : "Lowercase letters, numbers, and hyphens."}><TextInput value={str("slug")} onChange={(value) => { set("slug", value); if (module === "products" || module === "categories") setSlugAuto(false); }} maxLength={160} /></Field>
         {module !== "products" && <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>}
+        {module === "pages" && <p className={`${styles.fieldHint} ${styles.spanTwo}`}>Proposed route: <code>{str("slug") === "home" ? "/" : str("slug") ? `/${str("slug")}` : "/your-page-slug"}</code>. Saving keeps the current live page unchanged. Existing application routes can take precedence over a published page.</p>}
       </div>
       {(module === "products" || module === "categories") && !slugAuto && <button className={styles.secondaryButton} onClick={() => { setSlugAuto(true); set("slug", productSlugFromTitle(str("title"))); }} type="button">Generate slug from title</button>}
     </section>
@@ -676,7 +689,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
       onChange={(value) => setDocument((current) => ({ ...current, blocks: [], richContent: value } as AdminDocument))}
       onValidityChange={onRichContentValidityChange}
       onUploadDelta={onUploadDelta}
-    /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} />}
+    /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} reorderable={module === "pages"} />}
     <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
   </>;
 }

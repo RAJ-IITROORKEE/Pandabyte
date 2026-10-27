@@ -1,0 +1,10 @@
+.table.table { min-width: 760px; }
+.pageCell { min-width: 220px; max-width: 480px; }
+.pageTitle { display: block; width: min(420px, 38vw); min-width: 180px; overflow: hidden; color: var(--foreground); font-weight: 600; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.pageTitle:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pageSlug { display: block; max-width: 420px; margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 767px) {
+  .pageTitle { width: 280px; }
+  .pageSlug { max-width: 280px; }
+}
