@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { Plus, ShoppingCart } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useUser } from "@clerk/nextjs";
+import { getGuestCartServerSnapshot, getGuestCartSnapshot, subscribeGuestCart } from "@/components/cart/guest-cart-store";
+import { getCustomerCartServerSnapshot, getCustomerCartSnapshot, prepareCustomerCart, subscribeCustomerCart } from "@/components/cart/customer-cart-store";
 import type { ProductModel3d, SourceObservation } from "@/lib/admin/validation";
 import type { PublicVariant } from "@/lib/editorial/public-record";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
@@ -30,6 +33,12 @@ type Props = {
 };
 
 export function ProductQuickView({ title, href, summary, categories, images, model3d, specifications, variants, observation, featured = false }: Props) {
+  const { user } = useUser();
+  const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
+  const customer = useSyncExternalStore(subscribeCustomerCart, getCustomerCartSnapshot, getCustomerCartServerSnapshot);
+  useEffect(() => { if (user && variants.length > 1) prepareCustomerCart(user.id); }, [user, variants.length]);
+  const cartItems = user ? (customer.userId === user.id ? customer.cart?.items : []) : guest.items;
+  const multiCount = variants.length > 1 ? cartItems?.filter(item => variants.some(variant => variant.id === item.variantId)).reduce((sum, item) => sum + item.quantity, 0) ?? 0 : 0;
   const [open, setOpen] = useState(false);
   const [slide, setSlide] = useState<string | undefined>(images[0]?.id);
   const handleSlideChange = useCallback((id: string | undefined) => setSlide(id), []);
@@ -48,7 +57,7 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
             <span>{availability}</span>
             <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>Sale</span></>}</div>
           </div>
-          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} /> : canChooseVariant ? <MorphingDialogTrigger className={styles.cartButton} aria-label={`Choose a variant for ${title}`} title="Choose a variant"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></button>}
+          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} /> : canChooseVariant ? <MorphingDialogTrigger className={`${styles.cartButton} ${multiCount ? styles.cartButtonActive : ""}`} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title={multiCount ? `${multiCount} in cart; choose a variant` : "Choose a variant"}><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></button>}
         </div>
         <div className={styles.cardActions}>
           <Link href={href}>View product</Link>

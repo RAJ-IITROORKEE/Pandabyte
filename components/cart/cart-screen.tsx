@@ -14,6 +14,7 @@ import {
   saveGuestCart,
   subscribeGuestCart,
 } from "./guest-cart-store";
+import { getCustomerCartSnapshot, activateCustomerCart, publishCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
 import styles from "./cart.module.css";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
@@ -78,10 +79,13 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
 
   useEffect(() => {
     if (!userId) return;
+    activateCustomerCart(userId);
     const controller = new AbortController();
     void loadCustomerCart(controller.signal).then((cart) => {
       if (!controller.signal.aborted) {
-        setView(viewOfCustomerCart(cart));
+        publishCustomerCart(userId, cart);
+        const latest = getCustomerCartSnapshot();
+        setView(viewOfCustomerCart(latest.userId === userId && latest.cart ? latest.cart : cart));
         setReloadRequired(false);
       }
     }).catch((error: unknown) => {
@@ -89,6 +93,14 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     });
     return () => controller.abort();
   }, [userId, reloadKey]);
+
+  useEffect(() => subscribeCustomerCart(() => {
+    const customer = getCustomerCartSnapshot();
+    if (userId && customer.userId === userId && customer.cart) {
+      const cart = customer.cart;
+      setView(previous => previous.status === "ready" && previous.version !== null && previous.version > cart.version ? previous : viewOfCustomerCart(cart));
+    }
+  }), [userId]);
 
   useEffect(() => {
     if (userId || !guest.ready || guest.invalidStoredCart) return;
@@ -147,6 +159,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     activeActions.current.add(controller);
     try {
       const cart = await replaceCustomerCart(view.version ?? 0, nextItems, controller.signal);
+      publishCustomerCart(userId, cart);
       if (!controller.signal.aborted) {
         removedVariantId.current = removedId ?? null;
         setView(viewOfCustomerCart(cart));
@@ -191,6 +204,7 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     activeActions.current.add(controller);
     try {
       const cart = await replaceCustomerCart(view.version ?? 0, items, controller.signal);
+      publishCustomerCart(userId, cart);
       if (controller.signal.aborted) return;
       const clearedGuestCart = clearGuestCartAfterMerge(guestItems, guestRevision);
       if (!clearedGuestCart.ok) {

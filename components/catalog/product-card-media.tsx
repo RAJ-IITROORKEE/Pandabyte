@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ProductModel3d } from "@/lib/admin/validation";
 import styles from "./catalog.module.css";
@@ -38,7 +38,8 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   const [reducedMotion, setReducedMotion] = useState(true);
   const [documentVisible, setDocumentVisible] = useState(false);
   const [engaged, setEngaged] = useState(false);
-  const [autoDone, setAutoDone] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [viewerActive, setViewerActive] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [transition, setTransition] = useState<{ image?: ProductCardMediaImage; direction: number }>();
@@ -80,14 +81,13 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   }, []);
 
   useEffect(() => {
-    if (modal || suspend || autoDone || engaged || viewerActive || reducedMotion || !inView || !documentVisible || slides.length < 2) return;
+    if (modal || suspend || paused || engaged || focused || viewerActive || reducedMotion || !inView || !documentVisible || slides.length < 2) return;
     const timer = window.setTimeout(() => {
       animateSlide(1);
       setActiveIndex((current) => (Math.min(current, slides.length - 1) + 1) % slides.length);
-      setAutoDone(true);
     }, 3000);
     return () => window.clearTimeout(timer);
-  }, [modal, suspend, autoDone, engaged, viewerActive, reducedMotion, inView, documentVisible, slides.length, animateSlide]);
+  }, [modal, suspend, paused, engaged, focused, viewerActive, reducedMotion, inView, documentVisible, slides.length, animateSlide, currentIndex]);
 
   const activeImageId = activeSlide?.type === "image" ? activeSlide.image.id : undefined;
   useEffect(() => {
@@ -101,7 +101,7 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
 
   function moveSlide(offset: number) {
     if (slides.length < 2) return;
-    setAutoDone(true);
+    setPaused(true);
     const next = (currentIndex + offset + slides.length) % slides.length;
     const slide = slides[next];
     animateSlide(offset);
@@ -117,7 +117,10 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
       aria-label={`${title} product media`}
       onMouseEnter={() => setEngaged(true)}
       onMouseLeave={() => setEngaged(false)}
-      onFocusCapture={() => setAutoDone(true)}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+      }}
     >
       {transition?.image && !reducedMotion && <Image className={styles.productCardOutgoing} src={`/api/media/${encodeURIComponent(transition.image.id)}?w=960`} alt="" width={800} height={600} unoptimized aria-hidden="true" />}
       <div key={activeSlideId} className={`${styles.productCardSlide} ${transition && !reducedMotion ? transition.direction > 0 ? styles.productCardSlideNext : styles.productCardSlidePrevious : ""}`}>
@@ -150,6 +153,9 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
         <button type="button" aria-label="Next product media" onClick={() => moveSlide(1)}>
           <ChevronRight aria-hidden="true" size={18} />
         </button>
+        {!modal && <button className={styles.productCardRotation} type="button" disabled={reducedMotion} aria-label={reducedMotion ? "Automatic rotation disabled by reduced motion" : paused ? "Resume automatic product media rotation" : "Pause automatic product media rotation"} onClick={() => setPaused((current) => !current)}>
+          {paused || reducedMotion ? <Play aria-hidden="true" size={16} /> : <Pause aria-hidden="true" size={16} />}
+        </button>}
       </div>}
       <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{announcement}</span>
     </div>

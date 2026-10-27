@@ -98,6 +98,8 @@
 .productCardMediaControls button { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; padding: 0; color: #171717; background: rgb(255 255 255 / 78%); border: 1px solid rgb(82 82 82 / 45%); border-radius: 50%; backdrop-filter: blur(8px); cursor: pointer; pointer-events: auto; }
 .productCardMediaControls button:focus-visible, .productModelActivate:focus-visible, .productModelEngineControls button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .productCardMediaCount { position: absolute; bottom: 10px; left: 50%; padding: 3px 8px; transform: translateX(-50%); color: #171717; background: rgb(255 255 255 / 88%); border: 1px solid rgb(82 82 82 / 35%); border-radius: 999px; font-size: 12px; font-weight: 650; text-align: center; }
+.productCardMediaControls .productCardRotation { position: absolute; right: 8px; bottom: 8px; }
+.productCardRotation:disabled { opacity: .6; cursor: default; }
 .featuredProductCardImage { aspect-ratio: auto; height: 320px; padding: 20px; }
 .productModelViewer { position: absolute; inset: 0; display: grid; overflow: hidden; background: #fff; }
 .productModelViewerCompact { border-radius: 0; }

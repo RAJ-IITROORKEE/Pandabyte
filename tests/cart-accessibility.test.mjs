@@ -64,6 +64,7 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems 
       quoteCart: (...args) => requestQuote(...args),
       cartErrorMessage: () => "Cart could not load",
     },
+    "./customer-cart-store": { activateCustomerCart: () => {}, publishCustomerCart: () => {}, getCustomerCartSnapshot: () => ({ userId: null, cart: null }), subscribeCustomerCart: () => () => {} },
     "./cart-utils": {
       removeCartItem: (items, id) => items.filter(item => item.variantId !== id),
       setCartItemQuantity: (items, id, quantity) => items.map(item => item.variantId === id ? { ...item, quantity } : item),
