@@ -1,0 +1,15 @@
+.pb-social { margin-top: 16px; }
+.pb-social__links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.pb-social__link { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 8px; color: var(--foreground); }
+.pb-social__link--0 { color: #087b9b; }
+.pb-social__link--1 { color: #d62976; }
+.pb-social__link--2 { color: #c24736; }
+.pb-social__link--4 { color: #0a66c2; }
+.pb-social__link:hover { background: var(--surface-hover, var(--surface)); }
+.pb-social__link:focus-visible, .pb-social__extra:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pb-social__extra { padding: 10px; color: var(--foreground); }
+.pb-social__note { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+:root[data-theme="dark"] .pb-social__link--0 { color: #60cee8; }
+:root[data-theme="dark"] .pb-social__link--1 { color: #f277b3; }
+:root[data-theme="dark"] .pb-social__link--2 { color: #ff9888; }
+:root[data-theme="dark"] .pb-social__link--4 { color: #6bb6ff; }

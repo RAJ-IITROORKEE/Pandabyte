@@ -1,6 +1,8 @@
 import Image from "next/image";
+import { Globe } from "lucide-react";
+import { IconBrandLinkedin } from "@tabler/icons-react";
 import type { PublishedRecord } from "@/lib/editorial/published";
-import styles from "./editorial.module.css";
+import styles from "./team-grid.module.css";
 
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toLocaleUpperCase() ?? "").join("");
@@ -9,20 +11,21 @@ function initials(name: string) {
 export function TeamGrid({ items }: { items: PublishedRecord<"team">[] }) {
   if (!items.length) return null;
   return <ul className={styles.grid}>
-    {items.map(({ id, document }) => <li className={styles.teamCard} key={id}>
+    {items.map(({ id, document }) => <li className={styles.card} key={id}>
       <span className={styles.avatar} aria-hidden="true">
         {document.mediaIds[0]
-          ? <Image unoptimized src={`/api/media/${document.mediaIds[0]}`} alt="" width={64} height={64} />
+          ? <Image unoptimized src={`/api/media/${encodeURIComponent(document.mediaIds[0])}`} alt="" width={160} height={160} />
           : initials(document.name)}
       </span>
-      <div>
-        <h3>{document.name}</h3>
-        {document.role && <p>{document.role}</p>}
-        {document.bio && <p>{document.bio}</p>}
-        {document.links.length > 0 && <ul>
-          {document.links.map((link, index) => <li key={`${link.url}-${index}`}><a className={styles.inlineLink} href={link.url} rel="noopener noreferrer">{link.label}</a></li>)}
-        </ul>}
-      </div>
+      <h3>{document.name}</h3>
+      {document.role && <p className={styles.role}>{document.role}</p>}
+      {document.bio && <p className={styles.bio}>{document.bio}</p>}
+      {document.links.length > 0 && <ul className={styles.links}>
+        {document.links.map((link, index) => <li key={`${link.url}-${index}`}><a href={link.url} rel="noopener noreferrer" aria-label={`${document.name}: ${link.label}`}>
+          {link.url.toLowerCase().includes("linkedin.com") ? <IconBrandLinkedin size={18} aria-hidden="true" /> : <Globe size={18} aria-hidden="true" />}
+          <span>{link.label}</span>
+        </a></li>)}
+      </ul>}
     </li>)}
   </ul>;
 }

@@ -1,0 +1,19 @@
+.heading { max-width: 800px; padding-top: 28px; }
+.heading h1 { margin: 0 0 20px; font-size: clamp(38px, 5vw, 64px); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; text-wrap: balance; }
+.heading p:last-child { max-width: 650px; }
+.grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(32px, 6vw, 80px); margin-top: 72px; }
+.details, .form { min-width: 0; }
+.details h2, .form h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.03em; }
+.form { padding-left: clamp(32px, 6vw, 80px); border-left: 1px solid var(--divider); }
+.details :global(.pb-social) { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--divider); }
+@media (max-width: 899px) {
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 40px; margin-top: 48px; }
+  .form { padding: 40px 0 0; border-left: 0; border-top: 1px solid var(--divider); }
+}
+@media (max-width: 480px) { .grid { margin-top: 36px; } }
+.details > div { margin-top: 28px; }
+.form form > button { justify-self: end; }
+.intro { color: var(--muted); line-height: 1.75; }
+.intro h3 { margin: 32px 0 10px; color: var(--foreground); font-size: 17px; font-weight: 600; }
+.intro p { margin: 14px 0 0; max-width: 42ch; }
+.intro a { color: var(--foreground); text-underline-offset: 4px; }

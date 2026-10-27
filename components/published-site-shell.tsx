@@ -19,6 +19,7 @@ export async function PublishedHeader() {
 export async function PublishedFooter() {
   const [navigation, contact] = await Promise.allSettled([links(), getPublishedRecord("contact", "contact")]);
   const record = contact.status === "fulfilled" ? contact.value : null;
-  const copy = getSiteCopy(record && "document" in record ? record.document : null);
-  return <SiteFooter navigationLinks={navigation.status === "fulfilled" ? navigation.value : []} tagline={copy.footerTagline} copyrightName={copy.copyrightName} />;
+  const document = record && "document" in record ? record.document : null;
+  const copy = getSiteCopy(document);
+  return <SiteFooter navigationLinks={navigation.status === "fulfilled" ? navigation.value : []} tagline={copy.footerTagline} copyrightName={copy.copyrightName} socialLinks={document?.socialLinks} email={document?.email} />;
 }

@@ -2,12 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { resolveSiteNavigation, type NavigationLink } from "@/lib/site-navigation";
 import { getSiteCopy } from "@/lib/site-copy";
+import { SocialLinks } from "@/components/social-links";
 import "./site-footer.css";
 
-export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().footerTagline, copyrightName = "PandaByte" }: {
+export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().footerTagline, copyrightName = getSiteCopy().copyrightName, socialLinks = [], email = "" }: {
   navigationLinks?: NavigationLink[];
   tagline?: string;
   copyrightName?: string;
+  socialLinks?: { label: string; url: string }[];
+  email?: string;
 }) {
   const { footerGroups } = resolveSiteNavigation(navigationLinks);
   const availableLinks = footerGroups.flatMap(group => group.links);
@@ -35,6 +38,7 @@ export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().foote
               <span>PandaByte.in</span>
             </Link>
             <p className="pb-site-footer__tagline">{tagline}</p>
+            <SocialLinks links={socialLinks} email={email} />
           </div>
 
           {groups.map((group) => (

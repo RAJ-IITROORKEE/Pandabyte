@@ -4,7 +4,7 @@ The public layouts and current cart-review flow are implemented. The following c
 
 | Page | Provide or approve | Entry point |
 | --- | --- | --- |
-| About | Company display name, a short introduction, approved company story; team names/roles/bios/photos only if they should appear publicly. | Admin Pages: `about`; Admin Team |
+| About | Company name, mission/vision and both leadership names/roles are now owner-approved and published in development. Still needed: Swati's portrait and additional approved biography; confirm portrait reuse rights before launch. | Admin Pages: `about`; Admin Team |
 | Contact | Public support email, optional phone, office address, hours/timezone and approved social links. Confirm which contact channels the team actually monitors. | Admin Contact: `contact` |
 | Policies | Reviewed privacy, terms, shipping/returns/cancellation text reflecting actual operations. | Admin Pages: `privacy-policy`, `terms-and-conditions`, `shipping-and-returns` |
 | Blog | Real titles, article bodies, authors, topics and approved images/credits. The current three example cards are development-only layout previews. | Admin Blog |

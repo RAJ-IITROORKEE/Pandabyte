@@ -1,0 +1,7 @@
+# About team sources
+
+Checked 27 October 2026 for the development About page. The owner supplied the company name **PandaByte Innovations Pvt Ltd** and titles **Rahul Thakur, Founder & CEO** and **Swati Agrawal, Co-Founder & Director**.
+
+- [Rahul Thakur's personal website](https://www.rahulthakur.info/) identifies him as a PandaByte co-founder, an associate professor in IIT Roorkee's Computer Science and Engineering department, and founder and lead of its IoT Lab. Its page body says associate professor, although older metadata says assistant professor. The owner's Founder & CEO title is the approved site title. A concise sourced biography can say: “Rahul is an associate professor at IIT Roorkee, where he founded and leads the IoT Lab.”
+- `public/team/rahul-thakur.jpg` is the portrait displayed on that profile, fetched from [the profile's Wix image URL](https://static.wixstatic.com/media/3e946a_d71cbae3725445328f48cc8ebf8f5b50~mv2.jpg/v1/crop/x_0,y_262,w_1326,h_1726/fill/w_418,h_637,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/DSC05703_JPG.jpg). It is a local copy of the public profile image; public access alone does not establish a reuse license.
+- [Swati Agrawal's supplied LinkedIn URL](https://www.linkedin.com/in/swati-agrawal/) could not be retrieved with Firecrawl: the service returned a 403 stating person-profile enrichment is not enabled. No company affiliation, biography, or portrait was verified from that URL. Use the owner-supplied name and title only until a reliable source or owner-provided material is available.

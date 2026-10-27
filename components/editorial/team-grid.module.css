@@ -1,0 +1,13 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 20px; margin: 0; padding: 0; list-style: none; }
+.card { display: flex; min-width: 0; flex-direction: column; align-items: center; padding: 36px 28px; text-align: center; background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; transition: border-color 160ms ease, transform 160ms ease; }
+.card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.avatar { display: grid; width: 144px; height: 144px; place-items: center; overflow: hidden; color: var(--foreground); background: var(--status-soft); border: 1px solid var(--divider); border-radius: 50%; font-size: 36px; font-weight: 600; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.card h3 { margin: 24px 0 0; font-size: 21px; font-weight: 650; }
+.role { margin: 6px 0 0; color: var(--accent); font-weight: 600; }
+.bio { max-width: 35rem; margin: 16px 0 0; color: var(--muted); line-height: 1.65; }
+.links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: auto 0 0; padding: 20px 0 0; list-style: none; }
+.links a { display: inline-flex; min-height: 44px; align-items: center; gap: 7px; padding: 8px 12px; color: var(--foreground); border: 1px solid var(--divider); border-radius: 8px; font-size: 14px; text-decoration: none; }
+.links a:hover { border-color: var(--accent); }
+.links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
