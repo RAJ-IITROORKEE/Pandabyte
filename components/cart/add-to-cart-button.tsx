@@ -32,8 +32,12 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
   const [needsReview, setNeedsReview] = useState(false);
   const activeController = useRef<AbortController | null>(null);
   const compactAddRef = useRef<HTMLButtonElement>(null);
+  const compactViewRef = useRef<HTMLAnchorElement>(null);
+  const addFocusCandidate = useRef<HTMLButtonElement | null>(null);
+  const focusAfterAdd = useRef<HTMLButtonElement | null>(null);
   const removalStatusRef = useRef<HTMLSpanElement>(null);
-  const focusAfterRemoval = useRef(false);
+  const quantityFocusCandidate = useRef<HTMLButtonElement | null>(null);
+  const focusAfterRemoval = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => () => activeController.current?.abort(), []);
 
@@ -48,8 +52,10 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       setError(existing ? "This quantity would exceed the maximum of 99 per item." : "A cart can contain at most 50 different items.");
       return;
     }
+    focusAfterAdd.current = addFocusCandidate.current === document.activeElement ? addFocusCandidate.current : null;
     const result = saveGuestCart(nextItems, { items, revision: guest.revision });
     if (result.reason) {
+      focusAfterAdd.current = null;
       setError(result.reason === "changed"
         ? "Your guest cart changed in another tab. Open the cart to review the latest copy before adding items."
         : result.reason === "invalid"
@@ -75,6 +81,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       }
       updateAttempted = true;
       const updated = await replaceCustomerCart(cart.version, nextItems, controller.signal);
+      if (!controller.signal.aborted) focusAfterAdd.current = addFocusCandidate.current === document.activeElement ? addFocusCandidate.current : null;
       publishCustomerCart(userId!, updated);
       if (!controller.signal.aborted) {
         setAdded(true);
@@ -92,6 +99,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
   };
 
   const handleAdd = (checkout = false) => {
+    if (busy) return;
     if (checkout) {
       if (!available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
       if (!setBuyNowSelection([{ variantId, quantity }])) {
@@ -102,6 +110,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       return;
     }
     if (needsReview) return;
+    addFocusCandidate.current = compactAddRef.current === document.activeElement ? compactAddRef.current : null;
     setError("");
     setMessage("");
     setAdded(false);
@@ -120,15 +129,22 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
   const currentItems = userId ? (customer.userId === userId ? customer.cart?.items : undefined) : guest.items;
   const currentQuantity = currentItems?.find(item => item.variantId === variantId)?.quantity ?? 0;
   useEffect(() => {
+    if (focusAfterAdd.current && currentQuantity > 0) {
+      if (document.activeElement === document.body || document.activeElement === focusAfterAdd.current) compactViewRef.current?.focus();
+      focusAfterAdd.current = null;
+    }
     if (focusAfterRemoval.current && currentQuantity === 0 && !busy) {
-      const target = compactAddRef.current;
-      if (target && !target.disabled) target.focus();
-      else removalStatusRef.current?.focus();
-      focusAfterRemoval.current = false;
+      if (document.activeElement === document.body || document.activeElement === focusAfterRemoval.current) {
+        const target = compactAddRef.current;
+        if (target && !target.disabled) target.focus();
+        else removalStatusRef.current?.focus();
+      }
+      focusAfterRemoval.current = null;
     }
   }, [currentQuantity, busy]);
-  const changeCompactQuantity = async (delta: number) => {
+  const changeCompactQuantity = async (delta: number, button: HTMLButtonElement) => {
     if (!currentItems || busy || needsReview) return;
+    quantityFocusCandidate.current = document.activeElement === button ? button : null;
     setError("");
     setMessage("");
     setAdded(false);
@@ -136,9 +152,9 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
     const nextItems = nextQuantity === 0 ? removeCartItem(currentItems, variantId) : setCartItemQuantity(currentItems, variantId, nextQuantity);
     if (!nextItems) return;
     if (!userId) {
-      focusAfterRemoval.current = nextQuantity === 0;
+      focusAfterRemoval.current = nextQuantity === 0 && quantityFocusCandidate.current === document.activeElement ? quantityFocusCandidate.current : null;
       const result = saveGuestCart(nextItems, { items: currentItems, revision: guest.revision });
-      if (result.reason) { focusAfterRemoval.current = false; setError("Your guest cart changed or could not be verified. Open the cart to review it."); }
+      if (result.reason) { focusAfterRemoval.current = null; setError("Your guest cart changed or could not be verified. Open the cart to review it."); }
       else if (!result.persisted) setMessage("Updated for this page session. Browser storage is unavailable, so this cart may not persist.");
       return;
     }
@@ -149,7 +165,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
     setBusy(true);
     try {
       const updated = await replaceCustomerCart(cart.version, nextItems, controller.signal);
-      if (!controller.signal.aborted) { focusAfterRemoval.current = nextQuantity === 0; publishCustomerCart(userId, updated); }
+      if (!controller.signal.aborted) { focusAfterRemoval.current = nextQuantity === 0 && quantityFocusCandidate.current === document.activeElement ? quantityFocusCandidate.current : null; publishCustomerCart(userId, updated); }
     } catch (requestError) {
       if (!controller.signal.aborted) { setError(cartErrorMessage(requestError, "update")); setNeedsReview(true); }
     } finally {
@@ -159,7 +175,7 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
   };
 
   const validQuantity = Number.isInteger(quantity) && quantity >= 1 && quantity <= 99;
-  const disabled = !available || !validQuantity || busy || needsReview || (!userId && (!guest.ready || guest.invalidStoredCart));
+  const disabled = !available || !validQuantity || needsReview || (!userId && (!guest.ready || guest.invalidStoredCart));
   const initialNotice = !userId && guest.invalidStoredCart
     ? "Open your cart to review the unreadable saved guest copy before adding an item."
     : !userId && !guest.ready
@@ -169,10 +185,10 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
   const compactUnavailable = !!compactLabel && !!userId && (customer.userId !== userId || !customer.cart);
   return <div className={compactLabel ? styles.compactCart : styles.addToCart}>
     {compactLabel && currentQuantity > 0 ? <div className={styles.compactSelected}><div className={styles.compactQuantity} aria-label={`Cart quantity for ${compactLabel}`}>
-      <button type="button" onClick={() => void changeCompactQuantity(-1)} disabled={busy || needsReview} aria-label={`Remove one ${compactLabel} from cart`}><Minus size={16} aria-hidden="true" /></button>
+      <button type="button" onClick={event => void changeCompactQuantity(-1, event.currentTarget)} onBlur={() => { quantityFocusCandidate.current = null; }} disabled={needsReview} aria-disabled={busy ? true : undefined} aria-label={`Remove one ${compactLabel} from cart`}><Minus size={16} aria-hidden="true" /></button>
       <span aria-live="polite">{currentQuantity}</span>
-      <button type="button" onClick={() => void changeCompactQuantity(1)} disabled={busy || needsReview || !available || currentQuantity >= 99} aria-label={`Add one ${compactLabel} to cart`}><Plus size={16} aria-hidden="true" /></button>
-    </div><Link className={`${styles.compactButton} ${styles.compactActive}`} href="/cart" aria-label={`View cart: ${compactLabel}, quantity ${currentQuantity}`} title="View cart"><ShoppingCart aria-hidden="true" size={19} /></Link></div> : <button ref={compactLabel ? compactAddRef : undefined} className={compactLabel ? styles.compactButton : styles.addButton} type="button" onClick={() => handleAdd()} disabled={disabled || compactUnavailable} aria-label={compactLabel ? `${buttonText}: ${compactLabel}` : undefined} title={compactLabel ? buttonText : undefined}>
+      <button type="button" onClick={event => void changeCompactQuantity(1, event.currentTarget)} onBlur={() => { quantityFocusCandidate.current = null; }} disabled={needsReview || !available || currentQuantity >= 99} aria-disabled={busy ? true : undefined} aria-label={`Add one ${compactLabel} to cart`}><Plus size={16} aria-hidden="true" /></button>
+    </div><Link ref={compactViewRef} className={`${styles.compactButton} ${styles.compactActive}`} href="/cart" aria-label={`View cart: ${compactLabel}, quantity ${currentQuantity}`} title="View cart"><ShoppingCart aria-hidden="true" size={19} /></Link></div> : <button ref={compactLabel ? compactAddRef : undefined} className={compactLabel ? styles.compactButton : styles.addButton} type="button" onClick={() => handleAdd()} onBlur={() => { addFocusCandidate.current = null; }} disabled={disabled || compactUnavailable} aria-disabled={busy ? true : undefined} aria-label={compactLabel ? `${buttonText}: ${compactLabel}` : undefined} title={compactLabel ? buttonText : undefined}>
       <ShoppingCart aria-hidden="true" size={18} /> {buttonText}
     </button>}
     {compactLabel && currentQuantity === 0 && <span ref={removalStatusRef} tabIndex={-1} className={styles.srOnly}>Cart quantity is zero for {compactLabel}. {available ? "Use Add to cart to select this product." : "This product is currently unavailable."}</span>}

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { parsePublicVariant, type PublicVariant } from "@/lib/editorial/public-record";
 import { cardImageIds } from "@/components/catalog/card-image-selection";
@@ -13,11 +13,20 @@ import styles from "./favorites.module.css";
 export function FavoritesList() {
   const raw = useSyncExternalStore(subscribeFavorites, getFavoritesSnapshot, getFavoritesServerSnapshot);
   const items = parseFavorites(raw);
+  const section = useRef<HTMLElement>(null);
+  const removed = useRef<{ index: number; button: HTMLButtonElement } | null>(null);
+  useEffect(() => {
+    const pending = removed.current;
+    removed.current = null;
+    if (!pending || (document.activeElement !== document.body && document.activeElement !== pending.button)) return;
+    const buttons = section.current?.querySelectorAll<HTMLButtonElement>("[data-favorite-toggle]");
+    (buttons?.[Math.min(pending.index, buttons.length - 1)] ?? section.current)?.focus();
+  }, [raw]);
   if (!items) return <p role="alert">Favorites could not be read from this browser.</p>;
-  return <section aria-label="Favorites"><p>Favorites are saved only in this browser.</p>{items.length ? <ul className={styles.list}>{items.map((item) => <FavoriteItem key={item.productId} item={item} />)}</ul> : <p>No favorites saved yet. Browse the catalog and select a heart to save one.</p>}</section>;
+  return <section ref={section} tabIndex={-1} className={styles.region} aria-label="Saved favorites"><p>Favorites are saved only in this browser.</p>{items.length ? <ul className={styles.list}>{items.map((item, index) => <FavoriteItem key={item.productId} item={item} onRemoved={button => { removed.current = { index, button }; }} />)}</ul> : <p>No favorites saved yet. Browse the catalog and select a heart to save one.</p>}</section>;
 }
 
-function FavoriteItem({ item }: { item: Favorite }) {
+function FavoriteItem({ item, onRemoved }: { item: Favorite; onRemoved: (button: HTMLButtonElement) => void }) {
   const [result, setResult] = useState<{ title: string; slug: string; image?: string; variants: PublicVariant[] } | "unavailable" | "error" | null>(null);
   useEffect(() => {
     const controller = new AbortController();
@@ -43,6 +52,6 @@ function FavoriteItem({ item }: { item: Favorite }) {
       const eligible = variant.cartEligible === true || (variant.purchasable !== false && variant.availability === "available" && variant.effectivePricePaise !== null);
       return eligible ? <AddToCartButton variantId={variant.id} available compactLabel={result.title} /> : null;
     })() : result.variants.length > 1 ? <Link href={`/products/${encodeURIComponent(result.slug)}`}>Choose options</Link> : null)}
-    <FavoritesButton {...item} />
+    <FavoritesButton {...item} onRemoved={onRemoved} />
   </li>;
 }
