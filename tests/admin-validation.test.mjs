@@ -102,6 +102,25 @@ test("typed documents validate nested links and deterministic singleton slugs", 
   assert.equal(parseDocument("videos", { ...common, url: "https://youtu.be/AAAAAAAAAAA", productIds: [], position: 0 }).ok, true);
 });
 
+test("FAQ placements match the six unique SQL locations", () => {
+  const locations = ["home", "about", "contact", "help", "product", "solutions"];
+  const faq = (placements) => parseDocument("faqs", { ...common, answer: "Answer", topic: "Help", placements, position: 0 });
+
+  assert.equal(faq([]).ok, true);
+  assert.deepEqual(faq(locations).value?.placements, locations);
+  for (const placement of locations) assert.equal(faq([placement]).ok, true, placement);
+  for (const placements of [
+    ["home", "home"],
+    ["home", "unknown"],
+    ["home", 1],
+    [...locations, "home"],
+  ]) {
+    const result = faq(placements);
+    assert.equal(result.ok, false, JSON.stringify(placements));
+    if (!result.ok) assert.ok(result.fields.some((field) => field.field === "document.placements" || field.field.startsWith("document.placements.")));
+  }
+});
+
 test("lists and record mutations reject unbounded or unknown input", () => {
   assert.equal(parseListQuery(new URLSearchParams(`limit=${MAX_ADMIN_PAGE_SIZE + 1}`)).ok, false);
   assert.equal(parseListQuery(new URLSearchParams("limit=10&extra=1")).ok, false);

@@ -20,6 +20,7 @@ const fullDate = new Intl.DateTimeFormat(undefined, { dateStyle: "full", timeSty
 const TABLE_COPY = {
   pages: { title: "Pages", description: "Manage published site pages with structured content blocks.", singular: "page", plural: "pages", row: "Page", loading: "Loading pages…", error: "Pages could not be loaded. Try again.", empty: "Create the first page when approved content is ready." },
   blog: { title: "Blog", description: "Edit sourced editorial content and its publication status.", singular: "article", plural: "articles", row: "Article", loading: "Loading blog articles…", error: "Articles could not be loaded. Try again.", empty: "Create the first article when approved content is ready." },
+  faqs: { title: "FAQs", description: "Manage questions, answers and their publication status.", singular: "FAQ", plural: "FAQs", row: "Question", loading: "Loading FAQs…", error: "FAQs could not be loaded. Try again.", empty: "Create the first FAQ when approved content is ready." },
 } as const;
 
 type ContentTableStatus = (typeof STATUSES)[number];
@@ -78,7 +79,7 @@ function formatUpdated(value: string) {
 
 export function ContentTable({ module = "pages" }: { module?: ContentTableModule }) {
   const copy = TABLE_COPY[module];
-  const kind = module === "pages" ? "page" : "blog";
+  const kind = module === "pages" ? "page" : module === "blog" ? "blog" : "faq";
   const capabilities = useAdminCapabilities();
   const canEdit = capabilities.includes(ADMIN_MODULES[module].editCapability);
   const searchParams = useSearchParams();

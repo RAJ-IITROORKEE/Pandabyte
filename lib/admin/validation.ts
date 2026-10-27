@@ -78,6 +78,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDescription"] as const;
+const FAQ_PLACEMENTS = new Set(["home", "about", "contact", "help", "product", "solutions"]);
 
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
   products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "model3d", "sourceObservation", "sourceReview", "tags", "richContent", "documentMediaId"],
@@ -540,7 +541,10 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
   } else if (module === "faqs") {
     const answer = textValue(value, "answer", "document.answer", fields, 8000) ?? "";
     const topic = textValue(value, "topic", "document.topic", fields, 120) ?? "";
-    const placements = textArray(value.placements, "document.placements", fields, 30, 120);
+    const placements = textArray(value.placements, "document.placements", fields, 6, 120);
+    if (placements && (new Set(placements).size !== placements.length || placements.some((placement) => !FAQ_PLACEMENTS.has(placement)))) {
+      add(fields, "document.placements", "invalid", "Choose up to six distinct supported FAQ locations.");
+    }
     const position = parsePosition(value, fields);
     Object.assign(document, { answer, topic, placements, position });
   } else if (module === "team") {
