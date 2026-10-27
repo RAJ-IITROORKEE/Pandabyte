@@ -72,9 +72,9 @@ async function rpc(client, name, args) {
 
 function parseArguments() {
   const args = new Set(process.argv.slice(2));
-  ensure([...args].every((arg) => arg === "--keep-fixtures" || arg === "--cleanup"), "invalid_command_line");
-  ensure(!(args.has("--keep-fixtures") && args.has("--cleanup")), "invalid_command_line");
-  return { keepFixtures: args.has("--keep-fixtures"), cleanupOnly: args.has("--cleanup") };
+  ensure([...args].every((arg) => arg === "--keep-fixtures" || arg === "--cleanup" || arg === "--faq-only"), "invalid_command_line");
+  ensure(!(args.has("--keep-fixtures") && args.has("--cleanup")) && !(args.has("--faq-only") && (args.has("--keep-fixtures") || args.has("--cleanup"))), "invalid_command_line");
+  return { keepFixtures: args.has("--keep-fixtures"), cleanupOnly: args.has("--cleanup"), faqOnly: args.has("--faq-only") };
 }
 
 async function request(context, route, token, options = {}) {
@@ -163,14 +163,14 @@ async function ensureNoExistingFixtureFile() {
   }
 }
 
-async function grantFixtureCapabilities(context, state, auth) {
+async function grantFixtureCapabilities(context, state, auth, capabilities = fixtureCapabilities) {
   for (const capability of [...fixtureCapabilities, "staff.manage"]) {
     const customerCheck = await rpc(auth.customer.database, "has_capability", { capability_name: capability });
     const staffCheck = await rpc(auth.staff.database, "has_capability", { capability_name: capability });
     ensure(!customerCheck.error && customerCheck.data === false, `customer_pregranted_${capability}`);
     ensure(!staffCheck.error && staffCheck.data === false, `staff_pregranted_${capability}`);
   }
-  for (const capability of fixtureCapabilities) {
+  for (const capability of capabilities) {
     const result = await rpc(context.admin, "set_staff_capability", {
       target_user_id: state.staffUserId,
       capability_name: capability,
@@ -179,7 +179,7 @@ async function grantFixtureCapabilities(context, state, auth) {
     });
     ensure(!result.error, `fixture_capability_grant_${capability}_failed`);
   }
-  for (const capability of fixtureCapabilities) {
+  for (const capability of capabilities) {
     const result = await rpc(auth.staff.database, "has_capability", { capability_name: capability });
     ensure(!result.error && result.data === true, `fixture_capability_${capability}_missing`);
   }
@@ -593,17 +593,7 @@ async function createEditorialFixtures(context, state, auth, setup) {
   }));
   created.draftOnlyBlogTag = draftOnlyBlogTag;
 
-  const faq = await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq", {
-    answer: `HiddenAnswer${state.runId}`, topic: `alpha-${state.runId}`, placements: ["home", "help"], position: 1,
-  }));
-  created.faq = await transition(context, auth, "faqs", faq, "publish");
-  const secondFaq = await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq-second", {
-    answer: `PlainAnswer${state.runId}`, blocks: [], topic: `zeta-${state.runId}`, placements: ["help"], position: 2,
-  }));
-  created.secondFaq = await transition(context, auth, "faqs", secondFaq, "publish");
-  await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq-draft", {
-    answer: "Draft only", topic: `draft-${state.runId}`, placements: ["help"], position: 3,
-  }));
+  Object.assign(created, await createFaqFixtures(context, state, auth));
 
   const team = await createRecord(context, state, auth, "team", commonDocument(state.runId, "team-profile", {
     name: titleFor(state.runId, "team name"), role: "Disposable test profile", bio: `Phase3 ${state.runId} team bio.`,
@@ -648,6 +638,22 @@ async function createEditorialFixtures(context, state, auth, setup) {
   return created;
 }
 
+async function createFaqFixtures(context, state, auth) {
+  const faq = await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq", {
+    answer: `HiddenAnswer${state.runId}`, topic: `alpha-${state.runId}`, placements: ["home", "help"], position: 1,
+  }));
+  const publishedFaq = await transition(context, auth, "faqs", faq, "publish");
+  const secondFaq = await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq-second", {
+    answer: `PlainAnswer${state.runId}`, blocks: [], topic: `zeta-${state.runId}`, placements: ["help"], position: 2,
+  }));
+  const publishedSecondFaq = await transition(context, auth, "faqs", secondFaq, "publish");
+  await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq-draft", {
+    answer: "Draft only", topic: `draft-${state.runId}`, placements: ["help"], position: 3,
+  }));
+
+  return { faq: publishedFaq, secondFaq: publishedSecondFaq };
+}
+
 async function verifyFaqList(context, state, auth, editorial) {
   const anon = createClient({ baseUrl: context.baseUrl, anonKey: process.env.INSFORGE_ANON_KEY.trim(), fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) });
   const args = { p_query: state.runId, p_topic: "", p_placement: "help", p_limit: 1, p_offset: 0 };
@@ -668,6 +674,17 @@ async function verifyFaqList(context, state, auth, editorial) {
   ensure((await list({ p_query: `PlainAnswer${state.runId}` })).total === 1, "faq_list_plain_answer_search_invalid");
   await transition(context, auth, "faqs", editorial.secondFaq, "unpublish");
   ensure((await list({ p_topic: `zeta-${state.runId}` })).total === 0, "faq_list_withdrawn_visible");
+}
+
+async function verifyFaqPages(context, state, auth, editorial) {
+  const query = encodeURIComponent(`body ${state.runId} faq.`);
+  const published = await page(context, `/help?q=${query}`, "faq_search_page");
+  assertHtmlContains(published.html, titleFor(state.runId, "faq"), "faq_search_page_title_missing");
+  assertHtmlContains(published.html, `<p>Disposable Phase 4 body ${state.runId} faq.</p>`, "faq_formatted_body_not_rendered");
+  ensure(!published.html.includes(titleFor(state.runId, "faq-second")), "faq_search_page_unrelated_result");
+  await transition(context, auth, "faqs", editorial.faq, "unpublish");
+  const withdrawn = await page(context, `/help?q=${query}`, "faq_withdrawn_page");
+  ensure(!withdrawn.html.includes(titleFor(state.runId, "faq")), "faq_withdrawn_page_still_visible");
 }
 
 async function verifyBlogTopics(context, state, editorial) {
@@ -999,7 +1016,7 @@ async function cleanupStoredFixtures(context) {
   return state.users.length;
 }
 
-async function run(context, keepFixtures) {
+async function run(context, keepFixtures, faqOnly) {
   await ensureNoExistingFixtureFile();
   const state = { runId: randomUUID(), users: [], staffUserId: "", records: [], variants: [], media: [], storageKeys: [], inquiries: [] };
   let auth = null;
@@ -1021,59 +1038,68 @@ async function run(context, keepFixtures) {
 
     activePhase = "fixture_capabilities";
     console.log("Phase 4 storefront: fixture_capabilities.");
-    await grantFixtureCapabilities(context, state, auth);
+    await grantFixtureCapabilities(context, state, auth, faqOnly ? ["content.edit", "content.publish"] : fixtureCapabilities);
 
-    activePhase = "catalog_records_and_pricing";
-    console.log("Phase 4 storefront: catalog_records_and_pricing.");
-    const setup = await createProducts(context, state, auth);
+    if (faqOnly) {
+      activePhase = "faq_publication_and_withdrawal";
+      console.log("Phase 4 storefront: faq_publication_and_withdrawal.");
+      const editorial = await createFaqFixtures(context, state, auth);
+      await verifyFaqList(context, state, auth, editorial);
+      await verifyFaqPages(context, state, auth, editorial);
+      console.log("Phase 4 FAQ API and render assertions passed.");
+    } else {
+      activePhase = "catalog_records_and_pricing";
+      console.log("Phase 4 storefront: catalog_records_and_pricing.");
+      const setup = await createProducts(context, state, auth);
 
-    activePhase = "catalog_search_filters_and_sorting";
-    console.log("Phase 4 storefront: catalog_search_filters_and_sorting.");
-    await verifyCatalogQueries(context, state, auth, setup);
+      activePhase = "catalog_search_filters_and_sorting";
+      console.log("Phase 4 storefront: catalog_search_filters_and_sorting.");
+      await verifyCatalogQueries(context, state, auth, setup);
 
-    activePhase = "anonymous_boundaries";
-    console.log("Phase 4 storefront: anonymous_boundaries.");
-    await verifyAnonymousBoundaries(context, state, auth, setup);
+      activePhase = "anonymous_boundaries";
+      console.log("Phase 4 storefront: anonymous_boundaries.");
+      await verifyAnonymousBoundaries(context, state, auth, setup);
 
-    activePhase = "editorial_publication";
-    console.log("Phase 4 storefront: editorial_publication.");
-    const editorial = await createEditorialFixtures(context, state, auth, setup);
+      activePhase = "editorial_publication";
+      console.log("Phase 4 storefront: editorial_publication.");
+      const editorial = await createEditorialFixtures(context, state, auth, setup);
 
-    activePhase = "published_faq_list";
-    await verifyFaqList(context, state, auth, editorial);
+      activePhase = "published_faq_list";
+      await verifyFaqList(context, state, auth, editorial);
 
-    activePhase = "published_blog_topics";
-    console.log("Phase 4 storefront: published_blog_topics.");
-    await verifyBlogTopics(context, state, editorial);
+      activePhase = "published_blog_topics";
+      console.log("Phase 4 storefront: published_blog_topics.");
+      await verifyBlogTopics(context, state, editorial);
 
-    activePhase = "product_gallery_media";
-    console.log("Phase 4 storefront: product_gallery_media.");
-    await createProductGalleryMedia(context, state, auth, setup);
+      activePhase = "product_gallery_media";
+      console.log("Phase 4 storefront: product_gallery_media.");
+      await createProductGalleryMedia(context, state, auth, setup);
 
-    activePhase = "storefront_pages_and_metadata";
-    console.log("Phase 4 storefront: storefront_pages_and_metadata.");
-    await verifyStorefrontPages(context, state, setup, editorial, null);
+      activePhase = "storefront_pages_and_metadata";
+      console.log("Phase 4 storefront: storefront_pages_and_metadata.");
+      await verifyStorefrontPages(context, state, setup, editorial, null);
 
-    activePhase = "draft_and_republish";
-    console.log("Phase 4 storefront: draft_and_republish.");
-    const slugChange = await verifyDraftAndRepublish(context, state, auth, setup);
+      activePhase = "draft_and_republish";
+      console.log("Phase 4 storefront: draft_and_republish.");
+      const slugChange = await verifyDraftAndRepublish(context, state, auth, setup);
 
-    activePhase = "contact_inquiry_flow";
-    console.log("Phase 4 storefront: contact_inquiry_flow.");
-    await verifyInquiryFlow(context, state, auth);
+      activePhase = "contact_inquiry_flow";
+      console.log("Phase 4 storefront: contact_inquiry_flow.");
+      await verifyInquiryFlow(context, state, auth);
 
-    activePhase = "published_sitemap";
-    console.log("Phase 4 storefront: published_sitemap.");
-    const anonKey = process.env.INSFORGE_ANON_KEY?.trim();
-    ensure(Boolean(anonKey), "insforge_anon_key_unavailable");
-    const anon = createClient({ baseUrl: context.baseUrl, anonKey, fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) });
-    await verifySitemap(context, anon, state, setup, editorial, slugChange);
+      activePhase = "published_sitemap";
+      console.log("Phase 4 storefront: published_sitemap.");
+      const anonKey = process.env.INSFORGE_ANON_KEY?.trim();
+      ensure(Boolean(anonKey), "insforge_anon_key_unavailable");
+      const anon = createClient({ baseUrl: context.baseUrl, anonKey, fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) });
+      await verifySitemap(context, anon, state, setup, editorial, slugChange);
 
-    const customerAccess = await request(context, "/api/admin/pricing?limit=1", auth.customer.appToken);
-    ensure(customerAccess.status === 403, "customer_pricing_access_allowed");
-    const inventoryCustomer = await request(context, "/api/admin/inventory?limit=1", auth.customer.appToken);
-    ensure(inventoryCustomer.status === 403, "customer_inventory_access_allowed");
-    console.log("Phase 4 storefront API and render assertions passed.");
+      const customerAccess = await request(context, "/api/admin/pricing?limit=1", auth.customer.appToken);
+      ensure(customerAccess.status === 403, "customer_pricing_access_allowed");
+      const inventoryCustomer = await request(context, "/api/admin/inventory?limit=1", auth.customer.appToken);
+      ensure(inventoryCustomer.status === 403, "customer_inventory_access_allowed");
+      console.log("Phase 4 storefront API and render assertions passed.");
+    }
   } catch (error) {
     console.error(`Phase 4 sanitized failure location: ${safeFailureLocation(error)}.`);
     primaryFailure = error instanceof HarnessFailure ? error : new HarnessFailure(`${activePhase}_failed`);
@@ -1137,7 +1163,7 @@ async function main() {
     return;
   }
   try {
-    await run(context, args.keepFixtures);
+    await run(context, args.keepFixtures, args.faqOnly);
   } catch (error) {
     console.error(`Phase 4 storefront integration harness failed safely: ${error instanceof HarnessFailure ? error.label : "phase4_integration_failed"}.`);
     process.exitCode = 1;

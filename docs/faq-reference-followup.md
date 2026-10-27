@@ -17,3 +17,9 @@ Nine focused tests, targeted lint and TypeScript passed. Live anonymous RPC chec
 ## Browser follow-up
 
 The in-app browser became available again on 27 October. On the development site, the Help FAQ accordion opened by click and keyboard Enter, search returned matching questions and answer text, combined search and topic filters preserved both values, and the no-match state appeared. The Help page had no horizontal document overflow at viewport widths 320, 768, 1024 and 1440 pixels; the 320-pixel layout was visually inspected. The About mission and vision were also visually inspected. These checks do not establish screen-reader speech, actual browser zoom or runtime reduced-motion behavior. The formatted-answer publication and withdrawal fixture assertions remain unrun; no CMS content was changed for these checks.
+
+## End-to-end follow-up — 28 October 2026
+
+The FAQ-only Phase 4 harness ran against the development site with disposable records and temporary fixture identities. Admin API publication, anonymous formatted-answer projection and search, plain-answer fallback, topic filtering, draft exclusion, pagination and withdrawal assertions passed. The rendered Help response included the formatted answer and excluded it after withdrawal. The browser showed the published disposable answer via keyboard Enter and showed the no-match state after withdrawal and reload. The harness reported that all verified fixtures were removed. Targeted ESLint and JavaScript syntax checks passed.
+
+The browser accessibility tree exposed named search, topic and disclosure controls and the expanded state. Actual browser zoom could not be confirmed: simulated zoom shortcuts did not change the observed device pixel ratio or viewport in the available browser session. Reduced-motion runtime switching and screen-reader speech were not tested; those remain manual accessibility gates.
