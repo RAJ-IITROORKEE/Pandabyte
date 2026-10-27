@@ -18,6 +18,21 @@ import {
 const uuid = "d9428888-122b-11e1-b85c-61cd3cbb3210";
 const common = { title: "A title", slug: "a-title", summary: "", blocks: [], seoTitle: "", seoDescription: "" };
 
+test("team writes require a public name while historical records remain readable", () => {
+  const team = { ...common, name: "", role: "", bio: "", mediaIds: [], links: [], position: 0 };
+  for (const name of ["", "   ", "\u00a0\u2003"]) {
+    const document = { ...team, name };
+    assert.equal(parseDocument("team", document).ok, true);
+    for (const result of [parseCreateInput("team", { document }), parseUpdateInput("team", { document, expectedVersion: 1 })]) {
+      assert.equal(result.ok, false);
+      if (!result.ok) assert.ok(result.fields.some((field) => field.field === "document.name" && field.code === "required"));
+    }
+  }
+  const valid = parseCreateInput("team", { document: { ...team, name: "  Sample person  " } });
+  assert.equal(valid.ok, true);
+  if (valid.ok) assert.equal(valid.value.document.name, "Sample person");
+});
+
 test("page writes reject built-in routes without breaking historical reads or CMS-backed pages", () => {
   for (const slug of ["products", "shop", "blog", "solutions", "learn", "contact", "agent", "account", "admin", "staff", "sign-in", "sign-up", "api", "admin-preview", "cart", "checkout", "help-center", "admin-login"]) {
     const document = { ...common, slug };

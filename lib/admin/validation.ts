@@ -602,6 +602,7 @@ export function parseCreateInput(module: AdminModule, value: unknown): Validatio
   const document = parseDocument(module, value.document);
   if (!document.ok) fields.push(...document.fields);
   else if (module === "pages" && RESERVED_PAGE_SLUGS.has(document.value.slug)) add(fields, "document.slug", "invalid", "This slug is reserved for a built-in route. Choose another slug.");
+  else if (module === "team" && "name" in document.value && !document.value.name) add(fields, "document.name", "required", "Enter the public team member name.");
   return fields.length || !document.ok ? { ok: false, fields } : { ok: true, value: { document: document.value } };
 }
 
@@ -613,6 +614,7 @@ export function parseUpdateInput(module: AdminModule, value: unknown): Validatio
   const document = parseDocument(module, value.document);
   if (!document.ok) fields.push(...document.fields);
   else if (module === "pages" && RESERVED_PAGE_SLUGS.has(document.value.slug)) add(fields, "document.slug", "invalid", "This slug is reserved for a built-in route. Choose another slug.");
+  else if (module === "team" && "name" in document.value && !document.value.name) add(fields, "document.name", "required", "Enter the public team member name.");
   return fields.length || expectedVersion === undefined || !document.ok
     ? { ok: false, fields }
     : { ok: true, value: { expectedVersion, document: document.value } };
