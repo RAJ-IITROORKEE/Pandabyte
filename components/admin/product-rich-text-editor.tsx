@@ -189,6 +189,7 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [editorError, setEditorError] = useState("");
+  const [articleTheme, setArticleTheme] = useState<"light" | "dark">("light");
   const [revision, setRevision] = useState(0);
   const invalidContent = useRef(false);
   const lastSyncedValue = useRef(JSON.stringify(value));
@@ -285,8 +286,8 @@ export function ProductRichTextEditor({ value, onChange, onValidityChange, onUpl
 
   if (!editor) return <section className={`${styles.panel} ${editorStyles.panel}`} aria-label={descriptionLabel}><p className={styles.loadingState} role="status">Loading description editor…</p></section>;
 
-  return <section className={`${styles.panel} ${editorStyles.panel}`} aria-label={descriptionLabel}>
-    <div className={styles.sectionHeading}><div><h2>{descriptionLabel}</h2><p>Format the description and add managed images, tables, and code samples.</p></div></div>
+  return <section className={`${styles.panel} ${editorStyles.panel} ${kind === "article" ? editorStyles.articleEditor : ""}`} data-editor-theme={kind === "article" ? articleTheme : undefined} aria-label={descriptionLabel}>
+    <div className={styles.sectionHeading}><div><h2>{descriptionLabel}</h2><p>Format the description and add managed images, tables, and code samples.</p></div>{kind === "article" && <label className={editorStyles.themeControl}>Editor theme <select aria-label="Editor theme" value={articleTheme} onChange={(event) => setArticleTheme(event.target.value as "light" | "dark")}><option value="light">Light</option><option value="dark">Dark</option></select></label>}</div>
     <div aria-label={`${descriptionLabel} formatting`} className={editorStyles.toolbar} role="group">
       <select aria-label="Block style" className={styles.input} defaultValue="paragraph" onChange={(event) => {
         if (event.target.value === "paragraph") editor.chain().focus().setParagraph().run();
