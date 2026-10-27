@@ -145,6 +145,7 @@ export default async function HomePage() {
             <div>
               <h2 id="faq-title">Frequently asked questions</h2>
             </div>
+            <Link href="/help" className={sections.sectionLink}>View all FAQs <ArrowRight aria-hidden="true" /></Link>
           </div>
           {faqs.items.length ? <FaqList items={faqs.items} /> : (
             <EmptyState title="No frequently asked questions are published yet">

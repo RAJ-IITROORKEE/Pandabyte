@@ -618,7 +618,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     <section className={styles.panel}>
       <div className={styles.sectionHeading}><div><h2>Record details</h2><p>Use confirmed, owner-approved content.</p></div></div>
       <div className={styles.formGrid}>
-        <Field label={module === "team" ? "Admin title" : "Title"} hint={module === "team" ? "Internal Admin label and list search text. The public About profile displays the Name field." : undefined}><TextInput value={str("title")} onChange={(value) => { if ((module === "products" || module === "categories") && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
+        <Field label={module === "team" ? "Admin title" : module === "faqs" ? "Question" : "Title"} hint={module === "team" ? "Internal Admin label and list search text. The public About profile displays the Name field." : undefined}><TextInput value={str("title")} onChange={(value) => { if ((module === "products" || module === "categories") && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
         <Field label={fixedSlug ? "Fixed slug (required)" : "Slug"} hint={fixedSlug ? `This singleton requires the fixed slug “${fixedSlug}”.` : module === "products" || module === "categories" ? slugAuto ? "Generated from the title until you edit it." : "Manual slug override." : "Lowercase letters, numbers, and hyphens."}><TextInput value={str("slug")} onChange={(value) => { set("slug", value); if (module === "products" || module === "categories") setSlugAuto(false); }} maxLength={160} /></Field>
         {module !== "products" && <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>}
         {module === "pages" && <p className={`${styles.fieldHint} ${styles.spanTwo}`}>Proposed route: <code>{str("slug") === "home" ? "/" : str("slug") ? `/${str("slug")}` : "/your-page-slug"}</code>. Saving keeps the current live page unchanged. Existing application routes can take precedence over a published page.</p>}
@@ -697,7 +697,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     {module === "faqs" && <section className={styles.panel}>
       <div className={styles.sectionHeading}><div><h2>FAQ details</h2><p>Choose where this answer should appear and which answer format to use.</p></div></div>
       <div className={styles.formGrid}>
-        <Field label="Topic"><TextInput value={str("topic")} onChange={(value) => set("topic", value)} /></Field>
+        <Field label="Topic / category"><TextInput value={str("topic")} onChange={(value) => set("topic", value)} /></Field>
         <Field label="Position" hint="Lower numbers appear first. Use 0 for the first FAQ."><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field>
         <fieldset className={`${styles.field} ${styles.spanTwo}`} style={{ border: 0, margin: 0, padding: 0 }} aria-describedby="faq-placement-hint">
           <legend className={styles.fieldLabel}>Placements</legend>

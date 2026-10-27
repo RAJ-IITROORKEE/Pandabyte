@@ -1,0 +1,7 @@
+# FAQ reference follow-up — 27 October 2026
+
+The owner requested that the FAQ section, full FAQ page and FAQ Admin CRUD in `unfiltered_iitians` be reviewed and integrated. Its category filters, search and homepage link informed this adaptation. No other project's data, API, dependencies or destructive deletion semantics were imported.
+
+The homepage links to Help. Help searches published FAQ titles, summaries, plain answers and topics using the existing bounded server query. Topic filtering applies only to the current page and is clearly labeled; changing pages clears the topic filter while retaining the search query. Empty filters and unpublished content have honest states. FAQ disclosures retain native keyboard behavior. In the existing FAQ editor, the title and topic labels now read Question and Topic / category; the underlying versioned draft, publication, archive, authorization and placement controls are unchanged.
+
+Verification: seven focused FAQ/query/access tests, targeted ESLint and TypeScript passed. Local HTTP responses confirmed the Help search form, an empty search state, and homepage FAQ link. The in-app browser reported local browser use disabled again, so rendered interaction, mobile, and keyboard verification were not repeated. Existing generic list projections omit formatted blocks, and the search does not inspect formatted answer blocks; this is a pre-existing limitation that needs a separate solution before claiming rich-answer search or display. No CMS records were changed for this review.
