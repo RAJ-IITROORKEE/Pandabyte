@@ -29,7 +29,8 @@ function harness() {
     "lucide-react": Object.fromEntries(["ArrowLeft", "ArrowRight", "CreditCard", "Package", "ShoppingBag", "Truck", "User"].map(name => [name, "svg"])),
     "./checkout-validation": validation, "./checkout-draft": drafts,
     "./checkout-money": { includedDiscount: () => 0, formatPaise: value => `₹${value / 100}` },
-    "./cart-api": {}, "./buy-now-store": {},
+    "@/lib/checkout/validation": {}, "./simulation-pending": {},
+    "./cart-api": {}, "./buy-now-store": {}, "./customer-cart-store": {},
     "@/components/catalog/card-image-selection": {}, "./checkout-review.module.css": { default: {} },
   };
   runInNewContext(compiled, {

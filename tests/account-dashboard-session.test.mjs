@@ -20,12 +20,13 @@ function dashboardHarness() {
     "@clerk/nextjs": { useUser: () => identity, useClerk: () => ({ signOut() {} }), UserAvatar: () => null },
     "next/link": { default: ({ children, ...props }) => createElement("a", props, children) },
     "lucide-react": Object.fromEntries(["CreditCard", "FolderLock", "Heart", "LayoutDashboard", "LogOut", "MapPin", "Package", "Settings", "UserRound"].map(name => [name, () => createElement("svg")])),
-    react: { Suspense, useState: value => [value, () => {}], useSyncExternalStore: () => "" },
+    react: { Suspense, useEffect: () => {}, useState: value => [value, () => {}], useSyncExternalStore: () => "" },
     "@/components/account-profile": { AccountProfile: privateSection("profile") },
     "@/components/account-addresses": { AccountAddresses: privateSection("addresses") },
     "@/components/account-files": { AccountFiles: privateSection("files") },
     "@/components/favorites/favorites-list": { FavoritesList: () => null },
-    "@/components/favorites/favorites-store": { getFavoritesSnapshot: () => "[]", getFavoritesServerSnapshot: () => "[]", subscribeFavorites: () => () => {}, parseFavorites: () => [] },
+    "@/components/favorites/use-favorites": { useFavorites: () => ({ items: [], account: true }) },
+    "@/components/account-orders": { useAccountOrders: id => ({ orders: id ? { total: 1, owner: id } : null, error: "" }), AccountOrders: ({ data }) => createElement("p", { "data-private-section": "orders" }, data.orders?.owner) },
     "@/components/account-dashboard.module.css": { default: {} },
   };
   runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name) });
@@ -47,8 +48,9 @@ test("active-user changes replace the keyed subtree containing every private sec
   const first = dashboard.render();
   assert.equal(first.key, "a");
   const firstHtml = renderToStaticMarkup(first);
-  for (const section of ["profile", "addresses", "files"]) assert.match(firstHtml, new RegExp(`data-private-section="${section}"`));
+  for (const section of ["profile", "addresses", "files", "orders"]) assert.match(firstHtml, new RegExp(`data-private-section="${section}"`));
   assert.match(firstHtml, /Customer a/);
+  assert.match(firstHtml, /data-private-section="orders">a/);
 
   dashboard.identity({ isLoaded: true, user: customer("b") });
   const next = dashboard.render();
@@ -56,6 +58,7 @@ test("active-user changes replace the keyed subtree containing every private sec
   assert.notEqual(next.key, first.key);
   const nextHtml = renderToStaticMarkup(next);
   assert.match(nextHtml, /Customer b/);
-  assert.doesNotMatch(nextHtml, /Customer a|a@example\.test/);
-  for (const section of ["profile", "addresses", "files"]) assert.match(nextHtml, new RegExp(`data-private-section="${section}"`));
+  assert.doesNotMatch(nextHtml, /Customer a|a@example\.test|data-private-section="orders">a/);
+  assert.match(nextHtml, /data-private-section="orders">b/);
+  for (const section of ["profile", "addresses", "files", "orders"]) assert.match(nextHtml, new RegExp(`data-private-section="${section}"`));
 });

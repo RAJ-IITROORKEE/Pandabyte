@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-28",
+  "scope": "Development-only simulated checkout, customer/Admin order synchronization and persistent favorites; storefront design preserved",
+  "migrationsApplied": ["20261028110000_order-simulation.sql", "20261028110001_favorites.sql", "20261028110002_simulation-capability-bounds.sql"],
+  "checks": {
+    "unit": { "passed": 256, "failed": 0 },
+    "media": { "passed": 4, "failed": 0 },
+    "typescript": "passed",
+    "scopedEslint": "passed",
+    "isolatedProductionBuild": "passed",
+    "disposableIntegration": "passed twice; final run includes favorites expected-account consistency guards",
+    "integrationCoverage": ["server price and price-change rollback", "idempotent replay and changed-key-payload conflict", "concurrent and insufficient fictional stock", "Buy Now preserves saved cart", "cart version and partial purchased-line removal", "customer order isolation", "Admin access, stale versions and invalid transitions", "cancellation restores fictional stock once", "favorites persistence, version conflict, RLS and active-account header guard"],
+    "browser": ["signed-in Buy Now four-step flow", "explicit simulated total and confirmation", "matching customer and Admin snapshots", "Admin Processing status and test shipment visible in customer history", "new Admin detail responsive checks at 320/768/1024/1440 CSS pixels", "light and dark new Admin detail", "clean normal-preview Orders after fixture removal"],
+    "normalPreviewGates": "capabilities false; real payment and simulate POST return 503"
+  },
+  "cleanup": {
+    "disposableIntegrationUsersAndGrants": "removed",
+    "testOrdersAndScopedAuditEvents": "removed",
+    "browserOrder": "removed",
+    "simulationActorAndStockTables": "verified empty",
+    "fixtureJournals": "removed",
+    "ownerSessionAndCart": "preserved; browser cart stayed at 10 items",
+    "existingBrowserFavorites": "merged into the owner account as authorized functional synchronization"
+  },
+  "limits": ["No Razorpay capture, provider signature/event or refund verification; test/live configuration is absent", "Operational stock, GST/HSN and shipping remain unapproved; no real reservations", "No automatic pending-simulation reconciliation after full reload; new submissions fail closed", "No production deployment, live email, billing, load or recovery operations", "No physical-device, actual zoom, screen-reader speech or runtime reduced-motion certification"],
+  "privateScreenshots": ".bootstrap/verification/checkout-admin-simulation.png"
+}

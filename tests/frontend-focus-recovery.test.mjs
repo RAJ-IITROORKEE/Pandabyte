@@ -84,6 +84,8 @@ function favoritesHarness(initial = favorites) {
     localStorage: { getItem: () => raw, setItem(_key, value) { if (!persist) throw new Error("Storage unavailable"); raw = value; } },
     window: { dispatchEvent() {} }, Event,
   });
+  const frames = [];
+  const useFavorites = () => ({ items: store.parseFavorites(raw), account: false, loading: false, error: null, toggle: async item => store.toggleFavorite(item) });
   const instances = new Map();
   const react = {
     useSyncExternalStore: (_subscribe, snapshot) => snapshot(),
@@ -100,14 +102,14 @@ function favoritesHarness(initial = favorites) {
     },
   };
   const { FavoritesButton } = loadComponent("favorites/favorites-button.tsx", {
-    react, "./favorites-store": store, "lucide-react": { Heart: "heart-icon" }, "./favorites.module.css": { default: {} },
+    react, "./use-favorites": { useFavorites }, "lucide-react": { Heart: "heart-icon" }, "./favorites.module.css": { default: {} },
   }, { document });
   const { FavoritesList } = loadComponent("favorites/favorites-list.tsx", {
-    react, "./favorites-store": store, "./favorites-button": { FavoritesButton },
+    react, "./use-favorites": { useFavorites }, "./favorites-button": { FavoritesButton },
     "next/image": { default: "img" }, "next/link": { default: "a" },
     "@/components/cart/add-to-cart-button": {}, "@/lib/editorial/public-record": {},
     "@/components/catalog/card-image-selection": {}, "./favorites.module.css": { default: {} },
-  }, { document });
+  }, { document, requestAnimationFrame: callback => frames.push(callback) });
   function run(key, component, props) {
     const instance = instances.get(key) ?? { hooks: [] };
     instances.set(key, instance);
@@ -130,6 +132,7 @@ function favoritesHarness(initial = favorites) {
     if ([...controls.values()].some(control => control.target === document.activeElement && ![...next.values()].some(value => value.target === control.target))) document.activeElement = body;
     controls = next;
     effects.forEach(effect => effect());
+    frames.splice(0).forEach(frame => frame());
     return tree;
   }
   render();
@@ -138,7 +141,7 @@ function favoritesHarness(initial = favorites) {
     remove(index, { focus = true } = {}) {
       const control = [...controls.values()][index];
       if (focus) document.activeElement = control.target;
-      control.button.props.onClick({ currentTarget: control.target });
+      return control.button.props.onClick({ currentTarget: control.target });
     },
     failStorage() { persist = false; },
     replace(items) { raw = JSON.stringify(items); },
@@ -147,17 +150,17 @@ function favoritesHarness(initial = favorites) {
   };
 }
 
-for (const [index, expected] of [[0, "board-b"], [1, "board-c"], [2, "board-b"]]) test(`removing favorite ${index + 1} focuses its successor or final neighbor`, () => {
+for (const [index, expected] of [[0, "board-b"], [1, "board-c"], [2, "board-b"]]) test(`removing favorite ${index + 1} focuses its successor or final neighbor`, async () => {
   const list = favoritesHarness();
-  list.remove(index);
+  await list.remove(index);
   list.render();
   assert.equal(list.focused(), expected);
   assert.equal(list.items().length, 2);
 });
 
-test("removing the only favorite focuses the remaining empty region", () => {
+test("removing the only favorite focuses the remaining empty region", async () => {
   const list = favoritesHarness([favorites[0]]);
-  list.remove(0);
+  await list.remove(0);
   const tree = list.render();
   assert.equal(list.focused(), "section");
   assert.equal(tree.props.tabIndex, -1);
@@ -165,10 +168,10 @@ test("removing the only favorite focuses the remaining empty region", () => {
   assert.equal(list.items().length, 0);
 });
 
-test("failed favorite persistence leaves focus and stored entries alone", () => {
+test("failed favorite persistence leaves focus and stored entries alone", async () => {
   const list = favoritesHarness();
   list.failStorage();
-  list.remove(0);
+  await list.remove(0);
   list.render();
   assert.equal(list.focused(), "");
   assert.equal(list.items().length, 3);
@@ -177,19 +180,19 @@ test("failed favorite persistence leaves focus and stored entries alone", () => 
   assert.equal(list.focused(), "", "failed removal must not leave pending focus for a later storage update");
 });
 
-test("unrelated favorites updates and unfocused removals do not take focus", () => {
+test("unrelated favorites updates and unfocused removals do not take focus", async () => {
   const list = favoritesHarness();
   list.replace(favorites.slice(1));
   list.render();
   assert.equal(list.focused(), "");
-  list.remove(0, { focus: false });
+  await list.remove(0, { focus: false });
   list.render();
   assert.equal(list.focused(), "");
 });
 
-test("favorite removal respects focus moved elsewhere before the update commits", () => {
+test("favorite removal respects focus moved elsewhere before the update commits", async () => {
   const list = favoritesHarness();
-  list.remove(0);
+  await list.remove(0);
   list.moveFocusElsewhere();
   list.render();
   assert.equal(list.focused(), "");

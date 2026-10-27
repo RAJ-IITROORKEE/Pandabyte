@@ -41,3 +41,9 @@ export function toggleFavorite(item: Favorite): boolean {
     return true;
   } catch { return false; }
 }
+
+export function mergeFavoriteIds(account: { productId: string }[], guest: Favorite[]): string[] | null {
+  const ids = account.map(item => item.productId);
+  for (const item of guest) if (!ids.includes(item.productId.toLowerCase())) ids.push(item.productId.toLowerCase());
+  return ids.length <= 50 ? ids : null;
+}

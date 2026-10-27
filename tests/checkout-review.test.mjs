@@ -34,19 +34,23 @@ function checkoutHarness() {
     },
     "./buy-now-store": { clearBuyNowSelection() {}, getBuyNowSelection() {}, getBuyNowServerSnapshot() {}, subscribeBuyNowSelection() {} },
     "./checkout-validation": { emptyAddress: () => ({}), validateStep: () => ({}) },
+    "@/lib/checkout/validation": {}, "./simulation-pending": {},
+    "./customer-cart-store": { publishCustomerCart() {} },
     "./cart-api": { loadCustomerCart: signal => { signals.push(signal); return Promise.resolve(null); }, cartErrorMessage: () => "Unable to load" },
     "./checkout-review.module.css": { default: {} },
   };
-  runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController });
+  runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController, fetch: () => Promise.reject(new Error("offline")) });
   return {
     effects,
     signals,
     identity: value => { identity = value; },
-    wrapper: () => exports.CheckoutReview({}),
+    wrapper: () => { states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }]; stateIndex = 0; return exports.CheckoutReview({}); },
     renderSession: cart => {
-      states = [cart?.quote ?? null, "", 0];
+      states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }];
       stateIndex = 0;
       const session = exports.CheckoutReview({});
+      states = [cart?.quote ?? null];
+      stateIndex = 0;
       return renderToStaticMarkup(createElement(session.type, session.props));
     },
   };
@@ -99,10 +103,10 @@ test("a populated quote displays server amounts and item issues while payment st
 test("discarding a checkout session aborts its pending private cart read", async () => {
   const review = checkoutHarness();
   assert.match(review.renderSession(null), /Loading your checkout review/);
-  const cleanup = review.effects.map(effect => effect()).find(value => typeof value === "function");
+  const cleanups = review.effects.map(effect => effect()).filter(value => typeof value === "function");
   assert.equal(review.signals.length, 1);
   assert.equal(review.signals[0].aborted, false);
-  cleanup();
+  cleanups.forEach(cleanup => cleanup());
   assert.equal(review.signals[0].aborted, true);
   await Promise.resolve();
 });

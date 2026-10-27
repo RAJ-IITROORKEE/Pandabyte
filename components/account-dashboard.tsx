@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { CreditCard, FolderLock, Heart, LayoutDashboard, LogOut, MapPin, Package, Settings, UserRound } from "lucide-react";
@@ -8,7 +8,8 @@ import { AccountProfile } from "@/components/account-profile";
 import { AccountFiles } from "@/components/account-files";
 import { AccountAddresses } from "@/components/account-addresses";
 import { FavoritesList } from "@/components/favorites/favorites-list";
-import { getFavoritesSnapshot, getFavoritesServerSnapshot, subscribeFavorites, parseFavorites } from "@/components/favorites/favorites-store";
+import { useFavorites } from "@/components/favorites/use-favorites";
+import { AccountOrders, useAccountOrders } from "@/components/account-orders";
 import styles from "@/components/account-dashboard.module.css";
 
 const sections = [
@@ -31,9 +32,13 @@ export function AccountDashboard() {
   const { signOut } = useClerk();
   const [signOutError, setSignOutError] = useState("");
   const hash = useSyncExternalStore(subscribeToHash, () => window.location.hash.slice(1), () => "");
-  const saved = useSyncExternalStore(subscribeFavorites, getFavoritesSnapshot, getFavoritesServerSnapshot);
-  const favoriteCount = parseFavorites(saved)?.length;
+  const favorites = useFavorites();
+  const favoriteCount = favorites.items?.length;
+  const orderData = useAccountOrders(user?.id);
   const activeSection = sections.some((section) => section.id === hash) ? hash : "overview";
+  useEffect(() => {
+    if (isLoaded && user && sections.some(section => section.id === hash)) document.getElementById(hash)?.scrollIntoView({ block: "start" });
+  }, [hash, isLoaded, user]);
 
   async function handleSignOut() {
     setSignOutError("");
@@ -81,9 +86,9 @@ export function AccountDashboard() {
         </header>
 
         <div className={styles.shortcuts}>
-          <a href="#favorites"><Heart aria-hidden="true" size={20} /><strong>{favoriteCount === undefined ? "Favorites unavailable" : `${favoriteCount} saved products`}</strong><span>Saved in this browser</span></a>
+          <a href="#favorites"><Heart aria-hidden="true" size={20} /><strong>{favoriteCount === undefined ? "Favorites unavailable" : `${favoriteCount} saved products`}</strong><span>{favorites.account ? "Saved to your account" : "Saved in this browser"}</span></a>
           <a href="#addresses"><MapPin aria-hidden="true" size={20} /><strong>Address book</strong><span>Manage delivery and billing addresses</span></a>
-          <a href="#orders"><Package aria-hidden="true" size={20} /><strong>Order activity</strong><span>Order history is not available yet</span></a>
+          <a href="#orders"><Package aria-hidden="true" size={20} /><strong>{orderData.orders ? `${orderData.orders.total} orders` : "Order activity"}</strong><span>{orderData.error ? "Orders unavailable" : "View order history"}</span></a>
         </div>
 
         <section id="profile" aria-label="Profile">
@@ -93,12 +98,12 @@ export function AccountDashboard() {
         <section id="addresses" aria-label="Addresses"><AccountAddresses /></section>
         <section id="favorites" className={styles.panel} aria-labelledby="favorites-heading">
           <h2 id="favorites-heading">Favorites</h2>
-          <p>Products saved on this browser.</p>
+          <p>{favorites.account ? "Products saved to your account." : "Products saved on this browser."}</p>
           <FavoritesList />
         </section>
         <section id="orders" className={styles.panel} aria-labelledby="orders-heading">
           <h2 id="orders-heading">Orders</h2>
-          <p>Order history is not available yet.</p>
+          <AccountOrders data={orderData} />
         </section>
         <section id="billing" className={styles.panel} aria-labelledby="billing-heading">
           <h2 id="billing-heading">Billing</h2>

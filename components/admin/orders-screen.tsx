@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { AdminAccessDeniedScreen } from "@/components/admin/record-screens";
 import type { AdminOrderListQuery, AdminOrderStatus, AdminOrderSummary } from "@/lib/admin/orders-contract";
@@ -95,7 +96,7 @@ export function AdminOrdersScreen() {
 
   return <div className={styles.screen}>
     <header className={styles.pageHeading}>
-      <div><p className={styles.eyebrow}>Operations</p><h1>Orders</h1><p className={styles.lede}>Read-only order records. Checkout and order creation are not connected.</p></div>
+      <div><p className={styles.eyebrow}>Operations</p><h1>Orders</h1><p className={styles.lede}>Review development simulation orders and their status.</p></div>
     </header>
 
     <form className={ordersStyles.toolbar} onSubmit={submitSearch} role="search" aria-label="Search and filter orders">
@@ -134,7 +135,7 @@ export function AdminOrdersScreen() {
               const statusInfo = statuses[order.status];
               const label = statusInfo?.label ?? (order.status || "Status unavailable");
               return <tr key={order.reference}>
-                <td className={ordersStyles.reference}>{order.reference}</td>
+                <td className={ordersStyles.reference}>{order.reference.startsWith("SIM-") ? <Link href={`/admin/orders/${encodeURIComponent(order.reference)}`}>{order.reference}</Link> : order.reference}</td>
                 <td><span className={`${styles.statusPill} ${ordersStyles.status} ${statusInfo?.className ?? ""}`}>{label}</span></td>
                 <td className={ordersStyles.total}>{formatTotal(order)}</td>
                 <td className={ordersStyles.date}>{formatDate(order.createdAt)}</td>

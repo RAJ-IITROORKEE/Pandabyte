@@ -2,17 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { parsePublicVariant, type PublicVariant } from "@/lib/editorial/public-record";
 import { cardImageIds } from "@/components/catalog/card-image-selection";
 import { FavoritesButton } from "./favorites-button";
-import { getFavoritesServerSnapshot, getFavoritesSnapshot, parseFavorites, subscribeFavorites, type Favorite } from "./favorites-store";
+import { useFavorites } from "./use-favorites";
 import styles from "./favorites.module.css";
 
 export function FavoritesList() {
-  const raw = useSyncExternalStore(subscribeFavorites, getFavoritesSnapshot, getFavoritesServerSnapshot);
-  const items = parseFavorites(raw);
+  const { items, account, error } = useFavorites();
   const section = useRef<HTMLElement>(null);
   const removed = useRef<{ index: number; button: HTMLButtonElement } | null>(null);
   useEffect(() => {
@@ -21,14 +20,15 @@ export function FavoritesList() {
     if (!pending || (document.activeElement !== document.body && document.activeElement !== pending.button)) return;
     const buttons = section.current?.querySelectorAll<HTMLButtonElement>("[data-favorite-toggle]");
     (buttons?.[Math.min(pending.index, buttons.length - 1)] ?? section.current)?.focus();
-  }, [raw]);
-  if (!items) return <p role="alert">Favorites could not be read from this browser.</p>;
-  return <section ref={section} tabIndex={-1} className={styles.region} aria-label="Saved favorites"><p>Favorites are saved only in this browser.</p>{items.length ? <ul className={styles.list}>{items.map((item, index) => <FavoriteItem key={item.productId} item={item} onRemoved={button => { removed.current = { index, button }; }} />)}</ul> : <p>No favorites saved yet. Browse the catalog and select a heart to save one.</p>}</section>;
+  }, [items]);
+  if (!items) return <p role={error ? "alert" : undefined}>{error ?? "Loading favorites…"}</p>;
+  return <section ref={section} tabIndex={-1} className={styles.region} aria-label="Saved favorites"><p>{account ? "Favorites are saved to your account." : "Favorites are saved only in this browser."}</p>{items.length ? <ul className={styles.list}>{items.map((item, index) => <FavoriteItem key={item.productId} item={item} onRemoved={button => { removed.current = { index, button }; requestAnimationFrame(() => { const pending = removed.current; if (!pending || (document.activeElement !== document.body && document.activeElement !== pending.button)) return; removed.current = null; const buttons = section.current?.querySelectorAll<HTMLButtonElement>("[data-favorite-toggle]"); (buttons?.[Math.min(pending.index, buttons.length - 1)] ?? section.current)?.focus(); }); }} />)}</ul> : <p>No favorites saved yet. Browse the catalog and select a heart to save one.</p>}</section>;
 }
 
-function FavoriteItem({ item, onRemoved }: { item: Favorite; onRemoved: (button: HTMLButtonElement) => void }) {
+function FavoriteItem({ item, onRemoved }: { item: { productId: string; title: string | null; slug: string | null }; onRemoved: (button: HTMLButtonElement) => void }) {
   const [result, setResult] = useState<{ title: string; slug: string; image?: string; variants: PublicVariant[] } | "unavailable" | "error" | null>(null);
   useEffect(() => {
+    if (!item.slug) return;
     const controller = new AbortController();
     void fetch(`/api/published/products/${encodeURIComponent(item.slug)}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
@@ -44,14 +44,14 @@ function FavoriteItem({ item, onRemoved }: { item: Favorite; onRemoved: (button:
   }, [item.productId, item.slug]);
   return <li className={styles.item}>
     {result && typeof result === "object" && result.image && <Image src={`/api/media/${encodeURIComponent(result.image)}?w=96`} alt="" width={96} height={96} unoptimized />}
-    <div>{result && typeof result === "object" ? <Link href={`/products/${encodeURIComponent(result.slug)}`}>{result.title}</Link> : <strong>{item.title}</strong>}
-      {result === null && <p>Loading current product…</p>}{result === "unavailable" && <p>This product is no longer available in the published catalog.</p>}{result === "error" && <p>Current product details could not be loaded.</p>}
+    <div>{result && typeof result === "object" ? <Link href={`/products/${encodeURIComponent(result.slug)}`}>{result.title}</Link> : <strong>{item.title ?? "Unavailable product"}</strong>}
+      {result === null && <p>{item.slug ? "Loading current product…" : "This product is no longer available in the published catalog."}</p>}{result === "unavailable" && <p>This product is no longer available in the published catalog.</p>}{result === "error" && <p>Current product details could not be loaded.</p>}
     </div>
     {result && typeof result === "object" && (result.variants.length === 1 ? (() => {
       const variant = result.variants[0];
       const eligible = variant.cartEligible === true || (variant.purchasable !== false && variant.availability === "available" && variant.effectivePricePaise !== null);
       return eligible ? <AddToCartButton variantId={variant.id} available compactLabel={result.title} /> : null;
     })() : result.variants.length > 1 ? <Link href={`/products/${encodeURIComponent(result.slug)}`}>Choose options</Link> : null)}
-    <FavoritesButton {...item} onRemoved={onRemoved} />
+    <FavoritesButton productId={item.productId} title={item.title ?? "unavailable product"} slug={item.slug ?? "unavailable"} onRemoved={onRemoved} />
   </li>;
 }

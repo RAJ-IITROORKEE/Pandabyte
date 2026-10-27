@@ -132,3 +132,9 @@ Categories now includes an image thumbnail/preview column. Orders has a disconne
 ## Orders navigation permission — 27 October 2026
 
 Orders now appears in the Admin sidebar and command search only for `staff.manage`, matching the Orders screen and API. Inventory remains available under `orders.manage`; role labels and historical operations notes reflect the difference. Navigation and Orders tests, targeted lint, typecheck and an anonymous API check passed. Browser automation was disabled in Work settings, so this checkpoint has no fresh visual verification. See [current plan](docs/admin-backend-sync-plan.md).
+
+## Checkout/customer/Admin functional synchronization — 28 October 2026
+
+The owner approved a disposable development payment simulation and functional storefront wiring, preserving layouts/styles. The existing ledger now holds owner-scoped simulation snapshots and versioned Admin fulfillment. Account Orders displays real stored simulation records and shipment updates; favorites persist per Clerk account with safe browser merging and account-switch guards. No real provider payment, operational stock or uniform GST/shipping was inferred. See [contract](docs/checkout-backend-sync.md) and [evidence](docs/verification/checkout-backend-sync.json).
+
+256 unit checks, four media checks, scoped lint, TypeScript and isolated production build passed. Disposable-account integration tests and the browser Buy Now → account Orders → Admin Processing/shipment → customer history flow passed. New Admin details were checked at 320/768/1024/1440 CSS pixels and in both themes. All test orders, test identities/grants and temporary simulation actor/stock were removed; the owner's session/cart remain. Real purchases stay disabled. Uncertain simulation recovery after a full reload fails closed rather than creating a new request; automatic reconciliation remains unimplemented. The private screenshot is ignored under `.bootstrap/verification/`.
