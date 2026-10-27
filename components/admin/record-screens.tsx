@@ -27,6 +27,7 @@ import { findActiveSingleton } from "./singleton-record";
 import { ProductDocumentEditor } from "./product-document-editor";
 import { ProductPricingEditor, type ProductPricingState } from "./product-pricing-editor";
 import { CategoryImageEditor } from "./category-image-editor";
+import { BlogCoverEditor } from "./blog-cover-editor";
 import galleryStyles from "./product-gallery-editor.module.css";
 import confirmationStyles from "./products-table.module.css";
 import {
@@ -761,7 +762,8 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
 
     {module === "learn" && <Field label="Learning collection"><select className={styles.input} value={str("collection") || "embedded-systems"} onChange={(event) => set("collection", event.target.value)}><option value="embedded-systems">Embedded systems resources</option><option value="product-specs">Product specifications</option><option value="kit-guides">PandaByte kit guides</option></select></Field>}
     {module === "categories" && <CategoryImageEditor mediaIds={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} request={api} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
-    {(module === "products" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : module === "team" ? "Profile media" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : module === "team" ? "Only published WebP images can be selected. The first image is used as the public profile portrait; additional selected media IDs remain attached but are not shown on the About card." : "Choose published WebP images or upload an image. The first selected image is the article cover."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : module === "team" ? "Profile media assets" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products" || module === "blog"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} uploadTarget={module === "products" ? "product" : module === "blog" ? "article" : undefined} onUploadDelta={onUploadDelta} /></section>}
+    {module === "blog" && <BlogCoverEditor mediaIds={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} request={api} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
+    {(module === "products" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : module === "team" ? "Profile media" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : module === "team" ? "Only published WebP images can be selected. The first image is used as the public profile portrait; additional selected media IDs remain attached but are not shown on the About card." : "Choose published WebP images or upload an image. The first selected image is the article cover."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : module === "team" ? "Profile media assets" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} uploadTarget={module === "products" ? "product" : undefined} onUploadDelta={onUploadDelta} /></section>}
     {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
     {module === "products" || module === "categories" || (module === "blog" && blogRichContent) ? <ProductRichTextEditor
@@ -793,6 +795,8 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const validationSummaryRef = useRef<HTMLDivElement>(null);
   const editorErrorRef = useRef<HTMLDivElement>(null);
   const categoryArchiveDialog = useRef<HTMLDialogElement>(null);
+  const blogPublishDialog = useRef<HTMLDialogElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const categoryHeadingRef = useRef<HTMLHeadingElement>(null);
   const [categoryArchiveOpen, setCategoryArchiveOpen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -878,7 +882,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", guardNavigation, true); };
   }, [dirty]);
 
-  async function save(event?: FormEvent) {
+  async function save(event?: FormEvent, navigate = true) {
     event?.preventDefault();
     setError("");
     setValidationIssues([]);
@@ -926,7 +930,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       if (module === "categories" || module === "blog") setRichContentResetKey((value) => value + 1);
       setConflict(false);
       setNotice("Draft saved.");
-      if (isNew) router.replace(`/admin/${module}/${result.record.id}`);
+      if (isNew && navigate) router.replace(`/admin/${module}/${result.record.id}`);
       return result.record;
     } catch (reason) {
       const status = (reason as { status?: number }).status;
@@ -943,7 +947,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 
   async function transition(action: "publish" | "unpublish" | "archive" | "restore", revisionId?: string) {
     let current = record;
-    if (dirty) current = await save();
+    if (dirty || isNew) current = await save(undefined, false);
     if (!current) return;
     setBusy(true);
     setError("");
@@ -975,6 +979,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       if (module === "products" || module === "categories") toast.error(reason instanceof Error ? reason.message : "The action could not be completed.");
     } finally {
       setBusy(false);
+      if (isNew) router.replace(`/admin/${module}/${current.id}`);
     }
   }
 
@@ -991,7 +996,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
         <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
       </div>
     </div>
-    {previewOpen && <DraftPreview document={draft} module={module} />}
+    {previewOpen && <div ref={previewRef}><DraftPreview document={draft} module={module} /></div>}
     {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
     {validationIssues.length > 0 && <div id="record-validation-summary" className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}
     {error && <div id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} role="alert" tabIndex={-1}><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
@@ -1000,11 +1005,11 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       <fieldset className={styles.editorFieldset} disabled={!canEdit}>
         <DocumentFields key={`${record?.id ?? "new"}:${pricingRefreshKey}`} module={module} document={draft} setDocument={setDraft} recordId={record?.id} slugAuto={slugAuto} setSlugAuto={setSlugAuto} onPricingChange={setProductPricing} pricingRefreshKey={pricingRefreshKey} canManageMedia={canManageMedia} onRichContentValidityChange={setRichContentValid} richContentResetKey={richContentResetKey} onUploadDelta={onUploadDelta} />
       </fieldset>
-      <div className={styles.bottomActions}><span>{pendingUploads > 0 ? "Media is uploading…" : dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || !dirty}>{busy ? "Saving…" : "Save draft"}</button></div>
+      <div className={styles.bottomActions}><span>{pendingUploads > 0 ? "Media is uploading…" : dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><div className={styles.lifecycleActions}>{module === "blog" && <button className={styles.secondaryButton} type="button" onClick={() => { setPreviewOpen(true); requestAnimationFrame(() => previewRef.current?.scrollIntoView({ block: "start" })); }}>Preview article</button>}<button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || !dirty}>{busy ? "Saving…" : "Save draft"}</button>{module === "blog" && <button className={styles.primaryButton} type="button" disabled={!canPublish || busy || pendingUploads > 0 || record?.archived} onClick={() => blogPublishDialog.current?.showModal()}>{record?.publishedRevisionId ? "Publish updates" : "Publish"}</button>}</div></div>
     </form>
     {record && <section className={styles.panel} aria-labelledby="publishing-heading"><div className={styles.sectionHeading}><div><h2 id="publishing-heading">Publishing</h2><p>Publishing is a separate action and requires the right access.</p></div></div>
       <div className={styles.lifecycleActions}>
-        <button className={styles.primaryButton} type="button" onClick={() => void transition("publish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
+        <button className={styles.primaryButton} type="button" onClick={() => module === "blog" ? blogPublishDialog.current?.showModal() : void transition("publish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
         {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>Unpublish</button>}
         {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => module === "categories" ? setCategoryArchiveOpen(true) : window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady}>Archive</button>}
       </div>
@@ -1013,6 +1018,11 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       {record.archived && (!record.revisions || record.revisions.length === 0) && <p className={styles.fieldHint}>No published revision is available to restore.</p>}
       {record.publishedRevisionId && <p className={styles.fieldHint}>Published record slug: <code>{record.slug}</code></p>}
     </section>}
+    {module === "blog" && <dialog ref={blogPublishDialog} className={`${confirmationStyles.dialog} ${confirmationStyles.confirmDialog}`} aria-labelledby="blog-publish-title" aria-describedby="blog-publish-warning">
+      <header className={confirmationStyles.dialogHeader}><h2 id="blog-publish-title">Publish article?</h2><button type="button" className={confirmationStyles.iconButton} aria-label="Close publish confirmation" onClick={() => blogPublishDialog.current?.close()}><X size={18} aria-hidden="true" /></button></header>
+      <p id="blog-publish-warning" className={confirmationStyles.confirmCopy}>Publish <strong>{draft.title || "this article"}</strong> to the public site? {dirty || isNew ? "The draft will be saved first. " : ""}Attached images must be published separately.</p>
+      <div className={confirmationStyles.confirmActions}><button type="button" className={confirmationStyles.controlButton} onClick={() => blogPublishDialog.current?.close()}>Cancel</button><button type="button" className={confirmationStyles.controlButton} onClick={() => { blogPublishDialog.current?.close(); void transition("publish"); }}>Publish article</button></div>
+    </dialog>}
     {module === "categories" && <dialog ref={categoryArchiveDialog} className={`${confirmationStyles.dialog} ${confirmationStyles.confirmDialog}`} aria-labelledby="category-editor-archive-title" aria-describedby="category-editor-archive-warning" onClose={() => setCategoryArchiveOpen(false)}>
       <header className={confirmationStyles.dialogHeader}><h2 id="category-editor-archive-title">Archive category?</h2><button type="button" className={confirmationStyles.iconButton} aria-label="Close archive confirmation" onClick={() => setCategoryArchiveOpen(false)}><X size={18} aria-hidden="true" /></button></header>
       <p id="category-editor-archive-warning" className={confirmationStyles.confirmCopy}><strong>{draft.title || "This category"}</strong> will be removed from the active catalog. Its history is preserved. Linked products or child categories can prevent archival.{dirty ? " Unsaved edits will be saved first." : ""}</p>
