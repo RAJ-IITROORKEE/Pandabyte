@@ -7,9 +7,9 @@
 .libraryHeader {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px 24px;
   padding-top: clamp(28px, 5vw, 48px);
   border-top: 1px solid var(--divider);
 }
@@ -37,6 +37,46 @@
 .libraryHeader p { margin-top: 8px; }
 .count { margin: 0; font-size: 14px; }
 
+.searchForm {
+  display: flex;
+  width: min(100%, 320px);
+  min-height: 46px;
+  align-items: center;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.searchForm:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.searchForm input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  color: var(--foreground);
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font: inherit;
+}
+.searchForm input::-webkit-search-cancel-button { display: none; }
+.searchForm button,
+.searchForm a {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  color: var(--foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.searchForm button:hover,
+.searchForm a:hover { color: var(--accent); }
+.searchForm button:focus-visible,
+.searchForm a:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -59,3 +99,14 @@
 .card p { font-size: 14px; }
 
 @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+.heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.heading svg {
+  width: .9em;
+  height: auto;
+  flex: none;
+}

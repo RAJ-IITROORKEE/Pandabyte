@@ -4,7 +4,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import styles from "./page-frame.module.css";
 
 export function PublicPage({ eyebrow, title, description, children, wide = false }: {
-  eyebrow?: string; title: string; description?: string; children?: ReactNode; wide?: boolean;
+  eyebrow?: string; title: ReactNode; description?: string; children?: ReactNode; wide?: boolean;
 }) {
   return <main id="main" tabIndex={-1} className={`${styles.page} ${wide ? styles.wide : ""}`}>
     <div className={styles.heading}>
