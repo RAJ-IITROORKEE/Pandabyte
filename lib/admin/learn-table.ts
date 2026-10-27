@@ -1,12 +1,10 @@
 import { operationalJson } from "@/lib/observability/events";
 import { authorizedStaffClient } from "@/lib/admin/records";
-import { isContentTableResult, parseContentTableQuery, type ContentTableItem, type ContentTableQuery } from "./pages-table-contract.ts";
+import { isContentTableResult, type ContentTableItem } from "./pages-table-contract.ts";
 
-export type LearnTableQuery = ContentTableQuery;
+import { parseLearnTableQuery } from "./learn-table-contract.ts";
 export type LearnTableItem = ContentTableItem<"resource">;
 export type LearnTableResult = { items: LearnTableItem[]; total: number };
-
-export const parseLearnTableQuery = parseContentTableQuery;
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 type RpcError = { code?: unknown; details?: unknown; status?: unknown };
@@ -56,6 +54,7 @@ export async function adminListLearnTable(request: Request): Promise<Response> {
       p_sort: query.value.sort,
       p_limit: query.value.limit,
       p_offset: query.value.offset,
+      p_collection: query.value.collection,
     }) as RpcResult;
     if (result.error) return rpcErrorResponse(result.error);
     if (!isContentTableResult(result.data, query.value.limit, "resource")) return errorResponse("backend_unavailable", 503);
@@ -64,3 +63,5 @@ export async function adminListLearnTable(request: Request): Promise<Response> {
     return errorResponse("backend_unavailable", 503);
   }
 }
+
+

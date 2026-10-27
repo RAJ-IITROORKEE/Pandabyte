@@ -13,6 +13,7 @@ import styles from "./pages-table.module.css";
 const PAGE_SIZES = [10, 20, 50] as const;
 const STATUSES = ["all", "draft", "published", "archived"] as const;
 const SORTS = ["updated_desc", "updated_asc", "title_asc", "title_desc"] as const;
+const COLLECTIONS = ["all", "product-specs", "embedded-systems", "kit-guides"] as const;
 const MAX_OFFSET = 10_000;
 const DEFAULT_QUERY: ContentTableQuery = { q: "", status: "all", sort: "updated_desc", limit: 20, offset: 0 };
 const conciseDate = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
@@ -30,9 +31,11 @@ const TABLE_COPY = {
 type ContentTableStatus = (typeof STATUSES)[number];
 type ContentTableSort = (typeof SORTS)[number];
 type ContentTableLimit = (typeof PAGE_SIZES)[number];
+type Collection = (typeof COLLECTIONS)[number];
+type TableQuery = ContentTableQuery & { collection?: Collection };
 type ApiError = { error?: { message?: string } };
 
-function parseQuery(search: string): ContentTableQuery {
+function parseQuery(search: string, module: ContentTableModule): TableQuery {
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
   const q = (params.get("q") ?? "").trim();
   const limit = Number(params.get("limit"));
@@ -41,7 +44,9 @@ function parseQuery(search: string): ContentTableQuery {
   const offset = /^(0|[1-9][0-9]*)$/.test(offsetValue) ? Number(offsetValue) : NaN;
   const status = params.get("status");
   const sort = params.get("sort");
+  const collection = params.get("collection");
   return {
+    ...(module === "learn" ? { collection: COLLECTIONS.includes(collection as Collection) ? collection as Collection : "all" } : {}),
     q: Array.from(q).length <= 120 && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(q) ? q : "",
     status: STATUSES.includes(status as ContentTableStatus) ? status as ContentTableStatus : DEFAULT_QUERY.status,
     sort: SORTS.includes(sort as ContentTableSort) ? sort as ContentTableSort : DEFAULT_QUERY.sort,
@@ -52,9 +57,10 @@ function parseQuery(search: string): ContentTableQuery {
   };
 }
 
-function serializeQuery(query: ContentTableQuery) {
+function serializeQuery(query: TableQuery) {
   const params = new URLSearchParams();
   if (query.q) params.set("q", query.q);
+  if (query.collection) params.set("collection", query.collection);
   params.set("status", query.status);
   params.set("sort", query.sort);
   params.set("limit", String(query.limit));
@@ -62,7 +68,7 @@ function serializeQuery(query: ContentTableQuery) {
   return params.toString();
 }
 
-function replaceQuery(query: ContentTableQuery) {
+function replaceQuery(query: TableQuery) {
   const url = new URL(window.location.href);
   url.search = serializeQuery(query);
   window.history.replaceState(null, "", url);
@@ -88,8 +94,8 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
   const canEdit = capabilities.includes(ADMIN_MODULES[module].editCapability);
   const searchParams = useSearchParams();
   const searchString = searchParams?.toString() ?? "";
-  const queryString = useMemo(() => serializeQuery(parseQuery(searchString)), [searchString]);
-  const query = useMemo(() => parseQuery(queryString), [queryString]);
+  const queryString = useMemo(() => serializeQuery(parseQuery(searchString, module)), [searchString, module]);
+  const query = useMemo(() => parseQuery(queryString, module), [queryString, module]);
   const [searchDraft, setSearchDraft] = useState<{ base: string; value: string } | null>(null);
   const searchText = searchDraft?.base === query.q ? searchDraft.value : query.q;
   const [responseState, setResponseState] = useState<{ key: string; value: ContentTableResult } | null>(null);
@@ -138,7 +144,7 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
   }, [query.offset, rows.length, total]);
 
   const retry = useCallback(() => setReload((value) => value + 1), []);
-  function updateQuery(patch: Partial<ContentTableQuery>) {
+  function updateQuery(patch: Partial<TableQuery>) {
     replaceQuery({ ...query, ...patch });
   }
 
@@ -156,6 +162,12 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
         <span className={tableStyles.visuallyHidden}>Search {copy.plural}</span>
         <input id={`${module}-search`} type="search" maxLength={120} value={searchText} onChange={(event) => setSearchDraft({ base: query.q, value: event.target.value })} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); updateQuery({ q: searchText.trim(), offset: 0 }); } }} placeholder="Search title or slug" />
       </label>
+      {module === "learn" && <label className={tableStyles.filter}>
+        <span>Collection</span>
+        <select value={query.collection ?? "all"} onChange={(event) => updateQuery({ collection: event.target.value as Collection, offset: 0 })}>
+          <option value="all">All collections</option><option value="product-specs">Product specs</option><option value="embedded-systems">Embedded systems</option><option value="kit-guides">Kit guides</option>
+        </select>
+      </label>}
       <label className={tableStyles.filter}>
         <span>Status</span>
         <select value={query.status} onChange={(event) => updateQuery({ status: event.target.value as ContentTableStatus, offset: 0 })}>
@@ -181,7 +193,7 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
         </tr></thead>
         <tbody>
           {loading && <tr><td className={tableStyles.tableMessage} colSpan={5}>{copy.loading}</td></tr>}
-          {!loading && !error && rows.length === 0 && <tr><td className={tableStyles.tableMessage} colSpan={5}>{query.q || query.status !== "all" ? `No ${copy.plural} match these filters.` : `No ${copy.plural} yet. ${copy.empty}`}</td></tr>}
+          {!loading && !error && rows.length === 0 && <tr><td className={tableStyles.tableMessage} colSpan={5}>{query.q || query.status !== "all" || (query.collection && query.collection !== "all") ? `No ${copy.plural} match these filters.` : `No ${copy.plural} yet. ${copy.empty}`}</td></tr>}
           {!loading && rows.map((row, index) => {
             const title = row.title || `Untitled ${copy.singular}`;
             const updated = formatUpdated(row.updatedAt);

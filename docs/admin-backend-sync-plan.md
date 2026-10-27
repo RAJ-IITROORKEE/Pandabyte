@@ -29,7 +29,7 @@ Audit date: 27 October 2026 (Asia/Calcutta). Scope: development Admin UI, its AP
 | Contact settings | Fixed singleton slug; bounded contact/support/footer fields | Contact, Home support and footer consume published settings | No singleton entered; generic New button still appears when a singleton exists; contact inbox configuration is independent of public email |
 | Navigation settings | Fixed singleton slug and versioned publishing; visibility/label/order overrides resolved by exact destination | Header/footer read resolved data but restrict it through fixed presentation | Header fixed Products/Solutions/Shop/Company labels/order bypass primary controls; footer whitelist omits Admin-supported/default Blog/Learn/product/custom links. Coordinate both with FRONTENT-UI |
 | Solutions | CRUD/publication and server table controls | Solutions index/detail read published records | No records entered; future products remain Coming soon |
-| Learn resources | CRUD/publication, collection/product associations and server table controls | Collections and resource pages consume published content | No resources entered; Admin collection filter absent; related-product associations are not rendered on product pages |
+| Learn resources | CRUD/publication, collection/product associations and server table controls | Collections and resource pages consume published content | No resources entered; Admin collection filtering is implemented; related-product associations are not rendered on product pages |
 | Videos | CRUD/publication and private server-backed table with search, status, sort and pagination | Published videos feed YouTube index/detail and embeds | Related-product associations lack a product-page consumer; review existing differences between Admin, database and public YouTube URL parsers |
 | Media | Authorized upload/metadata/publication/archive and private/published delivery; image/DOCX/GLB validation | Published media references render across catalog/editorial pages | Least-privilege production credential review; recheck preview consistency when adding new upload surfaces; rights holds remain private |
 | Workspaces, Chat, AI Chat, notification bell page | Explicit preview routes | No live services | Future scope, not a baseline backend defect. Inquiry email outbox is distinct from the notification bell page |
@@ -41,11 +41,13 @@ Audit date: 27 October 2026 (Asia/Calcutta). Scope: development Admin UI, its AP
 0. **Completed:** Orders sidebar/command search now use the authoritative `staff.manage` screen/API guard; role labels clarify Inventory and Orders access. Historical operations documentation points to the current contracts.
 1. Agree the current header/footer contract with FRONTENT-UI. Keep Admin destination/label/visibility/order semantics consistent with the new menu grouping and remove or deliberately document the footer destination restriction. That chat implements public rendering; this chat handles schema/API/editor adjustments if needed.
 2. **Completed:** Admin Videos reuses the bounded content table with search, status, sort and pagination; existing video publishing and YouTube URL validation remain in place.
-3. Add the Learn collection filter with matching query validation and database filtering before pagination.
+3. **Implemented:** Learn collection filtering validates the selected collection and filters in the database before counting and pagination. Older drafts without a collection fall back to Embedded systems.
 4. Replace duplicate singleton creation affordances with Open/Edit for existing Contact and Navigation records; retain database uniqueness/version protections.
 5. Review Blog author/tag normalization at the direct database boundary. Align SQL and API validation; inspect existing records before tightening it. Improve cover order/alt metadata through a reviewed minimal contract if required.
 
 Exit: disposable unpublished drafts test create/edit, filtering, ordering/paging, permissions, stale versions and cleanup. Verify the affected Admin screens in the browser. No real publication is implied.
+
+Learn filter checkpoint, 27 October 2026: migration `20261027173011` applied to development; focused unit tests, TypeScript, scoped lint, and disposable-draft API integration passed. The integration checked collection counts, pagination, invalid filters and customer access, then cleaned up its drafts and identities. Browser verification remains open: the in-app browser reported local browser use disabled. No content was published.
 
 ### 2. Complete selected content relationships with FRONTENT-UI
 

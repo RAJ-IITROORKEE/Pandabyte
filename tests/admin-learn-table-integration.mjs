@@ -70,7 +70,7 @@ function resourceDocument(runId, index) {
     url: `https://example.com/disposable-learn/${runId}/${index}`,
     productIds: [],
     position: index,
-    collection: "embedded-systems",
+    collection: index < 2 ? "product-specs" : "embedded-systems",
   };
 }
 
@@ -238,7 +238,7 @@ async function verify(context, state, fixtures) {
   ensure(detail.record?.document?.title === records[0].title && detail.record.document.slug === records[0].slug &&
     detail.record.document.summary === fixtureSummary(state.runId) && detail.record.document.url === resourceDocument(state.runId, 0).url &&
     Array.isArray(detail.record.document.productIds) && detail.record.document.productIds.length === 0 &&
-    detail.record.document.position === 0 && detail.record.document.collection === "embedded-systems" &&
+    detail.record.document.position === 0 && detail.record.document.collection === "product-specs" &&
     JSON.stringify(detail.record.document.blocks) === JSON.stringify(resourceDocument(state.runId, 0).blocks),
   "admin_learn_editor_draft_document_invalid");
   ensure((await request(context, null, `/api/published/learn/${records[0].slug}`)).status === 404, "admin_learn_draft_publicly_visible");
@@ -249,6 +249,14 @@ async function verify(context, state, fixtures) {
   const all = await list(context, staff.appToken, { q: state.runId, status: "all", sort: "title_asc", limit: "20", offset: "0" }, "admin_learn_list_all");
   ensure(all.total === 11 && all.items.length === 11, "admin_learn_list_search_invalid");
   for (let index = 0; index < 11; index += 1) assertResourceItem(all.items[index], records[index]);
+  const specs = await list(context, staff.appToken, { q: state.runId, collection: "product-specs", limit: "10", offset: "0" }, "admin_learn_list_specs");
+  ensure(specs.total === 2 && specs.items.length === 2 && specs.items.every((item) => records.slice(0, 2).some((record) => record.id === item.id)), "admin_learn_list_collection_invalid");
+  const specsPage = await list(context, staff.appToken, { q: state.runId, collection: "product-specs", sort: "title_asc", limit: "10", offset: "1" }, "admin_learn_list_specs_page");
+  ensure(specsPage.total === 2 && specsPage.items.length === 1 && specsPage.items[0].id === records[1].id, "admin_learn_list_collection_pagination_invalid");
+  const embedded = await list(context, staff.appToken, { q: state.runId, collection: "embedded-systems", limit: "10", offset: "0" }, "admin_learn_list_embedded");
+  ensure(embedded.total === 9 && embedded.items.length === 9, "admin_learn_list_collection_count_invalid");
+  const emptyCollection = await list(context, staff.appToken, { q: state.runId, collection: "kit-guides" }, "admin_learn_list_empty_collection");
+  ensure(emptyCollection.total === 0 && emptyCollection.items.length === 0, "admin_learn_list_collection_empty_invalid");
   const unique = await list(context, staff.appToken, { q: `${state.runId} Draft 05`, limit: "10", offset: "0" }, "admin_learn_list_search_one");
   ensure(unique.total === 1 && unique.items[0].id === records[5].id, "admin_learn_list_unique_search_invalid");
   const base = { q: state.runId, status: "draft", limit: "10" };
@@ -271,7 +279,7 @@ async function verify(context, state, fixtures) {
   "admin_learn_list_updated_sort_invalid");
   const second = await list(context, staff.appToken, { ...base, sort: "title_asc", offset: "10" }, "admin_learn_list_second_page");
   ensure(second.total === 11 && second.items.length === 1 && second.items[0].id === records[10].id, "admin_learn_list_pagination_invalid");
-  for (const query of ["sort=unknown", "q=x&q=y", "limit=1", "offset=10001", "status=unknown", "debug=1"]) {
+  for (const query of ["sort=unknown", "q=x&q=y", "limit=1", "offset=10001", "collection=unknown", "collection=all&collection=kit-guides", "status=unknown", "debug=1"]) {
     ensure((await request(context, staff.appToken, `${tableRoute}?${query}`)).status === 400, "admin_learn_list_invalid_query_allowed");
   }
 }
@@ -303,7 +311,7 @@ async function main() {
     state.staffUserId = state.users.find(({ role }) => role === "staff")?.userId ?? "";
     await checkpoint(state);
     await verify(context, state, fixtures);
-    console.log("Learn table search, status filters, sorting, 10+1 pagination, editor compatibility, public privacy, and access boundaries passed without publication.");
+    console.log("Learn table search, collection and status filters, sorting, pagination, editor compatibility, public privacy, and access boundaries passed without publication.");
   } catch (error) {
     failure = error;
   } finally {
