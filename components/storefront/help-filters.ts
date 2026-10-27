@@ -1,6 +1,7 @@
-export function helpPageHref(query: string, page: number): string {
+export function helpPageHref(query: string, page: number, topic = ""): string {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
+  if (topic) params.set("topic", topic);
   if (page > 1) params.set("page", String(page));
   const suffix = params.toString();
   return suffix ? `/help?${suffix}` : "/help";

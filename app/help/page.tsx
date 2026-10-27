@@ -8,7 +8,7 @@ import { editorialPageNumber, editorialSearchQuery } from "@/components/editoria
 import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { PublishedDocument } from "@/components/published-document";
 import styles from "@/components/editorial/editorial.module.css";
-import { getPublishedRecord, listPublishedRecords } from "@/lib/editorial/published";
+import { getPublishedRecord, listPublishedFaqs } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
 
 export const dynamic = "force-dynamic";
@@ -30,14 +30,13 @@ export default async function HelpPage({ searchParams }: {
   const requestedPage = editorialPageNumber(Array.isArray(params.page) ? "" : params.page, PAGE_SIZE);
   const [page, firstResult] = await Promise.all([
     getPublishedRecord("pages", "help"),
-    listPublishedRecords("faqs", { q: query, placement: "help", limit: PAGE_SIZE, offset: (requestedPage - 1) * PAGE_SIZE }),
+    listPublishedFaqs({ q: query, topic, placement: "help", limit: PAGE_SIZE, offset: (requestedPage - 1) * PAGE_SIZE }),
   ]);
   const pageCount = Math.min(MAX_PAGE, Math.max(1, Math.ceil(firstResult.total / PAGE_SIZE)));
   const currentPage = Math.min(requestedPage, pageCount);
   const result = currentPage === requestedPage ? firstResult
-    : await listPublishedRecords("faqs", { q: query, placement: "help", limit: PAGE_SIZE, offset: (currentPage - 1) * PAGE_SIZE });
-  const topics = [...new Set(result.items.map(({ document }) => document.topic.trim()).filter(Boolean))].sort();
-  const items = topic ? result.items.filter(({ document }) => document.topic.trim() === topic) : result.items;
+    : await listPublishedFaqs({ q: query, topic, placement: "help", limit: PAGE_SIZE, offset: (currentPage - 1) * PAGE_SIZE });
+  const { items, topics } = result;
   const resultCap = MAX_PAGE * PAGE_SIZE;
   if (page && "redirectTo" in page) permanentRedirect(`/${page.redirectTo}`);
   const document = page && !("redirectTo" in page) ? page.document : null;
@@ -45,15 +44,15 @@ export default async function HelpPage({ searchParams }: {
     <div className={styles.stack}>
       {document && <PublishedDocument document={document} hideTitle />}
       <form className={styles.searchForm} action="/help" method="get" role="search">
+        {topic && <input type="hidden" name="topic" value={topic} />}
         <label>Search FAQs<input name="q" type="search" maxLength={120} defaultValue={query} /></label>
         <button type="submit">Search</button>
-        {query && <Link href="/help" className={styles.filterLink}>Clear search</Link>}
+        {query && <Link href={helpPageHref("", 1, topic)} className={styles.filterLink}>Clear search</Link>}
       </form>
-      <p className={styles.muted}>Search covers questions, summaries, plain text answers and topics. Formatted answer blocks are not searched.</p>
-      {result.items.length > 0 && <form className={styles.searchForm} action="/help" method="get">
+      <p className={styles.muted}>Search questions, topics and answers.</p>
+      {topics.length > 0 && <form className={styles.searchForm} action="/help" method="get">
         {query && <input type="hidden" name="q" value={query} />}
-        {currentPage > 1 && <input type="hidden" name="page" value={currentPage} />}
-        <label>Topic on this page<select name="topic" defaultValue={topic}>
+        <label>Topic<select name="topic" defaultValue={topic}>
           <option value="">All topics</option>
           {topic && !topics.includes(topic) && <option value={topic}>Current filter: {topic}</option>}
           {topics.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -61,8 +60,8 @@ export default async function HelpPage({ searchParams }: {
         <button type="submit">Apply topic</button>
         {topic && <Link href={helpPageHref(query, currentPage)} className={styles.filterLink}>Clear topic</Link>}
       </form>}
+      {result.topicsTruncated && <p className={styles.muted}>Showing the first 100 topics. Search to narrow the list.</p>}
       {topic && result.items.length === 0 && <Link href={helpPageHref(query, currentPage)} className={styles.filterLink}>Clear topic</Link>}
-      {result.total > PAGE_SIZE && <p className={styles.muted}>Topic filters apply to this page and reset when you change pages. Pagination counts all search results.</p>}
       {items.length
         ? <FaqList items={items} />
         : <EmptyState title={query || topic ? "No FAQs match these filters." : "Help articles have not been published yet."} href="/contact" label="Contact the team">{query || topic ? "Try another search or clear the topic filter." : "You can still use the contact form for assistance."}</EmptyState>}
@@ -73,7 +72,7 @@ export default async function HelpPage({ searchParams }: {
         total={result.total}
         resultCap={resultCap}
         itemLabel="help articles"
-        hrefForPage={(page) => helpPageHref(query, page)}
+        hrefForPage={(page) => helpPageHref(query, page, topic)}
       />
     </div>
   </PublicPage>;

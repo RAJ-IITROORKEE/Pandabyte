@@ -594,9 +594,16 @@ async function createEditorialFixtures(context, state, auth, setup) {
   created.draftOnlyBlogTag = draftOnlyBlogTag;
 
   const faq = await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq", {
-    answer: `Phase3 ${state.runId} FAQ answer.`, topic: "phase4-test", placements: ["home", "help"], position: 1,
+    answer: `HiddenAnswer${state.runId}`, topic: `alpha-${state.runId}`, placements: ["home", "help"], position: 1,
   }));
   created.faq = await transition(context, auth, "faqs", faq, "publish");
+  const secondFaq = await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq-second", {
+    answer: `PlainAnswer${state.runId}`, blocks: [], topic: `zeta-${state.runId}`, placements: ["help"], position: 2,
+  }));
+  created.secondFaq = await transition(context, auth, "faqs", secondFaq, "publish");
+  await createRecord(context, state, auth, "faqs", commonDocument(state.runId, "faq-draft", {
+    answer: "Draft only", topic: `draft-${state.runId}`, placements: ["help"], position: 3,
+  }));
 
   const team = await createRecord(context, state, auth, "team", commonDocument(state.runId, "team-profile", {
     name: titleFor(state.runId, "team name"), role: "Disposable test profile", bio: `Phase3 ${state.runId} team bio.`,
@@ -639,6 +646,28 @@ async function createEditorialFixtures(context, state, auth, setup) {
   }
 
   return created;
+}
+
+async function verifyFaqList(context, state, auth, editorial) {
+  const anon = createClient({ baseUrl: context.baseUrl, anonKey: process.env.INSFORGE_ANON_KEY.trim(), fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) });
+  const args = { p_query: state.runId, p_topic: "", p_placement: "help", p_limit: 1, p_offset: 0 };
+  const list = async (overrides = {}) => {
+    const result = await rpc(anon, "published_list_faqs", { ...args, ...overrides });
+    ensure(!result.error && result.data, "faq_list_rpc_failed");
+    return result.data;
+  };
+  const first = await list();
+  ensure(first.total === 2 && first.items.length === 1 && first.items[0].id === editorial.faq.id &&
+    first.items[0].document.blocks[0].text.includes(state.runId), "faq_list_pagination_or_blocks_invalid");
+  ensure(first.topics.includes(`alpha-${state.runId}`) && first.topics.includes(`zeta-${state.runId}`) &&
+    !first.topics.includes(`draft-${state.runId}`) && first.topicsTruncated === false, "faq_list_topics_or_draft_invalid");
+  const filtered = await list({ p_topic: `zeta-${state.runId}` });
+  ensure(filtered.total === 1 && filtered.items[0].id === editorial.secondFaq.id, "faq_list_topic_filter_invalid");
+  ensure((await list({ p_query: `body ${state.runId} faq.` })).total === 1, "faq_list_formatted_search_invalid");
+  ensure((await list({ p_query: `HiddenAnswer${state.runId}` })).total === 0, "faq_list_hidden_answer_searchable");
+  ensure((await list({ p_query: `PlainAnswer${state.runId}` })).total === 1, "faq_list_plain_answer_search_invalid");
+  await transition(context, auth, "faqs", editorial.secondFaq, "unpublish");
+  ensure((await list({ p_topic: `zeta-${state.runId}` })).total === 0, "faq_list_withdrawn_visible");
 }
 
 async function verifyBlogTopics(context, state, editorial) {
@@ -1009,6 +1038,9 @@ async function run(context, keepFixtures) {
     activePhase = "editorial_publication";
     console.log("Phase 4 storefront: editorial_publication.");
     const editorial = await createEditorialFixtures(context, state, auth, setup);
+
+    activePhase = "published_faq_list";
+    await verifyFaqList(context, state, auth, editorial);
 
     activePhase = "published_blog_topics";
     console.log("Phase 4 storefront: published_blog_topics.");
