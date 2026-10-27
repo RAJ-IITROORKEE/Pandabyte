@@ -68,7 +68,10 @@ function videoDocument(runId, index) {
     blocks: [{ type: "paragraph", text: `Private synthetic Videos draft fixture ${runId}, row ${index}.` }],
     seoTitle: title,
     seoDescription: summary,
-    url: `https://youtu.be/${fixtureVideoId(runId, index)}`,
+    url: index === 0 ? `https://youtube.com/watch?t=10&v=${fixtureVideoId(runId, index)}`
+      : index === 1 ? `https://youtube.com/embed/${fixtureVideoId(runId, index)}?v=AAAAAAAAAAA`
+      : index === 2 ? `https://www.youtube.com/live/${fixtureVideoId(runId, index)}`
+      : `https://youtu.be/${fixtureVideoId(runId, index)}`,
     productIds: [],
     position: index,
   };

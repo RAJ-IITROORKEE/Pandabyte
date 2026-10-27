@@ -1,4 +1,5 @@
 import { parseProductRichContent, type ProductRichContent } from "./product-content.ts";
+import { youtubeVideoId } from "../youtube.ts";
 
 export const ADMIN_MODULES = {
   products: { kind: "product", editCapability: "catalog.edit" },
@@ -162,25 +163,6 @@ function safeHref(value: string): boolean {
   } catch {
     return false;
   }
-}
-
-function youtubeId(value: string): string | null {
-  if (/^[A-Za-z0-9_-]{11}$/.test(value)) return value;
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password) return null;
-    if (url.hostname === "youtu.be") {
-      const id = url.pathname.slice(1);
-      return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
-    }
-    if (["youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com", "www.youtube-nocookie.com"].includes(url.hostname)) {
-      const id = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)\/?$/)?.[1];
-      return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
-    }
-  } catch {
-    return null;
-  }
-  return null;
 }
 
 function textArray(value: unknown, field: string, fields: FieldError[], maxItems: number, maxText: number): string[] | undefined {
@@ -582,7 +564,7 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const url = textValue(value, "url", "document.url", fields, 2048, { required: true, nonEmpty: true });
     const productIds = uuidArray(value.productIds, "document.productIds", fields);
     const position = parsePosition(value, fields);
-    if (url && module === "videos" && !youtubeId(url)) add(fields, "document.url", "invalid", "Use a valid YouTube video URL or ID.");
+    if (url && module === "videos" && !youtubeVideoId(url)) add(fields, "document.url", "invalid", "Use a valid YouTube video URL or ID.");
     else if (url && module === "learn" && !safeHref(url)) add(fields, "document.url", "invalid", "Use an internal path or HTTPS link.");
     Object.assign(document, { url, productIds, position });
     if (module === "learn") {
