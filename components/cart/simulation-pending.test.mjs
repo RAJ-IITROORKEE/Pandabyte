@@ -14,10 +14,15 @@ test("pending simulation stores only a scoped marker and preserves exact request
   assert.equal(readPending(storage, "user-a").raw, raw);
   assert.equal(readPending(storage, "user-b").pending, false);
   const reloaded = await import(`./simulation-pending.ts?reload=${Date.now()}`);
-  assert.deepEqual(reloaded.readPending(storage, "user-a"), { pending: true, raw: null });
+  assert.deepEqual(reloaded.readPending(storage, "user-a"), { pending: true, raw: null, marker: id });
   assert.throws(() => savePending(storage, "user-a", raw.replace(id, "00000000-0000-4000-8000-000000000002")));
-  clearPending(storage, "user-a");
+  assert.equal(clearPending(storage, "user-a", "00000000-0000-4000-8000-000000000002"), false);
+  assert.equal(readPending(storage, "user-a").pending, true);
+  assert.equal(clearPending(storage, "user-a", id), true);
   assert.equal(readPending(storage, "user-a").pending, false);
+  storage.setItem("pandabyte:simulation-pending:user-a", "legacy marker");
+  assert.throws(() => readPending(storage, "user-a"));
+  assert.equal(storage.getItem("pandabyte:simulation-pending:user-a"), "legacy marker");
 });
 test("invalid payloads and storage failures fail closed", () => {
   values.clear();
@@ -25,4 +30,7 @@ test("invalid payloads and storage failures fail closed", () => {
   assert.equal(readPending(storage, "user-a").pending, false);
   assert.throws(() => savePending({ ...storage, setItem() { throw Error("unavailable"); } }, "user-a", raw));
   assert.equal(readPending(storage, "user-a").pending, false);
+  storage.setItem("pandabyte:simulation-pending:user-a", "legacy marker");
+  assert.throws(() => readPending(storage, "user-a"));
+  assert.equal(storage.getItem("pandabyte:simulation-pending:user-a"), "legacy marker");
 });

@@ -23,13 +23,13 @@ function harness() {
     react: {
       useState: initial => { const index = cursor++; if (!(index in hooks)) hooks[index] = typeof initial === "function" ? initial() : initial; return [hooks[index], value => { hooks[index] = typeof value === "function" ? value(hooks[index]) : value; }]; },
       useRef: initial => { const index = cursor++; return hooks[index] ??= { current: initial }; },
-      useEffect: (effect, deps) => { const index = cursor++, previous = hooks[index]; focusEffectIndex ??= index; hooks[index] = deps; if (!previous || deps.some((value, position) => !Object.is(value, previous[position]))) effects.push({ index, effect }); },
+      useEffect: (effect, deps) => { const index = cursor++, previous = hooks[index]; if (deps.length === 1 && typeof deps[0] === "number") focusEffectIndex ??= index; hooks[index] = deps; if (!previous || deps.some((value, position) => !Object.is(value, previous[position]))) effects.push({ index, effect }); },
     },
     "@clerk/nextjs": {}, "next/link": { default: "a" }, "next/image": { default: "img" },
     "lucide-react": Object.fromEntries(["ArrowLeft", "ArrowRight", "CreditCard", "Package", "ShoppingBag", "Truck", "User"].map(name => [name, "svg"])),
     "./checkout-validation": validation, "./checkout-draft": drafts,
     "./checkout-money": { includedDiscount: () => 0, formatPaise: value => `₹${value / 100}` },
-    "@/lib/checkout/validation": {}, "./simulation-pending": {},
+    "@/lib/checkout/validation": {}, "./simulation-pending": {}, "./cart-utils": { sameCartItems: () => true },
     "./cart-api": {}, "./buy-now-store": {}, "./customer-cart-store": {},
     "@/components/catalog/card-image-selection": {}, "./checkout-review.module.css": { default: {} },
   };

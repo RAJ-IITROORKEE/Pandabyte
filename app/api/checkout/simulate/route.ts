@@ -1,11 +1,12 @@
-import { activeCartSession, cartError, orderRpc, readCheckoutBody } from "@/lib/checkout/http";
+import { checkoutOwnerError, cartError, orderRpc, readCheckoutBody } from "@/lib/checkout/http";
 import { parseSimulationRequest } from "@/lib/checkout/validation";
 export async function POST(request: Request) {
   const host = new URL(request.url).hostname;
   const proof = process.env.COMMERCE_SIMULATION_KEY;
   if (process.env.NODE_ENV !== "development" || process.env.PANDABYTE_COMMERCE_SIMULATION !== "true" || !["localhost", "127.0.0.1", "[::1]"].includes(host) || !proof) return cartError("simulation_unavailable", 503);
   try {
-    if (!await activeCartSession()) return cartError("unauthorized", 401);
+    const ownerError = await checkoutOwnerError(request);
+    if (ownerError) return ownerError;
     const body = await readCheckoutBody(request);
     if (body instanceof Response) return body;
     const input = parseSimulationRequest(body.value);

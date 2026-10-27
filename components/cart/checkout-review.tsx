@@ -13,14 +13,14 @@ import { emptyAddress, validateStep, type Address, type CheckoutDraft } from "./
 import { formatPaise, includedDiscount } from "./checkout-money";
 import { clearDraft, readDraft, saveDraft } from "./checkout-draft";
 import { publishCustomerCart } from "./customer-cart-store";
-import { parseSimulationRequest } from "@/lib/checkout/validation";
+import { sameCartItems } from "./cart-utils";
 import { readPending, savePending, clearPending, forgetPending } from "./simulation-pending";
 import styles from "./checkout-review.module.css";
 const steps = [{ label: "Information", icon: User }, { label: "Shipping", icon: Truck }, { label: "Payment", icon: CreditCard }, { label: "Review", icon: Package }];
 export function CheckoutReview({ buyNow = false }: { buyNow?: boolean }) {
   const { user, isLoaded } = useUser();
   const [completed, setCompleted] = useState<{ userId: string; reference: string; totalPaise: number } | null>(null);
-  const [recovery, setRecovery] = useState<{ userId: string; pending: boolean; raw: string | null; error: boolean } | null>(null);
+  const [recovery, setRecovery] = useState<{ userId: string; pending: boolean; raw: string | null; marker: string | null; error: boolean } | null>(null);
   const storedSelection = useSyncExternalStore(subscribeBuyNowSelection, getBuyNowSelection, getBuyNowServerSnapshot);
   const selection = buyNow ? storedSelection : null;
   useEffect(() => { if (isLoaded && !user) { clearDraft(); forgetPending(); } }, [isLoaded, user]);
@@ -30,22 +30,21 @@ export function CheckoutReview({ buyNow = false }: { buyNow?: boolean }) {
     let active = true;
     void Promise.resolve().then(() => {
       try { const value = readPending(sessionStorage, userId); if (active) setRecovery({ userId, ...value, error: false }); }
-      catch { if (active) setRecovery({ userId, pending: true, raw: null, error: true }); }
+      catch { if (active) setRecovery({ userId, pending: true, raw: null, marker: null, error: true }); }
     });
     return () => { active = false; };
-  }, [userId]);
+  }, [userId, buyNow, selection]);
   if (!isLoaded) return <p role="status">Loading your checkout review…</p>;
   if (!user) { return <section className={styles.panel}><p>Your session has changed. Sign in to review your cart.</p><Link className="shell-button" href={`/sign-in?redirect_url=${encodeURIComponent(buyNow ? "/checkout?mode=buy-now" : "/checkout")}`}>Sign in</Link></section>; }
-  if (completed?.userId === user.id) return <section className={styles.panel}><h2>Simulated order created</h2><p>Reference: {completed.reference}</p><p>Simulated total: {formatPaise(completed.totalPaise)}. No real payment was collected.</p><p><Link className="shell-button" href="/account#orders">View orders</Link></p></section>;
+  if (completed?.userId === user.id) return <section className={styles.panel}><h2>Simulated order created</h2><p>Reference: {completed.reference}</p><p>Simulated total: {formatPaise(completed.totalPaise)}. No real payment was collected.</p><p><Link className="shell-button inline-flex" href="/account#orders">View orders</Link></p></section>;
   if (recovery?.userId !== user.id) return <p role="status">Checking for a pending simulation...</p>;
-  if (recovery.error) return <section className={styles.panel}><p role="alert">Saved simulation details cannot be checked. Check your orders before attempting another simulation.</p><Link className="shell-button" href="/account#orders">View orders</Link></section>;
-  if (recovery.pending && !recovery.raw) return <section className={styles.panel}><h2>Pending simulation</h2><p>The earlier simulation result is uncertain. Check your orders before starting another simulation. The original details are no longer available in this page.</p><Link className="shell-button" href="/account#orders">View orders</Link></section>;
-  if (recovery.raw) return <SimulationRecovery userId={user.id} raw={recovery.raw} onCompleted={result => setCompleted({ ...result, userId: user.id })} />;
+  if (recovery.error) return <section className={styles.panel}><p role="alert">Saved simulation details cannot be checked. Check your orders before attempting another simulation.</p><Link className="shell-button inline-flex" href="/account#orders">View orders</Link></section>;
+  if (recovery.pending && recovery.marker) return <SimulationRecovery key={`${user.id}:${recovery.marker}`} userId={user.id} marker={recovery.marker} onCompleted={result => setCompleted({ ...result, userId: user.id })} onContinue={() => setRecovery({ userId: user.id, pending: false, raw: null, marker: null, error: false })} />;
   if (buyNow && !selection) return <section className={styles.panel}><p>Your Buy Now selection is no longer available. Return to the product or review your cart.</p><Link className="shell-button" href="/cart">Open cart</Link></section>;
   const key = `${user.id}:${JSON.stringify(selection)}`;
-  return <CheckoutSession key={key} draftKey={key} userId={user.id} onCompleted={result => setCompleted({ ...result, userId: user.id })} selection={selection} email={user.primaryEmailAddress?.emailAddress ?? ""} name={user.fullName ?? ""} />;
+  return <CheckoutSession key={key} draftKey={key} userId={user.id} onPending={marker => setRecovery({ userId: user.id, pending: true, raw: null, marker, error: false })} onCompleted={result => setCompleted({ ...result, userId: user.id })} selection={selection} email={user.primaryEmailAddress?.emailAddress ?? ""} name={user.fullName ?? ""} />;
 }
-function CheckoutSession({ draftKey, userId, onCompleted, selection, email, name }: { draftKey: string; userId: string; onCompleted: (result: { reference: string; totalPaise: number }) => void; selection: CartInputLine[] | null; email: string; name: string }) {
+function CheckoutSession({ draftKey, userId, onPending, onCompleted, selection, email, name }: { draftKey: string; userId: string; onPending: (marker: string) => void; onCompleted: (result: { reference: string; totalPaise: number }) => void; selection: CartInputLine[] | null; email: string; name: string }) {
   const [quote, setQuote] = useState<CartQuote | null>(null);
   const [error, setError] = useState("");
   const [cartVersion, setCartVersion] = useState<number | null>(null);
@@ -55,7 +54,8 @@ function CheckoutSession({ draftKey, userId, onCompleted, selection, email, name
   const [simulationError, setSimulationError] = useState("");
   const pendingRequest = useRef<string | null>(null);
   const submitting = useRef(false);
-  const uncertain = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [attempt, setAttempt] = useState(0);
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [accountError, setAccountError] = useState("");
@@ -117,19 +117,17 @@ function CheckoutSession({ draftKey, userId, onCompleted, selection, email, name
     catch { submitting.current = false; pendingRequest.current = null; setSimulationError("This browser could not save the simulation marker. No order was submitted."); return; }
     setLocked(true); setSending(true); setSimulationError("");
     try {
-      const response = await fetch("/api/checkout/simulate", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: pendingRequest.current });
+      const response = await fetch("/api/checkout/simulate", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json", Accept: "application/json", "x-account-owner": userId }, body: pendingRequest.current });
       const body = await response.json().catch(() => null);
-      if (!response.ok) {
-        if (response.status >= 400 && response.status < 500 && !uncertain.current) { clearPending(sessionStorage, userId); pendingRequest.current = null; setLocked(false); }
-        throw new Error(response.status === 409 ? "The cart or an item changed. Return to the cart and review it before trying again." : "The simulated order could not be confirmed. Try again with the same details.");
-      }
-      if (!/^SIM-[0-9a-f-]{36}$/i.test(body?.reference ?? "") || body?.environment !== "simulation" || body?.paymentState !== "simulated" || !Number.isSafeInteger(body?.totalPaise) || body.totalPaise < 0) throw new Error("The simulated order response could not be confirmed. Try again with the same details.");
-      clearPending(sessionStorage, userId);
-      onCompleted({ reference: body.reference, totalPaise: body.totalPaise });
+      if (!response.ok || !/^SIM-[0-9a-f-]{36}$/i.test(body?.reference ?? "") || body?.environment !== "simulation" || body?.paymentState !== "simulated" || !Number.isSafeInteger(body?.totalPaise) || body.totalPaise < 0) throw new Error();
+      if (!mounted.current) return;
+      const marker = JSON.parse(pendingRequest.current!).idempotencyKey as string;
+      if (!clearPending(sessionStorage, userId, marker)) throw new Error();
       clearDraft();
-      if (selection) clearBuyNowSelection();
-      else void loadCustomerCart().then(cart => publishCustomerCart(userId, cart)).catch(() => {});
-    } catch (cause) { if (pendingRequest.current) uncertain.current = true; setSimulationError(cause instanceof Error ? cause.message : "The simulated order could not be confirmed. Try again with the same details."); }
+      if (selection && sameCartItems(getBuyNowSelection() ?? [], selection)) clearBuyNowSelection();
+      else if (!selection) { const cart = await loadCustomerCart().catch(() => null); if (!mounted.current) return; if (cart) publishCustomerCart(userId, cart); }
+      onCompleted({ reference: body.reference, totalPaise: body.totalPaise });
+    } catch { if (mounted.current && pendingRequest.current) onPending(JSON.parse(pendingRequest.current).idempotencyKey); }
     finally { submitting.current = false; setSending(false); }
   };
   if (error) return <section className={styles.panel} aria-label="Checkout could not load"><p role="alert">{error}</p><button className="shell-button" type="button" onClick={() => { setError(""); setAttempt(value => value + 1); }}>Try again</button><Link className={styles.link} href="/cart">Return to cart</Link></section>;
@@ -158,28 +156,35 @@ function CheckoutSession({ draftKey, userId, onCompleted, selection, email, name
     <aside className={`${styles.panel} ${styles.summary}`} aria-label="Order summary"><h2 className={styles.summaryHeading}>Order Summary</h2><button type="button" className={styles.summaryToggle} aria-expanded={summaryOpen} aria-controls="checkout-summary-items" onClick={() => setSummaryOpen(value => !value)}><span>Order Summary {summaryOpen ? "−" : "+"}</span><strong>Estimated subtotal: {formatPaise(quote.subtotalPaise)}</strong></button><div id="checkout-summary-items" className={summaryOpen ? styles.summaryBody : `${styles.summaryBody} ${styles.collapsed}`}><Summary quote={quote} selection={selection} capability={capability} /></div></aside>
   </div>;
 }
-function SimulationRecovery({ userId, raw, onCompleted }: { userId: string; raw: string; onCompleted: (result: { reference: string; totalPaise: number }) => void }) {
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
-  const submitting = useRef(false);
-  const retry = async () => {
-    if (submitting.current) return;
-    submitting.current = true; setSending(true); setError("");
+function SimulationRecovery({ userId, marker, onCompleted, onContinue }: { userId: string; marker: string; onCompleted: (result: { reference: string; totalPaise: number }) => void; onContinue: () => void }) {
+  const [status, setStatus] = useState<"checking" | "error" | "missing">("checking");
+  const controller = useRef<AbortController | null>(null);
+  const check = async () => {
+    if (controller.current) return;
+    const request = new AbortController(); controller.current = request;
     try {
-      const response = await fetch("/api/checkout/simulate", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: raw });
+      const response = await fetch("/api/checkout/simulate/recover", { method: "POST", cache: "no-store", signal: request.signal, headers: { "Content-Type": "application/json", Accept: "application/json", "x-account-owner": userId }, body: JSON.stringify({ idempotencyKey: marker }) });
       const body = await response.json().catch(() => null);
-      if (!response.ok || !/^SIM-[0-9a-f-]{36}$/i.test(body?.reference ?? "") || body?.environment !== "simulation" || body?.paymentState !== "simulated" || !Number.isSafeInteger(body?.totalPaise) || body.totalPaise < 0) throw new Error();
-      clearPending(sessionStorage, userId);
-      onCompleted({ reference: body.reference, totalPaise: body.totalPaise });
-      clearDraft();
-      const input = parseSimulationRequest(JSON.parse(raw));
-      if (input?.mode === "buy-now") {
-        if (JSON.stringify(getBuyNowSelection()) === JSON.stringify(input.items)) clearBuyNowSelection();
-      } else void loadCustomerCart().then(cart => publishCustomerCart(userId, cart)).catch(() => {});
-    } catch { setError("The simulation could not be confirmed. Retry the same request or check your orders."); }
-    finally { submitting.current = false; setSending(false); }
+      if (request.signal.aborted) return;
+      const order = body?.order;
+      if (!response.ok || (body?.state !== "not_created" && (body?.state !== "created" || !/^SIM-[0-9a-f-]{36}$/i.test(order?.reference ?? "") || order?.environment !== "simulation" || order?.paymentState !== "simulated" || !Number.isSafeInteger(order?.totalPaise) || order.totalPaise < 0 || !["cart", "buy-now"].includes(order?.snapshot?.mode) || !Array.isArray(order?.snapshot?.quote?.lines)))) throw new Error();
+      if (body.state === "not_created") { if (!clearPending(sessionStorage, userId, marker)) throw new Error(); setStatus("missing"); return; }
+      if (order.snapshot.mode === "cart") {
+        const cart = await loadCustomerCart(request.signal).catch(() => null);
+        if (request.signal.aborted) return;
+        if (cart) publishCustomerCart(userId, cart);
+      }
+      if (!clearPending(sessionStorage, userId, marker)) throw new Error();
+      if (order.snapshot.mode === "buy-now") {
+        const selection = getBuyNowSelection();
+        if (selection && sameCartItems(selection, order.snapshot.quote.lines)) clearBuyNowSelection();
+      }
+      onCompleted({ reference: order.reference, totalPaise: order.totalPaise });
+    } catch { if (!request.signal.aborted) setStatus("error"); }
+    finally { if (controller.current === request) controller.current = null; }
   };
-  return <section className={styles.panel}><h2>Pending simulation</h2><p>The result of an earlier simulation is uncertain. Retry the original request to check it. No real payment is collected.</p>{error && <p role="alert">{error}</p>}<button className="shell-button" type="button" disabled={sending} onClick={() => void retry()}>{sending ? "Checking simulation..." : "Retry original simulation"}</button><Link className={styles.link} href="/account#orders">View orders</Link></section>;
+  useEffect(() => { let active = true; void Promise.resolve().then(() => { if (active) void check(); }); return () => { active = false; controller.current?.abort(); controller.current = null; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return <section className={styles.panel}><h2>Pending simulation</h2>{status === "missing" ? <><p>No simulated order was created.</p><button className="shell-button" type="button" onClick={onContinue}>Continue review</button></> : <><p>The result of an earlier simulation is uncertain. Checking will not create an order.</p>{status === "error" && <p role="alert">The result could not be checked. Please check again.</p>}<button className="shell-button" type="button" disabled={status === "checking"} onClick={() => { setStatus("checking"); void check(); }}>{status === "checking" ? "Checking simulation..." : "Check again"}</button><Link className={styles.link} href="/account#orders">View orders</Link></>}</section>;
 }
 function Summary({ quote, selection, capability }: { quote: CartQuote; selection: CartInputLine[] | null; capability: { shipping: number; tax: number } | null }) {
   const discount = includedDiscount(quote.lines);

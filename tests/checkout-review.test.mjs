@@ -16,6 +16,8 @@ function checkoutHarness() {
   let states = [];
   let stateIndex = 0;
   const effects = [];
+  const effectDeps = [];
+  let selection = null, pendingReads = 0;
   const signals = [];
   const exports = {};
   const dependencies = {
@@ -29,22 +31,25 @@ function checkoutHarness() {
     react: {
       useState: initial => [stateIndex < states.length ? states[stateIndex++] : (stateIndex++, typeof initial === "function" ? initial() : initial), () => {}],
       useRef: initial => ({ current: initial }),
-      useSyncExternalStore: () => null,
-      useEffect: effect => effects.push(effect),
+      useSyncExternalStore: () => selection,
+      useEffect: (effect, deps) => { effects.push(effect); effectDeps.push(deps); },
     },
     "./buy-now-store": { clearBuyNowSelection() {}, getBuyNowSelection() {}, getBuyNowServerSnapshot() {}, subscribeBuyNowSelection() {} },
     "./checkout-validation": { emptyAddress: () => ({}), validateStep: () => ({}) },
-    "@/lib/checkout/validation": {}, "./simulation-pending": {},
+    "@/lib/checkout/validation": {}, "./simulation-pending": { readPending: () => { pendingReads++; return { pending: true, raw: null, marker: "saved-key" }; } }, "./cart-utils": { sameCartItems: () => true },
     "./customer-cart-store": { publishCustomerCart() {} },
     "./cart-api": { loadCustomerCart: signal => { signals.push(signal); return Promise.resolve(null); }, cartErrorMessage: () => "Unable to load" },
     "./checkout-review.module.css": { default: {} },
   };
-  runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController, fetch: () => Promise.reject(new Error("offline")) });
+  runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController, sessionStorage: {}, fetch: () => Promise.reject(new Error("offline")) });
   return {
     effects,
+    effectDeps,
     signals,
+    selection: value => { selection = value; },
+    pendingReads: () => pendingReads,
     identity: value => { identity = value; },
-    wrapper: () => { states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }]; stateIndex = 0; return exports.CheckoutReview({}); },
+    wrapper: (buyNow = false) => { states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }]; stateIndex = 0; return exports.CheckoutReview({ buyNow }); },
     renderSession: cart => {
       states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }];
       stateIndex = 0;
@@ -116,4 +121,17 @@ test("an empty checkout offers a return to shopping instead of a payment form", 
   assert.match(html, /Your selection is empty/);
   assert.match(html, /Open cart/);
   assert.doesNotMatch(html, /Continue to review|Payment unavailable/);
+});
+
+test("changing checkout mode or selection schedules another pending marker read", async () => {
+  const review = checkoutHarness();
+  review.wrapper();
+  const initial = review.effectDeps[1];
+  review.effects[1](); await Promise.resolve();
+  const selection = [{ variantId: "variant-a", quantity: 1 }];
+  review.selection(selection); review.wrapper(true);
+  const changed = review.effectDeps[3];
+  assert.equal(initial[1], false); assert.equal(changed[1], true); assert.equal(changed[2], selection);
+  review.effects[3](); await Promise.resolve();
+  assert.equal(review.pendingReads(), 2);
 });

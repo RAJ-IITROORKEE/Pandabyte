@@ -31,6 +31,9 @@ export function parseSimulationRequest(v: unknown) {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !firstName || !lastName || !p || business === null || gstin === undefined || (gstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/.test(gstin))) return null;
   return { idempotencyKey: v.idempotencyKey, mode: v.mode, expectedCartVersion: v.expectedCartVersion, expectedSubtotalPaise: v.expectedSubtotalPaise, items, contact: { email, firstName, lastName, phone: p }, shipping, billing, business, gstin };
 }
+export function parseSimulationRecovery(v: unknown): string | null {
+  return object(v) && keys(v, ["idempotencyKey"]) && typeof v.idempotencyKey === "string" && UUID.test(v.idempotencyKey) ? v.idempotencyKey : null;
+}
 export function parseOrderQuery(q: URLSearchParams) {
   if ([...q.keys()].some(k => !["limit", "offset"].includes(k) || q.getAll(k).length !== 1)) return null;
   const limit = q.get("limit") ?? "20", offset = q.get("offset") ?? "0";

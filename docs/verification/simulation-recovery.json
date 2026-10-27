@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-28",
+  "scope": "Owner-authorized development simulated-order recovery after reload; frontend design preserved",
+  "migrationApplied": "20261028120000_simulation-recovery.sql",
+  "checks": {
+    "unit": { "passed": 263, "failed": 0 },
+    "media": { "passed": 4, "failed": 0 },
+    "scopedEslint": "passed",
+    "typescript": "passed",
+    "isolatedProductionBuild": "passed",
+    "integration": "passed with automatic cleanup after bounded-query cleanup fix",
+    "coverage": ["committed result replay without another order or stock/cart mutation", "closed absent key rejects delayed creation", "concurrent create/recover has one consistent outcome", "repeated recovery", "owner/origin/proof/auth input guards", "unchecked creation RPC and private tables denied", "existing/closed result after actor removal", "concurrent 99-to-100 closure bound", "UUID-only marker, stale-marker and account-switch protection", "mode/selection changes rescan pending markers"],
+    "browser": {
+      "committedLostAcknowledgement": "Reload automatically recovered the same simulated reference and total; database still held one order",
+      "delayedBeforeCreation": "Reload closed the key and displayed No simulated order was created; Continue review did not submit another order",
+      "postCheck": "one committed order, one closed key and only one fictional stock debit across the two scenarios",
+      "sourceFaultInjection": "temporary local response/submission delays removed before final checks; no runtime fault flag shipped"
+    }
+  },
+  "cleanup": {
+    "disposableIntegrationIdentitiesAndGrants": "removed",
+    "testOrdersAndScopedAuditEvents": "removed",
+    "simulationActorsStockAndClosedKeys": "verified empty",
+    "fixtureJournals": "removed",
+    "temporarySimulationServers": "stopped",
+    "temporaryServerProof": "removed",
+    "ownerSessionAndSavedCart": "preserved; browser cart stayed at ten items"
+  },
+  "privateScreenshots": [".bootstrap/verification/simulation-recovered-after-reload.png", ".bootstrap/verification/simulation-closed-after-reload.png"],
+  "limits": ["No Razorpay/provider operation, live payment/refund or operational reservation", "No deployment, email, load test or database backup/restore", "Physical-device, screen-reader speech, actual zoom and runtime reduced-motion checks were not repeated"]
+}
