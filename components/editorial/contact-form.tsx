@@ -36,6 +36,7 @@ export function ContactForm({ challengeConfig, nonce }: { challengeConfig: Conta
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
+        signal: AbortSignal.timeout(30_000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.get("name"),
@@ -64,7 +65,7 @@ export function ContactForm({ challengeConfig, nonce }: { challengeConfig: Conta
           : "We could not save your message. You can retry safely.";
       setState({ kind: "error", message });
     } catch {
-      setState({ kind: "error", message: "We could not reach the inquiry service. Retry to reuse this submission safely." });
+      setState({ kind: "error", message: "We could not confirm that your message was saved. Retry safely to check its status." });
     } finally {
       setChallengeToken(null);
       setChallengeReset((value) => value + 1);

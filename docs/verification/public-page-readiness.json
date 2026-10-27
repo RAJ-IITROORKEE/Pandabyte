@@ -1,0 +1,39 @@
+{
+  "verifiedOn": "2026-10-27",
+  "scope": "public-page and form-recovery follow-up",
+  "focusedTestsPassed": 15,
+  "targetedLintPassed": true,
+  "typescriptPassed": true,
+  "isolatedProductionBuildPassed": true,
+  "browserDefaultPageTitlesVerified": true,
+  "hydrationWarningObserved": false,
+  "contactRequestDeadlineMs": 30000,
+  "distinctDefaultPublicPageTitles": ["About", "Contact", "Help Center", "Policies", "Solutions", "Learn"],
+  "contactChecks": [
+    "mocked timeout releases busy state without resetting fields",
+    "unchanged retry retains request identity",
+    "edits and confirmed success start a new request identity",
+    "unknown outcomes are not described as definitely unsent",
+    "existing spam protection and input validation tests pass"
+  ],
+  "addressChecks": [
+    "new and saved editor opening focuses Address label",
+    "switching selected saved address focuses Address label",
+    "typing does not steal focus",
+    "save errors retain error focus",
+    "Cancel restores original trigger focus",
+    "browser new-address open/cancel performed without saving"
+  ],
+  "viewportRoutes": ["/contact", "/about", "/help", "/policies", "/solutions"],
+  "viewportWidths": [320, 768, 1024, 1440],
+  "singleMainH1AndNoHorizontalOverflow": true,
+  "otherBoundedBrowserChecks": ["Learn navigation", "three titled YouTube iframes", "explicit Blog examples and labeled filters", "Company menu keyboard focus restoration"],
+  "adminFrontendChanged": false,
+  "homepageHeroChanged": false,
+  "customerDataChanged": false,
+  "inquiriesOrEmailsSent": false,
+  "cmsContentPublished": false,
+  "paymentOrOrdersEnabled": false,
+  "productionDeployed": false,
+  "limits": ["actual screen-reader speech", "runtime reduced-motion switching", "real inquiry delivery", "existing-address browser edit/save", "signed-out browser sign-in/merge journey"]
+}

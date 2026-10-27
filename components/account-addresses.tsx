@@ -163,6 +163,11 @@ export function AccountAddresses() {
     }
   }, [error]);
 
+  const editingId = editing?.id;
+  useEffect(() => {
+    if (editingId !== undefined) addressLabelRef.current?.focus();
+  }, [editingId]);
+
   function startNewAddress(trigger: HTMLButtonElement) {
     editorTriggerRef.current = trigger;
     setError("");
@@ -322,7 +327,7 @@ export function AccountAddresses() {
                   </div>
                 </div>
                 <div className={styles.addressCardActions}>
-                  <button className={styles.textAction} type="button" onClick={(event) => startEdit(address, event.currentTarget)} disabled={saving}>
+                  <button className={styles.textAction} type="button" aria-label={`Edit ${address.label} address`} onClick={(event) => startEdit(address, event.currentTarget)} disabled={saving}>
                     Edit
                   </button>
                   <button
@@ -373,7 +378,7 @@ export function AccountAddresses() {
             <div className={styles.formGrid}>
               <div className={styles.field}>
                 <label htmlFor="address-label">Address label</label>
-                <input ref={addressLabelRef} id="address-label" name="label" autoFocus={!editing.id} autoComplete="off" required maxLength={40} value={editing.fields.label} onChange={(event) => updateField("label", event.target.value)} />
+                <input ref={addressLabelRef} id="address-label" name="label" autoComplete="off" required maxLength={40} value={editing.fields.label} onChange={(event) => updateField("label", event.target.value)} />
               </div>
               <div className={styles.field}>
                 <label htmlFor="address-recipient">Recipient name</label>

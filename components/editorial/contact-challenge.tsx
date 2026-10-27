@@ -135,8 +135,8 @@ export function ContactChallenge({
     <div ref={container} className={styles.widget} />
     <p className={status === "error" ? styles.error : styles.status} role={status === "error" ? "alert" : "status"}>
       {loadFailed ? runtimeAvailable
-        ? "Verification is unavailable. Your message was not sent, and your entries are still here."
-        : "Verification did not load. Your message was not sent, and your entries are still here. Try again later."
+        ? "Verification is unavailable. Your entries are still here."
+        : "Verification did not load. Your entries are still here. Try again later."
         : message}
     </p>
     {runtimeAvailable && (status === "expired" || status === "error") && <button className={styles.retry} type="button" onClick={retry}>Retry verification</button>}
