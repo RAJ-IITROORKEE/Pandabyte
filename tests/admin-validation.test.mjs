@@ -18,6 +18,18 @@ import {
 const uuid = "d9428888-122b-11e1-b85c-61cd3cbb3210";
 const common = { title: "A title", slug: "a-title", summary: "", blocks: [], seoTitle: "", seoDescription: "" };
 
+test("page writes reject built-in routes without breaking historical reads or CMS-backed pages", () => {
+  for (const slug of ["products", "shop", "blog", "solutions", "learn", "contact", "agent", "account", "admin", "staff", "sign-in", "sign-up", "api", "admin-preview", "cart", "checkout", "help-center", "admin-login"]) {
+    const document = { ...common, slug };
+    assert.equal(parseDocument("pages", document).ok, true);
+    assert.equal(parseCreateInput("pages", { document }).ok, false, slug);
+    assert.equal(parseUpdateInput("pages", { document, expectedVersion: 1 }).ok, false, slug);
+  }
+  for (const slug of ["home", "about", "help", "policies", "shipping-and-returns", "terms-and-conditions", "privacy-policy", "projects"]) {
+    assert.equal(parseCreateInput("pages", { document: { ...common, slug } }).ok, true, slug);
+  }
+});
+
 test("module routing is a closed registry with explicit CMS kinds", () => {
   assert.deepEqual(parseAdminModule("products"), "products");
   assert.deepEqual(parseAdminModule("videos"), "videos");

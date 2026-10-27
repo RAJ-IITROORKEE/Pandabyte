@@ -76,6 +76,11 @@ const DEFAULT_ADMIN_PAGE_SIZE = 24;
 const MAX_ADMIN_OFFSET = 10_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const RESERVED_PAGE_SLUGS = new Set([
+  "products", "shop", "blog", "solutions", "learn", "contact", "agent",
+  "account", "admin", "staff", "sign-in", "sign-up", "api", "admin-preview",
+  "cart", "checkout", "help-center", "admin-login",
+]);
 const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const COMMON_FIELDS = ["title", "slug", "summary", "blocks", "seoTitle", "seoDescription"] as const;
 const FAQ_PLACEMENTS = new Set(["home", "about", "contact", "help", "product", "solutions"]);
@@ -596,6 +601,7 @@ export function parseCreateInput(module: AdminModule, value: unknown): Validatio
   hasOnlyKeys(value, ["document"], "", fields);
   const document = parseDocument(module, value.document);
   if (!document.ok) fields.push(...document.fields);
+  else if (module === "pages" && RESERVED_PAGE_SLUGS.has(document.value.slug)) add(fields, "document.slug", "invalid", "This slug is reserved for a built-in route. Choose another slug.");
   return fields.length || !document.ok ? { ok: false, fields } : { ok: true, value: { document: document.value } };
 }
 
@@ -606,6 +612,7 @@ export function parseUpdateInput(module: AdminModule, value: unknown): Validatio
   const expectedVersion = integerValue(value.expectedVersion, "expectedVersion", fields, 1, Number.MAX_SAFE_INTEGER);
   const document = parseDocument(module, value.document);
   if (!document.ok) fields.push(...document.fields);
+  else if (module === "pages" && RESERVED_PAGE_SLUGS.has(document.value.slug)) add(fields, "document.slug", "invalid", "This slug is reserved for a built-in route. Choose another slug.");
   return fields.length || expectedVersion === undefined || !document.ok
     ? { ok: false, fields }
     : { ok: true, value: { expectedVersion, document: document.value } };
