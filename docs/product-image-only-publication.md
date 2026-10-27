@@ -1,0 +1,7 @@
+# Image-only publication with unpublished drafts
+
+On 28 October 2026 the seven remaining reviewed products received 14 lossless WebP images through the version-guarded image-only publication operation. The operation replaces only selected gallery and image-block references in the saved draft and current published document, appends a revision, and updates the live route atomically. All other draft fields, historical revisions, source files and prior media are retained. The six unpublished 3D models and posters were checked as inaccessible anonymously before and after replacement.
+
+The operation requires both catalog editing and publication capabilities, a matching record version and published revision, and published WebP replacement assets. It rejects ambiguous mappings and references outside the supported gallery fields. Migrations `20261028140000` and `20261028140001` provide the operation and its qualification fix; revoking execute or dropping the function is a forward rollback for the operation, not a rollback of published revisions.
+
+Verification included 14 exact decoded-pixel checks, per-product comparison of the complete expected draft and published document, public media hash checks, a disposable authenticated API fixture covering divergent drafts and rejection cases, focused tests, TypeScript, and an owner-session Admin gallery check. The SQL-only rollback fixture was not executed because the linked CLI disallows session-claim changes; no claim of coverage from that fixture is made.
