@@ -60,7 +60,8 @@ export async function prepareEditorialDownload(input: Buffer, media: StoredMedia
     if (size === undefined || (metadata.width <= size && metadata.height <= size)) {
       return { bytes: input, mimeType: "image/webp", extension: "webp", width: metadata.width, height: metadata.height };
     }
-    const { data, info } = await image.clone().resize(size, size, { fit: "inside", withoutEnlargement: true }).webp({ quality: 85 }).toBuffer({ resolveWithObject: true });
+    const { data, info } = await image.clone().resize(size, size, { fit: "inside", withoutEnlargement: true })
+      .webp(chunks.has("VP8L") ? { lossless: true, exact: true } : { quality: 85 }).toBuffer({ resolveWithObject: true });
     if (info.format !== "webp" || info.width < 1 || info.height < 1 || info.width > size || info.height > size || data.byteLength > MAX_MEDIA_BYTES) return null;
     return { bytes: data, mimeType: "image/webp", extension: "webp", width: info.width, height: info.height };
   } catch { return null; }

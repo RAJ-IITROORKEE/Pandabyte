@@ -49,3 +49,16 @@ test("SVG and PNG uploads become safe transparent WebP images", async () => {
   assert.equal(await prepareEditorialFile(new File([svg], "category.png", { type: "image/svg+xml" })), null);
   assert.equal(await prepareEditorialFile(new File(['<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><script/></svg>'], "bad.svg", { type: "image/svg+xml" })), null);
 });
+
+test("preserves PNG pixels including transparent RGB and clean WebP bytes", async () => {
+  const pixels = Buffer.from([23, 45, 67, 0, 89, 123, 210, 100, 11, 22, 33, 255, 44, 55, 66, 254]);
+  const png = await sharp(pixels, { raw: { width: 2, height: 2, channels: 4 } }).png().toBuffer();
+  const uploaded = await prepareEditorialFile(new File([png], "pixels.png", { type: "image/png" }));
+  assert.ok(uploaded);
+  assert.deepEqual(await sharp(uploaded.bytes).ensureAlpha().raw().toBuffer(), pixels);
+  const webp = await prepareEditorialFile(new File([uploaded.bytes], "pixels.webp", { type: "image/webp" }));
+  assert.deepEqual(webp?.bytes, uploaded.bytes);
+  const lossy = await sharp(png).webp({ quality: 80 }).toBuffer();
+  const uploadedLossy = await prepareEditorialFile(new File([lossy], "lossy.webp", { type: "image/webp" }));
+  assert.deepEqual(uploadedLossy?.bytes, lossy);
+});

@@ -56,6 +56,16 @@ async function record(bytes, overrides = {}) {
   };
 }
 
+function webpChunks(bytes) {
+  const chunks = [];
+  for (let offset = 12; offset < bytes.length;) {
+    chunks.push(bytes.toString("ascii", offset, offset + 4));
+    const length = bytes.readUInt32LE(offset + 4);
+    offset += 8 + length + (length % 2);
+  }
+  return chunks;
+}
+
 async function assertDeliveredUnchanged(bytes) {
   const prepared = await prepareEditorialDownload(bytes, await record(bytes));
   assert.ok(prepared);
@@ -103,6 +113,7 @@ test("returns bounded clean WebP derivatives, preserving alpha and never enlargi
     assert.equal(metadata.width, width);
     assert.equal(metadata.height, height);
     assert.equal(metadata.hasAlpha, true);
+    assert.ok(webpChunks(prepared.bytes).includes("VP8 "));
     for (const field of ["exif", "icc", "iptc", "xmp", "tifftagPhotoshop", "comments"]) {
       assert.equal(metadata[field], undefined, `derived WebP contains ${field}`);
     }
@@ -117,6 +128,15 @@ test("returns bounded clean WebP derivatives, preserving alpha and never enlargi
     assert.equal(prepared.height, HEIGHT);
     assert.deepEqual(prepared.bytes, small);
   }
+});
+
+test("encodes resized lossless WebP without changing resized pixels", async () => {
+  const source = await webp({ alpha: true, lossless: true, width: 1200, height: 900 });
+  const prepared = await prepareEditorialDownload(source, await record(source), 96);
+  assert.ok(prepared);
+  assert.ok(webpChunks(prepared.bytes).includes("VP8L"));
+  const expectedPixels = await sharp(source).resize(96, 96, { fit: "inside", withoutEnlargement: true }).raw().toBuffer();
+  assert.deepEqual(await sharp(prepared.bytes).raw().toBuffer(), expectedPixels);
 });
 
 test("rejects unsupported runtime sizes and derivative requests for PDFs", async () => {
