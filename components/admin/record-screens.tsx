@@ -21,7 +21,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type Dispatch
 import { toast } from "sonner";
 import { ProductRichContentView } from "@/components/catalog/product-rich-content";
 import { ProductDocumentPreview } from "@/components/catalog/product-document-preview";
-import { legacyBlocksToRichContent, type ProductRichContent } from "@/lib/admin/product-content";
+import { legacyBlocksToRichContent, parseProductRichContent, type ProductRichContent } from "@/lib/admin/product-content";
 import { productSlugFromTitle } from "./product-editor-utils";
 import { findActiveSingleton } from "./singleton-record";
 import { ProductDocumentEditor } from "./product-document-editor";
@@ -593,7 +593,7 @@ function DraftPreview({ document, module }: { document: AdminDocument; module: A
     <h2>{document.title || "Untitled draft"}</h2>
     {module === "pages" && <p className={styles.fieldHint}>This preview shows this page record only. The live Home, About, Help, and Policies routes also combine route-specific layouts or separately managed content such as team profiles, FAQs, and individual policy pages.</p>}
     <PublishedDocument document={previewDocument} hideTitle />
-    {richContent && <section aria-label={`${module === "categories" ? "Category" : "Product"} description preview`}><h3>{module === "categories" ? "About this category" : "About this product"}</h3><ProductRichContentView content={richContent} /></section>}
+    {richContent && <section aria-label={`${module === "blog" ? "Article content" : module === "categories" ? "Category description" : "Product description"} preview`}><h3>{module === "blog" ? "Article content" : module === "categories" ? "About this category" : "About this product"}</h3><ProductRichContentView content={richContent} /></section>}
     {product?.documentMediaId && <section aria-label="Product Word document preview"><h3>Word document</h3><ProductDocumentPreview mediaId={product.documentMediaId} /></section>}
     <p id="draft-preview-privacy" className={styles.previewPrivacy}>Only staff with access can view this draft preview.</p>
   </section>;
@@ -621,6 +621,8 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
   const num = (key: string) => Number(doc[key] ?? 0);
   const arr = (key: string) => readJson<string[]>(doc[key], []);
   const rows = (key: string) => readJson<Record<string, unknown>[]>(doc[key], []);
+  const legacyBlocks = readJson<ContentBlock[]>(doc.blocks, []);
+  const blogRichContent = module === "blog" ? (doc.richContent as ProductRichContent | undefined ?? (legacyBlocks.some((block) => block.type === "heading" && block.level === 1) ? null : parseProductRichContent(legacyBlocksToRichContent(legacyBlocks)))) : null;
   const faqPlacements = arr("placements");
   const unlistedFaqPlacements = faqPlacements.filter((value) => !FAQ_PLACEMENTS.some((placement) => placement.value === value));
   const faqHasFormattedBlocks = module === "faqs" && readJson<ContentBlock[]>(doc.blocks, []).length > 0;
@@ -762,14 +764,14 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     {(module === "products" || module === "blog" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : module === "team" ? "Profile media" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : module === "team" ? "Only published WebP images can be selected. The first image is used as the public profile portrait; additional selected media IDs remain attached but are not shown on the About card." : "Choose published WebP images or upload an image. The first selected image is the article cover."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : module === "team" ? "Profile media assets" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products" || module === "blog"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} uploadTarget={module === "products" ? "product" : module === "blog" ? "article" : undefined} onUploadDelta={onUploadDelta} /></section>}
     {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
-    {module === "products" || module === "categories" ? <ProductRichTextEditor
+    {module === "products" || module === "categories" || (module === "blog" && blogRichContent) ? <ProductRichTextEditor
       key={richContentResetKey}
-      kind={module === "categories" ? "category" : "product"}
-      value={doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(readJson<ContentBlock[]>(doc.blocks, []))}
+      kind={module === "blog" ? "article" : module === "categories" ? "category" : "product"}
+      value={module === "blog" ? blogRichContent! : doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(legacyBlocks)}
       onChange={(value) => setDocument((current) => ({ ...current, blocks: [], richContent: value } as AdminDocument))}
       onValidityChange={onRichContentValidityChange}
       onUploadDelta={onUploadDelta}
-    /> : <BlockEditor blocks={readJson<ContentBlock[]>(doc.blocks, [])} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog" || module === "faqs" || module === "solutions" || module === "learn"} contentLabel={module === "blog" ? "Article content" : module === "faqs" ? "Formatted answer" : module === "solutions" ? "Solution content" : module === "learn" ? "Resource content" : "Page content"} />}
+    /> : <>{module === "blog" && <p className={styles.fieldHint}>This article contains legacy blocks that cannot be safely converted. Edit them below to preserve the content.</p>}<BlockEditor blocks={legacyBlocks} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog" || module === "faqs" || module === "solutions" || module === "learn"} contentLabel={module === "blog" ? "Article content" : module === "faqs" ? "Formatted answer" : module === "solutions" ? "Solution content" : module === "learn" ? "Resource content" : "Page content"} /></>}
     <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
   </>;
 }
@@ -807,7 +809,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const onUploadDelta = useCallback((change: 1 | -1) => setPendingUploads((current) => Math.max(0, current + change)), []);
   const serialized = useMemo(() => JSON.stringify(draft), [draft]);
   const documentDirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
-  const dirty = documentDirty || (module === "products" && productPricing.dirty) || ((module === "products" || module === "categories") && !richContentValid) || pendingUploads > 0;
+  const dirty = documentDirty || (module === "products" && productPricing.dirty) || ((module === "products" || module === "categories" || module === "blog") && !richContentValid) || pendingUploads > 0;
   const pricingReady = module !== "products" || productPricing.ready;
 
   useEffect(() => {
@@ -838,7 +840,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setBaseline(JSON.stringify(result.record.document));
       setSlugAuto(false);
       setRichContentValid(true);
-      if (module === "products" || module === "categories") setRichContentResetKey((value) => value + 1);
+      if (module === "products" || module === "categories" || module === "blog") setRichContentResetKey((value) => value + 1);
       setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" });
       if (module === "products") setPricingRefreshKey((value) => value + 1);
       setConflict(false);
@@ -853,7 +855,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     if (isNew) return;
     let active = true;
     void api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`)
-      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setSlugAuto(false); setRichContentValid(true); if (module === "products" || module === "categories") setRichContentResetKey((value) => value + 1); setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" }); if (module === "products") setPricingRefreshKey((value) => value + 1); setConflict(false); } })
+      .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setSlugAuto(false); setRichContentValid(true); if (module === "products" || module === "categories" || module === "blog") setRichContentResetKey((value) => value + 1); setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" }); if (module === "products") setPricingRefreshKey((value) => value + 1); setConflict(false); } })
       .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Record could not be loaded."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -893,7 +895,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setValidationIssues(productPricing.errors.map((message) => ({ field: "prices", message })));
       return null;
     }
-    if ((module === "products" || module === "categories") && !richContentValid) {
+    if ((module === "products" || module === "categories" || module === "blog") && !richContentValid) {
       setError("The description contains unsupported content or formatting. Correct it before saving.");
       return null;
     }
@@ -921,7 +923,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
         toast.success("Product draft saved.");
       }
       if (module === "categories") { setSlugAuto(false); toast.success("Category draft saved."); }
-      if (module === "categories") setRichContentResetKey((value) => value + 1);
+      if (module === "categories" || module === "blog") setRichContentResetKey((value) => value + 1);
       setConflict(false);
       setNotice("Draft saved.");
       if (isNew) router.replace(`/admin/${module}/${result.record.id}`);
@@ -965,7 +967,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       setNotice(action === "publish" ? "Record published." : action === "unpublish" ? "Record unpublished." : action === "archive" ? "Record archived." : "Revision restored as a new draft.");
       if (module === "products") toast.success(action === "publish" ? "Product published." : "Product updated.");
       if (module === "categories") toast.success(action === "archive" ? "Category archived. Its history was preserved." : "Category updated.");
-      if (module === "categories") setRichContentResetKey((value) => value + 1);
+      if (module === "categories" || module === "blog") setRichContentResetKey((value) => value + 1);
     } catch (reason) {
       const status = (reason as { status?: number }).status;
       setConflict(status === 409);

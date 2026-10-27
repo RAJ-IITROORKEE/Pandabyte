@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { PublicPage } from "@/components/storefront/page-frame";
 import { getPublishedRecord } from "@/lib/editorial/published";
 import { PublishedDocument } from "@/components/published-document";
+import { ProductRichContentView } from "@/components/catalog/product-rich-content";
 import { publicMetadata } from "@/lib/editorial/seo";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,6 @@ export default async function BlogArticle({ params }: Props) {
   if (!record) notFound();
   if ("redirectTo" in record) permanentRedirect(`/blog/${record.redirectTo}`);
   return <PublicPage eyebrow="Blog" title={record.title}>
-    <PublishedDocument document={record.document} hideTitle />
+    <PublishedDocument document={record.document} hideTitle content={record.document.richContent && <ProductRichContentView content={record.document.richContent} />} />
   </PublicPage>;
 }

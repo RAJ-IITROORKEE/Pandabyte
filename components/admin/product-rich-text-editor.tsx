@@ -177,8 +177,8 @@ async function uploadProductImage(file: File, altText: string) {
   return id;
 }
 
-export function ProductRichTextEditor({ value, onChange, onValidityChange, onUploadDelta, kind = "product" }: { value: ProductRichContent; onChange: (next: ProductRichContent) => void; onValidityChange: (valid: boolean) => void; onUploadDelta: (change: 1 | -1) => void; kind?: "product" | "category" }) {
-  const descriptionLabel = kind === "category" ? "Category description" : "Product description";
+export function ProductRichTextEditor({ value, onChange, onValidityChange, onUploadDelta, kind = "product" }: { value: ProductRichContent; onChange: (next: ProductRichContent) => void; onValidityChange: (valid: boolean) => void; onUploadDelta: (change: 1 | -1) => void; kind?: "product" | "category" | "article" }) {
+  const descriptionLabel = kind === "article" ? "Article content" : kind === "category" ? "Category description" : "Product description";
   const capabilities = useAdminCapabilities();
   const canManageMedia = capabilities.includes("media.manage");
   const fileId = useId();

@@ -9,6 +9,15 @@ test("published list projection restores empty blocks and rejects private/malfor
   assert.deepEqual(parsePublishedRecord("blog",record).document.blocks,[]);
   for(const patch of [{kind:"page"},{id:"private"},{publishedAt:"not a date"},{document:{...record.document,role:"staff"}}]) assert.throws(()=>parsePublishedRecord("blog",{...record,...patch}));
 });
+test("published Blog detail retains validated rich content and legacy blocks", () => {
+  const blocks = [{ type: "paragraph", text: "Legacy article" }];
+  const richContent = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Formatted article" }] }] };
+  const record = { id, kind: "blog", revisionId: id, publishedAt: "2026-10-24T00:00:00Z", document: { ...doc, author: "", tags: [], mediaIds: [], blocks, richContent } };
+  const parsed = parsePublishedRecord("blog", record);
+  assert.deepEqual(parsed.document.richContent, richContent);
+  assert.deepEqual(parsed.document.blocks, blocks);
+  assert.throws(() => parsePublishedRecord("blog", { ...record, document: { ...record.document, richContent: { type: "doc", content: [{ type: "script" }] } } }));
+});
 test("published category records retain legacy blocks and accept validated rich content", () => {
   const legacy = [{ type: "paragraph", text: "Legacy category copy" }];
   const richContent = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Formatted category copy" }] }] };

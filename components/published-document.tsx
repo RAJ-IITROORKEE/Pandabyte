@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import type { AdminDocument, ContentBlock } from "@/lib/admin/validation";
 
 function DocumentBlock({ block }: { block: ContentBlock }) {
@@ -14,14 +15,14 @@ function DocumentBlock({ block }: { block: ContentBlock }) {
   }
 }
 
-export function PublishedDocument({ document, hideTitle = false }: { document: AdminDocument; hideTitle?: boolean }) {
+export function PublishedDocument({ document, hideTitle = false, content }: { document: AdminDocument; hideTitle?: boolean; content?: ReactNode }) {
   return (
     <article className="published-document">
       {!hideTitle && <h1 className="auth-title">{document.title}</h1>}
       {document.summary && <p className="document-summary">{document.summary}</p>}
       {"author" in document && document.author && <p>By {document.author}</p>}
       {"mediaIds" in document && document.mediaIds.map((id) => <Image unoptimized key={id} src={`/api/media/${id}`} alt={document.title} width={1000} height={700} style={{ objectFit: "contain", height: "auto", maxWidth: "100%" }} />)}
-      {document.blocks.map((block, index) => <DocumentBlock key={index} block={block} />)}
+      {content ?? document.blocks.map((block, index) => <DocumentBlock key={index} block={block} />)}
       {"answer" in document && document.blocks.length === 0 && <p>{document.answer}</p>}
       {"name" in document && <section><h2>{document.name}</h2><p>{document.role}</p><p>{document.bio}</p></section>}
       {"email" in document && <address><p>{document.email}</p><p>{document.phone}</p><p>{document.address}</p><p>{document.hours} {document.timezone}</p></address>}

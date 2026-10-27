@@ -50,3 +50,16 @@ test("categories accept optional closed rich content and retain legacy blocks", 
   }]) }).ok, false);
   assert.equal(parseDocument("categories", { ...category, documentMediaId: id }).ok, false);
 });
+
+test("blogs accept optional bounded rich content while retaining legacy blocks", () => {
+  const blocks = [{ type: "paragraph", text: "Legacy blog copy" }];
+  const blog = { title: base.title, slug: base.slug, summary: "", blocks, seoTitle: "", seoDescription: "",
+    author: "", tags: [], mediaIds: [], richContent: doc([paragraph("Formatted blog copy")]) };
+  const parsed = parseDocument("blog", blog);
+  assert.equal(parsed.ok, true);
+  assert.deepEqual(parsed.value.blocks, blocks);
+  assert.deepEqual(parsed.value.richContent, blog.richContent);
+  assert.equal(parseDocument("blog", { ...blog, richContent: doc([{ type: "image", attrs: { mediaId: id, alt: "Board", src: "https://example.com/image.webp" } }]) }).ok, false);
+  assert.equal(parseDocument("blog", { ...blog, richContent: doc(Array.from({ length: 201 }, () => paragraph("x"))) }).ok, false);
+  assert.equal(parseDocument("blog", { ...blog, richContent: undefined }).ok, true);
+});

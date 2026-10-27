@@ -55,7 +55,7 @@ export type AdminDocumentByModule = {
     sourceReview?: string[];
   };
   categories: CommonDocument & { parentId: string | null; position: number; mediaIds: string[]; richContent?: ProductRichContent };
-  blog: CommonDocument & { author: string; tags: string[]; mediaIds: string[] };
+  blog: CommonDocument & { author: string; tags: string[]; mediaIds: string[]; richContent?: ProductRichContent };
   pages: CommonDocument;
   faqs: CommonDocument & { answer: string; topic: string; placements: string[]; position: number };
   team: CommonDocument & { name: string; role: string; bio: string; mediaIds: string[]; links: DocumentLink[]; position: number };
@@ -88,7 +88,7 @@ const FAQ_PLACEMENTS = new Set(["home", "about", "contact", "help", "product", "
 const MODULE_FIELDS: Record<AdminModule, readonly string[]> = {
   products: ["categoryIds", "modelNumbers", "variants", "specifications", "compatibility", "kitContents", "resources", "mediaIds", "model3d", "sourceObservation", "sourceReview", "tags", "richContent", "documentMediaId"],
   categories: ["parentId", "position", "mediaIds", "richContent"],
-  blog: ["author", "tags", "mediaIds"],
+  blog: ["author", "tags", "mediaIds", "richContent"],
   pages: [],
   faqs: ["answer", "topic", "placements", "position"],
   team: ["name", "role", "bio", "mediaIds", "links", "position"],
@@ -542,7 +542,10 @@ export function parseDocument<M extends AdminModule>(module: M, value: unknown):
     const author = textValue(value, "author", "document.author", fields, 160) ?? "";
     const tags = textArray(value.tags, "document.tags", fields, 30, 60);
     const mediaIds = uuidArray(value.mediaIds, "document.mediaIds", fields);
+    const richContent = value.richContent === undefined ? undefined : parseProductRichContent(value.richContent);
+    if (richContent === null) add(fields, "document.richContent", "invalid", "Use supported formatting, links and managed images within the document limits.");
     Object.assign(document, { author, tags, mediaIds });
+    if (richContent) Object.assign(document, { richContent });
   } else if (module === "faqs") {
     const answer = textValue(value, "answer", "document.answer", fields, 8000) ?? "";
     const topic = textValue(value, "topic", "document.topic", fields, 120) ?? "";
