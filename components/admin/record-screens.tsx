@@ -23,6 +23,7 @@ import { ProductRichContentView } from "@/components/catalog/product-rich-conten
 import { ProductDocumentPreview } from "@/components/catalog/product-document-preview";
 import { legacyBlocksToRichContent, type ProductRichContent } from "@/lib/admin/product-content";
 import { productSlugFromTitle } from "./product-editor-utils";
+import { findActiveSingleton } from "./singleton-record";
 import { ProductDocumentEditor } from "./product-document-editor";
 import { ProductPricingEditor, type ProductPricingState } from "./product-pricing-editor";
 import { CategoryImageEditor } from "./category-image-editor";
@@ -183,7 +184,25 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [singletonResult, setSingletonResult] = useState<{ module: AdminModule; id?: string | null; error?: string } | null>(null);
+  const singleton = singletonResult?.module === module ? singletonResult.id : undefined;
+  const singletonError = singletonResult?.module === module ? singletonResult.error : undefined;
   const pageSize = 20;
+
+  useEffect(() => {
+    if (module !== "contact" && module !== "navigation") return;
+    let active = true;
+    async function findSingleton() {
+      try {
+        const id = await findActiveSingleton((offset) => api<{ items: RecordListItem[]; total: number }>(`/api/admin/${module}?limit=100&offset=${offset}`));
+        if (active) setSingletonResult({ module, id });
+      } catch (reason) {
+        if (active) setSingletonResult({ module, error: reason instanceof Error ? reason.message : "Could not check existing records." });
+      }
+    }
+    void findSingleton();
+    return () => { active = false; };
+  }, [module]);
 
   const load = useCallback(async (nextOffset = 0, search = submittedQuery) => {
     try {
@@ -231,8 +250,10 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
           <h1>{meta.title}</h1>
           <p className={styles.lede}>{meta.description}</p>
         </div>
-        {capabilities.includes(capability) && <Link className={styles.primaryButton} href={`/admin/${module}/new`}><Plus aria-hidden="true" size={17} /> New {meta.singular}</Link>}
+        {capabilities.includes(capability) && ((module !== "contact" && module !== "navigation") || singleton === null ? <Link className={styles.primaryButton} href={`/admin/${module}/new`}><Plus aria-hidden="true" size={17} /> New {meta.singular}</Link> : singleton ? <Link className={styles.primaryButton} href={`/admin/${module}/${singleton}`}>Edit {meta.singular}</Link> : null)}
       </div>
+
+      {singletonError && <div className={styles.errorBanner} role="alert"><p>{singletonError}</p></div>}
 
       <form className={styles.toolbar} onSubmit={search} role="search">
         <label className={styles.searchBox}>
