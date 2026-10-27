@@ -53,7 +53,7 @@ export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().foote
 
         <div className="pb-site-footer__bottom">
           <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
-          <p>Development preview · checkout is not available yet</p>
+          <p>Development preview · ordering and payment are not available yet</p>
         </div>
       </div>
     </footer>

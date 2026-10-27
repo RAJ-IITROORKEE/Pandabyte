@@ -74,6 +74,17 @@ test("a populated quote displays server amounts and item issues while payment st
   assert.match(html, /GST<\/dt><dd>Pending setup/);
   assert.match(html, /<button[^>]*disabled=""[^>]*>.*Payment coming soon<\/button>/);
   assert.doesNotMatch(html, /<form|Place order|Pay now/);
+
+  const sourceHtml = review.renderSession({
+    items: [{ variantId: "variant-a", quantity: 2 }],
+    quote: { lines: [{ variantId: "variant-a", quantity: 2, slug: "test-board", title: "Test board",
+      variant: { label: "Default", cartEligible: true }, issue: "quantity_unavailable", lineTotalPaise: 24690 }],
+      subtotalPaise: 24690, readyForCheckout: false },
+  });
+  assert.match(sourceHtml, /Stock is unverified for this item/);
+  assert.match(sourceHtml, /Stock is unverified for one or more items/);
+  assert.match(sourceHtml, /<button[^>]*disabled=""[^>]*>.*Payment coming soon<\/button>/);
+  assert.doesNotMatch(sourceHtml, /Some items need attention/);
 });
 
 test("discarding a checkout session aborts its pending private cart read", async () => {

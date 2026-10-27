@@ -14,12 +14,13 @@ export function ProductCard({ product, categories, featured = false }: { product
       id: variant.id,
       sku: variant.sku,
       label: variant.label,
-      regularPricePaise: product.document.sourceObservation ? null : variant.regularPricePaise,
-      effectivePricePaise: product.document.sourceObservation ? null : variant.effectivePricePaise,
-      isOnSale: product.document.sourceObservation ? false : variant.isOnSale,
-      saleEndsAt: product.document.sourceObservation ? null : variant.saleEndsAt,
-      availability: product.document.sourceObservation ? "unavailable" : variant.availability,
+      regularPricePaise: variant.regularPricePaise,
+      effectivePricePaise: variant.effectivePricePaise,
+      isOnSale: variant.isOnSale,
+      saleEndsAt: variant.saleEndsAt,
+      availability: variant.availability,
       purchasable: variant.purchasable,
+      cartEligible: variant.cartEligible,
     }))}
     observation={product.document.sourceObservation}
     featured={featured}

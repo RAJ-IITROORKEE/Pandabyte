@@ -44,7 +44,7 @@ function CheckoutSession() {
   if (!cart.items.length) return <section className={styles.panel} aria-labelledby="checkout-empty">
     <ShoppingBag aria-hidden="true" size={28} />
     <h2 id="checkout-empty">Your cart is empty</h2>
-    <p>Add an available product to review it here. Guest items can be merged from your cart after sign-in.</p>
+    <p>Add a product to review it here. Guest items can be merged from your cart after sign-in.</p>
     <Link className="shell-button" href="/cart">Open cart</Link>
     <Link className={styles.link} href="/shop">Browse products</Link>
   </section>;
@@ -54,7 +54,7 @@ function CheckoutSession() {
       <section className={styles.panel} aria-labelledby="checkout-items">
         <h2 id="checkout-items"><ShoppingBag aria-hidden="true" size={22} /> Your items</h2>
         <ul className={styles.items}>{cart.quote.lines.map(line => <li key={line.variantId}>
-          <div>{line.slug ? <Link href={`/products/${encodeURIComponent(line.slug)}`}>{line.title}</Link> : <strong>Unavailable item</strong>}<p>Quantity {line.quantity}{line.variant ? ` · ${line.variant.label}` : ""}</p>{line.issue && <p className={styles.notice}>Review this item in your cart before continuing.</p>}</div>
+          <div>{line.slug ? <Link href={`/products/${encodeURIComponent(line.slug)}`}>{line.title}</Link> : <strong>Unavailable item</strong>}<p>Quantity {line.quantity}{line.variant ? ` · ${line.variant.label}` : ""}</p>{line.issue && <p className={styles.notice}>{line.issue === "quantity_unavailable" && line.variant?.cartEligible === true ? "Stock is unverified for this item." : "Review this item in your cart before continuing."}</p>}</div>
           <strong>{line.lineTotalPaise === null ? "Price unavailable" : money.format(line.lineTotalPaise / 100)}</strong>
         </li>)}</ul>
         <Link className={styles.link} href="/cart">Edit cart or refresh prices</Link>
@@ -68,7 +68,7 @@ function CheckoutSession() {
     <aside className={styles.panel} aria-labelledby="checkout-summary">
       <h2 id="checkout-summary">Review summary</h2>
       <dl className={styles.totals}><div><dt>Product subtotal</dt><dd>{cart.quote.subtotalPaise === null ? "Unavailable" : money.format(cart.quote.subtotalPaise / 100)}</dd></div><div><dt>Shipping</dt><dd>Pending setup</dd></div><div><dt>GST</dt><dd>Pending setup</dd></div></dl>
-      {!cart.quote.readyForCheckout && <p className={styles.notice}>Some items need attention. Return to the cart to review current availability and pricing.</p>}
+      {!cart.quote.readyForCheckout && <p className={styles.notice}>{cart.quote.lines.every(line => line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true)) ? "Stock is unverified for one or more items." : "Some items need attention. Return to the cart to review availability and pricing."}</p>}
       <p>Final totals and payment are not configured yet. Reviewing this page does not reserve stock or place an order.</p>
       <button className={styles.payment} type="button" disabled><CreditCard aria-hidden="true" size={18} /> Payment coming soon</button>
     </aside>

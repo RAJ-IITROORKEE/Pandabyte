@@ -1,3 +1,5 @@
+27 October source-cart override: the owner enabled imported-product cart actions with captured prices. Show unverified availability, preserve source provenance and provide a cart/checkout review with payment disabled. Admin and the homepage hero remain protected. See [source-cart contract](docs/source-cart-review.md).
+
 # PandaByte.in — editable website and design contract
 
 27 October public storefront override: the owner selected **Products · Solutions · Shop · Company** as the four primary labels, compact catalog search/cart/account/theme utilities, Tailark company composition and Motion Primitives product Quick View. Historical navigation/component preferences below remain historical where they conflict. The existing interactive hero, global tokens and Admin interface are protected. See the [implemented public-only refactor](docs/storefront-refactor.md).

@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   classifyCurrentPrice,
-  isMaskedPublicVariant,
+  isReviewOnlyPublicVariant,
+  isUnpricedPublicVariant,
   mapBounded,
   matchesSourceAdminRecord,
   priceMutation,
@@ -89,11 +90,21 @@ test("price mutation resends the existing document and contains only guarded pri
   }]);
 });
 
-test("source products remain masked in public variants", () => {
-  const variant = { sku: "SKU-1", regularPricePaise: null, effectivePricePaise: null, isOnSale: false, availability: "unavailable", purchasable: false };
-  assert.equal(isMaskedPublicVariant(variant, "SKU-1"), true);
-  assert.equal(isMaskedPublicVariant({ ...variant, effectivePricePaise: 100 }, "SKU-1"), false);
-  assert.equal(isMaskedPublicVariant({ ...variant, purchasable: true }, "SKU-1"), false);
+test("source public variants expose only reviewable prices and unverified stock", () => {
+  const pair = { regularPricePaise: 15000, actualPricePaise: 12000 };
+  const variant = { sku: "SKU-1", regularPricePaise: 15000, effectivePricePaise: 12000, isOnSale: true, saleEndsAt: null, availability: "unavailable", purchasable: false, cartEligible: true };
+  assert.equal(isReviewOnlyPublicVariant(variant, "SKU-1", pair), true);
+  for (const invalid of [{ effectivePricePaise: -1 }, { effectivePricePaise: 15001 }, { effectivePricePaise: 13000 }, { purchasable: true }, { cartEligible: false }, { stock: 0 }, { isOnSale: false }]) {
+    assert.equal(isReviewOnlyPublicVariant({ ...variant, ...invalid }, "SKU-1", pair), false);
+  }
+  assert.equal(isReviewOnlyPublicVariant({ ...variant, regularPricePaise: null, effectivePricePaise: null }, "SKU-1"), false);
+});
+
+test("unpriced variants are accepted only by the plan preflight", () => {
+  const variant = { sku: "SKU-1", regularPricePaise: null, effectivePricePaise: null, isOnSale: false, saleEndsAt: null, availability: "unavailable", purchasable: false };
+  assert.equal(isUnpricedPublicVariant(variant, "SKU-1"), true);
+  assert.equal(isUnpricedPublicVariant({ ...variant, cartEligible: true }, "SKU-1"), false);
+  assert.equal(isReviewOnlyPublicVariant(variant, "SKU-1"), false);
 });
 
 test("verification reconciles only exact pending writes before reporting a partial import", () => {

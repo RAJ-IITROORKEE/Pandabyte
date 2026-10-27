@@ -237,6 +237,8 @@ function parsePublicVariants(value: unknown) {
       !(regularPricePaise === null || (Number.isSafeInteger(regularPricePaise) && (regularPricePaise as number) >= 0)) ||
       !(effectivePricePaise === null || (Number.isSafeInteger(effectivePricePaise) && (effectivePricePaise as number) >= 0)) ||
       typeof variant.isOnSale !== "boolean" ||
+      ("cartEligible" in variant && typeof variant.cartEligible !== "boolean") ||
+      (variant.cartEligible === true && (effectivePricePaise === null || variant.availability !== "unavailable")) ||
       !(saleEndsAt === null || (typeof saleEndsAt === "string" && Number.isFinite(Date.parse(saleEndsAt)))) ||
       (variant.availability !== "available" && variant.availability !== "unavailable")
     ) return null;
@@ -249,6 +251,7 @@ function parsePublicVariants(value: unknown) {
       isOnSale: variant.isOnSale,
       saleEndsAt,
       availability: variant.availability,
+      ...("cartEligible" in variant ? { cartEligible: variant.cartEligible as boolean } : {}),
     });
   }
   return variants;

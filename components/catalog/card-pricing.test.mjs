@@ -11,10 +11,10 @@ test("card prices use published amounts and only identify an unambiguous discoun
   assert.deepEqual(cardPricing([variant, { ...variant, id: "b", effectivePricePaise: null, regularPricePaise: null, isOnSale: false }]), { price: "Price unavailable", availability: "Available", originalPrice: null, sourcePrice: false });
 });
 
-test("source prices retain their label and never imply availability or a sale", () => {
-  assert.deepEqual(cardPricing([variant], " ₹80 "), { price: "₹80", availability: "Availability unavailable", originalPrice: null, sourcePrice: true });
-  const unavailable = { price: "Price unavailable", availability: "Availability unavailable", originalPrice: null, sourcePrice: false };
-  assert.deepEqual(cardPricing([variant], ""), unavailable);
-  assert.deepEqual(cardPricing([{ ...variant, purchasable: false }]), unavailable);
-  assert.deepEqual(cardPricing([]), unavailable);
+test("source prices use configured amounts while stock remains unverified", () => {
+  const source = { ...variant, purchasable: false, cartEligible: true, availability: "unavailable" };
+  assert.deepEqual(cardPricing([source], "₹90"), { price: "₹80.00", availability: "Availability unverified", originalPrice: "₹100.00", sourcePrice: true });
+  assert.deepEqual(cardPricing([{ ...source, cartEligible: false, effectivePricePaise: null, regularPricePaise: null, isOnSale: false }], " ₹90 "), { price: "₹90", availability: "Availability unverified", originalPrice: null, sourcePrice: true });
+  assert.deepEqual(cardPricing([{ ...source, cartEligible: false }]), { price: "Price unavailable", availability: "Availability unverified", originalPrice: null, sourcePrice: false });
+  assert.deepEqual(cardPricing([]), { price: "Price unavailable", availability: "Availability unavailable", originalPrice: null, sourcePrice: false });
 });

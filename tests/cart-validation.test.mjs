@@ -162,3 +162,26 @@ test("customer cart validates item/quote coherence independent of quote ordering
   assert.equal(parseCustomerCart({ ...value, extra: "field" }), null);
   assert.equal(parseCustomerCart({ ...value, quote: quote([line(variantA), line(variantA)]) }), null);
 });
+
+test("source cart review retains server prices without claiming stock or checkout readiness", () => {
+  const source = line(variantA, 2, {
+    variant: publicVariant(variantA, { availability: "unavailable", cartEligible: true }),
+    issue: "quantity_unavailable",
+  });
+  const review = quote([source]);
+  assert.deepEqual(parseCartQuote(review), review);
+  assert.equal(review.subtotalPaise, 160000);
+  assert.equal(review.readyForCheckout, false);
+  for (const patch of [
+    { availability: "available" },
+    { cartEligible: "true" },
+    { effectivePricePaise: null },
+    { privateStock: 10 },
+  ]) {
+    const invalid = structuredClone(review);
+    Object.assign(invalid.lines[0].variant, patch);
+    assert.equal(parseCartQuote(invalid), null);
+  }
+  assert.equal(parseCartQuote({ ...review, readyForCheckout: true }), null);
+  assert.equal(parseCartReplaceRequest({ expectedVersion: 1, items: [{ variantId: variantA, quantity: 1, cartEligible: true }] }), null);
+});

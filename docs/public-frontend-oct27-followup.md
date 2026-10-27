@@ -1,3 +1,5 @@
+> Superseded source-cart restriction: the owner subsequently enabled imported-product Add to Cart using stored captured prices. See [current source-cart contract](source-cart-review.md). Stock remains unverified and payments stay disabled; earlier statements below describe the preceding checkpoint.
+
 # Public frontend follow-up — 27 October 2026
 
 The owner requested a customer account refresh, animated product galleries, a redesigned homepage support card and the three YouTube videos from the reviewed Superdesign reference. The protected homepage hero and the separate Admin frontend were not changed in this checkpoint.

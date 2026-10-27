@@ -317,8 +317,8 @@ function CartContents({ view, id, busy, locked, refreshing, onRemove, onUpdateQu
       <p className={styles.setupNote}>Order placement and payment are not configured in this development build.</p>
       {locked
         ? <button className={styles.primaryButton} type="button" disabled>{refreshing ? "Refreshing current cart…" : "Wait for cart updates before checkout"}</button>
-        : view.quote.readyForCheckout
-        ? <Link className={styles.primaryButton} href="/checkout">Continue to checkout</Link>
+        : view.quote.lines.every((line) => line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true))
+        ? <Link className={styles.primaryButton} href="/checkout">Review checkout</Link>
         : <button className={styles.primaryButton} type="button" disabled>Review unavailable items first</button>}
       <Link className={styles.secondaryLink} href="/shop">Continue shopping</Link>
     </aside>
@@ -341,12 +341,12 @@ function CartLine({ line, busy, locked, onRemove, onUpdateQuantity }: {
       {variant && <p className={styles.itemMeta}>{variant.label} · SKU {variant.sku}</p>}
       {line.issue === "not_available" && <p className={styles.itemIssue}>This item is no longer available in the published catalog.</p>}
       {line.issue === "price_unavailable" && <p className={styles.itemIssue}>A current price is not available.</p>}
-      {line.issue === "quantity_unavailable" && <p className={styles.itemIssue}>This variant is currently unavailable.</p>}
+      {line.issue === "quantity_unavailable" && <p className={styles.itemIssue}>{line.variant?.cartEligible === true ? "Stock is unverified for this item." : "This variant is currently unavailable."}</p>}
       <button className={styles.removeButton} type="button" onClick={onRemove} disabled={locked} aria-label={`Remove ${removeLabel} from your cart`}>
         Remove
       </button>
     </div>
-    {line.issue === null
+    {(line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true))
       ? <QuantityEditor variantId={line.variantId} quantity={line.quantity} busy={busy} locked={locked} onSave={onUpdateQuantity} />
       : <p className={styles.quantityValue}>Quantity {line.quantity}</p>}
     <p className={styles.lineTotal}>{formatPaise(line.lineTotalPaise)}</p>

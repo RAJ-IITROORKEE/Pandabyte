@@ -26,6 +26,7 @@
     "test:readiness": "node tests/phase6-readiness.mjs",
     "check:import": "node scripts/catalog-import-preflight.mjs",
     "test:source-observations": "node --env-file=.env.local tests/source-observation-integration.mjs",
+    "test:source-cart-review": "node tests/source-cart-review-integration.mjs",
     "catalog:integrate": "node --env-file=.env.local scripts/catalog-integrate.mjs",
     "catalog:prepare": "node --conditions=react-server scripts/catalog-prepare-media.mjs",
     "test:catalog-import": "node --env-file=.env.local tests/catalog-import-reconciliation.mjs",

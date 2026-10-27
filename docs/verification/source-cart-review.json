@@ -1,0 +1,51 @@
+{
+  "verifiedOn": "2026-10-27",
+  "scope": "development source-product cart and checkout review",
+  "origin": "http://localhost:3001",
+  "migration": "20261027161501_source-cart-review-prices.sql",
+  "existingImportedProducts": 42,
+  "configuredSourcePricePairs": 42,
+  "focusedUnitTestsPassed": 31,
+  "targetedLintPassed": true,
+  "typescriptPassed": true,
+  "stockChanged": false,
+  "realProductDocumentsChanged": false,
+  "sourceProvenancePreserved": true,
+  "adminFrontendChanged": false,
+  "homepageHeroChanged": false,
+  "apiChecks": [
+    "42 public source variants expose numeric prices and review-only cart eligibility",
+    "public detail agrees with catalog for regular and discounted examples",
+    "42-line server quote calculates source totals with stock unverified and readiness false",
+    "99-unit arithmetic and invalid quantity rejection",
+    "client-supplied price and eligibility rejected",
+    "unknown variants disclose no product details",
+    "anonymous private cart access rejected",
+    "disposable source fixture: guarded price write, quantity update, withdrawal and removal",
+    "disposable source fixture: private review notes and raw stock remain hidden"
+  ],
+  "browserChecks": [
+    "initial signed-in cart empty",
+    "card Add to Cart persisted DHT11 at INR 300",
+    "quantity two persisted across reload with INR 600 subtotal",
+    "checkout review showed INR 600 with payment disabled",
+    "product Buy now added one and opened INR 900 checkout review",
+    "quick-view Add to Cart persisted quantity four and INR 1200 subtotal",
+    "verification item removed and initial empty cart restored",
+    "all six homepage featured cart buttons enabled",
+    "cart and checkout had no horizontal overflow at 320, 768, 1024 and 1440 px",
+    "cart light-theme toggle and original dark theme restored",
+    "no hydration warning observed in verification tab"
+  ],
+  "ordersCreated": false,
+  "stockReserved": false,
+  "paymentEnabled": false,
+  "productionDeployed": false,
+  "limits": [
+    "source stock remains unverified",
+    "shipping, GST, address confirmation and final totals remain pending setup",
+    "signed-out browser sign-in and guest merge not rerun; existing guest unit checks pass",
+    "actual screen-reader speech and runtime reduced-motion switching not checked",
+    "full production build not rerun"
+  ]
+}

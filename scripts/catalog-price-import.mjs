@@ -95,10 +95,21 @@ export function priceMutation(record, candidate, priceItem) {
   };
 }
 
-export function isMaskedPublicVariant(variant, sku) {
+export function isReviewOnlyPublicVariant(variant, sku, pair) {
+  return isRecord(variant) && variant.sku === sku && isPaise(variant.regularPricePaise) &&
+    isPaise(variant.effectivePricePaise) && variant.effectivePricePaise <= variant.regularPricePaise &&
+    variant.isOnSale === (variant.effectivePricePaise < variant.regularPricePaise) && variant.saleEndsAt === null &&
+    variant.availability === "unavailable" && variant.purchasable === false && variant.cartEligible === true &&
+    !["stock", "stockVersion", "availableQuantity", "price", "salePrice", "quantity"].some((key) => key in variant) &&
+    (!pair || (variant.regularPricePaise === pair.regularPricePaise && variant.effectivePricePaise === pair.actualPricePaise));
+}
+
+// Plan mode can inspect an unpriced source before importing its prices.
+export function isUnpricedPublicVariant(variant, sku) {
   return isRecord(variant) && variant.sku === sku && variant.regularPricePaise === null &&
-    variant.effectivePricePaise === null && variant.isOnSale === false && variant.availability === "unavailable" &&
-    variant.purchasable === false;
+    variant.effectivePricePaise === null && variant.isOnSale === false && variant.saleEndsAt === null &&
+    variant.availability === "unavailable" && variant.purchasable === false && variant.cartEligible !== true &&
+    !["stock", "stockVersion", "availableQuantity", "price", "salePrice", "quantity"].some((key) => key in variant);
 }
 
 export function reconcilePendingPrices(ledger, inspected, verifiedAt) {
@@ -314,21 +325,23 @@ async function findAdminRecord(api, candidate) {
   return { status: classifyCurrentPrice(priceState(priceItem), candidate.sourcePrice), listItem, record, pricing, priceItem };
 }
 
-async function checkPublicMask(publicApi, candidate) {
+async function checkPublicVariant(publicApi, candidate, found, allowUnpriced) {
+  const valid = (variant) => isReviewOnlyPublicVariant(variant, candidate.sku, found.status === "already-exact" ? candidate.sourcePrice : undefined) ||
+    (allowUnpriced && found.status === "ready-to-update" && isUnpricedPublicVariant(variant, candidate.sku));
   const detail = await publicApi(`/api/published/products/${encodeURIComponent(candidate.slug)}`);
   const record = detail.record;
   const observation = record?.document?.sourceObservation;
   const variant = record?.variants?.find((item) => item.sku === candidate.sku);
   ensure(record?.slug === candidate.slug && observation?.sourceUrl === candidate.sourceUrl &&
-    record.variants?.length === 1 && isMaskedPublicVariant(variant, candidate.sku), "public_product_price_mask_failed");
+    record.variants?.length === 1 && valid(variant), "public_product_price_contract_failed");
   const catalog = await publicApi(`/api/catalog?q=${encodeURIComponent(candidate.sku)}&limit=48`);
   const item = Array.isArray(catalog.items) ? catalog.items.find((entry) => entry.slug === candidate.slug) : null;
   const catalogVariant = item?.variants?.find((entry) => entry.sku === candidate.sku);
   ensure(item?.document?.sourceObservation?.sourceUrl === candidate.sourceUrl && item.variants?.length === 1 &&
-    isMaskedPublicVariant(catalogVariant, candidate.sku), "public_catalog_price_mask_failed");
+    valid(catalogVariant), "public_catalog_price_contract_failed");
 }
 
-async function inspectAll(adminApi, publicApi, candidates, progressLabel) {
+async function inspectAll(adminApi, publicApi, candidates, progressLabel, allowUnpriced = false) {
   return mapBounded(candidates, 3, async (candidate) => {
     const found = await findAdminRecord(adminApi, candidate);
     const row = {
@@ -356,7 +369,7 @@ async function inspectAll(adminApi, publicApi, candidates, progressLabel) {
       row.expectedPriceVersion = found.priceItem.priceVersion;
       if (found.status === "conflict") row.currentPricePaise = priceState(found.priceItem);
     }
-    if (found.record && found.status !== "source-admin-match-required") await checkPublicMask(publicApi, candidate);
+    if (found.record && found.status !== "source-admin-match-required") await checkPublicVariant(publicApi, candidate, found, allowUnpriced);
     return { candidate, found, report: row };
   }, (completed, total) => console.log(`${progressLabel} ${completed}/${total}`));
 }
@@ -455,7 +468,7 @@ async function main() {
   await fs.mkdir(work, { recursive: true });
   const lock = mode === "plan" ? null : await fs.open(lockPath, "wx");
   try {
-    const inspected = await inspectAll(api, publicApi, source.candidates, `Price ${mode} preflight`);
+    const inspected = await inspectAll(api, publicApi, source.candidates, `Price ${mode} preflight`, mode === "plan");
     const report = makeReport(mode, source, inspected);
     const reportPath = path.join(work, `price-import-${mode === "plan" ? "plan" : mode === "apply" ? "apply" : "verify"}-report.json`);
     await writeJsonAtomic(reportPath, report);

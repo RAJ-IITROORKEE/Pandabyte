@@ -1,3 +1,5 @@
+> Subsequent owner decision, 27 October 2026: captured prices now support public cart/checkout review under [the source-cart contract](source-cart-review.md). Source provenance and unverified stock remain protected. The Admin interface and price-writing/version rules are unchanged; the older public masking/cart exclusions below describe the prior checkpoint.
+
 # Product prices and catalog statistics — 27 October 2026
 
 The owner requested aligned variant inputs, visual text/highlight swatches, mandatory Set/Actual price inputs, importing captured prices from `products/`, and statistical cards above the Products table. This authorization supersedes the earlier Admin source-price prohibition only. The storefront still treats these products as dated, non-purchasable source observations. No stock, publication, checkout, payment or deployment is authorized.

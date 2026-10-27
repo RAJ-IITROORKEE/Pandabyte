@@ -34,8 +34,8 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
   const [slide, setSlide] = useState<string | undefined>(images[0]?.id);
   const handleSlideChange = useCallback((id: string | undefined) => setSlide(id), []);
   const { price, availability, originalPrice, sourcePrice } = cardPricing(variants, observation?.priceText);
-  const singleVariant = variants.length === 1 && !observation && variants[0].purchasable !== false ? variants[0] : null;
-  const canChooseVariant = variants.length > 1 && !observation && variants.every((variant) => variant.purchasable !== false);
+  const singleVariant = variants.length === 1 && (variants[0].cartEligible === true || variants[0].purchasable !== false) ? variants[0] : null;
+  const canChooseVariant = variants.length > 1 && variants.some((variant) => variant.cartEligible === true || variant.purchasable !== false);
 
   return <MorphingDialog transition={{ type: "spring", bounce: 0.05, duration: 0.25 }} onOpenChange={setOpen}>
     <MorphingDialogCard className={styles.card} style={{ borderRadius: 12 }}>
@@ -48,7 +48,7 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
             <span>{availability}</span>
             <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>Sale</span></>}</div>
           </div>
-          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null} compactLabel={title} /> : canChooseVariant ? <MorphingDialogTrigger className={styles.cartButton} aria-label={`Choose a variant for ${title}`} title="Choose a variant"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></button>}
+          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} /> : canChooseVariant ? <MorphingDialogTrigger className={styles.cartButton} aria-label={`Choose a variant for ${title}`} title="Choose a variant"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></button>}
         </div>
         <div className={styles.cardActions}>
           <Link href={href}>View product</Link>

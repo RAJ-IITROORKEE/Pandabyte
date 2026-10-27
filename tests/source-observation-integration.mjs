@@ -213,6 +213,7 @@ async function verifySourceObservation(context, state, auth, anon) {
   const savedResponse = await request(context, `/api/admin/products/${source.record.id}`, auth.staff.appToken, "PATCH", {
     expectedVersion: source.record.version,
     document: { ...source.record.document, summary: `Saved source fixture ${state.runId}.` },
+    prices: [{ sku: source.variant.sku, expectedPriceVersion: 0, regularPricePaise: 99_900, actualPricePaise: 89_900, salePricePaise: null, saleStartsAt: null, saleEndsAt: null, reason: "Source fixture captured prices" }],
   });
   const savedBody = await responseBody(savedResponse, 200, "source_observation_save");
   ensure(savedBody.record?.document?.sourceReview?.[0] === note, "staff_source_review_not_saved");
@@ -232,10 +233,13 @@ async function verifySourceObservation(context, state, auth, anon) {
   const catalogResponse = await request(context, `/api/catalog?q=${encodeURIComponent(source.variant.sku)}&limit=48`, null);
   const catalog = await responseBody(catalogResponse, 200, "source_observation_catalog");
   const listed = catalog.items?.find((item) => item.id === published.id);
-  ensure(listed && listed.document?.sourceObservation?.priceText === sourceObservation.priceText, "source_observation_missing_from_catalog");
+  ensure(listed?.document?.sourceObservation?.priceText === sourceObservation.priceText &&
+    listed.document.sourceObservation.capturedAt === sourceObservation.capturedAt &&
+    listed.document.sourceObservation.sourceUrl === sourceObservation.sourceUrl, "source_observation_missing_from_catalog");
   const listedVariant = listed.variants?.[0];
-  ensure(listedVariant?.regularPricePaise === null && listedVariant.effectivePricePaise === null &&
-    listedVariant.availability === "unavailable" && listedVariant.purchasable === false, "source_observation_catalog_variant_not_masked");
+  ensure(listedVariant?.regularPricePaise === 99_900 && listedVariant.effectivePricePaise === 89_900 &&
+    listedVariant.availability === "unavailable" && listedVariant.purchasable === false && listedVariant.cartEligible === true &&
+    !("stock" in listedVariant), "source_observation_catalog_variant_invalid");
   ensure(!("sourceReview" in listed.document) && !JSON.stringify(listed).includes(note), "source_review_leaked_to_catalog");
 
   const inventoryResponse = await request(context, `/api/admin/inventory?q=${encodeURIComponent(source.variant.sku)}&limit=10`, auth.staff.appToken);
@@ -252,17 +256,17 @@ async function verifySourceObservation(context, state, auth, anon) {
     detail.document.sourceObservation.sourceUrl === sourceObservation.sourceUrl, "source_observation_detail_fields_missing");
   ensure(!("sourceReview" in detail.document) && !JSON.stringify(detailBody).includes(note), "source_review_leaked_to_detail");
   const publicVariant = detail.variants?.[0];
-  ensure(publicVariant?.regularPricePaise === null && publicVariant.effectivePricePaise === null &&
-    publicVariant.isOnSale === false && publicVariant.availability === "unavailable" && publicVariant.purchasable === false,
-  "source_observation_variant_not_masked");
+  ensure(publicVariant?.regularPricePaise === 99_900 && publicVariant.effectivePricePaise === 89_900 &&
+    publicVariant.isOnSale === true && publicVariant.availability === "unavailable" && publicVariant.purchasable === false &&
+    publicVariant.cartEligible === true && !("stock" in publicVariant), "source_observation_variant_invalid");
 
   const priceUpdate = await request(context, `/api/admin/pricing/${source.variant.id}`, auth.staff.appToken, "PATCH", {
-    expectedVersion: 0,
+    expectedVersion: 1,
     regularPaise: 99_900,
     salePaise: null,
     saleFrom: null,
     saleUntil: null,
-    reason: "Source observation must stay unpriced",
+    reason: "Source observation must use product pricing",
   });
   await responseBody(priceUpdate, 409, "source_observation_price_write");
   const stockUpdate = await request(context, `/api/admin/inventory/${source.variant.id}`, auth.staff.appToken, "PATCH", {
@@ -277,33 +281,39 @@ async function verifySourceObservation(context, state, auth, anon) {
     items: [{ variantId: source.variant.id, quantity: 1 }],
   });
   const initialQuote = await responseBody(initialQuoteResponse, 200, "source_observation_quote");
-  ensure(initialQuote.lines?.[0]?.issue === "not_available" && initialQuote.lines[0].lineTotalPaise === null &&
-    initialQuote.subtotalPaise === null && !initialQuote.readyForCheckout, "source_observation_initial_quote_ready");
+  ensure(initialQuote.lines?.[0]?.issue === "quantity_unavailable" && initialQuote.lines[0].lineTotalPaise === 89_900 &&
+    initialQuote.subtotalPaise === 89_900 && !initialQuote.readyForCheckout, "source_observation_initial_quote_invalid");
 
-  // Simulate an out-of-band price and stock row to ensure read paths still enforce the document mode.
-  const roguePrice = await table(context.admin, "catalog_variants").update({ regular_paise: 99_900 }).eq("id", source.variant.id).select("id");
-  ensure(!roguePrice.error && roguePrice.data?.some((row) => row.id === source.variant.id), "rogue_price_fixture_failed");
+  // A rogue stock row must not make an observed product available or expose stock.
   const rogueStock = await table(context.admin, "inventory_balances").update({ available_quantity: 1 }).eq("variant_id", source.variant.id).select("variant_id");
   ensure(!rogueStock.error && rogueStock.data?.some((row) => row.variant_id === source.variant.id), "rogue_stock_fixture_failed");
 
   const detailAfterRogueResponse = await request(context, `/api/published/products/${source.record.slug}`, null);
   const detailAfterRogue = (await responseBody(detailAfterRogueResponse, 200, "source_observation_rogue_detail")).record;
   const roguePublicVariant = detailAfterRogue.variants?.[0];
-  ensure(roguePublicVariant?.regularPricePaise === null && roguePublicVariant.effectivePricePaise === null &&
-    roguePublicVariant.isOnSale === false && roguePublicVariant.availability === "unavailable", "rogue_price_leaked_to_detail");
+  ensure(roguePublicVariant?.regularPricePaise === 99_900 && roguePublicVariant.effectivePricePaise === 89_900 &&
+    roguePublicVariant.availability === "unavailable" && roguePublicVariant.purchasable === false &&
+    roguePublicVariant.cartEligible === true && !("stock" in roguePublicVariant), "rogue_stock_leaked_to_detail");
 
-  const quoteResponse = await request(context, "/api/cart/quote", null, "POST", {
-    items: [{ variantId: source.variant.id, quantity: 1 }],
+  const draftCart = await request(context, "/api/cart", auth.customer.appToken, "PUT", {
+    expectedVersion: 0, items: [{ variantId: normal.variant.id, quantity: 1 }],
   });
-  const quote = await responseBody(quoteResponse, 200, "source_observation_rogue_quote");
-  ensure(quote.lines?.[0]?.issue === "not_available" && quote.lines[0].lineTotalPaise === null &&
-    quote.lines[0].variant === null && quote.subtotalPaise === null && !quote.readyForCheckout,
-  "rogue_price_made_source_observation_cartable");
+  await responseBody(draftCart, 409, "draft_cart_replace");
   const replaceCart = await request(context, "/api/cart", auth.customer.appToken, "PUT", {
-    expectedVersion: 0,
-    items: [{ variantId: source.variant.id, quantity: 1 }],
+    expectedVersion: 0, items: [{ variantId: source.variant.id, quantity: 1 }],
   });
-  await responseBody(replaceCart, 409, "source_observation_cart_replace");
+  let cart = await responseBody(replaceCart, 200, "source_observation_cart_replace");
+  ensure(cart.version === 1 && cart.quote.lines?.[0]?.issue === "quantity_unavailable" &&
+    cart.quote.lines[0].lineTotalPaise === 89_900 && cart.quote.subtotalPaise === 89_900 &&
+    !cart.quote.readyForCheckout && !("stock" in cart.quote.lines[0].variant), "source_cart_replace_invalid");
+  cart = await responseBody(await request(context, "/api/cart", auth.customer.appToken), 200, "source_cart_get");
+  ensure(cart.version === 1 && cart.items?.[0]?.quantity === 1 && cart.quote.lines?.[0]?.issue === "quantity_unavailable", "source_cart_get_invalid");
+  cart = await responseBody(await request(context, "/api/cart", auth.customer.appToken, "PUT", {
+    expectedVersion: cart.version, items: [{ variantId: source.variant.id, quantity: 2 }],
+  }), 200, "source_cart_quantity_update");
+  ensure(cart.version === 2 && cart.quote.lines?.[0]?.issue === "quantity_unavailable" &&
+    cart.quote.lines[0].lineTotalPaise === 179_800 && cart.quote.subtotalPaise === 179_800 &&
+    !cart.quote.readyForCheckout, "source_cart_quantity_invalid");
 
   const priceFiltered = await rpc(anon, "published_list_products", publicProductQuery(source.variant.sku, { p_min_price_paise: 1 }));
   ensure(!priceFiltered.error && !priceFiltered.data.items.some((item) => item.id === published.id), "source_observation_price_filter_match");
@@ -325,6 +335,16 @@ async function verifySourceObservation(context, state, auth, anon) {
   const withdrawnList = await request(context, `/api/catalog?q=${encodeURIComponent(source.variant.sku)}&limit=48`, null);
   const withdrawn = await responseBody(withdrawnList, 200, "source_observation_withdrawn_catalog");
   ensure(!withdrawn.items?.some((item) => item.id === published.id), "unpublished_source_observation_still_listed");
+  cart = await responseBody(await request(context, "/api/cart", auth.customer.appToken), 200, "withdrawn_source_cart");
+  ensure(cart.quote.lines?.[0]?.issue === "not_available" && cart.quote.lines[0].variant === null &&
+    cart.quote.subtotalPaise === null && !cart.quote.readyForCheckout, "withdrawn_source_cart_invalid");
+  cart = await responseBody(await request(context, "/api/cart", auth.customer.appToken, "PUT", {
+    expectedVersion: cart.version, items: [],
+  }), 200, "withdrawn_source_cart_remove");
+  ensure(cart.items?.length === 0, "withdrawn_source_cart_removal_failed");
+  await responseBody(await request(context, "/api/cart", auth.customer.appToken, "PUT", {
+    expectedVersion: cart.version, items: [{ variantId: source.variant.id, quantity: 1 }],
+  }), 409, "withdrawn_source_cart_add");
 }
 
 async function run(context) {

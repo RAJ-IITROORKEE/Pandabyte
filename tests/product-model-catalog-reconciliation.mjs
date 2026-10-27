@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isReviewOnlyPublicVariant, sourcePricePair } from "../scripts/catalog-price-import.mjs";
 import { PRIVATE_MODEL_SOURCE_IDS } from "../scripts/product-models-source.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -114,20 +115,16 @@ function expectedSourceObservation(tracked) {
   try { url = new URL(observation.sourceUrl); }
   catch { throw new Error("catalog_observation_expected_invalid"); }
   ensure(url.protocol === "https:" && !url.username && !url.password, "catalog_observation_expected_invalid");
-  return { source, observation };
+  return { source, observation, pair: sourcePricePair({ commercialObservations: tracked.provenance.priceObservations }) };
 }
 
 function assertObservation(actual, expected) {
   ensure(exactKeys(actual, ["priceText", "capturedAt", "sourceUrl"]) && stable(actual) === stable(expected), "source_observation_mismatch");
 }
 
-function assertNonPurchasableVariants(record, source) {
+function assertNonPurchasableVariants(record, expected) {
   ensure(Array.isArray(record?.variants) && record.variants.length === 1, "source_variant_count_invalid");
-  const variant = record.variants[0];
-  ensure(variant?.sku === source.sourceSku && variant.purchasable === false && variant.regularPricePaise === null &&
-    variant.effectivePricePaise === null && variant.isOnSale === false && variant.saleEndsAt === null &&
-    variant.availability === "unavailable", "source_variant_not_masked");
-  ensure(!["stock", "stockVersion", "availableQuantity", "price", "salePrice", "quantity"].some((key) => key in variant), "operational_commerce_value_exposed");
+  ensure(isReviewOnlyPublicVariant(record.variants[0], expected.source.sourceSku, expected.pair), "source_variant_review_contract_invalid");
 }
 
 function validateInputs(manifest, modelLedger, catalogLedger) {
@@ -204,8 +201,8 @@ function assertPublicRecord(record, listItem, source) {
     !("sourceReview" in record.document) && !("sourceReview" in listItem.document), "published_product_identity_or_privacy_invalid");
   assertObservation(record.document.sourceObservation, source.expected.observation);
   assertObservation(listItem.document?.sourceObservation, source.expected.observation);
-  assertNonPurchasableVariants(record, source.expected.source);
-  assertNonPurchasableVariants(listItem, source.expected.source);
+  assertNonPurchasableVariants(record, source.expected);
+  assertNonPurchasableVariants(listItem, source.expected);
 }
 
 function assertModelReference(record, mapping) {

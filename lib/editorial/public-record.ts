@@ -2,7 +2,7 @@ import { ADMIN_MODULES, parseDocument, parseRecordId, type AdminDocument, type A
 
 export type PublicVariant = {
   id: string; sku: string; label: string; regularPricePaise: number | null; effectivePricePaise: number | null;
-  isOnSale: boolean; saleEndsAt: string | null; availability: "available" | "unavailable"; purchasable?: boolean;
+  isOnSale: boolean; saleEndsAt: string | null; availability: "available" | "unavailable"; purchasable?: boolean; cartEligible?: boolean;
 };
 export type PublishedRecord<M extends AdminModule = AdminModule> = {
   id: string; title: string; slug: string; summary: string; document: AdminDocument<M>;
@@ -19,12 +19,15 @@ export function parsePublicVariant(value: unknown): PublicVariant {
     typeof value.label !== "string" || !value.label.trim() || value.label.length > 120 ||
     !paise(value.regularPricePaise) || !paise(value.effectivePricePaise) || typeof value.isOnSale !== "boolean" ||
     !(value.saleEndsAt === null || date(value.saleEndsAt)) || !["available", "unavailable"].includes(String(value.availability)) ||
+    ("cartEligible" in value && typeof value.cartEligible !== "boolean") ||
+    (value.cartEligible === true && (value.effectivePricePaise === null || value.availability !== "unavailable")) ||
     (value.effectivePricePaise !== null && (value.regularPricePaise === null || value.effectivePricePaise > value.regularPricePaise)) ||
     (value.isOnSale && (value.effectivePricePaise === null || (value.saleEndsAt === null && (value.regularPricePaise === null || value.effectivePricePaise >= value.regularPricePaise)))) ||
     (!value.isOnSale && (value.saleEndsAt !== null || value.effectivePricePaise !== value.regularPricePaise))) throw new Error("Published pricing could not be rendered.");
   return { id: value.id, sku: value.sku, label: value.label, regularPricePaise: value.regularPricePaise,
     effectivePricePaise: value.effectivePricePaise, isOnSale: value.isOnSale, saleEndsAt: value.saleEndsAt,
-    availability: value.availability as PublicVariant["availability"] };
+    availability: value.availability as PublicVariant["availability"],
+    ...("cartEligible" in value ? { cartEligible: value.cartEligible as boolean } : {}) };
 }
 
 export function parsePublishedRecord<M extends AdminModule>(module: M, value: unknown): PublishedRecord<M> {

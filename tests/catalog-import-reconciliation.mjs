@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { isReviewOnlyPublicVariant, sourcePricePair } from "../scripts/catalog-price-import.mjs";
 import { preflight } from "./phase2-isolation.mjs";
 import { buildCatalogSourcePlan } from "../scripts/catalog-source-map.mjs";
 import { fingerprint } from "../scripts/catalog-import-state.mjs";
@@ -28,8 +29,8 @@ async function main() {
   const productIds = Object.values(ledger.products).map(p => p.id);
   const records = await read(table("cms_records").select("id,kind,slug,draft,version,published_revision_id,archived_at").in("id", productIds).limit(100), "record_read_failed");
   ensure(records.length === 42 && records.every(r => r.kind === "product" && !r.archived_at && r.published_revision_id), "product_publication_incomplete");
-  const variants = await read(table("catalog_variants").select("id,product_id,sku,regular_paise,sale_paise,price_version,archived_at").in("product_id", productIds).limit(100), "variant_read_failed");
-  ensure(variants.length === 42 && variants.every(v => !v.archived_at && v.regular_paise === null && v.sale_paise === null && Number(v.price_version) === 0), "operational_price_changed");
+  const variants = await read(table("catalog_variants").select("id,product_id,sku,regular_paise,actual_paise,sale_paise,sale_from,sale_until,price_version,archived_at").in("product_id", productIds).limit(100), "variant_read_failed");
+  ensure(variants.length === 42 && variants.every(v => !v.archived_at && v.sale_paise === null && v.sale_from === null && v.sale_until === null && Number(v.price_version) >= 1), "operational_price_changed");
   const inventory = await read(table("inventory_balances").select("variant_id,available_quantity,version").in("variant_id", variants.map(v => v.id)).limit(100), "inventory_read_failed");
   ensure(inventory.length === 42 && inventory.every(i => i.available_quantity === 0 && Number(i.version) === 0), "operational_stock_changed");
   const categories = await read(table("cms_records").select("id,slug,published_revision_id,archived_at").in("id", Object.values(ledger.categories).map(c => c.id)).limit(10), "category_read_failed");
@@ -58,10 +59,13 @@ async function main() {
     ensure(fingerprint(detail.document.mediaIds) === fingerprint(expectedMedia) &&
       fingerprint(detail.document.blocks.filter(b => b.type === "image").map(b => b.mediaId)) === fingerprint(expectedMedia), "public_gallery_order_changed");
     ensure(fingerprint(detail.document.categoryIds) === fingerprint(source.sourceCategorySlugs.map(s => ledger.categories[s].id)), "category_membership_changed");
+    const pair = sourcePricePair({ commercialObservations: source.privateSourcePriceObservations });
+    const stored = variants.find(v => v.product_id === tracked.id && v.sku === source.sourceIdentity.sourceSku);
+    ensure(stored && stored.regular_paise !== null && stored.actual_paise !== null && Number(stored.regular_paise) === pair.regularPricePaise && Number(stored.actual_paise) === pair.actualPricePaise, "stored_source_price_mismatch");
     ensure(detail.variants.length === 1 && detail.variants[0].sku === source.sourceIdentity.sourceSku && detail.variants[0].label === mapped.value.variants[0].label &&
-      detail.variants.every(v => v.purchasable === false && v.regularPricePaise === null && v.effectivePricePaise === null && !v.isOnSale && v.availability === "unavailable"), "public_purchase_guard_failed");
+      isReviewOnlyPublicVariant(detail.variants[0], source.sourceIdentity.sourceSku, pair), "public_purchase_guard_failed");
     const list = await get(`/api/catalog?q=${encodeURIComponent(source.sourceIdentity.sourceSku)}&limit=48`);
-    ensure(list.items.some(p => p.id === tracked.id && p.document.sourceObservation && !('sourceReview' in p.document)), "source_missing_from_catalog");
+    ensure(list.items.some(p => p.id === tracked.id && p.document.sourceObservation && !('sourceReview' in p.document) && p.variants?.length === 1 && isReviewOnlyPublicVariant(p.variants[0], source.sourceIdentity.sourceSku, pair)), "source_missing_from_catalog");
     entries.push({ title: source.sourceIdentity.title, disposition: "development-published-source-observation", images: expectedMedia.length, ownerReview: "pending" });
   }
   const mediaRows = [], mediaIds = Object.values(ledger.media).map(m => m.id);
@@ -77,7 +81,7 @@ async function main() {
   }));
   entries.push(...held.map(e => ({ title: e.sourceIdentity.title, disposition: "held-outside-cms-missing-source-sku", sourceCategories: e.sourceCategorySlugs, ownerReview: "pending" })));
   const report = { scope: "development-only", checkedAt: new Date().toISOString(), sourceProducts: 44, publishedProducts: 42, heldProducts: 2,
-    categories: 5, deliveredImages: 96, operationalPrices: "unset", operationalStock: "zero-unconfigured", sourceOwnerReview: "pending", entries };
+    categories: 5, deliveredImages: 96, operationalPrices: "source-imported", operationalStock: "zero-unconfigured", sourceOwnerReview: "pending", entries };
   await fs.writeFile(path.join(work, "reconciliation-report.json"), JSON.stringify(report, null, 2));
   console.log("Catalog reconciliation passed: 42 development products, 2 SKU holds, 5 categories and 96 exact stored image deliveries.");
 }

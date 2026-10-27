@@ -11,7 +11,7 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <PublicPage title="Checkout" description="Review your cart before placing an order.">
+    <PublicPage title="Checkout" description="Review your items and provisional subtotal.">
       <CheckoutReview />
     </PublicPage>
   );

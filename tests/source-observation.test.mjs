@@ -122,3 +122,19 @@ test("public product parsing rejects staff-only source review notes", () => {
   assert.throws(() => parsePublishedRecord("products", record));
   assert.throws(() => parsePublishedRecord("products", { ...record, document: { ...product, sourceObservation: observation }, sourceReview: ["Internal note"] }));
 });
+
+test("approved source cart eligibility preserves provenance and unverified stock", () => {
+  const input = {
+    id: uuid, kind: "product", revisionId: "d9428888-122b-11e1-b85c-61cd3cbb3211",
+    publishedAt: observation.capturedAt, document: { ...product, sourceObservation: observation },
+    variants: [{ id: uuid, sku: "SRC-1", label: "Original", regularPricePaise: 40000,
+      effectivePricePaise: 30000, isOnSale: true, saleEndsAt: null, availability: "unavailable", cartEligible: true }],
+  };
+  const record = parsePublishedRecord("products", input);
+  assert.equal(record.variants[0].cartEligible, true);
+  assert.equal(record.variants[0].purchasable, false);
+  assert.equal(record.variants[0].availability, "unavailable");
+  assert.equal(record.variants[0].effectivePricePaise, 30000);
+  assert.deepEqual(record.document.sourceObservation, observation);
+  assert.throws(() => parsePublishedRecord("products", { ...input, variants: [{ ...input.variants[0], cartEligible: "true" }] }));
+});

@@ -103,7 +103,7 @@ function parseQuoteLine(value: unknown): CartQuoteLine | null {
       typeof value.revisionId !== "string" || !parseRecordId(value.revisionId) ||
       typeof value.slug !== "string" || !parseSlug(value.slug) ||
       !safeText(value.title, 160) || !isObject(value.variant) ||
-      !hasExactKeys(value.variant, ["id", "sku", "label", "regularPricePaise", "effectivePricePaise", "isOnSale", "saleEndsAt", "availability"])) return null;
+      !hasExactKeys(value.variant, ["id", "sku", "label", "regularPricePaise", "effectivePricePaise", "isOnSale", "saleEndsAt", "availability", ...("cartEligible" in value.variant ? ["cartEligible"] : [])])) return null;
 
   let variant: PublicVariant;
   try {
