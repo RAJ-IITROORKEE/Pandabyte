@@ -1,8 +1,8 @@
 import type { FieldError, ValidationResult } from "./validation.ts";
 import { parseRecordId } from "./validation.ts";
 
-export type ContentTableModule = "pages" | "blog" | "faqs";
-export type ContentTableKind = "page" | "blog" | "faq";
+export type ContentTableModule = "pages" | "blog" | "faqs" | "team";
+export type ContentTableKind = "page" | "blog" | "faq" | "team";
 
 export type ContentTableQuery = {
   q: string;
