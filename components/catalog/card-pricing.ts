@@ -13,5 +13,7 @@ export function cardPricing(variants: PublicVariant[], sourcePriceText?: string)
     variants.some((variant) => variant.availability === "available") ? "Available" : "Unavailable";
   const variant = variants.length === 1 && priced ? variants[0] : null;
   const originalPrice = variant && variant.isOnSale && variant.effectivePricePaise !== null && variant.regularPricePaise !== null && variant.effectivePricePaise < variant.regularPricePaise ? money.format(variant.regularPricePaise / 100) : null;
-  return { price, availability, originalPrice, sourcePrice };
+  const discountPercent = originalPrice && variant ? Math.round((1 - variant.effectivePricePaise! / variant.regularPricePaise!) * 100) : null;
+  const discount = discountPercent === null ? null : discountPercent > 0 ? `${discountPercent}% off` : "<1% off";
+  return { price, availability, originalPrice, sourcePrice, discount };
 }

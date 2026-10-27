@@ -42,7 +42,7 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
   const [open, setOpen] = useState(false);
   const [slide, setSlide] = useState<string | undefined>(images[0]?.id);
   const handleSlideChange = useCallback((id: string | undefined) => setSlide(id), []);
-  const { price, availability, originalPrice, sourcePrice } = cardPricing(variants, observation?.priceText);
+  const { price, availability, originalPrice, sourcePrice, discount } = cardPricing(variants, observation?.priceText);
   const singleVariant = variants.length === 1 && (variants[0].cartEligible === true || variants[0].purchasable !== false) ? variants[0] : null;
   const canChooseVariant = variants.length > 1 && variants.some((variant) => variant.cartEligible === true || variant.purchasable !== false);
 
@@ -55,7 +55,7 @@ export function ProductQuickView({ title, href, summary, categories, images, mod
         <div className={styles.purchaseRow}>
           <div className={styles.pricing}>
             <span>{availability}</span>
-            <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>Sale</span></>}</div>
+            <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>{discount}</span></>}</div>
           </div>
           {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} /> : canChooseVariant ? <MorphingDialogTrigger className={`${styles.cartButton} ${multiCount ? styles.cartButtonActive : ""}`} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title={multiCount ? `${multiCount} in cart; choose a variant` : "Choose a variant"}><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={19} /><Plus aria-hidden="true" size={12} /></button>}
         </div>
