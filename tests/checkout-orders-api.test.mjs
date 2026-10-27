@@ -21,6 +21,8 @@ test("order queries and staff updates reject unbounded and unsafe input", () => 
   assert.equal(parseOrderQuery(new URLSearchParams("limit=10&limit=50")), null);
   assert.equal(parseOrderQuery(new URLSearchParams("offset=10001")), null);
   assert.equal(isOrderReference(`SIM-${id}`), true);
+  assert.equal(isOrderReference(`TST-${id}`), true);
+  assert.equal(isOrderReference(`TST-invalid`), false);
   const update = { expectedVersion: 1, status: "processing", shipping: { carrier: "", trackingNumber: "", trackingUrl: "https://example.com/track" } };
   assert.ok(parseAdminOrderUpdate(update));
   assert.equal(parseAdminOrderUpdate({ ...update, shipping: { ...update.shipping, trackingUrl: "javascript:alert(1)" } }), null);

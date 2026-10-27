@@ -59,6 +59,7 @@ export function AccountOrders({ data }: { data: ReturnType<typeof useAccountOrde
       return <details key={order.reference}>
         <summary>Order {order.reference} · {order.status} · {money(order.totalPaise)}</summary>
         {order.environment === "simulation" && <p>Simulated order. No payment was collected and no stock was reserved.</p>}
+        {order.reference.startsWith("TST-") && <p>Razorpay test order. No real stock was reserved.</p>}
         {order.snapshot.chargesAreFictional && <p>Shipping and tax are fictional test amounts.</p>}
         <p>Payment: {order.paymentState === "simulated" ? "Simulated" : order.paymentState}</p>
         {order.snapshot.quote?.lines.map((line, index) => <p key={index}>{line.title}{line.variant?.label && ` · ${line.variant.label}`} × {line.quantity} — {money(line.lineTotalPaise)}</p>)}

@@ -21,6 +21,7 @@ function checkoutHarness() {
   const signals = [];
   const exports = {};
   const dependencies = {
+    "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },
     "@clerk/nextjs": { useUser: () => identity },
     "next/image": { default: () => createElement("img") },
     "@/components/catalog/card-image-selection": { cardImageIds: () => [] },
@@ -41,7 +42,7 @@ function checkoutHarness() {
     "./cart-api": { loadCustomerCart: signal => { signals.push(signal); return Promise.resolve(null); }, cartErrorMessage: () => "Unable to load" },
     "./checkout-review.module.css": { default: {} },
   };
-  runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController, sessionStorage: {}, fetch: () => Promise.reject(new Error("offline")) });
+  runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController, sessionStorage: { getItem: () => null }, fetch: () => Promise.reject(new Error("offline")) });
   return {
     effects,
     effectDeps,
@@ -49,9 +50,9 @@ function checkoutHarness() {
     selection: value => { selection = value; },
     pendingReads: () => pendingReads,
     identity: value => { identity = value; },
-    wrapper: (buyNow = false) => { states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }]; stateIndex = 0; return exports.CheckoutReview({ buyNow }); },
+    wrapper: (buyNow = false) => { states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }, { userId: identity.user?.id, marker: null }]; stateIndex = 0; return exports.CheckoutReview({ buyNow }); },
     renderSession: cart => {
-      states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }];
+      states = [null, { userId: identity.user?.id, pending: false, raw: null, error: false }, { userId: identity.user?.id, marker: null }];
       stateIndex = 0;
       const session = exports.CheckoutReview({});
       states = [cart?.quote ?? null];
@@ -126,12 +127,14 @@ test("an empty checkout offers a return to shopping instead of a payment form", 
 test("changing checkout mode or selection schedules another pending marker read", async () => {
   const review = checkoutHarness();
   review.wrapper();
-  const initial = review.effectDeps[1];
-  review.effects[1](); await Promise.resolve();
+  const testMarkerDeps = review.effectDeps[1];
+  const initial = review.effectDeps[2];
+  review.effects[2](); await Promise.resolve();
   const selection = [{ variantId: "variant-a", quantity: 1 }];
   review.selection(selection); review.wrapper(true);
-  const changed = review.effectDeps[3];
+  const changed = review.effectDeps[5];
+  assert.deepEqual(testMarkerDeps, review.effectDeps[4]);
   assert.equal(initial[1], false); assert.equal(changed[1], true); assert.equal(changed[2], selection);
-  review.effects[3](); await Promise.resolve();
+  review.effects[5](); await Promise.resolve();
   assert.equal(review.pendingReads(), 2);
 });

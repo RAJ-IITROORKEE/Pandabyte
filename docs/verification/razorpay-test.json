@@ -1,0 +1,55 @@
+{
+  "checkpoint": "razorpay-development-test",
+  "date": "2026-10-28",
+  "productionEnabled": false,
+  "storefrontStylingChanged": false,
+  "checks": {
+    "unitAndMedia": { "passed": 288, "failed": 0 },
+    "typescript": "passed",
+    "targetedEslint": "passed",
+    "isolatedOptimizedBuild": "passed",
+    "regularPreviewPaymentGate": "disabled: capabilities false, prepare 503, no Razorpay CSP hosts",
+    "isolatedTestServer": "stopped after validation; normal preview remains running",
+    "managedConnectivityProbe": "one INR 100-paise test order created; probe fixtures cleaned",
+    "api": [
+      "active Clerk and matching owner required",
+      "private test fixture data inaccessible to runtime clients",
+      "one provider order created from server amount",
+      "replay and recovery returned the same provider order",
+      "wrong owner rejected before provider verification",
+      "cancel released fictional stock once",
+      "absent recovery fenced a delayed prepare",
+      "new request rejected after unresolved provider-backed cancellation"
+    ],
+    "browser": [
+      "four existing checkout steps completed with fictional data",
+      "same ready test order recovered after reload",
+      "official Razorpay Test Mode window opened",
+      "published test card accepted; card storage declined",
+      "real callback signature verified",
+      "customer and Admin displayed the same pending/verified order",
+      "Admin fulfillment unavailable before paid",
+      "owner Google/Admin session restored"
+    ]
+  },
+  "externalGates": {
+    "dashboardTestKeyMatchesSuppliedKey": false,
+    "newWebhookInMismatchedAccount": "disabled",
+    "managedRazorpayWebhookEventsObserved": 0,
+    "applicationPaymentState": "verified; awaiting confirmation",
+    "providerCatalogSync": "failed; message [object Object]",
+    "providerConvenienceFee": "existing account added 2024 paise; not changed because setting also affects live mode"
+  },
+  "cleanup": {
+    "oneTimeProbeActors": "removed",
+    "checkoutFixtures": "retained in ignored journal; unresolved payment must be reconciled before deletion",
+    "managedProviderHistory": "preserved"
+  },
+  "notEstablished": [
+    "genuine captured webhook settlement",
+    "paid fulfillment end to end",
+    "convenience fee payload reconciliation",
+    "late/duplicate/out-of-order provider event execution",
+    "real stock, GST/HSN, shipping policy or production readiness"
+  ]
+}

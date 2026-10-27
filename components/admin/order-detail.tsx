@@ -55,21 +55,21 @@ function OrderDetailSession({ reference }: { reference: string }) {
   if (!canManage) return <AdminAccessDeniedScreen title="Order" />;
   return <div className={styles.screen}>
     <Link href="/admin/orders">← All orders</Link>
-    <header className={styles.pageHeading}><div><p className={styles.eyebrow}>Operations</p><h1>Order {reference}</h1><p className={styles.lede}>Development simulation. No payment was collected and no stock was reserved.</p></div></header>
+    <header className={styles.pageHeading}><div><p className={styles.eyebrow}>Operations</p><h1>Order {reference}</h1><p className={styles.lede}>{reference.startsWith("TST-") ? "Razorpay test mode. No real stock was reserved." : "Development simulation. No payment was collected and no stock was reserved."}</p></div></header>
     {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} type="button" disabled={busy} onClick={() => setReload(n => n + 1)}>Reload order</button></div>}
     {notice && <p role="status">{notice}</p>}
     {!order && !error && <p role="status">Loading order…</p>}
     {order && <>
-      <section className={detail.card}><h2>Order summary</h2><p>Status: {order.status} · Payment: {order.paymentState === "simulated" ? "Simulated, no payment collected" : "Unconfigured"} · Environment: {order.environment}</p><p>Total: {money(order.totalPaise)}</p>{order.snapshot.chargesAreFictional && <p>Shipping and tax are fictional test amounts, not final charges.</p>}
+      <section className={detail.card}><h2>Order summary</h2><p>Status: {order.status} · Payment: {order.paymentState === "simulated" ? "Simulated, no payment collected" : order.paymentState} · Environment: {order.environment}</p><p>Total: {money(order.totalPaise)}</p>{order.snapshot.chargesAreFictional && <p>Shipping and tax are fictional test amounts, not final charges.</p>}
       {order.snapshot.quote?.lines.map(line => <p key={line.variantId}>{line.title} {line.variant?.label && `· ${line.variant.label}`} × {line.quantity} — {money(line.lineTotalPaise)}</p>)}
       {order.snapshot.quote && <p>Subtotal: {money(order.snapshot.quote.subtotalPaise)} · Test shipping: {money(order.snapshot.fictionalShippingPaise ?? 0)} · Test tax: {money(order.snapshot.fictionalTaxPaise ?? 0)}</p>}</section>
       <div className={detail.columns}><section className={detail.card}><h2>Contact</h2>{order.snapshot.contact ? <p>{order.snapshot.contact.firstName} {order.snapshot.contact.lastName}<br />{order.snapshot.contact.email}<br />{order.snapshot.contact.phone}</p> : <p>Not available</p>}{order.snapshot.business && <p>{order.snapshot.business}</p>}{order.snapshot.gstin && <p>GSTIN: {order.snapshot.gstin}</p>}</section><section className={detail.card}><h2>Shipping address</h2><AddressView address={order.snapshot.shipping} /></section><section className={detail.card}><h2>Billing address</h2><AddressView address={order.snapshot.billing} /></section></div>
-      <form className={detail.card} onSubmit={save}><h2>Update order</h2><div className={detail.fields}>
+      {(!reference.startsWith("TST-") || order.paymentState === "paid") && <form className={detail.card} onSubmit={save}><h2>Update order</h2><div className={detail.fields}>
         <label>Status<select className={styles.input} value={status} onChange={e => setStatus(e.target.value as AdminOrderStatus)}><option value="pending">Pending</option><option value="processing">Processing</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option></select></label>
         <label>Carrier<input className={styles.input} maxLength={100} value={shipping.carrier} onChange={e => setShipping({ ...shipping, carrier: e.target.value })} /></label>
         <label>Tracking number<input className={styles.input} maxLength={120} value={shipping.trackingNumber} onChange={e => setShipping({ ...shipping, trackingNumber: e.target.value })} /></label>
         <label>Tracking URL<input className={styles.input} type="url" maxLength={500} value={shipping.trackingUrl} onChange={e => setShipping({ ...shipping, trackingUrl: e.target.value })} /></label>
-      </div><button className={styles.primaryButton} type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button></form>
+      </div><button className={styles.primaryButton} type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button></form>}
     </>}
   </div>;
 }

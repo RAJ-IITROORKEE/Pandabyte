@@ -40,7 +40,7 @@ export function parseOrderQuery(q: URLSearchParams) {
   if (!["10", "20", "50"].includes(limit) || !/^(0|[1-9][0-9]*)$/.test(offset) || Number(offset) > 10000) return null;
   return { limit: Number(limit), offset: Number(offset) };
 }
-export const isOrderReference = (v: string) => /^SIM-[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+export const isOrderReference = (v: string) => /^(?:SIM|TST)-[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 export function parseAdminOrderUpdate(v: unknown) {
   if (!object(v) || !keys(v, ["expectedVersion", "status", "shipping"]) || !Number.isSafeInteger(v.expectedVersion) || Number(v.expectedVersion) < 1 || !["pending", "processing", "fulfilled", "cancelled"].includes(v.status as string) || !object(v.shipping) || !keys(v.shipping, ["carrier", "trackingNumber", "trackingUrl"])) return null;
   const carrier = text(v.shipping.carrier, 100, false), trackingNumber = text(v.shipping.trackingNumber, 120, false), trackingUrl = text(v.shipping.trackingUrl, 500, false);

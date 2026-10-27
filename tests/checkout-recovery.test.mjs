@@ -16,6 +16,7 @@ function harness() {
   const calls = [];
   const exports = {};
   const dependencies = {
+    "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },
     react: { useState: initial => { const i = cursor++; if (!(i in hooks)) hooks[i] = initial; return [hooks[i], value => { hooks[i] = value; }]; }, useRef: initial => { const i = cursor++; return hooks[i] ??= { current: initial }; }, useEffect: fn => { effect = fn; } },
     "next/link": { default: "a" }, "next/image": { default: "img" }, "@clerk/nextjs": {}, "lucide-react": {},
     "./checkout-money": {}, "./checkout-draft": {}, "./checkout-validation": {}, "@/components/catalog/card-image-selection": {}, "./checkout-review.module.css": { default: {} },
