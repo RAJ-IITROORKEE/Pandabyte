@@ -10,3 +10,13 @@ test("admin page search uses the visible navigation capability set", () => {
   assert.deepEqual(searchAdminNavigation("coming soon", capabilities).map(({ label }) => label), []);
   assert.deepEqual(searchAdminNavigation("chat", capabilities).map(({ href }) => href), ["/admin/chat", "/admin/ai-chat"]);
 });
+
+test("orders and inventory navigation follow their separate permissions", () => {
+  const urls = (caps) => visibleNavigationGroups(caps).flatMap(({ items }) => items.map(({ href }) => href));
+  assert.equal(urls(["orders.manage"]).includes("/admin/inventory"), true);
+  assert.equal(urls(["orders.manage"]).includes("/admin/orders"), false);
+  assert.deepEqual(searchAdminNavigation("orders", ["orders.manage"]), []);
+  assert.equal(urls(["staff.manage"]).includes("/admin/orders"), true);
+  assert.equal(urls(["staff.manage"]).includes("/admin/inventory"), false);
+  assert.deepEqual(searchAdminNavigation("orders", ["staff.manage"]).map(({ href }) => href), ["/admin/orders"]);
+});

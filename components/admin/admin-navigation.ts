@@ -52,7 +52,7 @@ export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
   {
     label: "Operations",
     items: [
-      { href: "/admin/orders", label: "Orders", icon: IconShoppingCart, capability: "orders.manage", group: "Operations" },
+      { href: "/admin/orders", label: "Orders", icon: IconShoppingCart, capability: "staff.manage", group: "Operations" },
       { href: "/admin/inventory", label: "Inventory", icon: IconBoxMultiple, capability: "orders.manage", group: "Operations" },
       { href: "/admin/inquiries", label: "Inquiries", icon: IconMessage, capability: "inquiries.manage", group: "Operations" },
     ],

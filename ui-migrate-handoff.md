@@ -128,3 +128,7 @@ Five source-grounded category rich descriptions are published in development and
 ## Admin operations and category images — 27 October 2026
 
 Categories now includes an image thumbnail/preview column. Orders has a disconnected Mono table design; Inventory and Inquiries retain their existing server-backed capabilities and responsive Mono styling. Source-observation inventory is explicitly unverified and cannot be adjusted. Development read-only RPC migrations, draft-only tests, category fixture checks and browser validation passed. See [scope and limits](docs/admin-operations-followup.md). No order/payment workflow, live email, publication or deployment was performed.
+
+## Orders navigation permission — 27 October 2026
+
+Orders now appears in the Admin sidebar and command search only for `staff.manage`, matching the Orders screen and API. Inventory remains available under `orders.manage`; role labels and historical operations notes reflect the difference. Navigation and Orders tests, targeted lint, typecheck and an anonymous API check passed. Browser automation was disabled in Work settings, so this checkpoint has no fresh visual verification. See [current plan](docs/admin-backend-sync-plan.md).

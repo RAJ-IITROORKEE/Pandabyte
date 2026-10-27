@@ -92,10 +92,10 @@ const CAPABILITY_LABELS: Record<string, string> = {
   "catalog.edit": "Catalog editing",
   "content.edit": "Content editing",
   "content.publish": "Content publishing",
-  "orders.manage": "Orders and inventory",
+  "orders.manage": "Inventory management",
   "media.manage": "Media library",
   "inquiries.manage": "Customer inquiries",
-  "staff.manage": "Staff access",
+  "staff.manage": "Staff access and order viewing",
 };
 
 function formatDate(value: string) {
