@@ -4,6 +4,7 @@ import test from "node:test";
 
 // Static guardrails supplement the real Clerk/InsForge integration tests; they do not execute SQL.
 const sql = readFileSync(new URL("../migrations/20261028133002_razorpay-checkout-test.sql", import.meta.url), "utf8");
+const keyedSql = readFileSync(new URL("../migrations/20261028140002_razorpay-test-key-scope.sql", import.meta.url), "utf8");
 const route = readFileSync(new URL("../lib/checkout/razorpay-test.ts", import.meta.url), "utf8");
 const fixtureHarness = readFileSync(new URL("./razorpay-test-integration.mjs", import.meta.url), "utf8");
 test("fixture cleanup retains nonpaid attempts that could still settle", () => {
@@ -12,13 +13,21 @@ test("fixture cleanup retains nonpaid attempts that could still settle", () => {
   assert(validation > 0 && deletion > validation);
   assert.match(fixtureHarness, /select\("subject,request_key,order_id,state,provider_order_id,provider_payment_id"\)/);
 });
-function body(name) {
-  const start = sql.search(new RegExp(`CREATE(?: OR REPLACE)? FUNCTION public\\.${name}\\(`));
+function body(name, source = sql) {
+  const start = source.search(new RegExp(`CREATE(?: OR REPLACE)? FUNCTION public\\.${name}\\(`));
   assert(start >= 0, `Missing function ${name}`);
-  const open = sql.indexOf("$fn$", start), close = sql.indexOf("$fn$;", open + 4);
+  const open = source.indexOf("$fn$", start), close = source.indexOf("$fn$;", open + 4);
   assert(open > start && close > open, `Missing function body ${name}`);
-  return sql.slice(open + 4, close);
+  return source.slice(open + 4, close);
 }
+
+test("retired connection attempts cannot settle from later trusted events", () => {
+  const settle = body("razorpay_test_settle", keyedSql);
+  const reviewStop = settle.indexOf("IF t.state='review' THEN RETURN; END IF;");
+  assert(reviewStop > 0 && reviewStop < settle.indexOf("INSERT INTO public.razorpay_checkout_test_settlements"));
+  assert.match(settle, /allowed_key_id=t\.checkout_key/);
+  assert.match(settle, /pandabyte_key_id'=t\.checkout_key/);
+});
 
 test("test checkout remains private, opt-in and separate from operational inventory", () => {
   assert.match(route, /^import "server-only";/);

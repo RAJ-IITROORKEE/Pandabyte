@@ -1,5 +1,7 @@
 # Razorpay CLI verification — 28 October 2026
 
+**Historical first-account evidence:** the owner subsequently corrected the credentials to match the original Dashboard. The old capture remains preserved in app review and its original provider account. A fresh corrected-account checkout has genuine webhook/settlement evidence; see [the current checkpoint](razorpay-test-key-correction.md). The unresolved account/webhook statements below describe this earlier CLI check.
+
 The owner requested Razorpay CLI/MCP testing. The official Windows CLI **1.0.9** is installed only under ignored `.bootstrap/tools/razorpay/`; no application dependency, global PATH change or MCP installation was added. Credentials were entered through a masked prompt, passed only in the child process environment, and cleared afterward. No additional credential configuration file was written.
 
 ## Actual provider observations

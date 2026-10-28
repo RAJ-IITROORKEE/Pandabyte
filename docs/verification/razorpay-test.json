@@ -4,7 +4,10 @@
   "productionEnabled": false,
   "storefrontStylingChanged": false,
   "checks": {
-    "unitAndMedia": { "passed": 288, "failed": 0 },
+    "unitAndMedia": {
+      "passed": 288,
+      "failed": 0
+    },
     "typescript": "passed",
     "targetedEslint": "passed",
     "isolatedOptimizedBuild": "passed",
@@ -32,18 +35,11 @@
       "owner Google/Admin session restored"
     ]
   },
-  "externalGates": {
-    "dashboardTestKeyMatchesSuppliedKey": false,
-    "newWebhookInMismatchedAccount": "disabled",
-    "managedRazorpayWebhookEventsObserved": 0,
-    "applicationPaymentState": "verified; awaiting confirmation",
-    "providerCatalogSync": "failed; message [object Object]",
-    "providerConvenienceFee": "existing account added 2024 paise; not changed because setting also affects live mode"
-  },
   "cleanup": {
     "oneTimeProbeActors": "removed",
     "checkoutFixtures": "retained in ignored journal; unresolved payment must be reconciled before deletion",
-    "managedProviderHistory": "preserved"
+    "managedProviderHistory": "three exact old disposable test mirrors cleared by official key change; old provider originals and app review histories retained; corrected connection provider history preserved",
+    "firstAccountCheckoutFixtures": "two histories retained in review; actors, identities, grants and fake stock removed before corrected connection"
   },
   "cliFollowUp": {
     "tool": "official Razorpay CLI 1.0.9",
@@ -68,10 +64,70 @@
     "targetedEslint": "passed"
   },
   "notEstablished": [
-    "genuine captured webhook settlement",
-    "paid fulfillment end to end",
-    "convenience fee payload reconciliation",
-    "late/duplicate/out-of-order provider event execution",
+    "late capture after cancellation and changed-cart capture runtime cases",
+    "actual provider redelivery/out-of-order delivery",
+    "refund execution",
+    "green provider catalog sync",
     "real stock, GST/HSN, shipping policy or production readiness"
-  ]
+  ],
+  "firstAccountGatesHistorical": {
+    "dashboardTestKeyMatchesSuppliedKey": false,
+    "newWebhookInMismatchedAccount": "disabled",
+    "managedRazorpayWebhookEventsObserved": 0,
+    "applicationPaymentState": "verified; awaiting confirmation",
+    "providerCatalogSync": "failed; message [object Object]",
+    "providerConvenienceFee": "existing account added 2024 paise; not changed because setting also affects live mode"
+  },
+  "keyCorrection": {
+    "date": "2026-10-28",
+    "dashboardKeyMatches": true,
+    "existingTestWebhook": "enabled; same URL and signing secret; seven events",
+    "keyScopeMigration": "20261028140002_razorpay-test-key-scope.sql",
+    "providerSync": "failed: [object Object]",
+    "managedMirrorReset": {
+      "oldTestOrders": 3,
+      "otherAffectedOldTestTables": 0,
+      "appHistoriesRetained": 2
+    },
+    "checks": {
+      "focusedPassed": 23,
+      "typescript": "passed",
+      "targetedEslint": "passed",
+      "liveApiIntegration": "passed",
+      "wrongKeyDenied": true,
+      "unscopedRoutinesRevoked": true,
+      "oneCreationReplayRecovery": true,
+      "browserReloadSameReference": true,
+      "totalPaise": 10168,
+      "exactCapturedAmount": true,
+      "genuineProcessedEvents": [
+        "payment.authorized",
+        "payment.captured",
+        "order.paid"
+      ],
+      "settlementsBeforeCleanup": 1,
+      "stockConsumedOnce": true,
+      "buyNowCartUnchanged": true,
+      "storedGenuineEventReprocessingUnchanged": true,
+      "customerAndAdminPaidBrowser": true,
+      "fulfilledShipmentCustomerApi": true,
+      "fulfilledAdminBrowser": true,
+      "staleVersionHttpStatus": 409,
+      "nonAdminHttpStatus": 403,
+      "temporaryStaffGrantRevoked": true,
+      "ownerGoogleAdminRestored": true
+    },
+    "cleanup": {
+      "paidApplicationFixture": "removed after verified reconciliation",
+      "unpaidFixture": "review history retained; actor and identity removed",
+      "actors": 0,
+      "fakeStockRows": 0,
+      "nonReviewAttempts": 0,
+      "retainedReviewHistories": 3,
+      "appSettlements": 0,
+      "isolatedServer3040": "stopped",
+      "normalPreviewPaymentGate": "disabled; capabilities false, prepare503, no Razorpay CSP"
+    },
+    "buildAndFullSuite": "previous checkpoint only; not rerun for key correction"
+  }
 }

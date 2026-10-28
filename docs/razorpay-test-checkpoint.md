@@ -1,5 +1,7 @@
 # Razorpay development test checkout — 28 October 2026
 
+**Current update:** the owner corrected the keys, and the matching webhook and genuine paid checkout now pass. See [the corrected-account checkpoint](razorpay-test-key-correction.md) for current evidence and retained review histories. The first-account observations and external gates below are historical; their fee difference was not generalized.
+
 ## Authorized boundary
 
 The owner supplied working Razorpay test credentials and authorized provider setup, disposable checkout testing and customer/Admin functional wiring, preserving storefront layout and styling. This supersedes the historical payment prohibition **only for the isolated test flow**. Live credentials, production deployment, real stock, real reservations, approved GST/HSN/shipping and real purchases remain out of scope.
@@ -28,7 +30,7 @@ Provider credentials are configured in InsForge's Razorpay connection, not appli
 - The owner's genuine Google/Admin session was restored. Admin Orders displayed the same test order with payment `verified`, and no fulfillment controls were offered before confirmed payment. No existing customer cart/content was changed by the fixture flow.
 - The isolated opt-in server on port 3040 was stopped. The regular port 3030 preview remains running: its test capabilities return false, prepare returns 503 and its CSP does not allow Razorpay hosts. Unresolved fixtures are preserved for reconciliation rather than deleted.
 
-## Current external gate
+## Historical first-account external gate
 
 CLI follow-up: the official Razorpay CLI confirmed that the existing provider order is paid and its single test payment is captured. The base order is 101168 paise; the captured payment is 103192 paise, with a reported 2024-paise fee and zero tax. This is provider-side evidence only. See [the CLI verification and remaining setup boundary](razorpay-cli-verification.md). No new payment or application settlement was created by these reads.
 
@@ -40,7 +42,7 @@ The account's existing convenience-fee configuration also added ₹20.24 to the 
 
 InsForge's catalog sync still reports `failed` with the unhelpful `[object Object]` message, despite successful managed order creation and callback verification. Do not report overall provider health as green.
 
-## Resume and cleanup
+## Historical first-account resume and cleanup
 
 1. Confirm the matching Dashboard's test key suffix without regenerating credentials. Register the generated InsForge test URL/signing secret there, avoiding duplicate endpoints. Select payment authorized/captured/failed, order paid and refund created/processed/failed.
 2. Reconcile the existing provider order/payment and verified callback. Verify genuine event delivery and exact amount/fee semantics before changing application state. Never manufacture processed events as provider evidence.

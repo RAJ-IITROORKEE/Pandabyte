@@ -30,6 +30,8 @@ async function body(response, status, label) {
   return safeJson(response, label);
 }
 async function seed(context) {
+  const publicKey = process.env.RAZORPAY_TEST_KEY_ID;
+  check(typeof publicKey === "string" && /^rzp_test_[A-Za-z0-9]+$/.test(publicKey), "test_key_required");
   const state = { purpose: "razorpay-checkout-test", runId: randomUUID(), proof: process.env.RAZORPAY_CHECKOUT_TEST_KEY || randomBytes(32).toString("hex"), users: [], requests: [], variants: [] };
   await save(state, true);
   try {
@@ -43,7 +45,7 @@ async function seed(context) {
     check(state.variants.length === 2 && state.variants.every(v => validUuid(v.id)), "two_published_variants_required");
     await save(state);
     const hash = createHash("sha256").update(state.proof).digest("hex");
-    let result = await table(context.admin, "razorpay_checkout_test_actors").insert(state.users.map(u => ({ subject: u.userId, proof_hash: hash, fictional_shipping_paise: 123, fictional_tax_paise: 45 })));
+    let result = await table(context.admin, "razorpay_checkout_test_actors").insert(state.users.map(u => ({ subject: u.userId, proof_hash: hash, allowed_key_id: publicKey, fictional_shipping_paise: 123, fictional_tax_paise: 45 })));
     check(!result.error, "actor_fixture_failed");
     result = await table(context.admin, "razorpay_checkout_test_stock").insert(state.users.flatMap(u => state.variants.map(v => ({ subject: u.userId, variant_id: v.id, quantity: 5 }))));
     check(!result.error, "stock_fixture_failed");
@@ -63,11 +65,21 @@ async function test(context, state) {
   const root = "/api/checkout/razorpay-test";
   assert.equal((await request(context, `${root}/capabilities`, null)).status, 401);
   assert.deepEqual(await body(await request(context, `${root}/capabilities`, customerAuth.token), 200, "capabilities"), { razorpayTestAvailable: true, fictionalShippingPaise: 123, fictionalTaxPaise: 45 });
-  const wrongProof = await rpc(customerAuth.database, "razorpay_test_capabilities", { p_proof: "x".repeat(64) });
+  const wrongProof = await rpc(customerAuth.database, "razorpay_test_capabilities", { p_proof: "x".repeat(64), p_key: publicKey });
   check(!wrongProof.error && wrongProof.data.razorpayTestAvailable === false, "wrong_proof_allowed");
+  const wrongKey = publicKey === "rzp_test_wrongfixture" ? "rzp_test_otherfixture" : "rzp_test_wrongfixture";
+  const wrongCapability = await rpc(customerAuth.database, "razorpay_test_capabilities", { p_proof: state.proof, p_key: wrongKey });
+  check(!wrongCapability.error && wrongCapability.data.razorpayTestAvailable === false, "wrong_key_capability_allowed");
   for (const name of ["razorpay_checkout_test_actors", "razorpay_checkout_test_stock", "razorpay_checkout_test_attempts", "razorpay_checkout_test_closed_requests"]) check((await table(customerAuth.database, name).select("*").limit(1)).error, "private_table_access_allowed");
   const address = { recipientName: "Fixture Customer", phone: "9999999999", line1: "Test Street", line2: "", city: "Test City", state: "Test State", postalCode: "123456", country: "India" };
   const input = { idempotencyKey: randomUUID(), mode: "buy-now", expectedCartVersion: null, expectedSubtotalPaise: state.variants[0].price, items: [{ variantId: state.variants[0].id, quantity: 1 }], contact: { email: customer.email, firstName: "Fixture", lastName: "Customer", phone: "9999999999" }, shipping: address, billing: address, business: "", gstin: "" };
+  const wrongPrepare = await rpc(customerAuth.database, "razorpay_test_prepare", { p_request: input, p_proof: state.proof, p_key: wrongKey });
+  check(wrongPrepare.error?.code === "P0001" && wrongPrepare.error?.details === "connection_changed", "wrong_key_prepare_allowed");
+  const wrongRecover = await rpc(customerAuth.database, "razorpay_test_recover", { p_request_key: input.idempotencyKey, p_proof: state.proof, p_key: wrongKey });
+  check(wrongRecover.error?.code === "P0001" && wrongRecover.error?.details === "connection_changed", "wrong_key_recover_allowed");
+  for (const [name, args] of [["razorpay_test_capabilities_unscoped", { p_proof: state.proof }], ["razorpay_test_prepare_unscoped", { p_request: input, p_proof: state.proof }], ["razorpay_test_bind_unscoped", { p_request_key: input.idempotencyKey, p_provider_order_id: "order_fixture", p_key: publicKey }]]) {
+    check((await rpc(customerAuth.database, name, args)).error, "unscoped_rpc_access_allowed");
+  }
   const entry = { subject: customer.userId, email: customer.email, key: input.idempotencyKey };
   state.requests.push(entry); await save(state);
   assert.equal((await request(context, `${root}/prepare`, null, "POST", input)).status, 401);
@@ -78,8 +90,14 @@ async function test(context, state) {
   const repeated = await body(await request(context, `${root}/prepare`, customerAuth.token, "POST", input, customer.userId), 200, "replay");
   assert.deepEqual(repeated, first);
   assert.deepEqual(await body(await request(context, `${root}/recover`, customerAuth.token, "POST", { requestKey: input.idempotencyKey }, customer.userId), 200, "recover"), first);
-  const owned = await table(context.admin, "razorpay_checkout_test_attempts").select("order_id,provider_order_id").eq("subject", customer.userId).eq("request_key", input.idempotencyKey);
-  check(!owned.error && owned.data.length === 1 && owned.data[0].provider_order_id === first.providerOrderId, "multiple_or_mismatched_attempts");
+  const attemptQuery = () => table(context.admin, "razorpay_checkout_test_attempts").select("order_id,provider_order_id,checkout_key,state").eq("subject", customer.userId).eq("request_key", input.idempotencyKey);
+  const owned = await attemptQuery();
+  check(!owned.error && owned.data.length === 1 && owned.data[0].provider_order_id === first.providerOrderId && owned.data[0].checkout_key === publicKey, "multiple_or_mismatched_attempts");
+  const wrongBind = await rpc(customerAuth.database, "razorpay_test_bind", { p_request_key: input.idempotencyKey, p_provider_order_id: first.providerOrderId, p_key: wrongKey });
+  check(wrongBind.error?.code === "P0001" && wrongBind.error?.details === "connection_changed", "wrong_key_bind_allowed");
+  const afterWrongBind = await attemptQuery();
+  check(!afterWrongBind.error, "wrong_key_bind_read_failed");
+  assert.deepEqual(afterWrongBind.data, owned.data);
   const cross = await rpc(otherAuth.database, "razorpay_test_resolve", { p_provider_order_id: first.providerOrderId });
   check(!!cross.error, "cross_owner_resolve_allowed");
   const foreignVerify = await request(context, `${root}/verify`, otherAuth.token, "POST", { requestKey: input.idempotencyKey, orderId: first.providerOrderId, paymentId: "pay_fixture", signature: "a".repeat(64) }, other.userId);
