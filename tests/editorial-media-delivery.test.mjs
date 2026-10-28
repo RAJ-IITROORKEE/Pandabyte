@@ -204,6 +204,27 @@ test("rejects malformed, mismatched, oversized, polyglot and truncated WebP inpu
   }), null);
 });
 
+test("rejects structurally repaired truncated pixels on resized lossy and lossless images", async () => {
+  for (const options of [{ width: 1200, height: 900 }, { width: 1200, height: 900, alpha: true, lossless: true }]) {
+    const original = await webp(options);
+    const info = await record(original);
+    let last = 12;
+    for (let offset = 12; offset < original.length;) {
+      last = offset;
+      const length = original.readUInt32LE(offset + 4);
+      offset += 8 + length + (length % 2);
+    }
+    const length = original.readUInt32LE(last + 4);
+    assert.ok(length > 16);
+    const damaged = Buffer.from(original.subarray(0, original.length - 16));
+    damaged.writeUInt32LE(damaged.length - 8, 4);
+    damaged.writeUInt32LE(length - 16, last + 4);
+    for (const size of [96, 960]) {
+      assert.equal(await prepareEditorialDownload(damaged, { ...info, byteSize: damaged.length }, size), null);
+    }
+  }
+});
+
 test("rejects actual animated WebP and metadata-bearing WebP", async () => {
   const animated = await sharp(Buffer.concat([pixels(), pixels(3, 80)]), {
     raw: { width: WIDTH, height: HEIGHT * 2, channels: 3, pageHeight: HEIGHT },

@@ -55,11 +55,12 @@ export async function prepareEditorialDownload(input: Buffer, media: StoredMedia
     const metadata = await image.metadata();
     if (metadata.format !== "webp" || (metadata.pages ?? 1) !== 1 || metadata.width !== media.width || metadata.height !== media.height ||
       metadata.exif || metadata.icc || metadata.iptc || metadata.xmp) return null;
-    // Statistics force pixel decoding without returning a full raw pixel Buffer to JavaScript.
-    await image.stats();
     if (size === undefined || (metadata.width <= size && metadata.height <= size)) {
+      // Original-byte delivery must fully decode before returning the stored container.
+      await image.stats();
       return { bytes: input, mimeType: "image/webp", extension: "webp", width: metadata.width, height: metadata.height };
     }
+    // Encoding the resized preview decodes the input; avoid decoding it a second time.
     const { data, info } = await image.clone().resize(size, size, { fit: "inside", withoutEnlargement: true })
       .webp(chunks.has("VP8L") ? { lossless: true, exact: true } : { quality: 85 }).toBuffer({ resolveWithObject: true });
     if (info.format !== "webp" || info.width < 1 || info.height < 1 || info.width > size || info.height > size || data.byteLength > MAX_MEDIA_BYTES) return null;
