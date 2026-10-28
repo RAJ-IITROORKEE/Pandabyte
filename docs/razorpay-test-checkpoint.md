@@ -2,6 +2,8 @@
 
 **Current update:** the owner corrected the keys, and the matching webhook and genuine paid checkout now pass. See [the corrected-account checkpoint](razorpay-test-key-correction.md) for current evidence and retained review histories. The first-account observations and external gates below are historical; their fee difference was not generalized.
 
+**Latest scope:** [one-time product payments only](razorpay-one-time-checkout.md). Orders/payment webhooks do not depend on Plans or full catalog-sync success; do not activate subscriptions as a checkout prerequisite. Keep the unrelated full-sync failure truthful and live payments disabled.
+
 ## Authorized boundary
 
 The owner supplied working Razorpay test credentials and authorized provider setup, disposable checkout testing and customer/Admin functional wiring, preserving storefront layout and styling. This supersedes the historical payment prohibition **only for the isolated test flow**. Live credentials, production deployment, real stock, real reservations, approved GST/HSN/shipping and real purchases remain out of scope.

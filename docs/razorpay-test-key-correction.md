@@ -28,4 +28,4 @@ The owned isolated preview on 3040 was stopped; the normal 3030 preview returns 
 
 Current evidence is recorded in [verification](verification/razorpay-test.json). Private screenshots and fixture journals remain ignored under `.bootstrap/`.
 
-Subsequent [catalog-sync diagnosis](razorpay-catalog-sync.md) isolates the failure to Plans HTTP 401 while Orders/Items succeed. The existing webhook needs no further setup. The hosted formatter hides this provider denial; Test Mode Plans access remains an external gate.
+Subsequent [catalog-sync diagnosis](razorpay-catalog-sync.md) isolates the failure to Plans HTTP 401 while Orders/Items succeed. The existing webhook needs no further setup. Under the owner's later [one-time-only decision](razorpay-one-time-checkout.md), Plans access is an optional full-sync diagnostic, not a checkout gate; no subscription activation is required.

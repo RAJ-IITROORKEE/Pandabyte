@@ -31,6 +31,33 @@ test('matching managed order is bound once before returning checkout details', a
   assert.equal(result.state, 'ready'); assert.deepEqual(calls.map(c => c[0]), ['razorpay_test_prepare', 'razorpay_test_bind']);
   assert.equal(calls[0][1].p_key, 'rzp_test_key');
 });
+test('one-time checkout prepares and verifies using order APIs only', async () => {
+  const rpcCalls = [], providerCalls = [], forbidden = [];
+  const ready = { ...dto, state: 'ready', key: 'rzp_test_key', providerOrderId: 'order_123' };
+  const rpc = async (name, args) => {
+    rpcCalls.push(name);
+    if (name === 'razorpay_test_prepare') return claim;
+    if (name === 'razorpay_test_bind') return ready;
+    if (name === 'razorpay_test_resolve') { assert.equal(args.p_provider_order_id, 'order_123'); return { ...ready, requestKey, connectionKey: 'rzp_test_key' }; }
+    if (name === 'razorpay_test_mark_verified') { assert.equal(args.p_payment_id, 'pay_123'); return { ...dto, state: 'verified', providerOrderId: 'order_123' }; }
+    throw Error(`Unexpected RPC: ${name}`);
+  };
+  const methods = {
+    createOrder: async (environment, input) => {
+      providerCalls.push('createOrder'); assert.equal(environment, 'test');
+      return { error: null, data: { order: { environment, amount: input.amount, currency: 'inr', receipt: input.receipt, subjectType: input.subject.type, subjectId: input.subject.id, orderId: 'order_123' }, checkoutOptions: { key: 'rzp_test_key', order_id: 'order_123', amount: input.amount, currency: 'inr' } } };
+    },
+    verifyOrder: async (environment, input) => { providerCalls.push('verifyOrder'); assert.equal(environment, 'test'); assert.equal(input.paymentId, 'pay_123'); return { data: {}, error: null }; },
+  };
+  const provider = new Proxy(methods, { get(target, prop) { if (!(prop in target)) { forbidden.push(prop); throw Error(`Unexpected provider access: ${String(prop)}`); } return target[prop]; } });
+  const prepared = await prepareTest(rpc, provider, { idempotencyKey: requestKey }, 'proof', 'rzp_test_key', 'owner');
+  assert.equal(prepared.state, 'ready');
+  const verified = await verifyTest(rpc, provider, { requestKey, orderId: prepared.providerOrderId, paymentId: 'pay_123', signature: 'a'.repeat(64) }, 'rzp_test_key');
+  assert.equal(verified.state, 'verified');
+  assert.deepEqual(providerCalls, ['createOrder', 'verifyOrder']);
+  assert.deepEqual(rpcCalls, ['razorpay_test_prepare', 'razorpay_test_bind', 'razorpay_test_resolve', 'razorpay_test_mark_verified']);
+  assert.deepEqual(forbidden, []);
+});
 test('strict inputs and response allowlist', () => {
   assert.ok(parseTestRequest({ requestKey }));
   assert.equal(parseTestRequest({ requestKey, extra: true }), null);

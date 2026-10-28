@@ -158,6 +158,16 @@
     "liveConnection": "unconfigured",
     "normalPreviewPaymentGate": "disabled",
     "newTestRecordsCreated": 0,
-    "nextGate": "provider Test Mode Plans/Subscriptions API access"
+    "fullSyncOnlyGate": "provider Test Mode Plans/Subscriptions API access",
+    "requiredForOneTimeCheckout": false
+  },
+  "oneTimeScope": {
+    "plansRequired": false,
+    "subscriptionsRequired": false,
+    "catalogSyncRequired": false,
+    "evidence": "razorpay-one-time.json",
+    "freshPaidTestPassed": true,
+    "frontendChanged": false,
+    "livePaymentsEnabled": false
   }
 }

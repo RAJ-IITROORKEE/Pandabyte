@@ -1,8 +1,10 @@
 # Razorpay catalog sync diagnosis — 28 October 2026
 
+**Latest scope correction:** the owner selected **one-time product payments only**. Plans access and this full sync are not checkout prerequisites; no subscription activation/support request is required to continue checkout testing. Follow [the one-time checkout contract](razorpay-one-time-checkout.md). The diagnosis below remains true for the optional managed full sync.
+
 ## Current result
 
-**Blocked by provider Plans access; not fixed.** The existing seven-event InsForge webhook is enabled in the matching Razorpay **Test Mode** account and previously delivered genuine processed checkout events. No additional webhook setup is required. Catalog sync is a separate managed InsForge operation.
+**Full sync is blocked by provider Plans access; one-time checkout is independent.** The existing seven-event InsForge webhook is enabled in the matching Razorpay **Test Mode** account and previously delivered genuine processed checkout events. No additional webhook setup is required. Catalog sync is a separate managed InsForge operation.
 
 Two bounded, explicit `payments razorpay sync --environment test` runs reproduced `failed`, zero sync counts and `[object Object]`. No `all` or `live` sync was invoked; no key rotation/config reset was performed.
 
@@ -24,13 +26,13 @@ The existing [normalizer](https://github.com/InsForge/InsForge/blob/main/backend
 
 This code runs in InsForge's hosted backend, not PandaByte's Next application. Changing frontend code, RLS, database schema or the working payment key would not repair the confirmed Plans denial. A redacted issue was submitted using the [InsForge CLI skill](C:/Users/rajra/.agents/skills/insforge-cli/SKILL.md), reference `be4e20fa-2c9b-45c9-95bf-d50f50a9f1c4`. No raw credentials, account identifiers or customer data were included.
 
-## Owner action / ready-to-send support request
+## Historical optional support request — not needed for one-time checkout
 
-Use the account's Razorpay Support channel; no message has been sent to Razorpay by this checkpoint:
+Do not send this request for the current one-time-only scope. It is retained as historical diagnostic context if subscriptions are explicitly authorized later; no message was sent to Razorpay:
 
 > In Test Mode, our existing API key can read Orders and Items, but `GET /v1/plans?count=1&skip=0` returns HTTP 401 with `{"error":"Unauthorized"}`. The Dashboard Subscriptions Get Started page fails to load subscriptions. Please confirm and enable this merchant's **Test Mode Plans/Subscriptions API access**, or explain the missing eligibility/activation requirement. Please do not enable live payments or change live settings. We do not need new payment keys or another webhook.
 
-Once Razorpay resolves the test access restriction, re-run the official InsForge **test-only** sync, require a genuinely succeeded result and verify all stages. If the provider requires live activation, terms or a commercial change, stop for the owner's decision. Keep the sync status failed until the real operation succeeds; never overwrite managed health metadata to appear green.
+If full subscriptions/catalog sync becomes an authorized requirement later, resolve provider access and require a genuinely successful test-only sync. For current one-time checkout, leave this separate sync failed and use Orders plus the verified payment webhook. Never overwrite managed health metadata to appear green.
 
 ## Verification and boundaries
 

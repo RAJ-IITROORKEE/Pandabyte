@@ -1,0 +1,64 @@
+{
+  "checkpoint": "razorpay-one-time-without-plans",
+  "date": "2026-10-28",
+  "productionEnabled": false,
+  "runtimeOrFrontendFilesChanged": false,
+  "plansRequired": false,
+  "subscriptionsEnabled": false,
+  "managedFullSyncRequired": false,
+  "managedFullSyncStatus": "failed; unchanged; independent diagnostic",
+  "newProviderOrders": 1,
+  "checks": {
+    "focusedPassed": 24,
+    "targetedEslint": "passed",
+    "browserCheckoutConfirmed": true,
+    "reloadSameReference": true,
+    "sessionInterruptionSameReferenceRecovered": true,
+    "customerApi": {
+      "ownedCustomerPaid": true,
+      "totalPaise": 10168,
+      "foreignCustomerDenied": 404,
+      "nonAdminDenied": 403
+    },
+    "adminPaidBrowser": true,
+    "freshCustomerPageVisualCheck": "not completed: development session changed; customer API verified",
+    "providerAndSettlement": {
+      "paid": true,
+      "totalPaise": 10168,
+      "exactProviderAmount": true,
+      "genuineProcessedEvents": [
+        "order.paid",
+        "payment.authorized",
+        "payment.captured"
+      ],
+      "settlements": 1,
+      "reservation": "consumed",
+      "fixtureStockConsumedOnce": true,
+      "buyNowCartItems": 0,
+      "localGenuineEventReprocessingUnchanged": true,
+      "providerRedeliveryTested": false
+    },
+    "ownerGoogleAdminRestored": true
+  },
+  "cleanup": {
+    "paidApplicationFixture": "removed",
+    "disposableIdentities": "both removed; temporary grants revoked",
+    "actors": 0,
+    "fakeStock": 0,
+    "nonReviewAttempts": 0,
+    "appSettlements": 0,
+    "priorReviewHistories": 3,
+    "managedProviderOrders": 3,
+    "managedTestEvents": 6,
+    "providerHistory": "preserved",
+    "isolatedServer3040": "stopped",
+    "normalPreviewPaymentGate": "capabilities false; test prepare503",
+    "liveConnection": "unconfigured"
+  },
+  "notEstablished": [
+    "cause of development browser session interruption",
+    "fresh customer-page visual validation",
+    "late-capture/refund/provider-redelivery/changed-cart runtime scenarios",
+    "real stock/GST/shipping or production commerce"
+  ]
+}
