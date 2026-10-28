@@ -129,5 +129,35 @@
       "normalPreviewPaymentGate": "disabled; capabilities false, prepare503, no Razorpay CSP"
     },
     "buildAndFullSuite": "previous checkpoint only; not rerun for key correction"
+  },
+  "catalogSyncDiagnosis": {
+    "date": "2026-10-28",
+    "status": "blocked_not_fixed",
+    "testOnlySyncAttempts": 2,
+    "allOrLiveSyncInvoked": false,
+    "endpointReads": {
+      "orders": 200,
+      "items": 200,
+      "itemsReturned": 0,
+      "plans": 401,
+      "plansCount1": 401,
+      "plansError": "Unauthorized"
+    },
+    "dashboardSubscriptions": "Get Started reached failed-to-load error; subsequent sync still failed",
+    "webhook": "enabled; no further setup required",
+    "diagnosticDefect": "hosted sync stringifies SDK object; current normalizer also misses string error",
+    "backendFeedback": "be4e20fa-2c9b-45c9-95bf-d50f50a9f1c4",
+    "beforeAfterCounts": {
+      "items": 0,
+      "plans": 0,
+      "managedTestOrders": 2,
+      "managedTestEvents": 3,
+      "appReviewHistories": 3
+    },
+    "runtimeOrFrontendFilesChanged": false,
+    "liveConnection": "unconfigured",
+    "normalPreviewPaymentGate": "disabled",
+    "newTestRecordsCreated": 0,
+    "nextGate": "provider Test Mode Plans/Subscriptions API access"
   }
 }
