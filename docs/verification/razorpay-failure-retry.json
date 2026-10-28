@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-28",
+  "scope": "isolated-one-time-test-only",
+  "completeFailureRetryMatrix": false,
+  "browser": {
+    "cancelledAndReloadRecoveredSameOrder": true,
+    "customerPaidOrdersVisible": 2,
+    "totalPaisePerOrder": 10168,
+    "genuineFailedPaymentAndProviderRetry": false,
+    "limitation": "No provider failure controls or UPI VPA input exposed; bank and card tests auto-completed successfully.",
+    "ownerAdminRestored": true,
+    "retainedCancellationPaymentReviewVisible": true
+  },
+  "cancellation": {
+    "repeatCancelCalls": 2,
+    "repeatRecoveryCalls": 2,
+    "attemptOrderCartUnchanged": true,
+    "stockReleasedOnce": true,
+    "settlements": 0,
+    "sameKeyReplayCreatesProviderOrder": false,
+    "newKeyDatabaseGuard": "attempt_pending"
+  },
+  "webhooks": {
+    "provenance": "locally re-signed reserialization of genuine stored JSONB; original event IDs",
+    "officialCliIndependentlyVerified": true,
+    "concurrentCaptureDuplicates": 2,
+    "orderPaidDuplicates": 1,
+    "duplicateStatus": 200,
+    "duplicateHandled": false,
+    "invalidSignatureStatus": 400,
+    "applicationAndManagedLedgerUnchanged": true,
+    "genuineFailedEventReplay": false,
+    "providerOriginRedelivery": false
+  },
+  "localRegression": {
+    "failureThenSuccessfulCallback": "red-before-fix-green-after",
+    "staleFailureAlertCleared": true,
+    "lateFailureCallbackIgnoredAfterSuccessStarts": true,
+    "frontendDesignChanged": false
+  },
+  "checks": {
+    "focusedTestsPassed": 25,
+    "targetedEslint": "passed",
+    "typescript": "passed",
+    "productionBuild": "not-run",
+    "independentReview": "no-blocking-findings"
+  },
+  "cleanup": {
+    "actors": 0,
+    "fakeStockRows": 0,
+    "nonreviewAttempts": 0,
+    "appSettlements": 0,
+    "reviewHistoriesRetained": 4,
+    "managedTestOrdersRetained": 6,
+    "managedTestEventsRetained": 12,
+    "disposableIdentitiesAndGrantsRemoved": true,
+    "ownedIsolatedServerStopped": true
+  },
+  "gates": {
+    "normalTestCapabilities": false,
+    "normalPrepareStatus": 503,
+    "liveConnection": "unconfigured",
+    "fullSync": "failed-unchanged",
+    "productionDeployment": false
+  }
+}

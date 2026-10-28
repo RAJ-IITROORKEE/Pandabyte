@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.Modu
 const id = "00000000-0000-4000-8000-000000000001";
 function harness(initialRequest) {
   let hooks = [], cursor = 0, effect, cleanup, selection = [{ variantId: id, quantity: 2 }], marker = id, responses = [], modalOptions, appended = [], completedCart = 0, closed = 0;
-  const calls = [], exports = {};
+  const calls = [], exports = {}, listeners = {};
   const dependencies = {
     react: { useState: initial => { const i = cursor++; if (!(i in hooks)) hooks[i] = initial; return [hooks[i], value => { hooks[i] = value; }]; }, useRef: initial => { const i = cursor++; return hooks[i] ??= { current: initial }; }, useEffect: fn => { effect = fn; } },
     "next/link": { default: "a" }, "./checkout-review.module.css": { default: {} }, "./checkout-money": { formatPaise: String },
@@ -18,14 +18,14 @@ function harness(initialRequest) {
     "./buy-now-store": { getBuyNowSelection: () => selection, clearBuyNowSelection: () => { selection = null; } },
     "./cart-utils": { sameCartItems: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
   };
-  const window = { Razorpay: class { constructor(options) { modalOptions = options; } on() {} open() {} close() { closed++; } } };
+  const window = { Razorpay: class { constructor(options) { modalOptions = options; } on(event, callback) { listeners[event] = callback; } open() {} close() { closed++; } } };
   const document = { createElement: () => ({}), querySelector: () => ({ nonce: "nonce" }), head: { appendChild: node => appended.push(node) } };
   const storage = { getItem: () => marker, removeItem: () => { marker = null; } };
   runInNewContext(compiled, { exports, require: name => dependencies[name] ?? require(name), AbortController, sessionStorage: storage, window, document, fetch: (url, options) => { calls.push({ url, options }); return new Promise(resolve => { responses.push(resolve); }); }, setTimeout });
   const props = { userId: "user-a", marker: id, initialRequest, onContinue() {} };
   function render() { cursor = 0; return exports.RazorpayTest(props); }
   render(); cleanup = effect();
-  return { exports, calls, render, window, appended, document, strictRemount: () => { cleanup(); cleanup = effect(); }, respond: async data => { responses.shift()({ ok: true, json: async () => data }); await new Promise(resolve => setImmediate(resolve)); }, stop: () => cleanup(), get marker() { return marker; }, get selection() { return selection; }, get modalOptions() { return modalOptions; }, get completedCart() { return completedCart; }, get closed() { return closed; } };
+  return { exports, calls, render, window, appended, document, dispatch: event => listeners[event](), strictRemount: () => { cleanup(); cleanup = effect(); }, respond: async data => { responses.shift()({ ok: true, json: async () => data }); await new Promise(resolve => setImmediate(resolve)); }, stop: () => cleanup(), get marker() { return marker; }, get selection() { return selection; }, get modalOptions() { return modalOptions; }, get completedCart() { return completedCart; }, get closed() { return closed; } };
 }
 const order = { state: "ready", reference: `TST-${id}`, totalPaise: 100, mode: "buy-now", items: [{ variantId: id, quantity: 1 }], key: "rzp_test_abc", providerOrderId: "order_abc" };
 test("validates the server payment state and requires test credentials for ready", () => {
@@ -132,5 +132,23 @@ test("Strict Mode aborted recovery cannot clear loading or show an error", async
   const ready = JSON.stringify(h.render());
   assert.match(ready, /Continue test payment/);
   assert.doesNotMatch(ready, /could not be checked/);
+  h.stop();
+});
+
+
+test("a failed event followed by success in the same modal clears the old error", async () => {
+  const h = harness(); await h.respond(order);
+  const button = find(h.render(), node => node.type === "button" && node.props.children === "Continue test payment");
+  await button.props.onClick();
+  h.dispatch("payment.failed");
+  assert.match(JSON.stringify(h.render()), /test payment failed/);
+  const callback = h.modalOptions.handler({ razorpay_order_id: "order_abc", razorpay_payment_id: "pay_abc", razorpay_signature: "signed" });
+  assert.doesNotMatch(JSON.stringify(h.render()), /test payment failed/);
+  h.dispatch("payment.failed");
+  assert.doesNotMatch(JSON.stringify(h.render()), /test payment failed/);
+  assert.match(h.calls[1].url, /verify$/);
+  await h.respond({ ...order, state: "paid" }); await callback;
+  const view = JSON.stringify(h.render());
+  assert.match(view, /Test payment confirmed/); assert.doesNotMatch(view, /test payment failed/);
   h.stop();
 });

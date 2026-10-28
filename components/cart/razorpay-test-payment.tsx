@@ -104,7 +104,7 @@ export function RazorpayTest({ userId, marker, initialRequest, onContinue }: { u
       const modal = new window.Razorpay({ key: result.key, order_id: result.providerOrderId, amount: result.totalPaise, currency: "INR", name: "PandaByte", description: "Test payment", handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
         if (!active.current) return;
         callbackStarted = true;
-        setBusy(true);
+        setError(""); setBusy(true);
         try {
           const verified = await request("verify", { requestKey: marker, orderId: response.razorpay_order_id, paymentId: response.razorpay_payment_id, signature: response.razorpay_signature });
           await apply(verified);
@@ -118,7 +118,7 @@ export function RazorpayTest({ userId, marker, initialRequest, onContinue }: { u
         } catch { if (active.current) setError("Payment confirmation is pending. Check again to see the latest status."); }
         finally { modalOpen.current = false; if (active.current) setBusy(false); }
       }, modal: { ondismiss: async () => { if (!active.current || callbackStarted) return; setBusy(true); try { const cancelled = await request("cancel", { requestKey: marker }); if (!callbackStarted) await apply(cancelled); } catch { if (active.current && !callbackStarted) setError("The payment result is uncertain. Check again."); } finally { if (!callbackStarted) { modalOpen.current = false; if (active.current) setBusy(false); } } } } });
-      modal.on("payment.failed", () => { if (active.current) setError("The test payment failed in Razorpay. Check the order status before another attempt."); });
+      modal.on("payment.failed", () => { if (active.current && !callbackStarted) setError("The test payment failed in Razorpay. Check the order status before another attempt."); });
       modalInstance.current = modal;
       modal.open();
       opened = true;
