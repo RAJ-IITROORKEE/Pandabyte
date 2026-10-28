@@ -6,6 +6,7 @@ import { getStaffAccess } from "@/lib/authorization";
 import { editorialError, editorialHeaders } from "@/lib/editorial/http";
 import { EDITORIAL_MEDIA_BUCKET, MAX_MEDIA_BYTES, UUID_PATTERN } from "@/lib/editorial/validation";
 import { parseEditorialImageSize, prepareEditorialDownload } from "@/lib/editorial/media-delivery";
+import { publicPreviewCache } from "@/lib/editorial/preview-cache";
 
 type DownloadMedia = { id: string; objectKey: string; filename: string; mimeType: string; byteSize: number; width: number | null; height: number | null; modelSha256?: string | null; documentSha256?: string | null };
 
@@ -33,17 +34,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // This privileged client is confined to an already-published, canonical editorial object.
     const readKey = process.env.INSFORGE_EDITORIAL_STORAGE_READ_KEY;
     if (published && !readKey) return editorialError("media_unavailable", 503);
-    const storageClient = published ? createAdminClient({
-      baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-      apiKey: readKey!,
-    }) : client;
-    const download = await storageClient.storage.from(EDITORIAL_MEDIA_BUCKET).download(media.objectKey);
-    if (download.error || !download.data || download.data.size !== media.byteSize) return editorialError("media_unavailable", 503);
-    const prepared = await prepareEditorialDownload(Buffer.from(await download.data.arrayBuffer()), media, imageSize);
+    let prepared = publicPreviewCache.get(published, media, imageSize);
+    if (!prepared) {
+      const storageClient = published ? createAdminClient({
+        baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
+        apiKey: readKey!,
+      }) : client;
+      const download = await storageClient.storage.from(EDITORIAL_MEDIA_BUCKET).download(media.objectKey);
+      if (download.error || !download.data || download.data.size !== media.byteSize) return editorialError("media_unavailable", 503);
+      prepared = await prepareEditorialDownload(Buffer.from(await download.data.arrayBuffer()), media, imageSize) ?? undefined;
+    }
     if (!prepared || !media.objectKey.endsWith(`.${prepared.extension}`)) return editorialError("media_unavailable", 503);
     if (published) {
       const current = await client.database.schema("public").rpc("public_get_media", { p_id: id });
-      if (current.error || current.data?.media?.objectKey !== media.objectKey) return editorialError("not_found", 404);
+      const latest = current.data?.media as DownloadMedia | undefined;
+      if (current.error || !latest || latest.objectKey !== media.objectKey || latest.mimeType !== media.mimeType ||
+        latest.byteSize !== media.byteSize || latest.width !== media.width || latest.height !== media.height) return editorialError("not_found", 404);
+      publicPreviewCache.set(true, media, imageSize, prepared);
     }
     return new Response(new Uint8Array(prepared.bytes), { headers: {
       ...editorialHeaders, "Content-Type": prepared.mimeType,
