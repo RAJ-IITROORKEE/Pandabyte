@@ -45,6 +45,28 @@
     "checkoutFixtures": "retained in ignored journal; unresolved payment must be reconciled before deletion",
     "managedProviderHistory": "preserved"
   },
+  "cliFollowUp": {
+    "tool": "official Razorpay CLI 1.0.9",
+    "providerMutationsPerformed": false,
+    "orderStatus": "paid",
+    "orderAmountPaise": 101168,
+    "orderAmountPaidPaise": 101168,
+    "orderAmountDuePaise": 0,
+    "orderAttempts": 1,
+    "paymentCount": 1,
+    "paymentStatus": "captured",
+    "captured": true,
+    "capturedAmountPaise": 103192,
+    "reportedFeePaise": 2024,
+    "reportedTaxPaise": 0,
+    "currency": "INR",
+    "forgedWebhookSignatureHttpStatus": 400,
+    "managedTestEventsObserved": 0,
+    "applicationSettlement": "not verified; webhook and amount review required",
+    "cleanupRefusal": "real invocation rejected before deletion; both attempt states and reservations unchanged",
+    "focusedChecksPassed": 20,
+    "targetedEslint": "passed"
+  },
   "notEstablished": [
     "genuine captured webhook settlement",
     "paid fulfillment end to end",

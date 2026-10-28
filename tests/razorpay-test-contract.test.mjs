@@ -5,6 +5,13 @@ import test from "node:test";
 // Static guardrails supplement the real Clerk/InsForge integration tests; they do not execute SQL.
 const sql = readFileSync(new URL("../migrations/20261028133002_razorpay-checkout-test.sql", import.meta.url), "utf8");
 const route = readFileSync(new URL("../lib/checkout/razorpay-test.ts", import.meta.url), "utf8");
+const fixtureHarness = readFileSync(new URL("./razorpay-test-integration.mjs", import.meta.url), "utf8");
+test("fixture cleanup retains nonpaid attempts that could still settle", () => {
+  const validation = fixtureHarness.indexOf('check(attempt.state === "paid", "unreconciled_nonpaid_attempt_must_be_preserved")');
+  const deletion = fixtureHarness.indexOf('table(context.admin, "razorpay_checkout_test_attempts").delete()');
+  assert(validation > 0 && deletion > validation);
+  assert.match(fixtureHarness, /select\("subject,request_key,order_id,state,provider_order_id,provider_payment_id"\)/);
+});
 function body(name) {
   const start = sql.search(new RegExp(`CREATE(?: OR REPLACE)? FUNCTION public\\.${name}\\(`));
   assert(start >= 0, `Missing function ${name}`);

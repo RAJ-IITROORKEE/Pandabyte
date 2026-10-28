@@ -30,6 +30,8 @@ Provider credentials are configured in InsForge's Razorpay connection, not appli
 
 ## Current external gate
 
+CLI follow-up: the official Razorpay CLI confirmed that the existing provider order is paid and its single test payment is captured. The base order is 101168 paise; the captured payment is 103192 paise, with a reported 2024-paise fee and zero tax. This is provider-side evidence only. See [the CLI verification and remaining setup boundary](razorpay-cli-verification.md). No new payment or application settlement was created by these reads.
+
 The signed-in Dashboard showed a masked Test Key ID ending **X4g**, while the supplied working key ends **GX5S**. A new seven-event test webhook was created in that Dashboard, then disabled after the mismatch was discovered. Existing webhooks and all live settings were preserved. The owner agreed to switch to the matching account.
 
 The callback is verified, but no Razorpay test event was found in InsForge's managed event ledger. The order therefore remains awaiting confirmation. Do not mark it paid, delete it, or create a replacement payment to hide the unknown outcome. Retain its ignored fixture journal for reconciliation and cleanup after the correct account/webhook is verified.
@@ -43,7 +45,7 @@ InsForge's catalog sync still reports `failed` with the unhelpful `[object Objec
 1. Confirm the matching Dashboard's test key suffix without regenerating credentials. Register the generated InsForge test URL/signing secret there, avoiding duplicate endpoints. Select payment authorized/captured/failed, order paid and refund created/processed/failed.
 2. Reconcile the existing provider order/payment and verified callback. Verify genuine event delivery and exact amount/fee semantics before changing application state. Never manufacture processed events as provider evidence.
 3. Verify paid/failed/cancel/late/repeated events, customer isolation, Admin fulfillment and unchanged/changed-cart behavior with bounded disposable fixtures.
-4. `tests/razorpay-test-integration.mjs --journal-browser` records only the two exact verified fixture subjects. `--cleanup` removes validated terminal application test rows, fake stock/grants, carts/favorites and identities; it refuses uncertain states. Managed payment/webhook/provider history is preserved.
+4. `tests/razorpay-test-integration.mjs --journal-browser` records only the two exact verified fixture subjects. `--cleanup` removes validated paid application test rows, fake stock/grants, carts/favorites and identities; it now refuses every nonpaid attempt, including cancelled/failed outcomes needing provider reconciliation. Managed payment/webhook/provider history is preserved.
 5. Restore the owner's real Clerk Google/Admin session, stop the isolated opt-in server, verify normal purchases remain disabled, and update this checkpoint with observed results.
 
 The proof and fixture journal live only under ignored `.bootstrap/`. Never copy credentials, proof, auth/session material or raw webhook/customer payloads into documentation, screenshots or Git.

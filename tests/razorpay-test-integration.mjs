@@ -124,13 +124,15 @@ async function journalBrowser(context, state) {
 async function cleanup(context, state) {
   const subjects = state.users.map(user => user.userId);
   if (subjects.length) {
-    const attempts = await table(context.admin, "razorpay_checkout_test_attempts").select("subject,request_key,order_id,state,provider_payment_id").in("subject", subjects);
+    const attempts = await table(context.admin, "razorpay_checkout_test_attempts").select("subject,request_key,order_id,state,provider_order_id,provider_payment_id").in("subject", subjects);
     check(!attempts.error, "attempt_cleanup_read_failed");
     const closedRows = await table(context.admin, "razorpay_checkout_test_closed_requests").select("subject,request_key").in("subject", subjects);
     check(!closedRows.error && closedRows.data.every(row => state.requests.some(entry => entry.subject === row.subject && entry.key === row.request_key)), "cleanup_requires_journaled_closed_requests");
     for (const attempt of attempts.data) {
       const entry = state.requests.find(item => item.subject === attempt.subject && item.key === attempt.request_key);
       check(entry && entry.id === attempt.order_id && ["cancelled", "failed", "paid"].includes(attempt.state), "cleanup_requires_journaled_final_attempts");
+      // An unlinked provider order can also appear after an uncertain creation outcome.
+      check(attempt.state === "paid", "unreconciled_nonpaid_attempt_must_be_preserved");
       const order = await table(context.admin, "admin_order_records").select("id,reference,customer_subject,environment,request_key,snapshot").eq("id", attempt.order_id).single();
       check(!order.error && order.data.reference === `TST-${attempt.order_id}` && order.data.customer_subject === entry.subject && order.data.environment === "razorpay_test" && order.data.request_key === entry.key && order.data.snapshot?.contact?.email === entry.email, "order_cleanup_mismatch");
       const settlement = await table(context.admin, "razorpay_checkout_test_settlements").select("order_id,provider_payment_id,event_id").eq("order_id", attempt.order_id);

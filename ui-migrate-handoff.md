@@ -148,3 +148,5 @@ Disposable integration and browser tests cover committed-response loss, closure 
 ## Razorpay test checkout — 28 October 2026
 
 Added functional test-only checkout, recovery and explicit TST customer/Admin order states using the existing layouts/styles. Real API creation/replay/isolation and browser signature verification passed. See [the checkpoint](docs/razorpay-test-checkpoint.md) for the Dashboard/test-key mismatch, disabled wrong-account webhook, retained uncertain fixtures and capture/cleanup gates. Live payments, real inventory and production deployment remain disabled. TypeScript, targeted ESLint, an isolated optimized build and 288 unit/media checks passed.
+
+CLI follow-up: official Razorpay CLI 1.0.9 confirms one captured test payment, with base and gross amounts recorded separately. A forged webhook signature returns400; no genuine managed test event has arrived. Nonpaid fixture cleanup now refuses deletion, verified against the existing fixtures; twenty focused checks and targeted ESLint pass. Merchant webhook registration/replay remains a supported Dashboard step. See [CLI evidence](docs/razorpay-cli-verification.md).
