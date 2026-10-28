@@ -94,7 +94,7 @@ export function AdminOrdersScreen() {
 
   if (!canRead) return <AdminAccessDeniedScreen title="Orders" />;
 
-  return <div className={styles.screen}>
+  return <div className={`${styles.screen} ${css.screen}`}>
     <header className={styles.pageHeading}>
       <div><p className={styles.eyebrow}>Operations</p><h1>Orders</h1><p className={styles.lede}>Review development simulation and test orders and their status.</p></div>
     </header>

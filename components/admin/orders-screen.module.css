@@ -1,3 +1,4 @@
+.screen { min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .toolbar {
   display: flex;
   min-width: 0;
