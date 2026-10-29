@@ -1,5 +1,12 @@
 # PandaByte phase progress
 
+## 29 October 2026 — account and confirmation review
+
+- Two bounded Luna xhigh reviewers and the built-in browser checked non-payment account/confirmation states. After explicit owner approval, minimal confirmation baseline `dea58a1` was committed separately; this follow-up fixes malformed nested response values before JSX/money rendering. Unrelated account/Admin/profile/invoice work stays outside both scoped commits.
+- Ten new malformed-response regressions fail before/pass after; all 48 focused account/confirmation/animation tests, targeted ESLint and TypeScript pass. Eighty final width/theme cases pass without page overflow; account form Cancel focus, order search/filter/clear, fictional invoice and unavailable-confirmation Retry were verified read-only. [Checks and limits](account-confirmation-checks.md), [evidence](verification/account-confirmation-checks.json).
+- Restored original dark appearance/default viewport; preserved owner session, existing cart/favorite and genuine data. Loading/hydration/window-scale samples were excluded and affected cases rechecked. Later other-chat UI edits remain their own verification responsibility. No payment, order/data mutation, publication, load test, deployment, live email/billing, recovery, new print-preview or full production-build test.
+- Local follow-up commit titled `fix: reject malformed confirmation snapshots`; resolve its hash from Git history. Successful purchase/foreign-owner browser journeys, genuine zoom/reader speech and owner-managed reduced-motion testing remain open; full Phase 6 exit is not claimed.
+
 ## 29 October 2026 — confirmation baseline coordinated for independent review
 
 - The owner explicitly authorized a separate minimal confirmation baseline commit before the review fix because `FRONTENT -UI`'s confirmation files were untracked. This checkpoint tracks only the read-only confirmation route/view/styles, celebration/animation helpers, approved local asset and license, their tests and Lottie dependency. Account/Admin/profile/invoice redesign files remain outside this commit; working package entries for those tasks are preserved.

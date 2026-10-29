@@ -14,12 +14,19 @@ type Order = { reference: string; createdAt: string; status: string; paymentStat
 
 export function confirmed(order: Order) { return order.environment === "razorpay_test" && order.paymentState === "paid" && ["processing", "fulfilled"].includes(order.status); }
 export function pending(order: Order) { return order.environment === "razorpay_test" && ["pending", "verified"].includes(order.paymentState) && order.status !== "cancelled"; }
+function record(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
+const optionalText = (value: unknown) => value == null || typeof value === "string";
+const optionalPaise = (value: unknown) => value == null || (Number.isSafeInteger(value) && Number(value) >= 0);
+function validAddress(value: unknown) {
+  return value == null || (record(value) && ["recipientName", "phone", "line1", "city", "state", "postalCode", "country"].every(key => typeof value[key] === "string") && optionalText(value.line2));
+}
 export function validOrder(value: unknown, reference: string): value is Order {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const order = value as Order;
-  if (order.reference !== reference || typeof order.status !== "string" || typeof order.paymentState !== "string" || typeof order.environment !== "string" || !Number.isSafeInteger(order.totalPaise) || order.totalPaise < 0 || !order.snapshot || typeof order.snapshot !== "object" || Array.isArray(order.snapshot)) return false;
-  const quote = order.snapshot.quote;
-  return !quote || (Array.isArray(quote.lines) && quote.lines.every(line => line && typeof line.title === "string" && Number.isSafeInteger(line.quantity) && line.quantity > 0 && Number.isSafeInteger(line.lineTotalPaise) && line.lineTotalPaise >= 0));
+  if (!record(value) || value.reference !== reference || typeof value.status !== "string" || typeof value.paymentState !== "string" || typeof value.environment !== "string" || !optionalText(value.createdAt) || !Number.isSafeInteger(value.totalPaise) || Number(value.totalPaise) < 0 || !record(value.snapshot)) return false;
+  const snapshot = value.snapshot;
+  if (!validAddress(snapshot.shipping) || !validAddress(snapshot.billing) || !optionalPaise(snapshot.fictionalShippingPaise) || !optionalPaise(snapshot.fictionalTaxPaise) || (snapshot.chargesAreFictional != null && typeof snapshot.chargesAreFictional !== "boolean")) return false;
+  if (snapshot.shipment != null && (!record(snapshot.shipment) || ![snapshot.shipment.carrier, snapshot.shipment.trackingNumber, snapshot.shipment.trackingUrl].every(optionalText))) return false;
+  const quote = snapshot.quote;
+  return quote == null || (record(quote) && optionalPaise(quote.subtotalPaise) && Array.isArray(quote.lines) && quote.lines.every(line => record(line) && typeof line.title === "string" && Number.isSafeInteger(line.quantity) && Number(line.quantity) > 0 && Number.isSafeInteger(line.lineTotalPaise) && Number(line.lineTotalPaise) >= 0 && (line.variant == null || (record(line.variant) && optionalText(line.variant.label) && optionalText(line.variant.sku) && optionalPaise(line.variant.regularPricePaise) && optionalPaise(line.variant.effectivePricePaise)))));
 }
 function trackingLink(value?: string) { try { const url = new URL(value ?? ""); return url.protocol === "https:" && !url.username && !url.password ? url.href : null; } catch { return null; } }
 function AddressView({ address }: { address?: Address }) { return address ? <p>{address.recipientName}<br />{address.line1}{address.line2 && <><br />{address.line2}</>}<br />{address.city}, {address.state} {address.postalCode}<br />{address.country}<br />{address.phone}</p> : <p>Not available</p>; }
