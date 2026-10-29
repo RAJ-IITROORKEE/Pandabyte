@@ -195,3 +195,125 @@ test("full-size add keeps focus while pending and does not steal it on error", a
   assert.ok(find(failed.tree, node => node.props?.role === "alert"));
   assert.equal(document.activeElement, elsewhere);
 });
+
+test("product card follows guest cart changes and uses cart quantity for buy", () => {
+  const hooks = []; let cursor = 0, effects = [], selection;
+  let guest = { ready: true, invalidStoredCart: false, items: [], revision: 1 };
+  const document = { body: {}, activeElement: {} }, exports = {};
+  const dependencies = {
+    "@clerk/nextjs": {}, "next/link": { default: "a" }, "next/navigation": { useRouter: () => ({ push: () => {} }) },
+    "lucide-react": { Plus: "plus", Minus: "minus", ShoppingCart: "cart", ShoppingCartPlus: "cartPlus", Zap: "zap" },
+    react: {
+      useSyncExternalStore: subscribe => subscribe === "customer" ? {} : guest,
+      useRef: initial => { const index = cursor++; return hooks[index] ??= { current: initial }; },
+      useState: initial => { const index = cursor++; if (!(index in hooks)) hooks[index] = initial; return [hooks[index], value => { hooks[index] = value; }]; },
+      useEffect: (callback, deps) => { const index = cursor++; const old = hooks[index]; if (!old || (deps && deps.some((v, i) => !Object.is(v, old[i])))) { hooks[index] = deps; effects.push(callback); } },
+    },
+    "./cart-api": {}, "./customer-cart-store": { subscribeCustomerCart: "customer" },
+    "./buy-now-store": { setBuyNowSelection: value => { selection = value; return true; } },
+    "./cart-utils": { addCartItem: (_items, variantId, quantity) => [{ variantId, quantity }], setCartItemQuantity: (_items, variantId, quantity) => [{ variantId, quantity }], removeCartItem: () => [] },
+    "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: guest.revision + 1 }; return { persisted: true }; } },
+    "./card-quantity": { cardQuantityValue },
+    "./cart.module.css": { default: { cardAdd: "cardAdd", cardActive: "cardActive" } }, "@/components/ui/button": {},
+  };
+  runInNewContext(`${compiled}\nexports.Session = AddToCartButtonSession;`, { exports, require: name => dependencies[name] ?? require(name), AbortController, document });
+  function render() { cursor = 0; effects = []; const tree = exports.Session({ variantId: "a", available: true, quantity: 1, userId: null, showBuyNow: false, card: { title: "Widget", pricing: null, quickView: null } }); effects.forEach(effect => effect()); return tree; }
+  const get = (tree, label) => find(tree, node => node.props?.["aria-label"] === label);
+  let tree = render();
+  assert.ok(get(tree, "Add to cart: Widget"));
+  assert.equal(get(tree, "Add one Widget to cart"), undefined);
+  get(tree, "Add to cart: Widget").props.onClick();
+  tree = render();
+  assert.match(get(tree, "View cart: Widget, quantity 1").props.className, /cardActive/);
+  get(tree, "Add one Widget to cart").props.onClick({ currentTarget: {} });
+  tree = render();
+  assert.ok(get(tree, "View cart: Widget, quantity 2"));
+  let input = get(tree, "Quantity for Widget");
+  input.props.onChange({ currentTarget: { value: "4" } });
+  input = get(render(), "Quantity for Widget");
+  input.props.onBlur({ currentTarget: {} });
+  tree = render();
+  assert.ok(get(tree, "View cart: Widget, quantity 4"));
+  input = get(tree, "Quantity for Widget");
+  input.props.onChange({ currentTarget: { value: "8" } });
+  guest = { ...guest, items: [], revision: guest.revision + 1 };
+  render();
+  guest = { ...guest, items: [{ variantId: "a", quantity: 4 }], revision: guest.revision + 1 };
+  tree = render();
+  assert.equal(get(tree, "Quantity for Widget").props.value, "4");
+  get(tree, "Quantity for Widget").props.onBlur({ currentTarget: {} });
+  assert.equal(guest.items[0].quantity, 4);
+  input = get(render(), "Quantity for Widget");
+  input.props.onChange({ currentTarget: { value: "3" } });
+  input = get(render(), "Quantity for Widget");
+  input.props.onBlur({ currentTarget: { parentElement: { contains: () => false } }, relatedTarget: { getAttribute: () => "true" } });
+  assert.equal(guest.items[0].quantity, 3);
+  input = get(render(), "Quantity for Widget");
+  input.props.onChange({ currentTarget: { value: "4" } });
+  get(render(), "Quantity for Widget").props.onBlur({ currentTarget: {} });
+  input = get(render(), "Quantity for Widget");
+  input.props.onChange({ currentTarget: { value: "100" } });
+  input = get(render(), "Quantity for Widget");
+  assert.equal(input.props["aria-invalid"], true);
+  input.props.onBlur({ currentTarget: {} });
+  tree = render();
+  assert.equal(get(tree, "Quantity for Widget").props.value, "4");
+  assert.ok(find(tree, node => node.props?.role === "alert"));
+  find(tree, node => node.type === "button" && node.props.children?.some?.(child => child === " Buy")).props.onClick();
+  assert.equal(selection[0].quantity, 4);
+  guest = { ...guest, items: [{ variantId: "a", quantity: 1 }] };
+  tree = render();
+  get(tree, "Remove one Widget from cart").props.onClick({ currentTarget: {} });
+  tree = render();
+  assert.ok(get(tree, "Add to cart: Widget"));
+  assert.equal(get(tree, "Remove one Widget from cart"), undefined);
+});
+
+test("product card waits for its customer cart and locks updates after a failed write", async () => {
+  const hooks = []; let cursor = 0, effects = [], prepared, rejectUpdate, updateCalls = 0, requested;
+  let customer = { userId: "other", cart: { items: [{ variantId: "a", quantity: 3 }], version: 1 } };
+  const document = { body: {}, activeElement: {} }, exports = {};
+  const dependencies = {
+    "@clerk/nextjs": {}, "next/link": { default: "a" }, "next/navigation": { useRouter: () => ({}) },
+    "lucide-react": { Plus: "plus", Minus: "minus", ShoppingCart: "cart", ShoppingCartPlus: "cartPlus", Zap: "zap" },
+    react: {
+      useSyncExternalStore: subscribe => subscribe === "customer" ? customer : { ready: true, items: [] },
+      useRef: initial => { const index = cursor++; return hooks[index] ??= { current: initial }; },
+      useState: initial => { const index = cursor++; if (!(index in hooks)) hooks[index] = initial; return [hooks[index], value => { hooks[index] = value; }]; },
+      useEffect: (callback, deps) => { const index = cursor++; const old = hooks[index]; if (!old || (deps && deps.some((v, i) => !Object.is(v, old[i])))) { hooks[index] = deps; effects.push(callback); } },
+    },
+    "./cart-api": { replaceCustomerCart: (version, items) => { updateCalls++; requested = { version, items }; return new Promise((_resolve, reject) => { rejectUpdate = reject; }); }, cartErrorMessage: () => "Could not update cart" },
+    "./customer-cart-store": { subscribeCustomerCart: "customer", prepareCustomerCart: user => { prepared = user; } }, "./guest-cart-store": {}, "./buy-now-store": {},
+    "./cart-utils": { setCartItemQuantity: (_items, variantId, quantity) => [{ variantId, quantity }] },
+    "./card-quantity": { cardQuantityValue },
+    "./cart.module.css": { default: {} }, "@/components/ui/button": {},
+  };
+  runInNewContext(`${compiled}\nexports.Session = AddToCartButtonSession;`, { exports, require: name => dependencies[name] ?? require(name), AbortController, document });
+  function render() { cursor = 0; effects = []; const tree = exports.Session({ variantId: "a", available: true, quantity: 1, userId: "user", showBuyNow: false, card: { title: "Widget", pricing: null, quickView: null } }); effects.forEach(effect => effect()); return tree; }
+  const get = (tree, label) => find(tree, node => node.props?.["aria-label"] === label);
+  let tree = render();
+  assert.equal(prepared, "user");
+  assert.equal(get(tree, "Add to cart: Widget").props.disabled, true);
+  assert.equal(get(tree, "Add one Widget to cart"), undefined);
+  customer = { userId: "user", cart: { items: [{ variantId: "a", quantity: 2 }], version: 1 } };
+  tree = render();
+  let input = get(tree, "Quantity for Widget");
+  input.props.onChange({ currentTarget: { value: "5" } });
+  input = get(render(), "Quantity for Widget");
+  input.props.onBlur({ currentTarget: { parentElement: { contains: () => true } }, relatedTarget: { getAttribute: () => "true" } });
+  assert.equal(updateCalls, 0);
+  get(render(), "Add one Widget to cart").props.onBlur({ currentTarget: { parentElement: { contains: () => true } }, relatedTarget: { getAttribute: () => "true" } });
+  assert.equal(updateCalls, 0);
+  get(render(), "Remove one Widget from cart").props.onClick({ currentTarget: {} });
+  assert.equal(updateCalls, 1);
+  assert.equal(requested.version, 1);
+  assert.equal(requested.items[0].quantity, 4);
+  assert.equal(get(render(), "Add one Widget to cart").props["aria-disabled"], true);
+  rejectUpdate(new Error("offline"));
+  await new Promise(resolve => setImmediate(resolve));
+  tree = render();
+  assert.equal(get(tree, "Add one Widget to cart").props.disabled, true);
+  assert.ok(find(tree, node => node.props?.role === "alert"));
+  assert.ok(get(tree, "View cart: Widget, quantity 2"));
+  assert.equal(get(tree, "Quantity for Widget").props.value, "2");
+});

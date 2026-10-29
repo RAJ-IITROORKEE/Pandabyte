@@ -63,5 +63,6 @@
 .discountLine del { color: var(--muted); font-size: 12px; }
 .trigger, .chooseBuy { width: 100%; min-height: 44px; }
 .chooseBuy { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--action-text); background: var(--accent); border: 1px solid var(--action-border); border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-.cartButton { width: 44px; min-width: 44px; border-color: var(--action-border); }
+.cartButton { width: 44px; min-width: 44px; border-color: var(--border); }
+.cartButtonActive.cartButton { border-color: var(--action-border); }
 .card :is(input):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }

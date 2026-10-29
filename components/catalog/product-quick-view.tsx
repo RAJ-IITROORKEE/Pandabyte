@@ -60,7 +60,7 @@ export function ProductQuickView({ productId, slug, title, href, summary, catego
           pricing: <div className={styles.pricing}><div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong></div>{originalPrice && <div className={styles.discountLine}><del>{originalPrice}</del><span className={styles.saleBadge}>{discount}</span></div>}</div>,
           quickView: <MorphingDialogTrigger className={styles.trigger} aria-label={`Quick view: ${title}`}><Eye aria-hidden="true" size={16} /> Quick view</MorphingDialogTrigger>,
           ...(canChooseVariant ? {
-            chooseCart: <MorphingDialogTrigger className={styles.cartButton} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title="Choose a variant"><ShoppingCart aria-hidden="true" size={18} /></MorphingDialogTrigger>,
+            chooseCart: <MorphingDialogTrigger className={`${styles.cartButton} ${multiCount ? styles.cartButtonActive : ""}`} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title="Choose a variant"><ShoppingCart aria-hidden="true" size={18} /></MorphingDialogTrigger>,
             chooseBuy: <MorphingDialogTrigger className={styles.chooseBuy} aria-label={`Choose a variant to buy ${title}`}><Zap aria-hidden="true" size={16} /> Buy</MorphingDialogTrigger>,
           } : {}),
         }} />

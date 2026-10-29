@@ -28,9 +28,13 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
   const router = useRouter();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const customer = useSyncExternalStore(subscribeCustomerCart, getCustomerCartSnapshot, getCustomerCartServerSnapshot);
-  useEffect(() => { if (userId && compactLabel) prepareCustomerCart(userId); }, [userId, compactLabel]);
-  const [cardQuantity, setCardQuantity] = useState("1");
-  const quantity = card ? cardQuantityValue(cardQuantity) : initialQuantity;
+  const hasCard = !!card;
+  useEffect(() => { if (userId && (compactLabel || hasCard)) prepareCustomerCart(userId); }, [userId, compactLabel, hasCard]);
+  const currentItems = userId ? (customer.userId === userId ? customer.cart?.items : undefined) : guest.items;
+  const currentQuantity = currentItems?.find(item => item.variantId === variantId)?.quantity ?? 0;
+  const cartRevision = userId ? customer.cart?.version : guest.revision;
+  const quantity = card ? 1 : initialQuantity;
+  const [cardDraft, setCardDraft] = useState<{ value: string; quantity: number; revision: number | undefined } | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -42,8 +46,8 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
   const addFocusCandidate = useRef<HTMLButtonElement | null>(null);
   const focusAfterAdd = useRef<HTMLButtonElement | null>(null);
   const removalStatusRef = useRef<HTMLSpanElement>(null);
-  const quantityFocusCandidate = useRef<HTMLButtonElement | null>(null);
-  const focusAfterRemoval = useRef<HTMLButtonElement | null>(null);
+  const quantityFocusCandidate = useRef<HTMLElement | null>(null);
+  const focusAfterRemoval = useRef<HTMLElement | null>(null);
 
   useEffect(() => () => activeController.current?.abort(), []);
 
@@ -107,8 +111,9 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
   const handleAdd = (checkout = false) => {
     if (busy) return;
     if (checkout) {
-      if (!available || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
-      if (!setBuyNowSelection([{ variantId, quantity }])) {
+      const buyQuantity = card ? currentQuantity || 1 : quantity;
+      if (!available || !Number.isInteger(buyQuantity) || buyQuantity < 1 || buyQuantity > 99) return;
+      if (!setBuyNowSelection([{ variantId, quantity: buyQuantity }])) {
         setError("This browser could not save your checkout selection. Enable session storage and try again.");
         return;
       }
@@ -132,8 +137,6 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
     void addSignedInLine();
   };
 
-  const currentItems = userId ? (customer.userId === userId ? customer.cart?.items : undefined) : guest.items;
-  const currentQuantity = currentItems?.find(item => item.variantId === variantId)?.quantity ?? 0;
   useEffect(() => {
     if (focusAfterAdd.current && currentQuantity > 0) {
       if (document.activeElement === document.body || document.activeElement === focusAfterAdd.current) compactViewRef.current?.focus();
@@ -148,7 +151,7 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
       focusAfterRemoval.current = null;
     }
   }, [currentQuantity, busy]);
-  const changeCompactQuantity = async (delta: number, button: HTMLButtonElement) => {
+  const changeCompactQuantity = async (delta: number, button: HTMLElement) => {
     if (!currentItems || busy || needsReview) return;
     quantityFocusCandidate.current = document.activeElement === button ? button : null;
     setError("");
@@ -180,6 +183,15 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
     }
   };
 
+  const changeCardQuantity = (delta: number, target: HTMLElement) => {
+    const draft = cardDraft?.quantity === currentQuantity && cardDraft.revision === cartRevision ? cardQuantityValue(cardDraft.value) : currentQuantity;
+    setCardDraft(null);
+    if (!Number.isInteger(draft) || draft < 1 || draft > 99) { setError("Enter a whole number from 1 to 99."); return; }
+    const next = draft + delta;
+    if (next < 0 || next > 99) return;
+    if (next !== currentQuantity) void changeCompactQuantity(next - currentQuantity, target);
+  };
+
   const validQuantity = Number.isInteger(quantity) && quantity >= 1 && quantity <= 99;
   const disabled = !available || !validQuantity || needsReview || (!userId && (!guest.ready || guest.invalidStoredCart));
   const initialNotice = !userId && guest.invalidStoredCart
@@ -188,18 +200,22 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
       ? "Preparing your guest cart…"
       : "";
   const buttonText = busy ? "Adding…" : needsReview ? "Review cart before retrying" : initialNotice ? "Cart needs attention" : available ? "Add to cart" : "Currently unavailable";
-  const compactUnavailable = !!compactLabel && !!userId && (customer.userId !== userId || !customer.cart);
+  const compactUnavailable = !!(compactLabel || card) && !!userId && (customer.userId !== userId || !customer.cart);
   if (card) return <div className={styles.cardCart}>
     <div className={styles.cardPurchase}>{card.pricing}<div className={styles.cardControls}>
-      <div className={styles.cardStepper}>
-        <button type="button" aria-label={`Decrease quantity for ${card.title}`} disabled={!available || (validQuantity && quantity <= 1)} onClick={() => setCardQuantity(String(validQuantity ? Math.max(1, quantity - 1) : 1))}><Minus size={15} aria-hidden="true" /></button>
-        <input type="number" min={1} max={99} step={1} inputMode="numeric" aria-label={`Quantity for ${card.title}`} aria-invalid={!validQuantity} value={cardQuantity} disabled={!available} onChange={event => setCardQuantity(event.currentTarget.value)} />
-        <button type="button" aria-label={`Increase quantity for ${card.title}`} disabled={!available || (validQuantity && quantity >= 99)} onClick={() => setCardQuantity(String(validQuantity ? Math.min(99, quantity + 1) : 1))}><Plus size={15} aria-hidden="true" /></button>
-      </div>
-      {card.chooseCart ?? <button className={styles.cardAdd} type="button" onClick={() => handleAdd()} disabled={disabled} aria-disabled={busy || undefined} aria-label={`${busy ? "Adding" : "Add to cart"}: ${card.title}`} title={busy ? "Adding…" : "Add to cart"}><ShoppingCartPlus size={18} aria-hidden="true" /></button>}
+      {!card.chooseCart && currentQuantity > 0 && <div className={styles.cardStepper} aria-label={`Cart quantity for ${card.title}`}>
+        <button type="button" aria-label={`Remove one ${card.title} from cart`} disabled={needsReview} aria-disabled={busy || undefined} data-card-step="true" onBlur={event => { quantityFocusCandidate.current = null; if (cardDraft && !(event.relatedTarget?.getAttribute("data-card-step") === "true" && event.currentTarget.parentElement?.contains(event.relatedTarget))) changeCardQuantity(0, event.currentTarget); }} onClick={event => changeCardQuantity(-1, event.currentTarget)}><Minus size={15} aria-hidden="true" /></button>
+        <input type="number" min={1} max={99} step={1} inputMode="numeric" aria-label={`Quantity for ${card.title}`} aria-invalid={cardDraft !== null && cardDraft.quantity === currentQuantity && cardDraft.revision === cartRevision && (!Number.isInteger(cardQuantityValue(cardDraft.value)) || cardQuantityValue(cardDraft.value) < 1 || cardQuantityValue(cardDraft.value) > 99) || undefined} value={cardDraft?.quantity === currentQuantity && cardDraft.revision === cartRevision ? cardDraft.value : String(currentQuantity)} readOnly={busy || needsReview} onChange={event => setCardDraft({ value: event.currentTarget.value, quantity: currentQuantity, revision: cartRevision })} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} onBlur={event => {
+          if (!cardDraft || (event.relatedTarget?.getAttribute("data-card-step") === "true" && event.currentTarget.parentElement?.contains(event.relatedTarget))) return;
+          changeCardQuantity(0, event.currentTarget);
+        }} />
+        <button type="button" aria-label={`Add one ${card.title} to cart`} disabled={needsReview || !available || currentQuantity >= 99} aria-disabled={busy || undefined} data-card-step="true" onBlur={event => { quantityFocusCandidate.current = null; if (cardDraft && !(event.relatedTarget?.getAttribute("data-card-step") === "true" && event.currentTarget.parentElement?.contains(event.relatedTarget))) changeCardQuantity(0, event.currentTarget); }} onClick={event => changeCardQuantity(1, event.currentTarget)}><Plus size={15} aria-hidden="true" /></button>
+      </div>}
+      {card.chooseCart ?? (currentQuantity > 0 ? <Link ref={compactViewRef} className={`${styles.cardAdd} ${styles.cardActive}`} href="/cart" aria-label={`View cart: ${card.title}, quantity ${currentQuantity}`} title="View cart"><ShoppingCart size={18} aria-hidden="true" /></Link> : <button ref={compactAddRef} className={styles.cardAdd} type="button" onClick={() => handleAdd()} onBlur={() => { addFocusCandidate.current = null; }} disabled={disabled || compactUnavailable} aria-disabled={busy || undefined} aria-label={`${busy ? "Adding" : "Add to cart"}: ${card.title}`} title={compactUnavailable ? "Loading cart…" : busy ? "Adding…" : "Add to cart"}><ShoppingCartPlus size={18} aria-hidden="true" /></button>)}
     </div></div>
-    <div className={styles.cardFooter}>{card.chooseBuy ?? <button className={styles.cardBuy} type="button" onClick={() => handleAdd(true)} disabled={!available || !validQuantity || busy}><Zap size={16} aria-hidden="true" /> Buy</button>}{card.quickView}</div>
-    {!validQuantity && <p className={styles.addError} role="alert">Enter a whole number from 1 to 99.</p>}
+    <div className={styles.cardFooter}>{card.chooseBuy ?? <button className={styles.cardBuy} type="button" onClick={() => handleAdd(true)} disabled={!available || !validQuantity || busy || compactUnavailable}><Zap size={16} aria-hidden="true" /> Buy</button>}{card.quickView}</div>
+    {!card.chooseCart && currentQuantity === 0 && <span ref={removalStatusRef} tabIndex={-1} className={styles.srOnly}>Cart quantity is zero for {card.title}. {available ? "Use Add to cart to select this product." : "This product is currently unavailable."}</span>}
+    {compactUnavailable && customer.error && !card.chooseCart && <p className={styles.addError} role="alert">Could not load your cart. <Link href="/cart">Open cart to review</Link></p>}
     {error && <p className={styles.addError} role="alert">{error} <Link href="/cart">Open cart</Link></p>}
     {initialNotice && available && <p className={styles.addMessage} role="status">{initialNotice}</p>}
     {message && <p className={styles.addMessage} role="status">{message} {added && <Link href="/cart">View cart</Link>}</p>}
