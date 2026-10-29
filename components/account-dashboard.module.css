@@ -57,3 +57,14 @@
   .navigation a { flex: 0 0 auto; }
   .sidebarActions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; padding-top: 8px; }
 }
+.pageHeading { margin-bottom: 24px; }
+.pageHeading h1, .panel h1 { margin: 0; font-size: clamp(28px, 4vw, 38px); letter-spacing: -.04em; line-height: 1.15; }
+.pageHeading p { color: var(--muted); line-height: 1.6; }
+.pageHeading a { color: var(--accent); font-weight: 600; }
+.mobileNavigation { display: none; }
+.mobileNavigation summary { min-height: 44px; padding: 12px; border: 1px solid var(--divider); border-radius: 8px; cursor: pointer; font-weight: 600; }
+@media (max-width: 760px) {
+  .mobileNavigation { display: block; }
+  .mobileNavigation .navigation { display: grid; padding: 8px 0; }
+  .desktopNavigation { display: none; }
+}

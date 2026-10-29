@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-const origin = "http://localhost:3000";
+const origin = process.env.PHASE2_APP_BASE_URL ?? "http://localhost:3000";
 
 async function request(path) {
   const response = await fetch(new URL(path, origin), {
@@ -79,5 +79,14 @@ test("auth return paths reject external and duplicate redirect parameters", asyn
       assert.equal(response.status, 307);
       assert.equal(response.headers.get("location"), `/${route}?redirect_url=%2F`);
     }
+  }
+});
+
+test("account sections preserve their intended destination when signed out", async () => {
+  for (const section of ["profile", "addresses", "favorites", "orders", "billing"]) {
+    const path = `/account/${section}`;
+    const response = await request(path);
+    assert.equal(response.status, 307, path);
+    assert.equal(response.headers.get("location"), `/sign-in?redirect_url=${encodeURIComponent(path)}`);
   }
 });

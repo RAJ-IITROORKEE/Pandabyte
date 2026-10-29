@@ -345,6 +345,10 @@
   line-height: 1.55;
 }
 
+.defaultGrid + :is(.loadingState, .emptyState, .errorState) {
+  margin-top: 18px;
+}
+
 .errorState {
   color: #b42318;
 }
