@@ -82,7 +82,10 @@ function AddToCartButtonSession({ variantId, available, quantity: initialQuantit
     activeController.current = controller;
     let updateAttempted = false;
     try {
-      const cart = await loadCustomerCart(controller.signal);
+      const snapshot = card || compactLabel ? getCustomerCartSnapshot() : null;
+      const cart = snapshot?.userId === userId && snapshot.cart
+        ? snapshot.cart
+        : await loadCustomerCart(controller.signal);
       const nextItems = addCartItem(cart.items, variantId, quantity);
       if (!nextItems) {
         const existing = cart.items.find((item) => item.variantId === variantId);

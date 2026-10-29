@@ -57,7 +57,7 @@ for (const available of [true, false]) test(`final removal focuses ${available ?
 
 for (const signedIn of [false, true]) test(`${signedIn ? "signed-in" : "guest"} add restores focus only for its own focused activation`, async () => {
   const hooks = [];
-  let cursor = 0, effects = [], resolveUpdate, updateCalls = 0;
+  let cursor = 0, effects = [], resolveUpdate, updateCalls = 0, readCalls = 0;
   const body = {}, elsewhere = {};
   const document = { body, activeElement: body };
   let guest = { ready: true, invalidStoredCart: false, items: [], revision: 1 };
@@ -72,8 +72,8 @@ for (const signedIn of [false, true]) test(`${signedIn ? "signed-in" : "guest"} 
       useState: initial => { const index = cursor++; if (!(index in hooks)) hooks[index] = initial; return [hooks[index], value => { hooks[index] = value; }]; },
       useEffect: (callback, deps) => { const index = cursor++; const old = hooks[index]; if (!old || (deps && deps.some((v, i) => !Object.is(v, old[i])))) { hooks[index] = deps; effects.push(callback); } },
     },
-    "./cart-api": { loadCustomerCart: async () => customer.cart, replaceCustomerCart: () => { updateCalls++; return new Promise(resolve => { resolveUpdate = resolve; }); } },
-    "./customer-cart-store": { subscribeCustomerCart: "customer", prepareCustomerCart: () => {}, publishCustomerCart: (_user, cart) => { customer = { userId: "user", cart }; } },
+    "./cart-api": { loadCustomerCart: async () => { readCalls++; return customer.cart; }, replaceCustomerCart: () => { updateCalls++; return new Promise(resolve => { resolveUpdate = resolve; }); } },
+    "./customer-cart-store": { subscribeCustomerCart: "customer", getCustomerCartSnapshot: () => customer, prepareCustomerCart: () => {}, publishCustomerCart: (_user, cart) => { customer = { userId: "user", cart }; } },
     "./buy-now-store": {},
     "./cart-utils": { addCartItem: items => [...items, { variantId: "a", quantity: 1 }], setCartItemQuantity: (items, _id, quantity) => items.map(item => ({ ...item, quantity })), removeCartItem: () => [] },
     "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: 2 }; return { persisted: true }; } },
@@ -116,6 +116,7 @@ for (const signedIn of [false, true]) test(`${signedIn ? "signed-in" : "guest"} 
     assert.equal(document.activeElement, moveFocus ? elsewhere : link.props.ref.current);
   }
   await add(false);
+  if (signedIn) assert.equal(readCalls, 0, "a loaded card uses its versioned cart without another read");
   if (signedIn) {
     const plus = find(render().tree, node => node.props?.["aria-label"] === "Add one Widget to cart");
     const plusElement = {};
