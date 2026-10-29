@@ -1,5 +1,11 @@
 # PandaByte phase progress
 
+## 29 October 2026 — confirmation baseline coordinated for independent review
+
+- The owner explicitly authorized a separate minimal confirmation baseline commit before the review fix because `FRONTENT -UI`'s confirmation files were untracked. This checkpoint tracks only the read-only confirmation route/view/styles, celebration/animation helpers, approved local asset and license, their tests and Lottie dependency. Account/Admin/profile/invoice redesign files remain outside this commit; working package entries for those tasks are preserved.
+- Existing confirmation/animation tests pass 11/11; TypeScript and targeted account/confirmation lint pass in the current development worktree. The non-payment browser checks cover an unavailable reference and Retry without promoting success. No provider call, order creation, account switch, data write or new asset download. [UI implementation record](order-confirmation-work.md) retains its earlier test/animation boundaries.
+- Local commit titled `feat: track reviewed confirmation baseline`; this is a baseline boundary, not a claim that review is complete. The new malformed-nested-response regression is intentionally held for the immediate validation-fix checkpoint. Payments, publication, load tests, deployment, live email/billing and recovery remain deferred.
+
 ## 29 October 2026 — accessibility browser retry
 
 - Continued after `8bc4215` with two bounded Luna xhigh reviewers and the built-in browser, preserving unrelated dirty account/Admin/checkout work. Fixed confirmed filter focus loss when reflow hides the mobile opener and added a polite atomic enlarged-photo position announcement. The account disclosure already stacks correctly at measured 320 CSS pixels; no account change was needed.
