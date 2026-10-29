@@ -51,8 +51,8 @@
 .addToCart { margin-top: 22px; }
 .compactCart { display: contents; }
 .compactCart > :is(p, a) { grid-column: 1 / -1; }
-.compactButton { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; gap: 1px; padding: 8px; color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
-.compactSelected { display: flex; align-items: center; gap: 5px; }
+.compactButton { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 8px; color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+.compactSelected { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; }
 .compactActive { color: var(--foreground); background: var(--status-soft); border-color: var(--action-border); }
 .compactQuantity { display: inline-flex; align-items: center; background: var(--status-soft); border: 1px solid var(--action-border); border-radius: 8px; }
 .compactQuantity button { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; color: var(--foreground); background: transparent; border: 0; cursor: pointer; }
