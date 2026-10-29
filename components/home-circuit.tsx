@@ -237,7 +237,7 @@ export function HomeCircuit() {
       startX: event.clientX,
       startY: event.clientY,
       startPoint,
-      startPosition: id ? positions[id] : null,
+      startPosition: id ? positionsRef.current[id] : null,
       startRotation: rotation,
       lastClientX: event.clientX,
       lastClientY: event.clientY,
