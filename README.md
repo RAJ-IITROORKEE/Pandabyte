@@ -2,7 +2,7 @@
 
 An India-first IoT hardware catalog and company website with an editable administration backend.
 
-**Status: development preview, 29 October 2026.** The public repository contains application source and development evidence. It is not a deployed production store. Real payments and invoice issuance remain disabled/deferred.
+**Status: hosted development preview, 29 October 2026.** [Open PandaByte](https://pandabyte-iot.vercel.app). The site uses the selected development Clerk/InsForge services. It is not a production-commerce launch; real payments and invoice issuance remain disabled/deferred. [Deployment and checks](docs/vercel-preview-deployment.md).
 
 ## Implemented
 
@@ -24,7 +24,7 @@ The development catalog has 42 imported SKU-bearing products; two source product
 | Styling | Tailwind CSS, CSS modules, accessible Radix primitives, Lucide and retained third-party notices |
 | Identity | Clerk; InsForge verifies Clerk subjects for data access |
 | Backend | InsForge PostgreSQL, storage, reviewed SQL migrations/RPC and application Route Handlers |
-| Hosting direction | Vercel; deployment is not part of this repository-publication checkpoint |
+| Hosting | Vercel hosted development preview; production-commerce release gates remain open |
 
 Exact dependency versions and overrides are pinned in `package.json` and `package-lock.json`. InsForge is the single data authority; Clerk is the sole identity/session provider.
 
@@ -88,9 +88,9 @@ Raw product captures, CAD experiments, models pending redistribution permission,
 - Production identity/data configuration, secrets, real Turnstile protection and verified notification delivery.
 - Real checkout/payment enablement and durable, legally approved invoice numbering/issuance; template previews do not issue invoices.
 - Capacity/load tests, monitoring ownership, recovery targets and an isolated restore rehearsal.
-- Remaining manual accessibility checks and the deployment/release gate.
+- Remaining manual accessibility checks and the production-release gate.
 
-Historical simulated/provider-test payment evidence is retained in the docs; it does not enable normal or live purchases. This publication does not deploy the application or resume payments, content mutation, load testing or restore operations.
+Historical simulated/provider-test payment evidence is retained in the docs; it does not enable normal or live purchases. The hosted preview does not resume payments, content mutation, live email, load testing or restore operations. Contact message sending stays unavailable until real Turnstile domain keys and its server-side submission proof are configured.
 
 ## Project records
 

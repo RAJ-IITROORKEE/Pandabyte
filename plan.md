@@ -1,3 +1,5 @@
+> Hosted preview, 29 October 2026: the owner authorized Vercel CLI deployment and browser-entered environment variables. The hosted development preview is available at https://pandabyte-iot.vercel.app; see docs/vercel-preview-deployment.md. This supersedes deployment deferral only for that preview. Production-commerce, real invoices/payments, live email, load tests and restore remain held; full Phase 6/release exit remains open.
+
 > Repository checkpoint, 29 October 2026: public GitHub publication of the reviewed code on main is now authorized. Earlier no-GitHub statements below are historical. Deployment, real invoice issuance/payments, content mutation, load tests and restore remain deferred. See README.md for current status.
 
 > Latest source-cart scope, 27 October 2026: enable imported-product cart actions with stored captured prices and verify cart/checkout review. Stock is unverified; payments, orders, reservations and production deployment remain deferred. Admin and homepage hero are protected. See [source-cart contract](docs/source-cart-review.md). Earlier unavailable-checkout/source-cart restrictions below are historical for this bounded review.
