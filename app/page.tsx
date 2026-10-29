@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { HomeCircuit } from "@/components/home-circuit";
 import { HomeBrands } from "@/components/home-brands";
 import { HomeHero } from "@/components/home-hero";
@@ -94,7 +93,9 @@ export default async function HomePage() {
               {categories.map((category) => (
                 <Link className={sections.categoryCard} href={categoryHref(category.slug)} key={category.id}>
                   {category.document.mediaIds[0] && <span className={sections.categoryImage}>
-                    <Image src={`/api/media/${encodeURIComponent(category.document.mediaIds[0])}?w=960`} alt="" width={600} height={450} sizes="(max-width: 767px) 50vw, 20vw" unoptimized />
+                    {/* The media endpoint enforces access checks and provides the responsive variants. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/api/media/${encodeURIComponent(category.document.mediaIds[0])}?w=480`} srcSet={`/api/media/${encodeURIComponent(category.document.mediaIds[0])}?w=480 480w, /api/media/${encodeURIComponent(category.document.mediaIds[0])}?w=960 960w`} alt="" width={600} height={450} sizes="(max-width: 767px) 50vw, 20vw" loading="lazy" decoding="async" />
                   </span>}
                   <span className={sections.categoryCardLabel}>
                     <span className={sections.categoryCardTitle}>{category.title}</span>
