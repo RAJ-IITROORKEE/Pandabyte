@@ -14,11 +14,11 @@ import presentation from "@/components/catalog/catalog-presentation.module.css";
 import { publicMetadata } from "@/lib/editorial/seo";
 
 export const metadata = publicMetadata({
-  title: "Catalog",
+  title: "All Products",
   slug: "shop",
   summary: "Browse published IoT and embedded products.",
   blocks: [],
-  seoTitle: "Catalog | PandaByte.in",
+  seoTitle: "All Products | PandaByte.in",
   seoDescription: "Browse published PandaByte IoT and embedded products.",
 }, "/shop");
 
@@ -99,7 +99,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
   const rawMin = firstParam(raw.min);
   const rawMax = firstParam(raw.max);
 
-  return <PublicPage title="Catalog" description="Browse published IoT and embedded products." wide>
+  return <PublicPage title="All Products" description="Browse published IoT and embedded products." wide>
     <div className={presentation.catalogPage}>
     {categories.length > 0 && <nav className={`${styles.categorySection} ${presentation.categorySection}`} aria-label="Browse product categories">
       <h2 className={styles.categoryHeading}>Browse categories</h2>
