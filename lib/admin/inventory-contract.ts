@@ -11,9 +11,10 @@ export type AdminInventoryQuery = {
   sort: AdminInventorySort;
   limit: number;
   offset: number;
+  category: string | null;
 };
 
-const QUERY_KEYS = new Set(["q", "stock", "sort", "limit", "offset"]);
+const QUERY_KEYS = new Set(["q", "stock", "sort", "limit", "offset", "category"]);
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/u;
 
 export function parseAdminInventoryQuery(search: URLSearchParams): ValidationResult<AdminInventoryQuery> {
@@ -28,6 +29,8 @@ export function parseAdminInventoryQuery(search: URLSearchParams): ValidationRes
   if (Array.from(rawQuery).length > 120 || CONTROL_CHARS.test(rawQuery)) fields.push({ field: "q", code: "invalid", message: "Use at most 120 characters." });
 
   const stock = search.get("stock") ?? "all";
+  const category = search.get("category") || null;
+  if (category !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(category)) fields.push({ field: "category", code: "invalid", message: "Choose a valid category." });
   if (!(ADMIN_INVENTORY_STOCK_FILTERS as readonly string[]).includes(stock)) fields.push({ field: "stock", code: "invalid", message: "Choose a supported stock filter." });
 
   const sort = search.get("sort") ?? "updated_desc";
@@ -59,6 +62,7 @@ export function parseAdminInventoryQuery(search: URLSearchParams): ValidationRes
       sort: sort as AdminInventorySort,
       limit,
       offset,
+      category,
     },
   };
 }

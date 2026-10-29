@@ -71,7 +71,7 @@ export default async function HomePage() {
           </div>
         </HomeHero>
 
-        <HomeBrands />
+        <HomeBrands title="Explore the Brands Behind Your Next Build" description="Discover development boards, sensors, and IoT hardware from the brands available at PandaByte." />
 
         {home?.document.blocks.length ? (
           <section className={sections.homeContent} aria-label="Additional homepage content">

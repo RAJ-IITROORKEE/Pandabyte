@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
@@ -137,7 +138,7 @@ test("bounded work groups cap concurrency, retain input order, and report ten-it
   assert.deepEqual(progress, [[10, 42], [20, 42], [30, 42], [40, 42], [42, 42]]);
 });
 
-test("repository source extraction validates all captured hashes and the 42-SKU scope", async () => {
+test("repository source extraction validates all captured hashes and the 42-SKU scope", { skip: existsSync(path.join(repoRoot, "products/catalog.json")) ? false : "Owner-only source archive is not included in the public repository" }, async () => {
   const source = await sourceCandidates(repoRoot);
   assert.equal(source.sourceProductCount, 44);
   assert.equal(source.candidates.length, 42);

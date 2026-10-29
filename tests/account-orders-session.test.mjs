@@ -17,9 +17,9 @@ test("orders hide the previous account and ignore an aborted response", async ()
     useEffect(effect, deps) { if (!dependencies || deps.some((value, index) => value !== dependencies[index])) { dependencies = deps; pendingEffect = effect; } },
   };
   const exports = {};
-  runInNewContext(compiled, { exports, require: name => name === "react" ? hooks : require(name), AbortController, URL, Intl,
+  runInNewContext(compiled, { exports, require: name => name === "react" ? hooks : name.endsWith(".module.css") ? { default: {} } : require(name), AbortController, URL, Intl,
     window: { addEventListener() {}, removeEventListener() {} },
-    fetch: (_url, options) => new Promise(resolve => requests.push({ resolve, signal: options.signal })) });
+    fetch: (url, options) => new Promise(resolve => requests.push({ url, resolve, signal: options.signal })) });
   function render(user) {
     cursor = 0;
     const value = exports.useAccountOrders(user);
@@ -40,5 +40,16 @@ test("orders hide the previous account and ignore an aborted response", async ()
   requests[2].resolve(response("c-private"));
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(render("c").orders.items[0].reference, "c-private");
+  const current = render("c");
+  current.setOffset(20);
+  render("c");
+  assert.match(requests.at(-1).url, /offset=20/);
+  current.filter("fulfilled");
+  const filtered = render("c");
+  assert.equal(filtered.orders, null);
+  assert.match(requests.at(-1).url, /offset=0.*status=fulfilled/);
+  filtered.search("TST-123");
+  render("c");
+  assert.match(requests.at(-1).url, /q=TST-123&status=fulfilled/);
   cleanup();
 });

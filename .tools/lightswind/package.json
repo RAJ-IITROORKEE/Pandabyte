@@ -1,8 +1,0 @@
-{
-  "name": "pandabyte-lightswind-tooling",
-  "private": true,
-  "version": "0.0.0",
-  "devDependencies": {
-    "lightswind": "3.2.5"
-  }
-}

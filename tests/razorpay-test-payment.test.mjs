@@ -10,13 +10,14 @@ const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.Modu
 const id = "00000000-0000-4000-8000-000000000001";
 function harness(initialRequest) {
   let hooks = [], cursor = 0, effect, cleanup, selection = [{ variantId: id, quantity: 2 }], marker = id, responses = [], modalOptions, appended = [], completedCart = 0, closed = 0;
-  const calls = [], exports = {}, listeners = {};
+  const calls = [], navigations = [], celebrations = [], exports = {}, listeners = {};
   const dependencies = {
     react: { useState: initial => { const i = cursor++; if (!(i in hooks)) hooks[i] = initial; return [hooks[i], value => { hooks[i] = value; }]; }, useRef: initial => { const i = cursor++; return hooks[i] ??= { current: initial }; }, useEffect: fn => { effect = fn; } },
-    "next/link": { default: "a" }, "./checkout-review.module.css": { default: {} }, "./checkout-money": { formatPaise: String },
+    "next/link": { default: "a" }, "next/navigation": { useRouter: () => ({ replace: url => navigations.push(url) }) }, "./checkout-review.module.css": { default: {} }, "./checkout-money": { formatPaise: String },
     "./cart-api": { loadCustomerCart: async () => ({}) }, "./customer-cart-store": { publishCustomerCart: () => completedCart++ },
     "./buy-now-store": { getBuyNowSelection: () => selection, clearBuyNowSelection: () => { selection = null; } },
     "./cart-utils": { sameCartItems: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
+    "./order-celebration": { markCelebration: (...args) => celebrations.push(args) },
   };
   const window = { Razorpay: class { constructor(options) { modalOptions = options; } on(event, callback) { listeners[event] = callback; } open() {} close() { closed++; } } };
   const document = { createElement: () => ({}), querySelector: () => ({ nonce: "nonce" }), head: { appendChild: node => appended.push(node) } };
@@ -25,7 +26,7 @@ function harness(initialRequest) {
   const props = { userId: "user-a", marker: id, initialRequest, onContinue() {} };
   function render() { cursor = 0; return exports.RazorpayTest(props); }
   render(); cleanup = effect();
-  return { exports, calls, render, window, appended, document, dispatch: event => listeners[event](), strictRemount: () => { cleanup(); cleanup = effect(); }, respond: async data => { responses.shift()({ ok: true, json: async () => data }); await new Promise(resolve => setImmediate(resolve)); }, stop: () => cleanup(), get marker() { return marker; }, get selection() { return selection; }, get modalOptions() { return modalOptions; }, get completedCart() { return completedCart; }, get closed() { return closed; } };
+  return { exports, calls, navigations, celebrations, render, window, appended, document, dispatch: event => listeners[event](), strictRemount: () => { cleanup(); cleanup = effect(); }, respond: async data => { responses.shift()({ ok: true, json: async () => data }); await new Promise(resolve => setImmediate(resolve)); }, stop: () => cleanup(), get marker() { return marker; }, get selection() { return selection; }, get modalOptions() { return modalOptions; }, get completedCart() { return completedCart; }, get closed() { return closed; } };
 }
 const order = { state: "ready", reference: `TST-${id}`, totalPaise: 100, mode: "buy-now", items: [{ variantId: id, quantity: 1 }], key: "rzp_test_abc", providerOrderId: "order_abc" };
 test("validates the server payment state and requires test credentials for ready", () => {
@@ -40,16 +41,18 @@ test("reload only recovers and a verified callback is not paid", async () => {
   const h = harness();
   assert.equal(h.calls.length, 1); assert.match(h.calls[0].url, /recover$/);
   await h.respond({ ...order, state: "verified" });
-  assert.equal(h.marker, id); assert.deepEqual(h.selection, [{ variantId: id, quantity: 2 }]);
+  assert.equal(h.marker, id); assert.deepEqual(h.selection, [{ variantId: id, quantity: 2 }]); assert.equal(h.navigations.length, 0);
+  assert.equal(h.celebrations.length, 0);
   assert.match(JSON.stringify(h.render()), /awaiting confirmation/);
   h.stop();
 });
 test("paid clears only a matching selection and ignores responses after owner changes", async () => {
   const h = harness();
   await h.respond({ ...order, state: "paid" });
-  assert.equal(h.marker, null); assert.deepEqual(h.selection, [{ variantId: id, quantity: 2 }]);
+  assert.equal(h.marker, null); assert.deepEqual(h.selection, [{ variantId: id, quantity: 2 }]); assert.equal(h.navigations[0], `/checkout/confirmation/TST-${id}`);
+  assert.deepEqual(h.celebrations[0], ["user-a", `TST-${id}`]);
   const switched = harness(); switched.stop(); await switched.respond({ ...order, state: "paid" });
-  assert.equal(switched.marker, id); assert.equal(switched.completedCart, 0);
+  assert.equal(switched.marker, id); assert.equal(switched.completedCart, 0); assert.equal(switched.navigations.length, 0);
 });
 test("loads the checkout script once with the document nonce", async () => {
   const h = harness(); delete h.window.Razorpay;

@@ -29,6 +29,7 @@ import { ProductPricingEditor, type ProductPricingState } from "./product-pricin
 import { CategoryImageEditor } from "./category-image-editor";
 import { BlogCoverEditor } from "./blog-cover-editor";
 import galleryStyles from "./product-gallery-editor.module.css";
+import productEditorStyles from "./product-editor.module.css";
 import confirmationStyles from "./products-table.module.css";
 import {
   ADMIN_MODULES,
@@ -639,8 +640,8 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     });
   }
   return <>
-    <section className={styles.panel}>
-      <div className={styles.sectionHeading}><div><h2>Record details</h2><p>Use confirmed, owner-approved content.</p></div></div>
+    <section className={styles.panel} id={module === "products" ? "product-details" : undefined}>
+      <div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product details" : "Record details"}</h2><p>Use confirmed, owner-approved content.</p></div></div>
       <div className={styles.formGrid}>
         <Field label={module === "team" ? "Admin title" : module === "faqs" ? "Question" : "Title"} hint={module === "team" ? "Internal Admin label and list search text. The public About profile displays the Name field." : undefined}><TextInput value={str("title")} onChange={(value) => { if ((module === "products" || module === "categories") && slugAuto) setDocument({ ...document, title: value, slug: productSlugFromTitle(value) }); else set("title", value); }} maxLength={160} /></Field>
         <Field label={fixedSlug ? "Fixed slug (required)" : "Slug"} hint={fixedSlug ? `This singleton requires the fixed slug “${fixedSlug}”.` : module === "products" || module === "categories" ? slugAuto ? "Generated from the title until you edit it." : "Manual slug override." : "Lowercase letters, numbers, and hyphens."}><TextInput value={str("slug")} onChange={(value) => { set("slug", value); if (module === "products" || module === "categories") setSlugAuto(false); }} maxLength={160} /></Field>
@@ -650,7 +651,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
       {(module === "products" || module === "categories") && !slugAuto && <button className={styles.secondaryButton} onClick={() => { setSlugAuto(true); set("slug", productSlugFromTitle(str("title"))); }} type="button">Generate slug from title</button>}
     </section>
 
-    {module === "products" && <section className={styles.panel}>
+    {module === "products" && <section className={styles.panel} id="product-variants">
       <div className={styles.sectionHeading}><div><h2>Variants</h2><p>Prices below apply to these product variants. Existing SKUs stay fixed.</p></div></div>
       <RowEditor label="Variants" addLabel="Add variant" rows={rows("variants")} columns={[{ key: "sku", label: "SKU", immutableWhenExisting: true }, { key: "label", label: "Variant label" }]} onChange={(value) => set("variants", value)} onFieldChange={(key, previous, next) => {
         if (key === "sku" && typeof previous === "string" && previous && typeof next === "string" && next && previous !== next) {
@@ -679,7 +680,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
       <TokenInput label="Product tags" values={arr("tags")} onChange={(value) => set("tags", value)} maxItems={30} maxLength={60} hint="Up to 30 tags, 60 characters each." />
     </section>}
 
-    {(module === "products" || module === "categories") && <section className={styles.panel}>
+    {(module === "products" || module === "categories") && <section className={styles.panel} id={module === "products" ? "product-catalog" : undefined}>
       <div className={styles.sectionHeading}><div><h2>{module === "categories" ? "Category organization" : "Catalog details"}</h2><p>{module === "categories" ? "Choose a parent and display order. Lower positions appear first." : "Add categories, specifications, compatibility and resources. Inventory is managed separately."}</p></div></div>
       <div className={styles.formGrid}>
         {module === "products" && <RelationPicker label="Categories" module="categories" values={arr("categoryIds")} onChange={(value) => set("categoryIds", value)} />}
@@ -688,7 +689,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
           <Field label="Position"><TextInput type="number" value={String(num("position"))} onChange={(value) => set("position", Number(value))} /></Field>
         </>}
         {module === "products" && <>
-          <section className={styles.panel} aria-label="Source observation">
+          <section className={`${styles.panel} ${productEditorStyles.sourceObservation}`} aria-label="Source observation">
             <label className={styles.inlineCheck}><input type="checkbox" checked={doc.sourceObservation !== undefined} onChange={(event) => {
               if (event.target.checked) set("sourceObservation", { priceText: "", capturedAt: "", sourceUrl: "" });
               else {
@@ -699,7 +700,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
               }
             }} /><span>Publish as a non-purchasable source observation</span></label>
             {doc.sourceObservation !== undefined && <div className={styles.formGrid}>
-              <p className={styles.fieldHint}>This records dated source wording, not an active price or availability claim.</p>
+              <p className={`${styles.fieldHint} ${styles.spanTwo}`}>This records dated source wording, not an active price or availability claim.</p>
               <Field label="Exact source price text"><TextInput value={String((doc.sourceObservation as Record<string, unknown>)?.priceText ?? "")} maxLength={160} onChange={(priceText) => set("sourceObservation", { ...(doc.sourceObservation as Record<string, unknown>), priceText })} /></Field>
               <Field label="Archive capture time (ISO date and time)"><TextInput value={String((doc.sourceObservation as Record<string, unknown>)?.capturedAt ?? "")} maxLength={35} placeholder="2026-10-25T14:26:46.928Z" onChange={(capturedAt) => set("sourceObservation", { ...(doc.sourceObservation as Record<string, unknown>), capturedAt })} /></Field>
               <Field label="Source URL"><TextInput type="url" value={String((doc.sourceObservation as Record<string, unknown>)?.sourceUrl ?? "")} maxLength={2048} placeholder="https://…" onChange={(sourceUrl) => set("sourceObservation", { ...(doc.sourceObservation as Record<string, unknown>), sourceUrl })} /></Field>
@@ -763,18 +764,18 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     {module === "learn" && <Field label="Learning collection"><select className={styles.input} value={str("collection") || "embedded-systems"} onChange={(event) => set("collection", event.target.value)}><option value="embedded-systems">Embedded systems resources</option><option value="product-specs">Product specifications</option><option value="kit-guides">PandaByte kit guides</option></select></Field>}
     {module === "categories" && <CategoryImageEditor mediaIds={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} request={api} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
     {module === "blog" && <BlogCoverEditor mediaIds={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} request={api} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
-    {(module === "products" || module === "team") && <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : module === "team" ? "Profile media" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : module === "team" ? "Only published WebP images can be selected. The first image is used as the public profile portrait; additional selected media IDs remain attached but are not shown on the About card." : "Choose published WebP images or upload an image. The first selected image is the article cover."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : module === "team" ? "Profile media assets" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} uploadTarget={module === "products" ? "product" : undefined} onUploadDelta={onUploadDelta} /></section>}
+    {(module === "products" || module === "team") && <section className={styles.panel} id={module === "products" ? "product-gallery" : undefined}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : module === "team" ? "Profile media" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : module === "team" ? "Only published WebP images can be selected. The first image is used as the public profile portrait; additional selected media IDs remain attached but are not shown on the About card." : "Choose published WebP images or upload an image. The first selected image is the article cover."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : module === "team" ? "Profile media assets" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} uploadTarget={module === "products" ? "product" : undefined} onUploadDelta={onUploadDelta} /></section>}
     {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
-    {module === "products" || module === "categories" || (module === "blog" && blogRichContent) ? <ProductRichTextEditor
+    {module === "products" || module === "categories" || (module === "blog" && blogRichContent) ? <div id={module === "products" ? "product-description" : undefined}><ProductRichTextEditor
       key={richContentResetKey}
       kind={module === "blog" ? "article" : module === "categories" ? "category" : "product"}
       value={module === "blog" ? blogRichContent! : doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(legacyBlocks)}
       onChange={(value) => setDocument((current) => ({ ...current, blocks: [], richContent: value } as AdminDocument))}
       onValidityChange={onRichContentValidityChange}
       onUploadDelta={onUploadDelta}
-    /> : <>{module === "blog" && <p className={styles.fieldHint}>This article contains legacy blocks that cannot be safely converted. Edit them below to preserve the content.</p>}<BlockEditor blocks={legacyBlocks} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog" || module === "faqs" || module === "solutions" || module === "learn"} contentLabel={module === "blog" ? "Article content" : module === "faqs" ? "Formatted answer" : module === "solutions" ? "Solution content" : module === "learn" ? "Resource content" : "Page content"} /></>}
-    <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
+    /></div> : <>{module === "blog" && <p className={styles.fieldHint}>This article contains legacy blocks that cannot be safely converted. Edit them below to preserve the content.</p>}<BlockEditor blocks={legacyBlocks} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog" || module === "faqs" || module === "solutions" || module === "learn"} contentLabel={module === "blog" ? "Article content" : module === "faqs" ? "Formatted answer" : module === "solutions" ? "Solution content" : module === "learn" ? "Resource content" : "Page content"} /></>}
+    <section className={styles.panel} id={module === "products" ? "product-search" : undefined}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
   </>;
 }
 
@@ -996,6 +997,10 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
         <button className={styles.primaryButton} type="button" onClick={() => void save()} disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || (!dirty && !isNew)}><Save size={16} aria-hidden="true" /> {busy ? "Saving…" : "Save draft"}</button>
       </div>
     </div>
+    {module === "products" && <nav className={productEditorStyles.sectionNav} aria-label="Product editor sections">
+      <span>Jump to</span>
+      <a href="#product-details">Details</a><a href="#product-variants">Variants &amp; prices</a><a href="#product-catalog">Catalog</a><a href="#product-gallery">Media</a><a href="#product-description">Description</a><a href="#product-search">Search</a>{record && <a href="#publishing-heading">Publishing</a>}
+    </nav>}
     {previewOpen && <div ref={previewRef}><DraftPreview document={draft} module={module} /></div>}
     {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
     {validationIssues.length > 0 && <div id="record-validation-summary" className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}

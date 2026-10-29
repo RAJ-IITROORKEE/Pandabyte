@@ -26,6 +26,7 @@ function harness() {
       useRef: initial => { const index = cursor++; return hooks[index] ??= { current: initial }; },
       useEffect: (effect, deps) => { const index = cursor++, previous = hooks[index]; if (deps.length === 1 && typeof deps[0] === "number") focusEffectIndex ??= index; hooks[index] = deps; if (!previous || deps.some((value, position) => !Object.is(value, previous[position]))) effects.push({ index, effect }); },
     },
+    "@/lib/account/billing-profile": { parseBillingProfile: value => value },
     "@clerk/nextjs": {}, "next/link": { default: "a" }, "next/image": { default: "img" },
     "lucide-react": Object.fromEntries(["ArrowLeft", "ArrowRight", "CreditCard", "Package", "ShoppingBag", "Truck", "User"].map(name => [name, "svg"])),
     "./checkout-validation": validation, "./checkout-draft": drafts,

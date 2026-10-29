@@ -1,0 +1,5 @@
+# Admin inventory movement history
+
+The Inventory row menu opens a private, read-only history of recorded initial counts and adjustments. Each entry shows its reason, time, change and resulting count. Initial counts distinguish reconciliation from the physical count. Results are ordered by stock version and paged in groups of 20; the display is bounded to the first 10,020 entries per variant. Access requires `orders.manage` at both the HTTP and database boundaries.
+
+Development migration `20261028164000_admin-inventory-history.sql` adds the read-only RPC. A disposable development HTTP integration passed checks for initialization, reconciliation, adjustment, 21 movements across two pages, invalid inputs, private caching, anonymous/customer/capability denial and cleanup. Focused contract tests, TypeScript and targeted ESLint passed. The in-app browser showed empty and populated histories, Escape closing, and the dialog at 320px; test records were removed afterwards. The separate rollback SQL test was not run because the InsForge CLI rejected its DO block. No real stock was modified and no storefront or payment behavior was changed.

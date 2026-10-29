@@ -35,10 +35,10 @@ export function parseSimulationRecovery(v: unknown): string | null {
   return object(v) && keys(v, ["idempotencyKey"]) && typeof v.idempotencyKey === "string" && UUID.test(v.idempotencyKey) ? v.idempotencyKey : null;
 }
 export function parseOrderQuery(q: URLSearchParams) {
-  if ([...q.keys()].some(k => !["limit", "offset"].includes(k) || q.getAll(k).length !== 1)) return null;
-  const limit = q.get("limit") ?? "20", offset = q.get("offset") ?? "0";
-  if (!["10", "20", "50"].includes(limit) || !/^(0|[1-9][0-9]*)$/.test(offset) || Number(offset) > 10000) return null;
-  return { limit: Number(limit), offset: Number(offset) };
+  if ([...q.keys()].some(k => !["limit", "offset", "q", "status"].includes(k) || q.getAll(k).length !== 1)) return null;
+  const limit = q.get("limit") ?? "20", offset = q.get("offset") ?? "0", query = (q.get("q") ?? "").trim(), status = q.get("status") ?? "all";
+  if (!["10", "20", "50"].includes(limit) || !/^(0|[1-9][0-9]*)$/.test(offset) || Number(offset) > 10000 || !/^[a-z0-9-]{0,80}$/i.test(query) || !["all", "active", "delivered", "cancelled", "fulfilled"].includes(status)) return null;
+  return { limit: Number(limit), offset: Number(offset), query, status };
 }
 export const isOrderReference = (v: string) => /^(?:SIM|TST)-[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 export function parseAdminOrderUpdate(v: unknown) {

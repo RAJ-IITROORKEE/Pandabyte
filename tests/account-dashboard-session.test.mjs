@@ -28,7 +28,7 @@ function dashboardHarness() {
     "lucide-react": Object.fromEntries(["CreditCard", "FolderLock", "Heart", "LayoutDashboard", "LogOut", "MapPin", "Package", "Settings", "UserRound"].map(name => [name, () => createElement("svg")])),
     react: { Suspense, useEffect: callback => { effect = callback; }, useState: value => [value, () => {}], useSyncExternalStore: () => "" },
     "@/components/account-overview-extras": { AccountOverviewExtras: () => null },
-    "@/components/account-profile": { AccountProfile: privateSection("profile") },
+    "@/components/account-profile-card": { AccountProfileCard: privateSection("profile") },
     "@/components/account-billing": { AccountBilling: privateSection("billing") },
     "@/components/account-addresses": { AccountAddresses: privateSection("addresses") },
     "@/components/account-files": { AccountFiles: privateSection("files") },
@@ -77,19 +77,19 @@ test("active-user changes replace the keyed subtree containing every private sec
 
 test("each section selects its own route and content", () => {
   const dashboard = dashboardHarness();
-  for (const [section, path] of [["overview", "/account"], ["profile", "/account/profile"], ["addresses", "/account/addresses"], ["favorites", "/account/favorites"], ["orders", "/account/orders"], ["billing", "/account/billing"], ["files", "/account/files"]]) {
+  for (const [section, path] of [["overview", "/account"], ["profile", "/account/profile"], ["addresses", "/account/addresses"], ["favorites", "/account/favorites"], ["orders", "/account/orders"], ["billing", "/account/billing"]]) {
     dashboard.section(section);
     const html = renderToStaticMarkup(dashboard.render());
     assert.match(html, new RegExp(`href="${path}" aria-current="page"`));
     assert.equal((html.match(/aria-current="page"/g) ?? []).length, 2);
-    if (["profile", "addresses", "orders", "billing", "files"].includes(section)) assert.match(html, new RegExp(`data-private-section="${section}"`));
+    if (["profile", "addresses", "orders", "billing"].includes(section)) assert.match(html, new RegExp(`data-private-section="${section}"`));
   }
 });
 
 
 
 test("legacy account hashes redirect to the matching route", () => {
-  for (const section of ["profile", "addresses", "favorites", "orders", "billing", "files"]) {
+  for (const section of ["profile", "addresses", "favorites", "orders", "billing"]) {
     const dashboard = dashboardHarness();
     dashboard.hash(`#${section}`);
     dashboard.render();

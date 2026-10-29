@@ -5,6 +5,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 type Theme = "light" | "dark";
+export type ThemePreferenceValue = Theme | "system";
+export const THEME_CHANGE_EVENT = "pandabyte-theme-change";
 
 function isTheme(value: string | null): value is Theme {
   return value === "light" || value === "dark";
@@ -51,9 +53,17 @@ export function ThemeToggle() {
       sync(selected ?? (systemPreference.matches ? "dark" : "light"));
     };
 
+    const handleLocalChange = (event: Event) => {
+      const value = (event as CustomEvent<{ preference: ThemePreferenceValue }>).detail?.preference;
+      if (value !== "system" && !isTheme(value ?? null)) return;
+      hasExplicitChoice.current = value !== "system";
+      sync(value === "system" ? (systemPreference.matches ? "dark" : "light") : value);
+    };
+    window.addEventListener(THEME_CHANGE_EVENT, handleLocalChange);
     systemPreference.addEventListener("change", handleSystemChange);
     window.addEventListener("storage", handleStorage);
     return () => {
+      window.removeEventListener(THEME_CHANGE_EVENT, handleLocalChange);
       systemPreference.removeEventListener("change", handleSystemChange);
       window.removeEventListener("storage", handleStorage);
     };
@@ -69,6 +79,7 @@ export function ThemeToggle() {
     } catch {
       // Keep the in-memory choice when browser storage is unavailable.
     }
+    window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { preference: next } }));
   }
 
   return (

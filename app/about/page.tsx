@@ -7,6 +7,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { PublishedDocument } from "@/components/published-document";
 import { TeamGrid } from "@/components/editorial/team-grid";
 import { HomeBrands } from "@/components/home-brands";
+import { AboutMetrics } from "@/components/storefront/about-metrics";
 import { aboutSections } from "@/components/editorial/about-sections";
 import { EditorialPagination } from "@/components/editorial/editorial-pagination";
 import { editorialPageNumber } from "@/components/editorial/public-utils";
@@ -65,10 +66,7 @@ export default async function AboutPage({ searchParams }: AboutPageProps) {
         <span>Explore the hardware behind your next idea</span>
       </div>}
     </section>
-    <section className={styles.ecosystem} aria-label="Hardware ecosystem">
-      <p className={styles.sectionLabel}>From the wider hardware ecosystem</p>
-      <HomeBrands />
-    </section>
+    <HomeBrands className={styles.ecosystem} title="The Hardware Ecosystem Behind PandaByte" description="Explore the brands in our catalog that help makers, students, and engineers bring connected projects to life." />
     <section className={styles.companySection} aria-label="Company information">
       {document ? <div className={styles.companyContent}>{sections.map((blocks, index) => <PublishedDocument key={index} document={{ ...document, summary: "", blocks }} hideTitle />)}</div>
         : <Card as="section" className={`${styles.panel} ${styles.empty}`} aria-labelledby="company-empty-title">
@@ -95,11 +93,7 @@ export default async function AboutPage({ searchParams }: AboutPageProps) {
           <div><CardTitle>No team profiles published</CardTitle><p>Team details will appear here when they are approved and published.</p></div>
         </Card>}
     </section>
-    <section className={styles.metrics} aria-label="PandaByte in numbers">
-      <div><strong>{products.total}</strong><span>Products in the catalog</span></div>
-      <div><strong>{categories.total}</strong><span>Hardware categories</span></div>
-      <div><strong>{team.total}</strong><span>People behind PandaByte</span></div>
-    </section>
+    <AboutMetrics products={products.total} categories={categories.total} people={team.total} />
     <Card as="section" className={styles.contactCallout} aria-labelledby="about-contact-title">
       <div><h2 id="about-contact-title">What will you build next?</h2><p>From a first experiment to your next research idea, tell us what you have in mind.</p></div>
       <Link href="/contact" className={styles.secondary}>Talk to the team <ArrowRight size={18} aria-hidden="true" /></Link>

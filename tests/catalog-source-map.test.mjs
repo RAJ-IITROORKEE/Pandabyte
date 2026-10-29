@@ -123,7 +123,7 @@ function makeFixture(t, { processedPath = "product-images/processed/photo.png", 
   return { root, productDirectory, outputSha, originalSha, outsideFile: path.join(tempRoot, "escape.png") };
 }
 
-test("maps and accounts for the current archive without changing its source states", () => {
+test("maps and accounts for the current archive without changing its source states", { skip: fs.existsSync(path.join(DEFAULT_ARCHIVE_ROOT, "catalog.json")) ? false : "Owner-only source archive is not included in the public repository" }, () => {
   const plan = buildCatalogSourcePlan(DEFAULT_ARCHIVE_ROOT);
   assert.equal(plan.mode, "read-only-source-mapping-plan");
   assert.equal(plan.sourceProductCount, 44);

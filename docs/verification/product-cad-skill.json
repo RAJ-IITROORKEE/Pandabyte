@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-26",
+  "scope": "Create reusable CAD workflow skill and separate catalog integration prompt only",
+  "skillName": "pandabyte-product-cad",
+  "skillPath": "C:\\Users\\rajra\\.codex\\skills\\pandabyte-product-cad",
+  "skillFilesSha256": {
+    "agents/openai.yaml": "6a745c87345b491edf20d8949c1c6fb7ebcc979271447b0609980a1584989651",
+    "references/delivery-contract.md": "8dfd6d6087b8f7504ffd254b16617c329b221a443bb7d3016b59626f32d103ea",
+    "references/worker-prompt.md": "c2fd033061fcbd6536474cfd4df21998fbdcdf71c7f3a947e43e359ec7fae838",
+    "references/workflow.md": "0d719b60338d1504b857435e0e0bff4c7aba067a82dda175da3b1d9f0ddbdfbd",
+    "references/xlora-reference.md": "9edaacd197e78399fcfead03e5a645f9d85eff7436186c1b48bb037b8f305027",
+    "scripts/product_packet.py": "fa5a7d370891e6ac3247f1debc0af5408419a401ff2b6cdae7d6c3d7abbe380d",
+    "scripts/test_product_packet.py": "505f6d91edcb5b4e29d1465ac20867275e331e981ab8346f656edf92e2ebd06c",
+    "SKILL.md": "451136d78302d921286a250a79f369f646f091b56244a3a488d3d44b52dc5993"
+  },
+  "integrationPrompt": "docs/prompts/catalog-44-integration.md",
+  "checks": {
+    "officialSkillValidator": "passed (isolated uv PyYAML; existing CAD/image environments unchanged)",
+    "pythonRegressionTestsPassed": 8,
+    "markdownRelativeLinks": "passed",
+    "pythonSyntax": "passed",
+    "currentEligibleProductsPrepared": 17,
+    "acceptedInputImagesChecked": 42,
+    "excludedX32Rejected": true,
+    "productFilesPreservedDuringPreflight": 599,
+    "existingXLoraNativeAndFinalGLBStructure": "passed",
+    "completeDeliveryValidatorFixture": "passed, reused existing xLoRa artifacts; 14 roles and711817 triangles; temporary fixture removed",
+    "independentLunaForwardReview": "dispatch-ready; found stale-audit gap, repaired and regression-tested"
+  },
+  "parallelism": {
+    "requestedFutureBatchSize": 5,
+    "currentTotalAgentSlotsIncludingRoot": 4,
+    "maximumCurrentModelingWorkers": 3,
+    "queuedWithinFiveItemBatch": 2
+  },
+  "newProductGeometryGenerated": false,
+  "productsSourceArchiveChanged": false,
+  "websiteChanged": false,
+  "backendChanged": false,
+  "notChecked": [
+    "No new product geometry generated; first real worker batch remains future work",
+    "No manufacturing/electrical/hidden-feature accuracy or mobile-performance certification",
+    "No storefront/backend integration executed"
+  ],
+  "stop": "Await the owner request before generating the17 shortlisted products."
+}

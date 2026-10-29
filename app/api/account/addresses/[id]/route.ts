@@ -11,6 +11,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const session = await activeCustomerSession();
     if (!session) return addressError("unauthorized", 401);
+    if (request.headers.get("x-account-owner") !== session.userId) return addressError("account_changed", 409);
 
     const { id } = await context.params;
     if (!isCustomerAddressId(id)) return addressError("not_found", 404);
@@ -45,6 +46,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   try {
     const session = await activeCustomerSession();
     if (!session) return addressError("unauthorized", 401);
+    if (request.headers.get("x-account-owner") !== session.userId) return addressError("account_changed", 409);
 
     const { id } = await context.params;
     if (!isCustomerAddressId(id)) return addressError("not_found", 404);

@@ -111,10 +111,11 @@ function sqlFields(value) {
 async function request(auth, method, suffix = "", json, headers = {}) {
   return appRequest(context.appOrigin, `/api/account/addresses${suffix}`, auth?.appToken, {
     method,
-    headers: { origin: context.appOrigin, "content-type": "application/json", ...headers },
+    headers: { origin: context.appOrigin, "content-type": "application/json", "x-account-owner": state.users.find(user => user.role === (auth === requestCustomer ? "customer" : "staff"))?.userId ?? "", ...headers },
     ...(json === undefined ? {} : { body: JSON.stringify(json) }),
   });
 }
+let requestCustomer;
 async function result(response, status) {
   assert.equal(response.status, status, `HTTP ${status} expected, got ${response.status}`);
   assert.match(response.headers.get("cache-control"), /no-store/);
@@ -122,10 +123,12 @@ async function result(response, status) {
 }
 
 async function verifyContactProfile(customer, other) {
-  const profile = (auth, method, body) => appRequest(context.appOrigin, "/api/account/profile", auth.appToken, {
-    method, headers: { origin: context.appOrigin, "content-type": "application/json" },
+  const profile = (auth, method, body, headers = {}) => appRequest(context.appOrigin, "/api/account/profile", auth.appToken, {
+    method, headers: { origin: context.appOrigin, "content-type": "application/json", "x-account-owner": state.users.find(fixture => fixture.role === (auth === customer ? "customer" : "staff")).userId, ...headers },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
+  await result(await profile(customer, "PATCH", { phone: "rejected" }, { "x-account-owner": "" }), 409);
+  await result(await profile(other, "PATCH", { phone: "rejected" }, { "x-account-owner": state.users[0].userId }), 409);
   await result(await profile(customer, "PATCH", { phone: "+12015550100" }), 200);
   const own = (await result(await profile(customer, "GET"), 200)).profile;
   assert.equal(own.phone, "+12015550100");
@@ -163,9 +166,12 @@ try {
     state.users = fixtures.users;
     checkpoint();
     const { customer, staff: other } = fixtures.auth;
+    requestCustomer = customer;
     await verifyContactProfile(customer, other);
     await result(await request(null, "GET"), 401);
     await result(await request(null, "POST", "", example), 401);
+    await result(await request(customer, "POST", "", example, { "x-account-owner": "" }), 409);
+    await result(await request(customer, "POST", "", example, { "x-account-owner": state.users[1].userId }), 409);
     assert.deepEqual((await result(await request(customer, "GET"), 200)).addresses, []);
     await result(await request(customer, "POST", "", { ...example, userId: state.users[1].userId }), 400);
     await result(await request(customer, "POST", "", { ...example, phoneVerified: true }), 400);

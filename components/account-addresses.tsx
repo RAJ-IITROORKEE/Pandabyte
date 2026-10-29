@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useUser } from "@clerk/nextjs";
 import { MapPin, Plus, Trash2 } from "lucide-react";
 import type { CustomerAddress as Address } from "@/lib/account/addresses";
 import styles from "@/components/account.module.css";
@@ -66,6 +67,9 @@ async function apiError(response: Response, action: "load" | "save" | "delete"):
       if (isRecord(body) && isRecord(body.error) && body.error.code === "too_many_addresses") {
         return "You have reached the 20-address limit. Remove a saved address before adding another.";
       }
+      if (isRecord(body) && isRecord(body.error) && body.error.code === "account_changed") {
+        return "Your active account changed. Reload your address book before trying again.";
+      }
     } catch {
       // Keep the generic conflict recovery message when the response has no readable error code.
     }
@@ -100,6 +104,13 @@ function AddressSummary({ address, hasSaved }: { address: Address | null; hasSav
 }
 
 export function AccountAddresses() {
+  const { isLoaded, user } = useUser();
+  if (!isLoaded) return <p role="status">Loading your address access…</p>;
+  if (!user) return <p role="alert">Sign in to manage your addresses.</p>;
+  return <AddressSession key={user.id} userId={user.id} />;
+}
+
+function AddressSession({ userId }: { userId: string }) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -115,8 +126,10 @@ export function AccountAddresses() {
   const focusAddAfterDeleteRef = useRef(false);
   const focusSaveErrorRef = useRef(false);
   const formErrorRef = useRef<HTMLDivElement>(null);
+  const sessionController = useRef<AbortController | null>(null);
 
-  const loadAddresses = useCallback(async (signal?: AbortSignal) => {
+  const loadAddresses = useCallback(async (signal = sessionController.current?.signal) => {
+    if (signal?.aborted) return;
     setLoading(true);
     setError("");
     try {
@@ -125,6 +138,7 @@ export function AccountAddresses() {
       const body: unknown = await response.json();
       const loaded = parseAddressList(body);
       if (!loaded) throw new Error("Your addresses could not be loaded. Please try again.");
+      if (signal?.aborted) return;
       setAddresses(loaded);
     } catch (cause) {
       if (signal?.aborted) return;
@@ -136,6 +150,7 @@ export function AccountAddresses() {
 
   useEffect(() => {
     const controller = new AbortController();
+    sessionController.current = controller;
     queueMicrotask(() => {
       if (!controller.signal.aborted) void loadAddresses(controller.signal);
     });
@@ -212,7 +227,9 @@ export function AccountAddresses() {
 
   async function saveAddress(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editing) return;
+    if (!editing || saving) return;
+    const signal = sessionController.current?.signal;
+    if (!signal || signal.aborted) return;
 
     setSaving(true);
     setError("");
@@ -222,7 +239,8 @@ export function AccountAddresses() {
         editing.id ? `/api/account/addresses/${encodeURIComponent(editing.id)}` : "/api/account/addresses",
         {
           method: editing.id ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-account-owner": userId },
+          signal,
           body: JSON.stringify(editing.id
             ? { ...editing.fields, expectedVersion: editing.version }
             : editing.fields),
@@ -232,6 +250,7 @@ export function AccountAddresses() {
       const body: unknown = await response.json();
       const address = isRecord(body) ? parseAddress(body.address) : null;
       if (!address) throw new Error("The saved address could not be confirmed. Reload your address book.");
+      if (signal.aborted) return;
 
       setAddresses((currentAddresses) => editing.id
         ? currentAddresses.map((item) => item.id === address.id ? address : item)
@@ -240,35 +259,42 @@ export function AccountAddresses() {
       setStatus("Address saved.");
       await loadAddresses();
     } catch (cause) {
+      if (signal.aborted) return;
       focusSaveErrorRef.current = true;
       setError(cause instanceof Error ? cause.message : "This address could not be saved. Please try again.");
     } finally {
-      setSaving(false);
+      if (!signal.aborted) setSaving(false);
     }
   }
 
   async function deleteAddress(address: Address) {
+    if (saving) return;
+    const signal = sessionController.current?.signal;
+    if (!signal || signal.aborted) return;
     setSaving(true);
     setError("");
     setStatus("");
     try {
       const response = await fetch(`/api/account/addresses/${encodeURIComponent(address.id)}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-account-owner": userId },
+        signal,
         body: JSON.stringify({ expectedVersion: address.version }),
       });
       if (!response.ok) throw new Error(await apiError(response, "delete"));
       const body: unknown = await response.json();
       if (!isRecord(body) || body.deleted !== true) throw new Error("The address could not be confirmed as deleted.");
+      if (signal.aborted) return;
       setAddresses((current) => current.filter((item) => item.id !== address.id));
       setConfirmDeleteId(null);
       focusAddAfterDeleteRef.current = true;
       deleteTriggerRef.current = null;
       setStatus("Address deleted.");
     } catch (cause) {
+      if (signal.aborted) return;
       setError(cause instanceof Error ? cause.message : "This address could not be deleted. Please try again.");
     } finally {
-      setSaving(false);
+      if (!signal.aborted) setSaving(false);
     }
   }
 

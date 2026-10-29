@@ -1,0 +1,13 @@
+# Customer order search
+
+The authenticated customer order list searches the order reference case-insensitively and returns matching orders newest first, with the matching total and requested page. Search is limited to 80 letters, digits or hyphens. The database scopes orders to the signed-in subject and the simulation and Razorpay test environments. Search and totals cover all matching records, but the existing offset limit of 10,000 prevents browsing pages beyond that point.
+
+The filters reflect recorded order states: **Active** includes `pending` and `processing`; **Fulfilled** includes `fulfilled`; **Cancelled** includes `cancelled`. **Delivered** has no matches because fulfillment does not establish delivery and there is no recorded delivery event. **All** includes every recorded state.
+
+The response already includes creation and update dates. Historical quote lines do not capture thumbnail media IDs, so a current catalog image cannot be represented as the purchased image. Reordering requires a fresh cart and price/availability checks; it is not part of this search.
+
+The customer Orders navigation now renders only the order-history interface within the existing sidebar. Cards display snapshot product names, total units (sum of quantities), separate product-line counts, purchased shipping/billing snapshots, available test charge breakdowns and validated HTTPS tracking. Package placeholders explicitly identify missing purchased images. Invoice files and confirmed delivery are not available in the data model; no invoice or reorder action is shown. The additional Fulfilled filter preserves the existing backend distinction from delivery.
+
+Updates refresh on window focus or the Refresh button. Filter/search changes reset pagination and abort obsolete requests; private results are hidden when the signed-in identity changes. Migration `20261028150000_customer-order-search.sql` adds a read-only owner-scoped RPC and leaves the original list function and Admin writers intact. It was applied only to the linked development backend.
+
+Verification: lint (one existing unused-variable warning in Admin tests), TypeScript and isolated production build passed. Browser: real owner's empty history, Orders navigation, combined search/filter, clear filters, 320/768/1440 px, both themes. Automated fixture tests cover populated cards, snapshot addresses, total units, tracking safety, loading/error/empty states and account changes. No customer orders or addresses were created, and no Admin fulfillment or payment actions were performed in this UI checkpoint. Live populated-history/fulfillment synchronization and physical-device tests remain unverified.

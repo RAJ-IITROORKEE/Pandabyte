@@ -1,3 +1,5 @@
+import { isOrderReference } from "../checkout/validation.ts";
+
 const RETURN_ORIGIN = "https://auth-return.invalid";
 const MAX_RETURN_PATH_LENGTH = 2048;
 const DYNAMIC_PUBLIC_PATH = /^\/(?:products|blog|solutions|shop)\/([a-z0-9]+(?:-[a-z0-9]+)*)$|^\/learn\/(?:resources|youtube)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/;
@@ -59,6 +61,7 @@ export function safeAuthReturnPath(value: unknown, publicPaths: readonly string[
     pathname === "/" ||
     publicPathSet.has(pathname) ||
     dynamicPathAllowed ||
+    (pathname.startsWith("/checkout/confirmation/") && isOrderReference(pathname.slice("/checkout/confirmation/".length))) ||
     /^\/account(?:\/[^/]+)*$/.test(pathname) ||
     /^\/admin(?:\/[^/]+)*$/.test(pathname) ||
     ["/staff", "/checkout", "/agent"].includes(pathname);

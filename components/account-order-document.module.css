@@ -1,0 +1,28 @@
+.page { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.actions a, .actions button, .document button { color: inherit; font: inherit; }
+.actions button, .document button { cursor: pointer; padding: .65rem 1rem; border: 1px solid currentColor; border-radius: .4rem; background: transparent; }
+.document { border: 1px solid #888; border-radius: .5rem; padding: clamp(1rem, 4vw, 2.5rem); overflow-wrap: anywhere; }
+.document h1 { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.2; }
+.document h2 { font-size: 1.1rem; margin: 0 0 .75rem; }
+.document section { margin-top: 2rem; }
+.details, .addresses { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.details dt, .totals dt { font-weight: 600; }
+.details dd, .totals dd { margin: .25rem 0 0; }
+.notice { border-left: 3px solid currentColor; padding-left: .75rem; }
+.tableWrap { overflow-x: auto; }
+.document table { width: 100%; border-collapse: collapse; text-align: left; }
+.document th, .document td { padding: .75rem .5rem; border-bottom: 1px solid #888; vertical-align: top; }
+.totals { max-width: 360px; }
+.totals div { display: flex; justify-content: space-between; gap: 1rem; padding: .35rem 0; }
+.totals dd { margin: 0; }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  :global(.pb-site-header), :global(.pb-site-footer), :global(.skip-link) { display: none !important; }
+  .page { max-width: none; padding: 0; color: #000; background: #fff; }
+  .actions { display: none; }
+  .document { border: 0; padding: 0; }
+  .tableWrap { overflow: visible; }
+  .document thead { display: table-header-group; }
+  .document tr, .addresses section, .totals { break-inside: avoid; }
+}

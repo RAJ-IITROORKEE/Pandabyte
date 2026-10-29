@@ -20,6 +20,7 @@ export async function POST(request: Request) {
   try {
     const session = await activeCustomerSession();
     if (!session) return addressError("unauthorized", 401);
+    if (request.headers.get("x-account-owner") !== session.userId) return addressError("account_changed", 409);
 
     const body = await readAddressBody(request);
     if (body instanceof Response) return body;

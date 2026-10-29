@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from "react
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, Search, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { AuthControls } from "@/components/auth-controls";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -102,7 +102,7 @@ function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: N
 
         <div className="pb-header-actions">
           <Link className="pb-icon-button" href="/shop#catalog-query" aria-label="Search catalog" onClick={() => setMobileOpen(false)}><Search aria-hidden="true" /></Link>
-          {onCartPage ? <Link className="pb-icon-button" href="/cart" aria-label="Cart" onClick={() => setMobileOpen(false)}><ShoppingCart aria-hidden="true" /></Link> : <CartDrawer onOpen={() => setMobileOpen(false)} />}
+          <CartDrawer onCartPage={onCartPage} onOpen={() => setMobileOpen(false)} />
           <AuthControls />
           <span className="pb-theme-action"><ThemeToggle /></span>
         </div>

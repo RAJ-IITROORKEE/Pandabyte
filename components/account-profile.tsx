@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useUser } from "@clerk/nextjs";
 import { Pencil, Phone } from "lucide-react";
 import styles from "@/components/account.module.css";
 
@@ -35,6 +36,13 @@ function parseProfileResponse(value: unknown): Profile | null | undefined {
 }
 
 export function AccountProfile() {
+  const { isLoaded, user } = useUser();
+  if (!isLoaded) return <p role="status">Loading your contact access…</p>;
+  if (!user) return <p role="alert">Sign in to manage your contact details.</p>;
+  return <ProfileSession key={user.id} userId={user.id} />;
+}
+
+function ProfileSession({ userId }: { userId: string }) {
   const [phone, setPhone] = useState("");
   const [savedPhone, setSavedPhone] = useState("");
   const [editing, setEditing] = useState(false);
@@ -46,6 +54,7 @@ export function AccountProfile() {
   const formErrorRef = useRef<HTMLDivElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const focusEditAfterSave = useRef(false);
+  const sessionController = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (loaded && error) formErrorRef.current?.focus();
@@ -58,13 +67,14 @@ export function AccountProfile() {
     }
   }, [saving]);
 
-  const loadProfile = useCallback(async (signal?: AbortSignal) => {
+  const loadProfile = useCallback(async (signal = sessionController.current?.signal) => {
     try {
       const response = await fetch("/api/account/profile", { cache: "no-store", signal });
       if (!response.ok) throw new Error("Your contact details could not be loaded.");
       const body: unknown = await response.json();
       const profile = parseProfileResponse(body);
       if (profile === undefined) throw new Error("Your contact details could not be loaded.");
+      if (signal?.aborted) return;
 
       setPhone(profile?.phone ?? "");
       setSavedPhone(profile?.phone ?? "");
@@ -83,6 +93,7 @@ export function AccountProfile() {
 
   useEffect(() => {
     const controller = new AbortController();
+    sessionController.current = controller;
     queueMicrotask(() => {
       if (!controller.signal.aborted) void loadProfile(controller.signal);
     });
@@ -91,7 +102,9 @@ export function AccountProfile() {
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editing) return;
+    if (!editing || saving) return;
+    const signal = sessionController.current?.signal;
+    if (!signal || signal.aborted) return;
     setSaving(true);
     setError("");
     setStatus("");
@@ -99,11 +112,13 @@ export function AccountProfile() {
     try {
       const response = await fetch("/api/account/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-account-owner": userId },
+        signal,
         body: JSON.stringify({ phone: phone.trim() }),
       });
       if (!response.ok) {
         if (response.status === 401) throw new Error("Your session expired. Sign in again and retry.");
+        if (response.status === 409) throw new Error("Your active account changed. Reload your profile before saving.");
         if (response.status === 400) throw new Error("Please check the contact details and try again.");
         throw new Error("Your contact details could not be saved. Please try again.");
       }
@@ -111,6 +126,7 @@ export function AccountProfile() {
       const body: unknown = await response.json();
       const profile = parseProfileResponse(body);
       if (!profile) throw new Error("Your saved contact details could not be confirmed. Reload and try again.");
+      if (signal.aborted) return;
 
       setPhone(profile.phone);
       setSavedPhone(profile.phone);
@@ -118,9 +134,10 @@ export function AccountProfile() {
       focusEditAfterSave.current = true;
       setStatus("Contact details saved.");
     } catch (cause) {
+      if (signal.aborted) return;
       setError(cause instanceof Error ? cause.message : "Your contact details could not be saved. Please try again.");
     } finally {
-      setSaving(false);
+      if (!signal.aborted) setSaving(false);
     }
   }
 

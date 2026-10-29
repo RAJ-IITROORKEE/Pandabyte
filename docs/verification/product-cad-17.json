@@ -1,0 +1,854 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "status": "completed-for-owner-review",
+  "requestedModel": "gpt-6-luna",
+  "requestedEffort": "xhigh",
+  "batchSizes": [
+    5,
+    5,
+    5,
+    2
+  ],
+  "maximumConcurrentWorkers": 3,
+  "completed": 17,
+  "held": 0,
+  "failed": 0,
+  "archive": {
+    "status": "passed",
+    "filesUnchanged": 599,
+    "newOutside3d": 0
+  },
+  "siteIntegration": false,
+  "manufacturingValidated": false,
+  "electricalValidated": false,
+  "mobilePerformanceValidated": false,
+  "viewer": "All final GLBs visibly loaded in standalone localhost built-in browser; native panel handoff is separate from successful browser review.",
+  "products": [
+    {
+      "number": 1,
+      "batch": 1,
+      "title": "PandaByte xC5 ESP32-C5 Development Board",
+      "sourceId": "legacy:pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "folder": "products/development-boards/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared final four-view packet with physical front/rear source sheet01",
+          "Black mask,30 header holes,6caps+6blackresistors,3switches with4leads each",
+          "Source-mapped IO10/IO23/PWR and six/eight-lead ICs; actual official C5 module retained",
+          "Front silk cleaned of photo hardware; readable two verified shield marks; rear actual source mascot and pin silk",
+          "Correct front/rear isometric, top orthographic and close USB-C cavity/contact view"
+        ],
+        "webSha256": "582af1e9b6a4ea30cb69a3a38bcaa506be0f9984b009b5dfa3dc0671913b915a",
+        "modelManifestSha256": "2990735d988639bb35301bce6d256fd29569b0644a19622d621199713b36a4c8",
+        "viewerHandoff": "cad_show delivered to registered panel; final xc5.glb visibly loaded in standalone built-in browser",
+        "limitations": [
+          "Source-derived fine ink retains photographic irregularities; unreadable fine shield print omitted"
+        ],
+        "interactiveScreenshot": "artifact-review/01-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=development-boards%2Fpandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible%2F3d%2Fweb%2Fxc5.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 13,
+        "triangles": 1697427,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\development-boards\\pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible\\3d\\web\\xc5.glb",
+        "webBytes": 41584332,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 526,
+      "limitations": [
+        "Board outline and parent-board placements are visual photo estimates (29 x 61 x 1.6 mm); no dimensioned parent-board drawing was available.",
+        "USB-C receptacle, switches and small unmarked components use representative visual geometry; exact connector footprint and component identities are unknown.",
+        "The official ESP32-C5-WROOM-1 V1.3 manufacturer STEP geometry is retained as separate solids; parent-board fit and all electrical/mechanical behavior remain unvalidated.",
+        "Visual reverse model only; manufacturing and electrical validation are false."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 2,
+      "batch": 1,
+      "title": "PandaByte xC3 ESP32-C3 Development Board",
+      "sourceId": "legacy:pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "folder": "products/development-boards/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared both faces to source sheet02 and updated four-view renders",
+          "30 header holes and source 7+4+6 passive layout; corrected horizontal four-part row",
+          "Central IC six leads verified by saved checks",
+          "Rear exact source Panda logo and GeekyBoard xC3 pin silk match",
+          "USB-C mouth/tongue/contacts visible in saved detail"
+        ],
+        "webSha256": "7f6d3121e340968d507c554e3e0cf938030e8608b3a3fc1f2b890ad4a4f5b165",
+        "modelManifestSha256": "ffd60a9aa585c063f8499f28095409a5eb92c9ae6936955fa553ef992a2f218c",
+        "viewerHandoff": "Built-in browser loaded final xc3.glb and model camera controls worked; default viewer appearance is distinct from saved PBR renders",
+        "interactiveScreenshot": "artifact-review/02-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=development-boards%2Fpandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible%2F3d%2Fweb%2Fxc3.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 12,
+        "triangles": 435651,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\development-boards\\pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible\\3d\\web\\xc3.glb",
+        "webBytes": 13219880,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 404,
+      "limitations": [
+        "The 28 x 50 x 1.6 mm board envelope, header pitch/diameter, package sizes and placements are visual estimates from modest-resolution photographs scaled against the official 18 x 20 mm module.",
+        "The USB-C receptacle, switches and unmarked passives are representative photo-guided geometry; exact vendor footprints, board revision and hidden layers are unknown.",
+        "Rear routes and markings use source-derived raster crops with sparse alpha, not reconstructed copper or a full-board photograph.",
+        "This is visual reverse modeling only; no manufacturing, electrical, enclosure-fit, compliance, inventory or performance validation is claimed."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 3,
+      "batch": 1,
+      "title": "PandaByte xC3m ESP32-C3 Development Board",
+      "sourceId": "legacy:pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "folder": "products/development-boards/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared both faces to source sheet03 and final four-view renders",
+          "20 header holes; correct pin ordering; continuous PCB edge at USB",
+          "Source SOT6, SS34-style diode,14 passives and vertical center trio; clear 10/G silk",
+          "Rear source Panda logo with borders outside holes; four rear USB anchor ends and two registration holes now visible",
+          "USB-C mouth/tongue/contact rows exposed in saved detail"
+        ],
+        "webSha256": "c6ddcfc3e28c2ae6203153b5bb64482de6aa1bc15022a8d5fe93532f8bb1f62f",
+        "modelManifestSha256": "c964e16230c2242c97451556168a4bf311862dc74f54f88ebd81e401d4095e6c",
+        "viewerHandoff": "Final xc3m.glb visibly loaded in same built-in browser standalone viewer",
+        "interactiveScreenshot": "artifact-review/03-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=development-boards%2Fpandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible%2F3d%2Fweb%2Fxc3m.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 13,
+        "triangles": 546389,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\development-boards\\pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible\\3d\\web\\xc3m.glb",
+        "webBytes": 14888392,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 399,
+      "limitations": [
+        "The 31.5 mm board envelope, 1.6 mm PCB thickness, 2.711 mm row pitch, USB connector dimensions and non-module packages are visual estimates registered to the manufacturer-dimensioned WROOM-02 module.",
+        "The two-terminal diode is an SS34-style visual estimate; no exact manufacturer or SKU is identified.",
+        "The assembly is not manufacturing-validated, electrically validated, thermal-validated or enclosure-fit-validated.",
+        "Four rear USB anchor-end positions and the two small registration-hole dimensions are photo-derived estimates; no connector land pattern or parent-board drawing was available."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 4,
+      "batch": 1,
+      "title": "Maker UNO: Simplifying Arduino for Education",
+      "sourceId": "legacy:maker-uno-simplifying-arduino-for-education",
+      "folder": "products/development-boards/maker-uno-simplifying-arduino-for-education/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared final4views and source04 physicalfront/rear: correctpurpleRev1.1 geometry/control/headerlayout",
+          "Officialmanufacturergeometry retained:4asymmetricholes,18digital8power6analog6ICSP positions and16indicators",
+          "Sourcefrontsilk/rearARUS/rero/Cytronlogos and whiteownershipband match",
+          "Removedvendor0MHzplaceholderappearance with documentedneutralcaps; CH340Gblackepoxy/silverleads nowcorrect",
+          "115validclosedsolids; 95sourcebodies unchanged, onebodyexactvolumepreservingsplit,16closedLEDshellpromotions,2thinmetalcap additions"
+        ],
+        "webSha256": "630a1d6950313524b601b7abec2e800a1fb5be3581d45c402b4511139651096a",
+        "modelManifestSha256": "f81e2a53e6085864c884684a413a010de16667dfa54e3a233bb0f9db26a973e6",
+        "viewerHandoff": "Final uno.glb visibly loaded in standalone built-in browser tab3; cad_show delivered to registered panel",
+        "limitations": [
+          "Native800pxsourceinksoftness atmacrozoom; hiddenfeatures/materials notmanufacturingvalidated"
+        ],
+        "interactiveScreenshot": "artifact-review/04-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=development-boards%2Fmaker-uno-simplifying-arduino-for-education%2F3d%2Fweb%2Funo.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:maker-uno-simplifying-arduino-for-education",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 16,
+        "triangles": 150202,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\development-boards\\maker-uno-simplifying-arduino-for-education\\3d\\web\\uno.glb",
+        "webBytes": 6619216,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 115,
+      "limitations": [
+        "This is a visual product presentation model, not a manufacturing drawing or fabrication-ready PCB/assembly.",
+        "No tolerance, mechanical fit, electrical, thermal, firmware or performance validation was performed.",
+        "The official STEP file does not explicitly label the board revision; source photos and major geometry are consistent with Rev1.1.",
+        "Crystal cap covers are appearance-only additions to hide unsupported vendor engraving; their small 1.416 mm3 aggregate volume is reported separately.",
+        "Source-derived raster decals originate from 800x800 product photos and are not manufacturing artwork; fine details are soft at macro zoom.",
+        "Rear branding/name-strip crops are source-image-derived; rear copper/trace detail beyond the localized name strip and visible silk is not reconstructed.",
+        "Sixteen source closed LED shells were converted to positive valid solids without changing shell volume; their paired sixteen open zero-volume fragments were excluded as nonphysical geometry."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 5,
+      "batch": 1,
+      "title": "PandaByte NodeMCU x8266 WiFi Development Board",
+      "sourceId": "legacy:pandabyte-x8266-wifi-development-board",
+      "folder": "products/development-boards/pandabyte-x8266-wifi-development-board/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Source05 and final4views compared: greenPCB,30openheaders,3goldoval4leadbuttons,source-mappedpackages/labels",
+          "Square A0/D0 pads visiblyopen afterrootrepair; savedprobescheckbothfaces/alllayers",
+          "22RFcastellationrecessesvisible and savednotch/landprobespass",
+          "RearactualPanda/identity and4USBanchors2holes; USB-Ccavitytongue/contacts clear",
+          "No exact RFsuffix/vendor claim; finecoppertraces/unreadablemarks omitted explicitly"
+        ],
+        "webSha256": "dfaf151f211d129e7238d327d2d26091960adcc45cc1f390327cc65a4350e739",
+        "modelManifestSha256": "d3ab6077ec914049b1de557677a5bb79b2725a74194acfb3265211d5d4544f0a",
+        "viewerHandoff": "Final corrected x8266.glb visibly loaded in fresh built-in browser standalone tab3; cad_show delivered to registered panel",
+        "interactiveScreenshot": "artifact-review/05-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=development-boards%2Fpandabyte-x8266-wifi-development-board%2F3d%2Fweb%2Fx8266.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-x8266-wifi-development-board",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 12,
+        "triangles": 791028,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\development-boards\\pandabyte-x8266-wifi-development-board\\3d\\web\\x8266.glb",
+        "webBytes": 20945512,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 413,
+      "limitations": [
+        "Board outline and dimensions are inferred from the source-photo ratio using an unverified 2.54 mm edge-pad pitch; no vendor drawing or caliper measurement was available.",
+        "Radio module geometry is source-guided from the visible ESP8266MOD marking and 22 perimeter contacts; exact manufacturer, suffix and internal construction are not established, and no manufacturer STEP was found or used.",
+        "USB-C interior, exact receptacle variant, contact assignment and retention geometry are not resolved in the source photos; modeled interior dimensions are visual estimates.",
+        "Tiny passive identities, fine/blurred regulatory or silkscreen marks, and hidden underside/interior features are not established; the full board copper trace network is omitted and no unreadable certification glyphs are fabricated. This presentation model is not manufacturing, electrical, fit or performance validated."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 6,
+      "batch": 2,
+      "title": "RGB LED Circular WS2812B WeMoS D1 Mini",
+      "sourceId": "legacy:rgb-led-circular-ws2812b-wemos-d1-mini",
+      "folder": "products/sensors/rgb-led-circular-ws2812b-wemos-d1-mini/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared source06 physicalopposingpair with all4 refreshed views; 12LED+12cap+16openpads+4mounts consistent",
+          "Four switchleads now visiblyprotrude source north/south sides; savedSTEP proves1.29mm footextension beyondhousing and boardcontact",
+          "Original sourceRGB productionink legibilityimproved bydocumented ROIalpha, noinventedtext; rearWeMosliteralbackslash+n retained with90degree registration",
+          "232validclosedsolids and12vendorLEDvolumes preserved; finalGLB visiblyloaded; 61mmestimatedscale and genericLED/reference rightslimits documented"
+        ],
+        "webSha256": "565cc03662a49704a4b5d93c8979709baae6d0b9b53939ef74c1b38d980cb9bc",
+        "modelManifestSha256": "64555f019b5a5e4963edfff3bf3338e79d919a9f78b43b76153525d41ca020e6",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/06-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Frgb-led-circular-ws2812b-wemos-d1-mini%2F3d%2Fweb%2Fring.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:rgb-led-circular-ws2812b-wemos-d1-mini",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 12,
+        "triangles": 597032,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\rgb-led-circular-ws2812b-wemos-d1-mini\\3d\\web\\ring.glb",
+        "webBytes": 15338424,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 232,
+      "limitations": [
+        "61 mm board diameter, 1.6 mm PCB stack, hole locations, header footprint, component placements and sizes are visual/family-based estimates, not manufacturing dimensions or a fit guarantee.",
+        "Four north/south switch lead feet project 1.29 mm beyond the modeled 6.4 mm housing; both values are estimates measured from the source photograph, not switch package specifications.",
+        "Exact WS2812B suffix, switch identity, capacitor values/package codes, electrical nets, LED internal die construction and hidden board stackup are unknown. Die quadrants are illustrative.",
+        "The rear photo is rotated 90 degrees relative to the front image; asymmetric outline and faint trace registration leaves about 1.5 mm residual placement uncertainty.",
+        "The generic PLCC4 catalog model has no license field; no manufacturer STEP or redistribution permission was found. Manufacturing tolerances, electrical behavior and D1 mini mechanical fit are unvalidated."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 7,
+      "batch": 2,
+      "title": "PandaByte NEO-6M GPS Grove Sensor",
+      "sourceId": "legacy:neo-6m-gps-grove-compatible",
+      "folder": "products/sensors/neo-6m-gps-grove-compatible/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared original source07/detailcrop with all4 finalrenders; photographed M8M retained under unchanged legacyNEO6Mcatalog and carrierprint",
+          "Correct sparse visible passives, apparent8lead+two6lead ICs, 12+12modulecontacts and filled blueboardcorners/UART/antennafasteners",
+          "Antenna insetface and solidfeed match source; bothGNDVCCRXTXstrips upright clear of source-positionedstatusparts",
+          "Saved160validclosedsolids; finalGLB visiblyloaded in built-in browser; hiddenstack and smallpackage identities remain estimates"
+        ],
+        "webSha256": "caffc531624fc332fd604a467ae9d1bb0951c5c1c6feef1135602e5b6c3b372b",
+        "modelManifestSha256": "fb2100181299f787921a9ddf4c8827c136bb3c42416d4cd47fc5464685af99f7",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/07-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fneo-6m-gps-grove-compatible%2F3d%2Fweb%2Fgps.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:neo-6m-gps-grove-compatible",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 12,
+        "triangles": 257221,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\neo-6m-gps-grove-compatible\\3d\\web\\gps.glb",
+        "webBytes": 6981544,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 160,
+      "limitations": [
+        "The carrier (28 x 80 x 1.6 mm), GPS daughterboard (26.5 x 36 x 1.6 mm), antenna PCB (28 x 28 x 1.0 mm), ceramic patch, battery, connector body, pad positions and hidden stack are photo-scaled estimates unless a manufacturer dimension is explicitly cited.",
+        "Only the photographed u-blox NEO-M8M-0-10 package envelope uses manufacturer dimensions (16 x 12.2 x 2.4 mm). Shield details, package internals and its two rows of 12 edge contacts are source-guided geometry.",
+        "GPS corner discs/UART pads and antenna fasteners are modeled with filled visible centers. Any hidden underside drilling, internal barrel height or concealed hardware remains unobserved. The antenna and Grove connector manufacturer/model are unknown; the Taoglas dimension is only a size comparator.",
+        "The right-side IC is modeled as an apparent 8-lead package and the lower row has two apparent 6-lead IC bodies. Their functional identities, values, exact package standards and smaller passive identities remain unknown.",
+        "The documented near-flush 0.05 mm carrier-to-board clearance is a simplified visual stack assumption; no carrier drawing or owner measurement was available.",
+        "The catalog title and sourceId remain legacy NEO-6M while the photographed module is NEO-M8M-0-10 and the rear carrier is actually printed NEO-6M GPS. This follows the explicit owner decision.",
+        "Unreadable certification text, serials, QR content, fine silkscreen and indistinct trace routes are not invented. Visible text decals come only from recorded source-photo pixels.",
+        "This reverse model is for visual product review and is not manufacturing, electrical, RF, performance or fit validated."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 8,
+      "batch": 2,
+      "title": "PandaByte RGB LCD Backlight Grove Module",
+      "sourceId": "legacy:pandabyte-rgb-rgb-lcd-backlight-grove-module",
+      "folder": "products/sensors/pandabyte-rgb-rgb-lcd-backlight-grove-module/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared final4views with original/processed source08",
+          "Unlitwhitechamfereddiffuser+separatewhitecarrier/fourmetaljoiningwires; noinventedLCDscreen",
+          "FrontactualPanda/printedCommonAnodeidentity,4R/G/B/VCCinterfacebores, rearGroveand221passive match",
+          "Savedall-layerinterfaceboresincludingfirstsquarepad pass;Grovemouth/contact/latches seenindetail",
+          "Source73.2x18.5sizequote assignedtoisolateddiffuser byratio;assemblyenvelope explicitlyinferred"
+        ],
+        "webSha256": "e8e999418da0fd0696abac5631350bb966a2a71cc00b76c2b0ccbe46296bf29e",
+        "modelManifestSha256": "447f094c58243c9003ebb50b9d68f2b51bef77092dac7fb9a3347467c367923d",
+        "viewerHandoff": "Final backlight.glb visibly loaded in same standalone built-in browser tab3; cad_show delivered",
+        "interactiveScreenshot": "artifact-review/08-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fpandabyte-rgb-rgb-lcd-backlight-grove-module%2F3d%2Fweb%2Fbacklight.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-rgb-rgb-lcd-backlight-grove-module",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 14,
+        "triangles": 85852,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\pandabyte-rgb-rgb-lcd-backlight-grove-module\\3d\\web\\backlight.glb",
+        "webBytes": 2308488,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 48,
+      "limitations": [
+        "Visual reverse model only; not manufacturing, electrical, or enclosure-fit validated.",
+        "Source quote 'Length 7.32 x 1.85 x 0.28 cm' has no stated measurement parent. The 73.2 x 18.5 mm values are assigned to the diffuser only because its isolated source-photo aspect ratio is about 3.9:1; the quoted 2.8 mm thickness is an uncertain appearance estimate.",
+        "Carrier size/thickness, complete assembly envelope, lead geometry and fitted Grove connector variant are inferred; the quoted source dimensions do not establish overall bounds.",
+        "The candidate Seeed 4-pin, 2.0 mm family supports pitch only; exact installed part is unconfirmed. Passive identity/value is not established by its 221 mark.",
+        "No LCD screen, powered LED emission, or hidden emitter die is modeled."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 9,
+      "batch": 2,
+      "title": "PandaByte Active Buzzer Sensor Grove Module",
+      "sourceId": "legacy:active-buzzer-sensor-module",
+      "folder": "products/sensors/active-buzzer-sensor-module/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared source09 paired renders/physicalfront with all4 final views; consistent bare aux3 assembly",
+          "Correct round buzzer cavity, 102 resistor, SOT3 and Grove4contacts/latches/openmouth",
+          "Rear now matches source3openbores+3filledlinkedlands,2buzzerends,2graymarks,tracepoints,fullmascot and PandaByte above ActiveBuzzer",
+          "Saved100validclosedsolids and actual finalGLB visiblyloaded"
+        ],
+        "webSha256": "222d667940cba57c99421f68888569bc0f5bf18290c33c40317848b103045894",
+        "modelManifestSha256": "029f37da4d8cf6a2d98033a0527436cc325d00399b98ebd310f446c762479cef",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/09-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Factive-buzzer-sensor-module%2F3d%2Fweb%2Factive-buzzer.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:active-buzzer-sensor-module",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 15,
+        "triangles": 165064,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\active-buzzer-sensor-module\\3d\\web\\active-buzzer.glb",
+        "webBytes": 4649160,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 100,
+      "limitations": [
+        "Visual reverse model only; no manufacturing, electrical, acoustic, connector-fit or enclosure-fit validation.",
+        "Board dimensions, laminate thickness, component sizes, pad/hole dimensions and trace routes are estimates; no dimensioned board drawing or native layout was available.",
+        "The exact Grove socket and installed semiconductor/passive identities are not confirmed; the 102 marking is transcribed without assigning a resistance value.",
+        "The physical front photo shows an optional populated 3-pin header, while the paired renders show bare through-holes; this model follows the unpopulated render assembly.",
+        "Rear artwork, filled lands, gray footprint marks and trace points are evidenced by the paired render only; no manufactured rear-face photograph was supplied."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 10,
+      "batch": 2,
+      "title": "PandaByte Barometric Pressure BMP580 Grove Sensor",
+      "sourceId": "legacy:barometric-pressure-sensor-bmp580-grove-compatible",
+      "folder": "products/sensors/barometric-pressure-sensor-bmp580-grove-compatible/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared both original product renders in source10 with all four final views; white module, six bare auxiliary pads, selector, six passives, separate transistor and vertical ADDR bridge match",
+          "Manufacturer-backed BMP580 envelope is 2x2x0.75mm; source-visible port is open and shown in detail",
+          "Six rear filled lands, full exact mascot and correct labels retained; all glyph strokes now complete after source ROI margin repair; pale traces below ink",
+          "Saved232validclosedsolids with16all-layer openings; actual final GLB visibly loaded; parent dimensions, trace/via placement and minor component geometry remain inferred"
+        ],
+        "webSha256": "baf8f901a141d887c10fcba58d1e2455e7363c7a8ec2a9f779fbda21ca662904",
+        "modelManifestSha256": "3f71ab749e3c5e6b7ced9f88c00f4daba33b70e2d9e56a5dfa88915a222c22c6",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/10-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fbarometric-pressure-sensor-bmp580-grove-compatible%2F3d%2Fweb%2Fbmp580.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:barometric-pressure-sensor-bmp580-grove-compatible",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 12,
+        "triangles": 420282,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\barometric-pressure-sensor-bmp580-grove-compatible\\3d\\web\\bmp580.glb",
+        "webBytes": 10594520,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 232,
+      "limitations": [
+        "Visual reverse model only; no manufacturing, electrical, pressure-performance, connector-fit or enclosure-fit validation.",
+        "Parent board dimensions/thickness, fitted Grove socket geometry, passive/transistor sizes, bore/pad/via dimensions and trace routes are render-guided estimates.",
+        "The source pair consists of product renders; the rear manufactured face and exact mounted BOM were not independently photographed.",
+        "BMP580 envelope is manufacturer sourced; port dimensions, package marking and internal construction are not claimed."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 11,
+      "batch": 3,
+      "title": "PandaByte MAX485 TTL To RS485 5V 12V",
+      "sourceId": "legacy:pandabyte-max485-ttl-to-rs485-5v-12v",
+      "folder": "products/sensors/pandabyte-max485-ttl-to-rs485-5v-12v/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared full original front/rear render pair with all four corrected PBR views",
+          "Four left pins visibly protrude, six right pins and source header shoulders remain; eight-contact vertical package and source passive/body finishes corrected",
+          "Real jack mouth faces source inboard direction; four screw slots and wire ports visible; rear terminal ends and full mascot retained",
+          "Rear header column follows source registration and GND/A/B/VIN clear both pad columns; saved 221 valid closed solids and final GLB visibly loaded; dimensional and package identities remain visual estimates"
+        ],
+        "webSha256": "cefa6ab0475f9fff0af92a60eaa474e98ea01307d16384adeb150117f2f28e47",
+        "modelManifestSha256": "df4651d5064c0f67f7566631a0f0bbab61cd46ed06b462a7eef54c416cbbdb6e",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/11-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fpandabyte-max485-ttl-to-rs485-5v-12v%2F3d%2Fweb%2Fmax485.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-max485-ttl-to-rs485-5v-12v",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 12,
+        "triangles": 364930,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\pandabyte-max485-ttl-to-rs485-5v-12v\\3d\\web\\max485.glb",
+        "webBytes": 9753204,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 221,
+      "limitations": [
+        "Visual model uses paired product renders, not physical photographs or a manufacturing drawing.",
+        "The 36.0 x 24.7 mm board envelope is a package-anchored visual estimate with approximately +/-10% uncertainty; PCB thickness and component pitches are not confirmed.",
+        "The ADI 8-pin narrow SOIC outline is a candidate-family scale reference only; the installed transceiver manufacturer, suffix and exact dimensions are unknown.",
+        "Barrel jack, terminal block, headers, vertical eight-terminal package, VIN selector, passives and rear surface features are generic source-guided approximations, not imported exact manufacturer CAD.",
+        "No electrical routing reconstruction, electrical behavior, manufacturing fit, or product revision is validated."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 12,
+      "batch": 3,
+      "title": "PandaByte Potentiometer 10K ohm Grove Sensor",
+      "sourceId": "legacy:pandabyte-potentiometerv-10k-ohm",
+      "folder": "products/sensors/pandabyte-potentiometerv-10k-ohm/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared source12 paired renders and compatible physical front details with all four final views",
+          "Metal frame, four corner stakes, recessed aligned slotted rotor, semicircular exposed pad and three protruding leads match source appearance",
+          "Rear two filled frame-tab ends and three filled signal ends, complete mascot and PandaByte/Potentiometer order retained; all three auxiliary holes open through both masks/pads/barrels",
+          "Saved 89 valid closed solids; final GLB loaded visibly in browser; package and board dimensions remain visual estimates"
+        ],
+        "webSha256": "722080f237455ca244dcb47adeb6843a1ac9228f6461e78417c068182ce34751",
+        "modelManifestSha256": "f3ea14a23aade97f56b18ef785073b242d4407097fc6027cf49a67b03547708b",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/12-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fpandabyte-potentiometerv-10k-ohm%2F3d%2Fweb%2Fpot.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:pandabyte-potentiometerv-10k-ohm",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 15,
+        "triangles": 130616,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\pandabyte-potentiometerv-10k-ohm\\3d\\web\\pot.glb",
+        "webBytes": 3492864,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 89,
+      "limitations": [
+        "Visual reverse model only; no manufacturing, electrical or enclosure-fit validation.",
+        "PCB envelope, board thickness, auxiliary pitch, hole/pad sizes, component dimensions and trace routes are source-guided estimates, not measured values or a fabrication layout.",
+        "The potentiometer manufacturer/model and exact Grove socket part are not identified; no generic vendor component identity is claimed.",
+        "The chosen assembly follows the matching bare-header renders. The front physical photo is supplemental for pot-frame/rotor appearance only and does not change the selected header population.",
+        "Original PandaByte site imagery is retained only in the internal product source archive; the GLB contains the exact cropped rear RGB artwork, and no imagery reuse license is asserted."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 13,
+      "batch": 3,
+      "title": "PandaByte Push Button Switch Grove Sensor",
+      "sourceId": "legacy:push-button-switch",
+      "folder": "products/sensors/push-button-switch/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared original opposing render pair and compatible physical-front finish with all four corrected views",
+          "Correct PCB registration excludes Grove overhang; source-visible front labels clear switch frame; complete rear PandaByte/Switch glyphs and full mascot restored",
+          "All four Grove contact paths are single connected closed solids with no visible gaps; three auxiliary holes remain open and three rear lands filled; four switch feet protrude",
+          "Saved 105 valid closed solids and final GLB visibly loaded in browser; upper102 verified, lower code omitted as unreadable; parent dimensions and part heights remain inferred"
+        ],
+        "webSha256": "54e4258afce208ff3e66e4d18fb72ec0ec3f543ff2bce08f3fca7aae0d95aca3",
+        "modelManifestSha256": "d70155c1b5d9c3f7e97f3673078b8dcd3043be118dd0b5a4cdba70cd90c20ef7",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/13-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fpush-button-switch%2F3d%2Fweb%2Fpbs.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:push-button-switch",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 15,
+        "triangles": 235989,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\push-button-switch\\3d\\web\\pbs.glb",
+        "webBytes": 6046216,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 105,
+      "limitations": [
+        "Visual reverse model only; no electrical behavior, manufacturing, switch-life, connector-fit, or enclosure-fit validation.",
+        "Board outline, laminate thickness, auxiliary pitch, component dimensions, hole sizes and trace paths are inferred estimates; no dimensioned board drawing or exact component CAD was supplied.",
+        "The exact fitted Grove receptacle, tactile switch and resistor packages are not identified; the 2.0 mm Grove reference establishes family scale only.",
+        "The optional populated auxiliary header shown only in the physical front photo is excluded to match the bare render assembly.",
+        "Rear artwork and trace evidence comes from the product render; no physical rear photograph was supplied.",
+        "The lower resistor code is too soft to transcribe confidently and is intentionally omitted."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 14,
+      "batch": 3,
+      "title": "PandaByte RGB LED Grove Module",
+      "sourceId": "legacy:rgb-led-grove-compatible",
+      "folder": "products/sensors/rgb-led-grove-compatible/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared source14 opposing renders and physical front with all four final PBR views",
+          "Four continuous Grove paths extend visibly beyond shell; six LED leads, neutral recessed lens and source-guided approximate electrodes; four open auxbores with first square and four filled rear lands",
+          "Complete source rear PandaByte RGB LED and mascot retained; all three verified221 glyphs complete; rear and LED detail show useful3D depth",
+          "Saved58 validclosedsolids and finalGLB visibly loaded in built-in browser; exact part identities and dimensions remain visual estimates"
+        ],
+        "webSha256": "2fe872febf1aa0e46bc9ae893a1bc63fde14c0bb2bd8e1fc26c320797feb595f",
+        "modelManifestSha256": "359dcd59535859c6318dd400adac8ba8b9aa9c8b8f5cad724cc136184543e93e",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/14-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Frgb-led-grove-compatible%2F3d%2Fweb%2Frgbled.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:rgb-led-grove-compatible",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 16,
+        "triangles": 19778,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\rgb-led-grove-compatible\\3d\\web\\rgbled.glb",
+        "webBytes": 836064,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 58,
+      "limitations": [
+        "PCB envelope, board thickness, parent-board dimensions, LED package envelope and adapted component placement are visual estimates calibrated from accepted renders using documented 2.0 mm Grove family pitch; no physical board measurement or exact module revision is claimed.",
+        "The Grove socket is family-level and not an identified exact vendor/model. The RGB 5050 manufacturer/model/revision and hidden internal construction are unknown; only source-visible lens and neutral electrode silhouettes are represented.",
+        "The four-position auxiliary header shown populated in the physical photo is omitted to match the accepted front/rear render assembly. The upper 221 resistor glyph uses source-photo pixels; two lower 221 glyphs were reconstructed by rotating that complete verified exemplar after confirming their markings in the physical photo.",
+        "This is a visual model only. Manufacturing fit, electrical behavior, voltage rating and optical performance are not validated; no hidden LED circuitry or emission is modeled."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 15,
+      "batch": 3,
+      "title": "PandaByte RGB LED Matrix WS2812B XIAO Footprint",
+      "sourceId": "legacy:rgb-led-matrix-ws2812b-xiao-footprint",
+      "folder": "products/sensors/rgb-led-matrix-ws2812b-xiao-footprint/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared matchedpurple opposing renders and physicalfront LED/switch appearance with all four corrected finalPBR views",
+          "16unlit LEDpackages64leads12capacitors24terminals2switchcontacts and4actualopenbores; full0to15 ink restored and hardware shadow ghosts excluded",
+          "Rear23filledpads excluding4Grove match sourcegroups; emptyXIAO footprint retained; corrected bothrow registrations and bottom4pads keepcompletewords clear; fullsourcewhitePanda retained",
+          "Four continuousGrove contacts project4.1mm beyondcase; saved272validclosedsolids and finalGLB visibly loaded in browser; dimension and partrevision estimates documented"
+        ],
+        "webSha256": "097aa6456b134df6ea5b69895d923f0a7567d1f6f66b6e1aa10d7862d5898a9e",
+        "modelManifestSha256": "69f379cde82b95335e4d64a2833bcb8b6b087820ded490557811ac82b773ab5c",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/15-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Frgb-led-matrix-ws2812b-xiao-footprint%2F3d%2Fweb%2Fmatrix.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:rgb-led-matrix-ws2812b-xiao-footprint",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 15,
+        "triangles": 56044,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\rgb-led-matrix-ws2812b-xiao-footprint\\3d\\web\\matrix.glb",
+        "webBytes": 1998496,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 272,
+      "limitations": [
+        "This is a source-guided visual model from product renders and a compatible physical front photo, not a manufacturing, electrical, optical or package-fit validation.",
+        "The 45 mm square board envelope is estimated from the verified 2.54 mm XIAO-family pad pitch; thickness, bore diameter and component/package heights remain visual estimates.",
+        "Exact WS2812B supplier/suffix, switch part, Grove shell maker/model, board revision and hidden contact details are unknown; no exact vendor CAD or part ID is claimed.",
+        "The rear XIAO footprint remains empty. The central filled gold rectangle has unknown function; no nets or circuit behavior are assigned."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 16,
+      "batch": 4,
+      "title": "PandaByte Single Color Grove LED Light Emitting Diode",
+      "sourceId": "legacy:single-color-led-light-emitting-diode",
+      "folder": "products/sensors/single-color-led-light-emitting-diode/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared bare-header opposing source pair and physical SMD finish with four final PBR views",
+          "Two-terminal rectangular LED and one resistor; round GND and square IN open bores plus two distinct filled rear lands match source",
+          "Four fused Grove contact paths project3.49mm; complete IN glyph and full source PandaByte LED mascot retained; tight LED detail shows depth",
+          "Saved35 validclosedsolids; finalGLB visibly loaded in browser; dimensions and exact component identities remain estimates"
+        ],
+        "webSha256": "f863c4056cfd866d1e5748cdd9dda6d8fae35aeb8ce5a42ed43ab6f5a638b6b2",
+        "modelManifestSha256": "c0ceb3b9d957503bcea00d0e19759a2fce2851a6af663ac087a792b04f9e2c67",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/16-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Fsingle-color-led-light-emitting-diode%2F3d%2Fweb%2Fled.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:single-color-led-light-emitting-diode",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 15,
+        "triangles": 100274,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\single-color-led-light-emitting-diode\\3d\\web\\led.glb",
+        "webBytes": 2577200,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 35,
+      "limitations": [
+        "Source-guided visual reconstruction; dimensions are inferred from rendered pixels and Grove family pitch, not physically measured.",
+        "Exact Grove connector, LED and resistor manufacturer part numbers are unknown; no vendor CAD is asserted or imported.",
+        "LED remains neutral and unlit; resistor value, hidden circuitry, netlist, electrical behavior, manufacturing accuracy and physical fit are unvalidated."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    },
+    {
+      "number": 17,
+      "batch": 4,
+      "title": "PandaByte Temperature Humidity DHT11 Grove Sensor",
+      "sourceId": "legacy:temperature-humidity-dht11-sensor",
+      "folder": "products/sensors/temperature-humidity-dht11-sensor/3d",
+      "rootReview": {
+        "status": "passed",
+        "reviewer": "root",
+        "views": [
+          "frontRender",
+          "backRender",
+          "topRender",
+          "detailRender"
+        ],
+        "observations": [
+          "Compared chosen bare-header opposing source renders and physical blue case crop with all four final PBR views",
+          "24 actual case vents including three open end notches, four formed sensor leads, correct lower square sensor pad and one resistor match source; no invented hidden internals",
+          "Three bare header holes, three filled companion lands, four sensor ends and four continuous Grove contacts retained; front pads visibly clear mask and barrels overlap; full IN words and complete rear PandaByte DHT11 mascot have no rectangle shadows",
+          "Saved45 validclosedsolids; final GLB visibly loaded in browser and camera control worked; source family dimensions and hidden wall details remain estimates"
+        ],
+        "webSha256": "ede1210169e05350d5e2bb6115c32932515ec757494e0f8c6725250a088aad82",
+        "modelManifestSha256": "1c60eef6499162177365722252f2a7c4798759b8ecb473d987303642a9c9e55c",
+        "viewerHandoff": "Final GLB visibly loaded in standalone built-in browser; supported cad_show handoff attempted separately",
+        "interactiveScreenshot": "artifact-review/17-interactive.png",
+        "viewerUrl": "http://127.0.0.1:3245/?file=sensors%2Ftemperature-humidity-dht11-sensor%2F3d%2Fweb%2Fdht11.glb"
+      },
+      "deliveryCheck": {
+        "status": "passed",
+        "sourceId": "legacy:temperature-humidity-dht11-sensor",
+        "artifactRoles": 14,
+        "archiveFilesPreserved": 15,
+        "triangles": 39087,
+        "webGLB": "E:\\Web development\\PROJECTS-FULL STACK\\Pandabyte\\products\\sensors\\temperature-humidity-dht11-sensor\\3d\\web\\dht11.glb",
+        "webBytes": 1436452,
+        "limit": "Identity/hash/report/mesh checks do not replace source/geometry/visual review or establish manufacturing accuracy."
+      },
+      "validClosedSolids": 45,
+      "limitations": [
+        "Board envelope 38.5 \u00d7 14.0 mm (about \u00b12 mm) and 1.6 mm thickness are visual estimates; the envelope excludes the Grove connector overhang.",
+        "The 16.0 \u00d7 12.5 \u00d7 6.0 mm blue package scale uses the Aosong DHT11 family datasheet as a provisional reference only; installed OEM and revision are unknown. Wall thickness, sidewall opening depth, and hidden cavity construction are estimates.",
+        "Exact Grove connector manufacturer, model, and pitch are unverified; connector and contact dimensions are source-guided visual estimates.",
+        "The selected matched front/rear render assembly has the optional three-pin header unpopulated, despite the supplementary physical photo showing a fitted header.",
+        "This is visual reverse CAD only. Manufacturing accuracy, electrical behavior, physical fit, and performance are not validated; no hidden interior components are fabricated."
+      ],
+      "manufacturingValidated": false,
+      "electricalValidated": false
+    }
+  ]
+}

@@ -8,6 +8,8 @@ import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { readBoundedBody } from "@/lib/storage/http";
 import { parseProductPriceWrites, type ProductPriceWrite } from "@/lib/admin/product-contract";
 import { parseAdminInventoryQuery } from "@/lib/admin/inventory-contract";
+import { parseHistoryOffset, parseInventoryHistory } from "@/lib/admin/inventory-history-contract";
+import { parseInventoryInitialization } from "@/lib/admin/inventory-initialization-contract";
 import {
   ADMIN_MODULES,
   MAX_ADMIN_BODY_BYTES,
@@ -623,25 +625,64 @@ export async function adminListInventory(request: Request): Promise<Response> {
   if ("response" in access) return access.response;
   const query = parseAdminInventoryQuery(new URL(request.url).searchParams);
   if (!query.ok) return validationResponse(query.fields);
-  const result = await rpc(access.client, "admin_query_inventory", {
+  const [result, statsResult] = await Promise.all([rpc(access.client, "admin_inventory_workspace", {
     p_query: query.value.q,
     p_stock: query.value.stock,
+    p_category_id: query.value.category,
     p_sort: query.value.sort,
     p_limit: query.value.limit,
     p_offset: query.value.offset,
-  });
+  }), rpc(access.client, "admin_inventory_stats", {})]);
   if (result.error) return rpcErrorResponse(result.error);
+  if (statsResult.error) return rpcErrorResponse(statsResult.error);
+  const stats = statsResult.data;
+  if (!isObject(stats) || ![stats.total, stats.aboveZero, stats.zero, stats.unverified].every((value) => Number.isSafeInteger(value) && (value as number) >= 0) || (stats.aboveZero as number) + (stats.zero as number) + (stats.unverified as number) !== stats.total) return errorResponse("backend_unavailable", 503);
   if (!isObject(result.data) || !Array.isArray(result.data.items) || !Number.isSafeInteger(result.data.total) || (result.data.total as number) < 0) {
     return errorResponse("backend_unavailable", 503);
   }
   const items = result.data.items.map((value) => {
     if (!isObject(value) || typeof value.sourceOnly !== "boolean") return null;
     const variant = parseVariantDto(value);
-    if (!variant || (value.sourceOnly && (variant.stock !== null || variant.stockVersion !== null))) return null;
-    return { ...variant, sourceOnly: value.sourceOnly };
+    if (!variant) return null;
+    if (!Array.isArray(value.categoryNames) || !value.categoryNames.every((v) => typeof v === "string") || !Array.isArray(value.categoryIds) || !value.categoryIds.every((v) => typeof v === "string" && parseRecordId(v)) || (value.imageId !== null && (typeof value.imageId !== "string" || !parseRecordId(value.imageId)))) return null;
+    return { ...variant, sourceOnly: value.sourceOnly, categoryNames: value.categoryNames, categoryIds: value.categoryIds, imageId: value.imageId, unitPricePaise: variant.actualPaise ?? variant.regularPaise };
   });
   if (items.some((item) => item === null)) return errorResponse("backend_unavailable", 503);
-  return json({ items, total: result.data.total });
+  const categories = result.data.categories;
+  if (!Array.isArray(categories) || categories.some((v) => !isObject(v) || typeof v.id !== "string" || !parseRecordId(v.id) || typeof v.title !== "string")) return errorResponse("backend_unavailable", 503);
+  return json({ items, total: result.data.total, categories, stats });
+}
+
+export async function adminInventoryHistory(request: Request, rawId: string): Promise<Response> {
+  const id = parseVariantId(rawId);
+  if (!id) return errorResponse("not_found", 404);
+  const access = await authorizedStaffClient(["orders.manage"]);
+  if ("response" in access) return access.response;
+  const offset = parseHistoryOffset(new URL(request.url).searchParams);
+  if (offset === null) return validationResponse([{ field: "offset", code: "invalid", message: "Choose a valid history page." }]);
+  const result = await rpc(access.client, "admin_inventory_history", { p_variant_id: id, p_offset: offset });
+  if (result.error) return rpcErrorResponse(result.error);
+  const data = parseInventoryHistory(result.data, offset);
+  return data ? json(data) : errorResponse("backend_unavailable", 503);
+}
+
+export async function adminInitializeInventory(request: Request, rawId: string): Promise<Response> {
+  const id = parseVariantId(rawId);
+  if (!id) return errorResponse("not_found", 404);
+  const access = await authorizedStaffClient(["orders.manage"]);
+  if ("response" in access) return access.response;
+  const body = await mutationBody(request);
+  if (!body.ok) return body.response;
+  const parsed = parseInventoryInitialization(body.value);
+  if (!parsed.ok) return validationResponse(parsed.fields);
+  const result = await rpc(access.client, "admin_initialize_inventory", {
+    p_variant_id: id, p_expected_version: parsed.value.expectedVersion,
+    p_quantity: parsed.value.quantity, p_reason: parsed.value.reason, p_request_id: parsed.value.requestId,
+  });
+  if (result.error) return rpcErrorResponse(result.error);
+  const variant = isObject(result.data) ? parseVariantDto(result.data.variant) : null;
+  if (!variant) return errorResponse("backend_unavailable", 503);
+  return json({ variant });
 }
 
 export async function adminAdjustInventory(request: Request, rawId: string): Promise<Response> {

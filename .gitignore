@@ -8,6 +8,7 @@
 # Build and dependency output
 node_modules/
 .next/
+.next*/
 out/
 dist/
 coverage/
@@ -17,7 +18,7 @@ test-results/
 *.log
 
 # Temporary design output and private migration exports
-.superdesign/tmp/
+.superdesign/
 .firecrawl/
 private/
 tmp/
@@ -30,6 +31,15 @@ Thumbs.db
 .bootstrap/
 .superpowers/
 *.tsbuildinfo
+next-env.d.ts
 
 # InsForge CLI linkage can contain privileged project credentials
 .insforge/
+
+# Local source/CAD archives and one-off tooling; not application delivery
+products/
+experiments/
+.tools/
+.agents/skills/impeccable/
+design-assets/blog-preview-source/*.jpg
+design-assets/category-illustrations/

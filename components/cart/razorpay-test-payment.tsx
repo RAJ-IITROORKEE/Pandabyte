@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { loadCustomerCart } from "./cart-api";
 import { publishCustomerCart } from "./customer-cart-store";
 import { clearBuyNowSelection, getBuyNowSelection } from "./buy-now-store";
 import { sameCartItems } from "./cart-utils";
 import { formatPaise } from "./checkout-money";
+import { markCelebration } from "./order-celebration";
 import styles from "./checkout-review.module.css";
 
 type Item = { variantId: string; quantity: number };
@@ -33,6 +35,7 @@ export function loadRazorpay(): Promise<void> {
   return scriptPromise;
 }
 export function RazorpayTest({ userId, marker, initialRequest, onContinue }: { userId: string; marker: string; initialRequest?: string; onContinue: () => void }) {
+  const router = useRouter();
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(true);
   const [missing, setMissing] = useState(false);
@@ -62,6 +65,8 @@ export function RazorpayTest({ userId, marker, initialRequest, onContinue }: { u
       if (order.mode === "cart") { const cart = await loadCustomerCart(abort.current?.signal).catch(() => null); if (!active.current) return; if (cart) publishCustomerCart(userId, cart); }
       else { const selection = getBuyNowSelection(); if (selection && sameCartItems(selection, order.items)) clearBuyNowSelection(); }
       clearMarker();
+      markCelebration(userId, order.reference);
+      router.replace(`/checkout/confirmation/${encodeURIComponent(order.reference)}`);
     }
   }
   async function check() {

@@ -22,6 +22,7 @@ function checkoutHarness() {
   const exports = {};
   const dependencies = {
     "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },
+    "@/lib/account/billing-profile": { parseBillingProfile: value => value },
     "@clerk/nextjs": { useUser: () => identity },
     "next/image": { default: () => createElement("img") },
     "@/components/catalog/card-image-selection": { cardImageIds: () => [] },

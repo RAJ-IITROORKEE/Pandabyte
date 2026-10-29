@@ -17,7 +17,10 @@ test("simulation accepts bounded server-priced lines and rejects tampering", () 
   assert.ok(parseSimulationRequest({ ...input, mode: "buy-now", expectedCartVersion: null }));
 });
 test("order queries and staff updates reject unbounded and unsafe input", () => {
-  assert.deepEqual(parseOrderQuery(new URLSearchParams("limit=10&offset=10000")), { limit: 10, offset: 10000 });
+  assert.deepEqual(parseOrderQuery(new URLSearchParams("limit=10&offset=10000")), { limit: 10, offset: 10000, query: "", status: "all" });
+  assert.deepEqual(parseOrderQuery(new URLSearchParams("q=%20TST-ab%20&status=active")), { limit: 20, offset: 0, query: "TST-ab", status: "active" });
+  for (const status of ["all", "active", "delivered", "cancelled", "fulfilled"]) assert.ok(parseOrderQuery(new URLSearchParams({ status })));
+  for (const query of ["q=%25", "q=foo_bar", `q=${"a".repeat(81)}`, "status=processing", "q=one&q=two"]) assert.equal(parseOrderQuery(new URLSearchParams(query)), null);
   assert.equal(parseOrderQuery(new URLSearchParams("limit=10&limit=50")), null);
   assert.equal(parseOrderQuery(new URLSearchParams("offset=10001")), null);
   assert.equal(isOrderReference(`SIM-${id}`), true);

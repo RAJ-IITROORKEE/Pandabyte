@@ -75,25 +75,6 @@
 .supportContact a:hover { color: var(--accent); text-decoration: underline; }
 .faqSection { max-width: 896px; }
 .faqSection .sectionHeading { max-width: 768px; }
-.brands { position: relative; margin-bottom: 64px; }
-.brandViewport { overflow: hidden; }
-.brandTrack { display: flex; width: max-content; animation: brandsScroll 34s linear infinite; }
-.brandGroup { display: flex; align-items: center; justify-content: space-around; width: max(896px, calc(min(100vw, 1440px) - 96px)); min-height: 88px; gap: 48px; margin: 0; padding: 0 24px; list-style: none; }
-.brandLogo { display: grid; width: 176px; height: 52px; flex: 0 0 176px; place-items: center; }
-.brandLogo img { display: block; max-width: 100%; max-height: 52px; width: 100%; height: 52px; object-fit: contain; }
-.brandLogo .brandDark { display: none; }
-:global(:root[data-theme="dark"]) .brandLogo .brandLight { display: none; }
-:global(:root[data-theme="dark"]) .brandLogo .brandDark { display: block; }
-.brands:hover .brandTrack, .brands:focus-within .brandTrack, .brands:has(input:checked) .brandTrack { animation-play-state: paused; }
-.brandPause { position: absolute; z-index: 1; right: 0; bottom: -28px; cursor: pointer; }
-.brandPause input { position: absolute; width: 44px; height: 44px; margin: 0; opacity: 0; cursor: pointer; }
-.brandPause > span { display: grid; width: 44px; height: 44px; place-items: center; color: var(--muted); border-radius: 8px; }
-.brandPause svg { width: 16px; height: 16px; }
-.brandPause input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
-.brandPause input:hover + span { background: var(--surface); }
-.brandPause .playIcon, .brandPause input:checked + span .pauseIcon { display: none; }
-.brandPause input:checked + span .playIcon { display: block; }
-@keyframes brandsScroll { to { transform: translateX(-50%); } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (min-width: 768px) {
   .homeInner { padding-block: 64px; }
@@ -104,7 +85,7 @@
 @media (min-width: 1024px) {
   .homeInner { padding: 112px 48px; }
   .hero::before { inset: -112px -48px; }
-  .hero, .brands, .contentSection, .supportPanel, .homeContent { margin-bottom: 112px; }
+  .hero, .contentSection, .supportPanel, .homeContent { margin-bottom: 112px; }
   .productGrid { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 28px; }
   .supportPanel { flex-direction: row; gap: 48px; }
 }
@@ -115,11 +96,6 @@
   .heroTitle { max-width: 18ch; font-size: clamp(34px, 6.3vw, 52px); }
   .heroSummary { max-width: 55ch; }
 }
-@media (max-width: 767px) {
-  .brandGroup { width: 832px; gap: 40px; }
-  .brandLogo { width: 160px; flex-basis: 160px; height: 44px; }
-  .brandLogo img { height: 44px; max-height: 44px; }
-}
 @media (max-width: 639px) { .sectionHeading { align-items: start; flex-direction: column; } }
 @media (max-width: 480px) {
   .hero { gap: 32px; }
@@ -127,16 +103,8 @@
   .heroSummary, .eyebrow { font-size: 16px; }
   .heroActions .primaryAction, .heroActions .secondaryAction { padding-inline: 18px; font-size: 15px; }
 }
-@media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme])) .brandLogo .brandLight { display: none; }
-  :global(:root:not([data-theme])) .brandLogo .brandDark { display: block; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .homeMain::before, .hero::before, .brandPause { display: none; }
-  .brandTrack { width: 100%; animation: none; }
-  .brandGroup[aria-hidden="true"] { display: none; }
-  .brandGroup { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; padding: 0; }
-  .brandLogo { width: 100%; max-width: 176px; justify-self: center; }
+  .homeMain::before, .hero::before { display: none; }
   .heroTitle > span, .heroSummary, .heroActions { animation: none; }
   .primaryAction, .secondaryAction, .categoryCard { transition: none; }
   .primaryAction:hover, .secondaryAction:hover { transform: none; }

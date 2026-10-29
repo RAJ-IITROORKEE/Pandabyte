@@ -51,6 +51,10 @@ function orderRows(runId) {
       currency: "INR",
       created_at: createdAt,
       updated_at: createdAt,
+      snapshot: index === 0 ? {} : {
+        contact: { firstName: `Order${index}`, lastName: runId, email: `order${index}-${runId}@example.invalid`, phone: "9876543210" },
+        quote: { lines: index === 1 ? "invalid" : index === 2 ? [{}] : index === 3 ? [{ quantity: 1.5 }] : index === 4 ? [{ quantity: "2" }] : [{ quantity: 2 }, { quantity: 3 }] },
+      },
     };
   });
 }
@@ -62,7 +66,9 @@ async function jsonResponse(response, expectedStatus, label) {
 }
 
 async function getOrders(context, token, query, expectedStatus = 200, label = "orders") {
-  const response = await appRequest(context.appOrigin, `/api/admin/orders?${query}`, token);
+  const params = new URLSearchParams(query);
+  if (!params.has("environment")) params.set("environment", "legacy");
+  const response = await appRequest(context.appOrigin, `/api/admin/orders?${params}`, token);
   return jsonResponse(response, expectedStatus, label);
 }
 
@@ -174,8 +180,12 @@ async function verify(context, state, auth) {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .map(({ reference }) => reference));
   for (const item of list.items) {
-    assert.deepEqual(Object.keys(item).sort(), ["createdAt", "currency", "reference", "status", "totalPaise", "updatedAt"]);
+    assert.deepEqual(Object.keys(item).sort(), ["createdAt", "currency", "customer", "environment", "lineCount", "paymentState", "reference", "status", "totalPaise", "unitCount", "updatedAt"]);
     assert.equal(item.currency, "INR");
+    assert.equal(item.environment, "legacy");
+    const fixtureIndex = state.orders.findIndex(({ reference }) => reference === item.reference);
+    assert.equal(item.lineCount, fixtureIndex < 5 ? null : 2, "historical_line_count");
+    assert.equal(item.unitCount, fixtureIndex < 5 ? null : 5, "historical_unit_count");
   }
 
   for (const [name, invalidQuery] of [
@@ -190,6 +200,25 @@ async function verify(context, state, auth) {
   const filtered = await getOrders(context, auth.staff.appToken, processing.toString(), 200, "status_filter");
   assert.equal(filtered.total, 3, "status_filter_total_mismatch");
   assert.ok(filtered.items.every(({ status }) => status === "processing"), "status_filter_leaked_other_statuses");
+  assert.deepEqual(filtered.stats, list.stats, "status_changed_stats_scope");
+  assert.equal(list.stats.delivered, 0, "unrecorded_delivery_inferred");
+
+  const emailSearch = await getOrders(context, auth.staff.appToken, new URLSearchParams({ q: `order7-${state.runId}@example.invalid` }), 200, "customer_email_search");
+  assert.equal(emailSearch.total, 1);
+  assert.equal(emailSearch.items[0].reference, state.orders[7].reference);
+  assert.deepEqual(emailSearch.stats, list.stats, "search_changed_stats_scope");
+  const nameSearch = await getOrders(context, auth.staff.appToken, new URLSearchParams({ q: `Order8 ${state.runId}` }), 200, "customer_name_search");
+  assert.equal(nameSearch.total, 1);
+  assert.equal(nameSearch.items[0].reference, state.orders[8].reference);
+  const grouped = await getOrders(context, auth.staff.appToken, new URLSearchParams({ q: runTag, group: "cancelled", payment: "unconfigured" }), 200, "group_payment_filters");
+  assert.equal(grouped.total, 3);
+  assert.deepEqual(grouped.stats, list.stats);
+  const dated = await getOrders(context, auth.staff.appToken, new URLSearchParams({ q: runTag, from: "2026-10-01", to: "2026-10-01" }), 200, "inclusive_ist_date");
+  assert.equal(dated.total, orderCount);
+  const excludedDate = await getOrders(context, auth.staff.appToken, new URLSearchParams({ q: runTag, from: "2026-10-02" }), 200, "date_excluded");
+  assert.equal(excludedDate.total, 0);
+  const simulation = await getOrders(context, auth.staff.appToken, new URLSearchParams({ q: runTag, environment: "simulation" }), 200, "environment_isolation");
+  assert.equal(simulation.total, 0);
 
   for (const [sort, compare] of [
     ["created_asc", (a, b) => a.created_at.localeCompare(b.created_at)],
@@ -212,8 +241,8 @@ async function verify(context, state, auth) {
   assert.equal(pageTwo.offset, 10);
   assert.equal(new Set([...pageOne.items, ...pageTwo.items].map(({ reference }) => reference)).size, orderCount, "pagination_duplicates_or_missing_rows");
 
-  const directRpc = await rpc(auth.staff.database, "admin_list_orders", {
-    p_query: runTag, p_status: "all", p_sort: "created_desc", p_limit: 20, p_offset: 0,
+  const directRpc = await rpc(auth.staff.database, "admin_search_orders", {
+    p_query: runTag, p_status: "all", p_sort: "created_desc", p_limit: 20, p_offset: 0, p_environment: "legacy",
   });
   assert.equal(directRpc.error, null, "admin_direct_order_rpc_failed");
   assert.equal(directRpc.data.total, orderCount, "admin_direct_order_rpc_total_mismatch");
@@ -223,7 +252,7 @@ async function verify(context, state, auth) {
     ["anonymous", createClient({ baseUrl: context.baseUrl, anonKey: process.env.INSFORGE_ANON_KEY })],
     ["catalog", auth.customer.database],
   ]) {
-    const denied = await rpc(client, "admin_list_orders", {
+    const denied = await rpc(client, "admin_search_orders", {
       p_query: runTag, p_status: "all", p_sort: "created_desc", p_limit: 20, p_offset: 0,
     });
     requireOk(Boolean(denied.error), `${name}_direct_order_rpc_allowed`);
@@ -276,8 +305,8 @@ async function main() {
     purpose: "admin-orders-integration",
     runId,
     users: [],
-    orders: orderRows(runId).map(({ id, reference, status, total_paise, created_at }) => ({
-      id, reference, status, total_paise, created_at,
+    orders: orderRows(runId).map(({ id, reference, status, total_paise, created_at, snapshot }) => ({
+      id, reference, status, total_paise, created_at, snapshot,
     })),
   };
   let success = false;
@@ -294,7 +323,6 @@ async function main() {
     journalOwned = true;
 
     const staff = state.users.find(({ role }) => role === "staff");
-    const customer = state.users.find(({ role }) => role === "customer");
     const bootstrap = await rpc(context.admin, "project_admin_set_staff_role", {
       p_user_id: staff.userId,
       p_role: "ADMIN",
@@ -307,7 +335,9 @@ async function main() {
     const alreadyPresent = await records.select("id,reference").in("reference", state.orders.map(({ reference }) => reference));
     requireOk(!alreadyPresent.error && alreadyPresent.data.length === 0, "fixture_order_reference_collision_or_schema_unavailable");
     await saveState(state);
-    const inserted = await records.insert(orderRowsWithIds(state.orders)).select("id,reference");
+    const rows = orderRowsWithIds(state.orders);
+    assert.deepEqual(rows.map(({ snapshot }) => snapshot), orderRows(runId).map(({ snapshot }) => snapshot), "fixture_snapshots_not_preserved");
+    const inserted = await records.insert(rows).select("id,reference");
     requireOk(!inserted.error && inserted.data.length === orderCount, "fixture_orders_insert_failed");
     assert.deepEqual(inserted.data.map(({ id, reference }) => ({ id, reference })).sort((a, b) => a.reference.localeCompare(b.reference)),
       state.orders.map(({ id, reference }) => ({ id, reference })).sort((a, b) => a.reference.localeCompare(b.reference)));
@@ -332,8 +362,8 @@ async function main() {
 }
 
 function orderRowsWithIds(orders) {
-  return orders.map(({ id, reference, status, total_paise, created_at }) => ({
-    id, reference, status, total_paise, currency: "INR", created_at, updated_at: created_at,
+  return orders.map(({ id, reference, status, total_paise, created_at, snapshot }) => ({
+    id, reference, status, total_paise, currency: "INR", created_at, updated_at: created_at, snapshot,
   }));
 }
 

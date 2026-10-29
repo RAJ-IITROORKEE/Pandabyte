@@ -67,3 +67,13 @@ test("sign-in and sign-up links preserve only a validated redirect_url", () => {
     assert.equal(hasAlternateRedirectParam({ [key]: "/account" }), true, key);
   }
 });
+
+
+test("order confirmation returns only to a valid test or simulation reference", () => {
+  for (const prefix of ["TST", "SIM"]) {
+    const path = `/checkout/confirmation/${prefix}-00000000-0000-4000-8000-000000000001`;
+    assert.equal(safeAuthReturnPath(path, publicPaths), path);
+  }
+  assert.equal(safeAuthReturnPath("/checkout/confirmation/TST-invalid", publicPaths), null);
+  assert.equal(safeAuthReturnPath("/checkout/confirmation/TST-00000000-0000-4000-8000-000000000001/extra", publicPaths), null);
+});

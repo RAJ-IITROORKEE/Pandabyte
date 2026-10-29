@@ -43,6 +43,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const userId = await activeUserId();
   if (!userId) return errorResponse("unauthorized", 401);
+  if (request.headers.get("x-account-owner") !== userId) return errorResponse("account_changed", 409);
   if (!isSameOrigin(request.url, request.headers.get("origin"))) {
     return errorResponse("same_origin_required", 403);
   }

@@ -31,6 +31,7 @@ function addressHarness() {
   let cursor = 0, effects = [], tree;
   const exports = {};
   const dependencies = {
+    "@clerk/nextjs": { useUser: () => ({ isLoaded: true, user: { id: "test-customer" } }) },
     react: {
       useState: initial => {
         const index = cursor++;
@@ -76,7 +77,8 @@ function addressHarness() {
       cursor = 0;
       effects = [];
       refs.splice(0).forEach(ref => { ref.current = null; });
-      tree = exports.AccountAddresses();
+      const session = exports.AccountAddresses();
+      tree = session.type(session.props);
       visit(tree, node => {
         if (!node.props?.ref) return;
         const label = node.props.id ?? node.props["aria-label"] ?? node.props.children;

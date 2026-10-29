@@ -2,6 +2,8 @@
 
 Audit date: 27 October 2026 (Asia/Calcutta). Scope: development Admin UI, its APIs/database, and the public consumers of Admin-managed data. This chat owns Admin/backend; the FRONTENT-UI chat owns storefront implementation. This document is a plan, not authorization to enable deferred commerce, email, recovery or production services.
 
+This is a historical snapshot. Inventory initialization and subsequent adjustments are now implemented in development; see [the current inventory workspace](admin-inventory-workspace.md) and [first-count follow-up](inventory-first-count-followup.md). Razorpay test progress and its remaining gates are recorded in [the latest test results](razorpay-failure-retry-tests.md). Real stock counts and live commerce remain separate decisions.
+
 ## Evidence checked now
 
 - Source review traced Admin screens, API handlers, validators, SQL migrations and public readers. Two bounded Luna xhigh reviewers independently checked content synchronization and operational modules.

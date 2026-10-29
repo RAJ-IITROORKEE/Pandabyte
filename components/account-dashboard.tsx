@@ -1,18 +1,18 @@
 "use client";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { CreditCard, FolderLock, Heart, LayoutDashboard, LogOut, MapPin, Package, Settings, UserRound } from "lucide-react";
-import { AccountFiles } from "@/components/account-files";
+import { CreditCard, Heart, LayoutDashboard, LogOut, MapPin, Package, Settings, UserRound } from "lucide-react";
 import { AccountAddresses } from "@/components/account-addresses";
-import { AccountProfile } from "@/components/account-profile";
+import { AccountProfileCard } from "@/components/account-profile-card";
+import { AccountOverviewExtras } from "@/components/account-overview-extras";
 import { AccountBilling } from "@/components/account-billing";
 import { FavoritesList } from "@/components/favorites/favorites-list";
 import { useFavorites } from "@/components/favorites/use-favorites";
 import { AccountOrders, useAccountOrders } from "@/components/account-orders";
 import styles from "@/components/account-dashboard.module.css";
 
-export type AccountSection = "overview" | "profile" | "addresses" | "favorites" | "orders" | "billing" | "files";
+export type AccountSection = "overview" | "profile" | "addresses" | "favorites" | "orders" | "billing";
 const sections = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, href: "/account" },
   { id: "profile", label: "Profile", icon: UserRound, href: "/account/profile" },
@@ -20,7 +20,6 @@ const sections = [
   { id: "favorites", label: "Favorites", icon: Heart, href: "/account/favorites" },
   { id: "orders", label: "Orders", icon: Package, href: "/account/orders" },
   { id: "billing", label: "Billing & Invoices", icon: CreditCard, href: "/account/billing" },
-  { id: "files", label: "Private files", icon: FolderLock, href: "/account/files" },
 ] as const;
 
 export function AccountDashboard({ section = "overview" }: { section?: AccountSection }) {
@@ -37,12 +36,11 @@ export function AccountDashboard({ section = "overview" }: { section?: AccountSe
   return <AccountShell activeSection={section}>
     <div className={styles.content}>
       {section === "overview" && <AccountOverview />}
-      {section === "profile" && <AccountProfile />}
+      {section === "profile" && <AccountProfileCard />}
       {section === "addresses" && <><header className={styles.pageHeading}><h1>Addresses</h1><p>Manage your saved shipping and billing addresses.</p></header><AccountAddresses /></>}
       {section === "favorites" && <section className={styles.panel}><h1>Favorites</h1><p>Products saved to your account.</p><FavoritesList /></section>}
       {section === "orders" && <OrdersPage />}
       {section === "billing" && <AccountBilling />}
-      {section === "files" && <section className={styles.panel}><h1>Private account files</h1><Suspense fallback={<p role="status">Loading account files…</p>}><AccountFiles /></Suspense></section>}
     </div>
   </AccountShell>;
 }
@@ -59,7 +57,7 @@ function AccountOverview() {
   const greeting = user?.firstName?.trim() || user?.fullName?.trim();
   return <>
     <header className={styles.overview}><h1>{greeting ? `Hello, ${greeting}` : "Welcome to your account"}</h1><p>Manage your profile, addresses and saved products in one place.</p><Link href="/shop">Explore the shop <span aria-hidden="true">→</span></Link></header>
-    <section className={styles.panel}><h2>Favorites</h2><Link href="/account/favorites">{favorites.loading ? "Loading favorites…" : favorites.items == null ? "Favorites unavailable" : `${favorites.items.length} saved products`}</Link></section>
+    {user && <AccountOverviewExtras key={user.id} userId={user.id} favoritesLabel={favorites.loading ? "Loading favorites…" : favorites.items == null ? "Favorites unavailable" : `${favorites.items.length} saved products`} />}
     <section className={styles.panel}><h2>Recent orders</h2>{orders.error ? <p>{orders.error}</p> : !orders.orders ? <p role="status">Loading orders…</p> : orders.orders.items.length ? <ul>{orders.orders.items.slice(0, 3).map(order => <li key={order.reference}><Link href={`/checkout/confirmation/${encodeURIComponent(order.reference)}`}>{order.reference}</Link> · {order.status}</li>)}</ul> : <p>No orders yet. Your purchases will appear here.</p>}</section>
     <section className={styles.panel}><h2>Profile</h2><p>{user?.fullName || "Your account"}{user?.primaryEmailAddress?.emailAddress ? ` · ${user.primaryEmailAddress.emailAddress}` : ""}</p><Link href="/account/profile">Edit profile</Link></section>
   </>;

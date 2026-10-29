@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { ArrowLeft, ArrowRight, CreditCard, Package, ShoppingBag, Truck, User } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import type { CustomerAddress } from "@/lib/account/addresses";
+import { parseBillingProfile, type BillingProfile } from "@/lib/account/billing-profile";
 import type { CartInputLine, CartQuote, CartQuoteLine } from "@/lib/cart/validation";
 import { cardImageIds } from "@/components/catalog/card-image-selection";
 import { cartErrorMessage, loadCustomerCart, quoteCart } from "./cart-api";
@@ -18,6 +19,33 @@ import { readPending, savePending, clearPending, forgetPending } from "./simulat
 import styles from "./checkout-review.module.css";
 import { RazorpayTest, markerKey } from "./razorpay-test-payment";
 const steps = [{ label: "Information", icon: User }, { label: "Shipping", icon: Truck }, { label: "Payment", icon: CreditCard }, { label: "Review", icon: Package }];
+function checkoutAddress(a: CustomerAddress): Address {
+  return { recipientName: a.recipientName, phone: a.phone, line1: a.line1, line2: a.line2, city: a.city, state: a.state, postalCode: a.postalCode, country: a.country === "IN" ? "India" : a.country };
+}
+function addressEmpty(a: Address) {
+  return !a.recipientName && !a.phone && !a.line1 && !a.line2 && !a.city && !a.state && !a.postalCode && (!a.country || a.country === "India");
+}
+
+function initializeAddresses(current: CheckoutDraft, addresses: CustomerAddress[], touched: { shipping: boolean; billing: boolean; sameBilling: boolean }): CheckoutDraft {
+  const shipping = addresses.find(a => a.isDefaultShipping);
+  const billing = addresses.find(a => a.isDefaultBilling);
+  const applyShipping = !!shipping && !touched.shipping && addressEmpty(current.shipping);
+  const applyBilling = !!billing && !touched.billing && addressEmpty(current.billing);
+  const nextShipping = applyShipping ? checkoutAddress(shipping) : current.shipping;
+  const nextBilling = applyBilling ? checkoutAddress(billing) : current.billing;
+  const addressesMatch = Object.entries(nextBilling).every(([key, value]) => nextShipping[key as keyof Address] === value);
+  return { ...current,
+    shipping: nextShipping,
+    billing: nextBilling,
+    sameBilling: !touched.sameBilling && applyBilling && !addressesMatch ? false : current.sameBilling,
+  };
+}
+function initializeBilling(current: CheckoutDraft, profile: BillingProfile, touched: { business: boolean; gstin: boolean }): CheckoutDraft {
+  return { ...current,
+    business: !touched.business && !current.business ? profile.businessName : current.business,
+    gstin: !touched.gstin && !current.gstin ? profile.gstin : current.gstin,
+  };
+}
 export function CheckoutReview({ buyNow = false }: { buyNow?: boolean }) {
   const { user, isLoaded } = useUser();
   const [completed, setCompleted] = useState<{ userId: string; reference: string; totalPaise: number } | null>(null);
@@ -49,7 +77,7 @@ export function CheckoutReview({ buyNow = false }: { buyNow?: boolean }) {
   if (testPending?.userId !== user.id) return <p role="status">Checking for a pending test payment...</p>;
   if (testPending.error) return <section className={styles.panel}><p role="alert">Saved test payment details cannot be checked. Check your orders before attempting another payment.</p><Link href="/account#orders">View orders</Link></section>;
   if (testPending.marker) return <RazorpayTest key={`${user.id}:${testPending.marker}`} userId={user.id} marker={testPending.marker} initialRequest={testPending.initialRequest} onContinue={() => setTestPending({ userId: user.id, marker: null })} />;
-  if (completed?.userId === user.id) return <section className={styles.panel}><h2>Simulated order created</h2><p>Reference: {completed.reference}</p><p>Simulated total: {formatPaise(completed.totalPaise)}. No real payment was collected.</p><p><Link className="shell-button inline-flex" href="/account#orders">View orders</Link></p></section>;
+  if (completed?.userId === user.id) return <section className={styles.panel}><h2>Simulated order created</h2><p>Reference: {completed.reference}</p><p>Simulated total: {formatPaise(completed.totalPaise)}. No real payment was collected.</p><p><Link className="shell-button inline-flex" href={`/checkout/confirmation/${encodeURIComponent(completed.reference)}`}>View simulated order</Link></p></section>;
   if (recovery?.userId !== user.id) return <p role="status">Checking for a pending simulation...</p>;
   if (recovery.error) return <section className={styles.panel}><p role="alert">Saved simulation details cannot be checked. Check your orders before attempting another simulation.</p><Link className="shell-button inline-flex" href="/account#orders">View orders</Link></section>;
   if (recovery.pending && recovery.marker) return <SimulationRecovery key={`${user.id}:${recovery.marker}`} userId={user.id} marker={recovery.marker} onCompleted={result => setCompleted({ ...result, userId: user.id })} onContinue={() => setRecovery({ userId: user.id, pending: false, raw: null, marker: null, error: false })} />;
@@ -73,9 +101,11 @@ function CheckoutSession({ draftKey, userId, onPending, onTestPending, onComplet
   const [attempt, setAttempt] = useState(0);
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [accountError, setAccountError] = useState("");
+  const [billingError, setBillingError] = useState(false);
   const [step, setStep] = useState(0);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasSavedDraft] = useState(() => !!readDraft(draftKey));
   const [draft, setDraft] = useState<CheckoutDraft>(() => {
     const saved = readDraft(draftKey);
     if (saved) return saved;
@@ -83,6 +113,9 @@ function CheckoutSession({ draftKey, userId, onPending, onTestPending, onComplet
     return { email, firstName, lastName: rest.join(" "), phone: "", news: false, shipping: emptyAddress(), billing: emptyAddress(), sameBilling: true, business: "", gstin: "" };
   });
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [billingTouched, setBillingTouched] = useState({ business: false, gstin: false });
+  const [addressTouched, setAddressTouched] = useState({ shipping: false, billing: false, sameBilling: hasSavedDraft });
+  const defaultsLoaded = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const changedStep = useRef(false);
   useEffect(() => { if (changedStep.current) heading.current?.focus(); }, [step]);
@@ -113,14 +146,31 @@ function CheckoutSession({ draftKey, userId, onPending, onTestPending, onComplet
         const [a, p] = await Promise.all([fetch("/api/account/addresses", { cache: "no-store", signal: controller.signal }), fetch("/api/account/profile", { cache: "no-store", signal: controller.signal })]);
         if (!a.ok || !p.ok) throw new Error();
         const addressBody = await a.json(); const profileBody = await p.json();
-        if (!Array.isArray(addressBody.addresses) || !addressBody.addresses.every((address: CustomerAddress) => address && typeof address.id === "string" && typeof address.label === "string" && typeof address.recipientName === "string" && typeof address.line1 === "string" && typeof address.city === "string" && typeof address.state === "string" && typeof address.postalCode === "string") || (profileBody.profile !== null && (typeof profileBody.profile !== "object" || typeof profileBody.profile.phone !== "string"))) throw new Error();
+        if (!Array.isArray(addressBody.addresses) || !addressBody.addresses.every((address: CustomerAddress) => address && typeof address.id === "string" && typeof address.label === "string" && typeof address.recipientName === "string" && typeof address.phone === "string" && typeof address.line1 === "string" && typeof address.line2 === "string" && typeof address.country === "string" && typeof address.isDefaultShipping === "boolean" && typeof address.isDefaultBilling === "boolean" && typeof address.city === "string" && typeof address.state === "string" && typeof address.postalCode === "string") || (profileBody.profile !== null && (typeof profileBody.profile !== "object" || typeof profileBody.profile.phone !== "string"))) throw new Error();
         if (controller.signal.aborted) return;
         setAddresses(addressBody.addresses);
-        setDraft(current => phoneTouched || current.phone ? current : { ...current, phone: profileBody.profile?.phone ?? "" });
+        setAccountError("");
+        const initializeDefaults = !defaultsLoaded.current;
+        defaultsLoaded.current = true;
+        setDraft(current => {
+          const next = initializeDefaults ? initializeAddresses(current, addressBody.addresses, addressTouched) : current;
+          return { ...next, phone: phoneTouched || current.phone ? current.phone : profileBody.profile?.phone ?? "" };
+        });
       } catch { if (!controller.signal.aborted) setAccountError("Saved details could not be loaded. You can enter them below."); }
     }
     void loadAccount(); return () => controller.abort();
-  }, [phoneTouched]);
+  }, [phoneTouched, addressTouched]);
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/account/billing-profile", { cache: "no-store", signal: controller.signal, headers: { "x-account-owner": userId } }).then(async response => {
+      if (!response.ok) throw new Error();
+      const body = await response.json();
+      const profile = parseBillingProfile(body?.billingProfile);
+      if (!profile) throw new Error();
+      if (!controller.signal.aborted) { setBillingError(false); setDraft(current => initializeBilling(current, profile, billingTouched)); }
+    }).catch(() => { if (!controller.signal.aborted) setBillingError(true); });
+    return () => controller.abort();
+  }, [userId, billingTouched]);
   const update = (next: CheckoutDraft) => { setDraft(next); saveDraft(draftKey, next); };
   const go = (next: number) => { setErrors({}); changedStep.current = true; setStep(next); };
   const submit = (event: FormEvent) => {
@@ -167,9 +217,10 @@ function CheckoutSession({ draftKey, userId, onPending, onTestPending, onComplet
   if (!quote.lines.length) return <section className={styles.panel}><ShoppingBag aria-hidden="true" /><h2>Your selection is empty</h2><p>Add a product to review it here.</p><Link className="shell-button" href="/cart" onClick={clearBuyNowSelection}>Open cart</Link></section>;
   const field = (key: string, label: string, value: string, change: (value: string) => void, options: { optional?: boolean; type?: string; autoComplete?: string; placeholder?: string; full?: boolean; maxLength?: number; inputMode?: "numeric" } = {}) => <label className={options.full ? styles.full : undefined} htmlFor={`checkout-${key}`}>{label}{options.optional ? " (optional)" : " *"}<input id={`checkout-${key}`} value={value} type={options.type ?? "text"} autoComplete={options.autoComplete} placeholder={options.placeholder} maxLength={options.maxLength ?? 200} inputMode={options.inputMode} required={!options.optional} aria-invalid={!!errors[key]} aria-describedby={errors[key] ? `error-${key}` : undefined} onChange={event => change(event.target.value)} />{errors[key] && <small id={`error-${key}`} className={styles.error}>{errors[key]}</small>}</label>;
   const addressFields = (prefix: "shipping" | "billing") => {
-    const a = draft[prefix]; const set = (key: keyof Address, value: string) => update({ ...draft, [prefix]: { ...a, [key]: value } });
+    const a = draft[prefix]; const set = (key: keyof Address, value: string) => { setAddressTouched(current => current[prefix] ? current : { ...current, [prefix]: true }); update({ ...draft, [prefix]: { ...a, [key]: value } }); };
     return <div className={styles.fields}>{field(`${prefix}.recipientName`, "Recipient name", a.recipientName, value => set("recipientName", value), { full: true, autoComplete: `${prefix} name` })}{field(`${prefix}.phone`, "Contact phone", a.phone, value => set("phone", value), { full: true, type: "tel", autoComplete: `${prefix} tel`, placeholder: "+91 98765 43210" })}{field(`${prefix}.line1`, "Address line 1", a.line1, value => set("line1", value), { full: true, autoComplete: `${prefix} address-line1` })}{field(`${prefix}.line2`, "Address line 2", a.line2, value => set("line2", value), { full: true, optional: true, autoComplete: `${prefix} address-line2` })}{field(`${prefix}.city`, "City", a.city, value => set("city", value), { autoComplete: `${prefix} address-level2` })}{field(`${prefix}.state`, "State", a.state, value => set("state", value), { autoComplete: `${prefix} address-level1` })}{field(`${prefix}.postalCode`, "PIN code", a.postalCode, value => set("postalCode", value), { maxLength: 6, inputMode: "numeric", autoComplete: `${prefix} postal-code` })}{field(`${prefix}.country`, "Country", a.country, value => set("country", value), { autoComplete: `${prefix} country-name` })}</div>;
   };
+  const savedAddressSelect = (prefix: "shipping" | "billing") => addresses.length > 0 && <label className={styles.select}>Saved {prefix} address<select value={addresses.find(a => Object.entries(checkoutAddress(a)).every(([key, value]) => draft[prefix][key as keyof Address] === value))?.id ?? ""} onChange={event => { const a = addresses.find(item => item.id === event.target.value); if (a) { setAddressTouched(current => current[prefix] ? current : { ...current, [prefix]: true }); update({ ...draft, [prefix]: checkoutAddress(a) }); } }}><option value="">Enter an address</option>{addresses.map(a => <option key={a.id} value={a.id}>{a.label} — {a.recipientName}, {a.city}</option>)}</select></label>;
   const addressText = (a: Address) => [a.recipientName, a.line1, a.line2, a.city, a.state, a.postalCode, a.country, a.phone].filter(Boolean).join(", ");
   const Icon = steps[step].icon;
   return <div className={styles.layout}>
@@ -178,8 +229,9 @@ function CheckoutSession({ draftKey, userId, onPending, onTestPending, onComplet
       <form className={styles.panel} onSubmit={submit} noValidate>
         <h2 ref={heading} tabIndex={-1}><Icon size={19} aria-hidden="true" /> {steps[step].label}</h2>
         {accountError && step < 2 && <p role="status">{accountError}</p>}
+        {billingError && step === 1 && <p role="status">Saved billing details could not be loaded. You can enter them below.</p>}
         {step === 0 && <><div className={styles.fields}>{field("email", "Email address", draft.email, value => update({ ...draft, email: value }), { full: true, type: "email", autoComplete: "email" })}{field("firstName", "First name", draft.firstName, value => update({ ...draft, firstName: value }), { autoComplete: "given-name" })}{field("lastName", "Last name", draft.lastName, value => update({ ...draft, lastName: value }), { autoComplete: "family-name" })}{field("phone", "Phone number", draft.phone, value => { setPhoneTouched(true); update({ ...draft, phone: value }); }, { full: true, type: "tel", autoComplete: "tel", placeholder: "+91 98765 43210" })}</div><label className={styles.check}><input type="checkbox" checked={draft.news} onChange={event => update({ ...draft, news: event.target.checked })} /> Email me with news and offers</label><p>Details are for this review and are not saved to your account.</p></>}
-        {step === 1 && <>{addresses.length > 0 && <label className={styles.select}>Saved address<select value={addresses.find(a => a.recipientName === draft.shipping.recipientName && a.phone === draft.shipping.phone && a.line1 === draft.shipping.line1 && a.line2 === draft.shipping.line2 && a.city === draft.shipping.city && a.state === draft.shipping.state && a.postalCode === draft.shipping.postalCode && (a.country === "IN" ? "India" : a.country) === draft.shipping.country)?.id ?? ""} onChange={event => { const a = addresses.find(item => item.id === event.target.value); if (a) update({ ...draft, shipping: { recipientName: a.recipientName, phone: a.phone, line1: a.line1, line2: a.line2, city: a.city, state: a.state, postalCode: a.postalCode, country: a.country === "IN" ? "India" : a.country } }); }}><option value="">Enter an address</option>{addresses.map(a => <option key={a.id} value={a.id}>{a.label} — {a.recipientName}, {a.city}</option>)}</select></label>}{addressFields("shipping")}<Link className={styles.link} href="/account#addresses">Manage saved addresses</Link><p>Shipping methods, delivery estimates and charges have not yet been calculated.</p><label className={styles.check}><input type="checkbox" checked={draft.sameBilling} onChange={event => update({ ...draft, sameBilling: event.target.checked })} /> Billing address is the same as shipping address</label>{!draft.sameBilling && <><h3>Billing address</h3>{addressFields("billing")}</>}<div className={styles.fields}>{field("business", "Business name", draft.business, value => update({ ...draft, business: value }), { optional: true, autoComplete: "organization" })}{field("gstin", "GSTIN", draft.gstin, value => update({ ...draft, gstin: value.toUpperCase() }), { optional: true, maxLength: 15 })}</div><p>GSTIN format is checked; registration is not verified.</p></>}
+        {step === 1 && <>{savedAddressSelect("shipping")}{addressFields("shipping")}<Link className={styles.link} href="/account#addresses">Manage saved addresses</Link><p>Shipping methods, delivery estimates and charges have not yet been calculated.</p><label className={styles.check}><input type="checkbox" checked={draft.sameBilling} onChange={event => { setAddressTouched(current => current.sameBilling ? current : { ...current, sameBilling: true }); update({ ...draft, sameBilling: event.target.checked }); }} /> Billing address is the same as shipping address</label>{!draft.sameBilling && <><h3>Billing address</h3>{savedAddressSelect("billing")}{addressFields("billing")}</>}<div className={styles.fields}>{field("business", "Business name", draft.business, value => { setBillingTouched(current => current.business ? current : { ...current, business: true }); update({ ...draft, business: value }); }, { optional: true, autoComplete: "organization" })}{field("gstin", "GSTIN", draft.gstin, value => { setBillingTouched(current => current.gstin ? current : { ...current, gstin: true }); update({ ...draft, gstin: value.toUpperCase() }); }, { optional: true, maxLength: 15 })}</div><p>GSTIN format is checked; registration is not verified.</p></>}
         {step === 2 && <><label className={styles.paymentChoice}><input type="radio" name="payment" checked readOnly /> <span><strong>{testCapability ? "Razorpay test mode" : capability ? "Development simulation" : "Razorpay"}</strong><br />{testCapability ? "Test payment only; no real charge." : capability ? "No real payment will be collected." : "Payment will be completed through Razorpay when integration is enabled."}</span></label><p>{testCapability ? "Continue to review the test order." : capability ? "Continue to review the simulated order." : "Online payment is not enabled yet. You can continue to review your details."}</p><h3>Billing address</h3><p>{addressText(draft.sameBilling ? draft.shipping : draft.billing)}</p></>}
         {step === 3 && <div className={styles.review}><p>This is a review, not an order confirmation.</p><section><h3>Contact <button type="button" disabled={sending || locked} onClick={() => go(0)}>Edit</button></h3><p>{draft.firstName} {draft.lastName}<br />{draft.email}<br />{draft.phone}</p></section><section><h3>Shipping <button type="button" disabled={sending || locked} onClick={() => go(1)}>Edit</button></h3><p>{addressText(draft.shipping)}</p></section><section><h3>Billing <button type="button" disabled={sending || locked} onClick={() => go(1)}>Edit</button></h3><p>{addressText(draft.sameBilling ? draft.shipping : draft.billing)}{draft.business && ` · ${draft.business}`}{draft.gstin && ` · GSTIN ${draft.gstin}`}</p></section><section><h3>Payment <button type="button" disabled={sending || locked} onClick={() => go(2)}>Edit</button></h3><p>{testCapability ? "Razorpay test mode - no real charge." : capability ? "Development simulation - no real payment." : "Razorpay - online payment is not enabled yet."}</p></section>{testCapability && quote.subtotalPaise !== null ? <><p>Razorpay test mode. Fictional shipping: {formatPaise(testCapability.shipping)}; fictional tax: {formatPaise(testCapability.tax)}. Test total: {formatPaise(quote.subtotalPaise + testCapability.shipping + testCapability.tax)}.</p>{simulationError && <p role="alert">{simulationError}</p>}<button type="button" className={styles.primary} disabled={sending || (!selection && cartVersion === null)} onClick={startTest}>Prepare test payment</button></> : capability && quote.subtotalPaise !== null ? <><p>Development simulation - no real payment. Fictional shipping: {formatPaise(capability.shipping)}; fictional tax: {formatPaise(capability.tax)}. Simulated total: {formatPaise(quote.subtotalPaise + capability.shipping + capability.tax)}.</p>{simulationError && <p role="alert">{simulationError}</p>}<button type="button" className={styles.primary} disabled={sending || (!selection && cartVersion === null)} onClick={() => void simulate()}>{sending ? "Creating simulated order..." : locked ? "Retry simulated order" : "Create simulated order"}</button></> : <><p>Shipping, GST and final total are pending. No stock is reserved and no order is placed.</p><button type="button" className={styles.disabled} disabled>Payment unavailable</button><p>Payment will be available when checkout integration is enabled.</p></>}</div>}
         <div className={styles.navigation}><button type="button" disabled={step === 0 || sending || locked} onClick={() => go(step - 1)}><ArrowLeft size={16} aria-hidden="true" /> Previous</button>{step < 3 && <button type="submit" className={styles.primary}>{step === 2 ? "Continue to review" : "Continue"} <ArrowRight size={16} aria-hidden="true" /></button>}</div>

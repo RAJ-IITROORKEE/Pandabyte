@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
@@ -40,7 +41,7 @@ function minimalGLB(overrides = {}) {
   });
 }
 
-test("inventory contains the 17 verified product GLBs and separate xLoRa V3 candidate", () => {
+test("inventory contains the 17 verified product GLBs and separate xLoRa V3 candidate", { skip: existsSync(path.join(root, "products/catalog.json")) ? false : "Owner-only source archive is not included in the public repository" }, () => {
   const sources = loadProductModelSources(root);
   assert.equal(sources.length, 18);
   assert.equal(sources.filter((source) => source.modelFolder.endsWith("/3d")).length, 17);

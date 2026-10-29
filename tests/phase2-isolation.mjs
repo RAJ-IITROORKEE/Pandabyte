@@ -472,6 +472,7 @@ async function verifyProfileAndApi(context, fixtures, auth) {
   const patchHeaders = {
     origin: context.appOrigin,
     "content-type": "application/json",
+    "x-account-owner": customer.userId,
   };
   const successfulPatch = await appRequest(context.appOrigin, "/api/account/profile", auth.customer.appToken, {
     method: "PATCH",
@@ -505,7 +506,7 @@ async function verifyProfileAndApi(context, fixtures, auth) {
 
   const wrongContentType = await appRequest(context.appOrigin, "/api/account/profile", auth.customer.appToken, {
     method: "PATCH",
-    headers: { origin: context.appOrigin, "content-type": "text/plain" },
+    headers: { ...patchHeaders, "content-type": "text/plain" },
     body: "{\"displayName\":\"wrong media type\"}",
   });
   ensure(wrongContentType.status === 415, "profile_api_wrong_content_type_allowed");

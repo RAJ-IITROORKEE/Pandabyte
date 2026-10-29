@@ -1,10 +1,20 @@
 export const ADMIN_ORDER_STATUSES = ["pending", "processing", "fulfilled", "cancelled"] as const;
 export const ADMIN_ORDER_SORTS = ["created_desc", "created_asc", "total_desc", "total_asc"] as const;
+export const ADMIN_ORDER_GROUPS = ["all", "pending", "active", "delivered", "cancelled"] as const;
+export const ADMIN_ORDER_ENVIRONMENTS = ["razorpay_test", "simulation", "legacy"] as const;
+export const ADMIN_ORDER_PAYMENT_STATES = ["unconfigured", "simulated", "pending", "verified", "paid", "failed", "cancelled", "review"] as const;
 
 export type AdminOrderStatus = (typeof ADMIN_ORDER_STATUSES)[number];
+export type AdminOrderEnvironment = (typeof ADMIN_ORDER_ENVIRONMENTS)[number];
+export type AdminOrderPaymentState = (typeof ADMIN_ORDER_PAYMENT_STATES)[number];
 export type AdminOrderListQuery = {
   q: string;
   status: "all" | AdminOrderStatus;
+  group: (typeof ADMIN_ORDER_GROUPS)[number];
+  payment: "all" | AdminOrderPaymentState;
+  environment: AdminOrderEnvironment;
+  from: string;
+  to: string;
   sort: (typeof ADMIN_ORDER_SORTS)[number];
   limit: 10 | 20 | 50;
   offset: number;
@@ -17,13 +27,31 @@ export type AdminOrderSummary = {
   currency: "INR";
   createdAt: string;
   updatedAt: string;
+  paymentState: AdminOrderPaymentState;
+  environment: AdminOrderEnvironment;
+  customer: { name: string; email: string; phone: string } | null;
+  customerAvatarUrl?: string | null;
+  lineCount: number | null;
+  unitCount: number | null;
+};
+
+export type AdminOrderStats = { total: number; pending: number; active: number; delivered: number; cancelled: number; exceptional: number };
+export type AdminOrderListResponse = {
+  items: AdminOrderSummary[]; total: number; limit: number; offset: number;
+  stats: AdminOrderStats;
+  scope: Pick<AdminOrderListQuery, "environment" | "from" | "to">;
 };
 
 type FieldError = { field: string; code: "unknown_field" | "invalid"; message: string };
 type ParseResult<T> = { ok: true; value: T } | { ok: false; fields: FieldError[] };
 
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/u;
-const QUERY_KEYS = new Set(["q", "status", "sort", "limit", "offset"]);
+const QUERY_KEYS = new Set(["q", "status", "group", "payment", "environment", "from", "to", "sort", "limit", "offset"]);
+
+function validDate(value: unknown): value is string {
+  return typeof value === "string" && (value === "" || (/^20[0-9]{2}-[0-9]{2}-[0-9]{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value));
+}
 
 export function parseAdminOrderListQuery(search: URLSearchParams): ParseResult<AdminOrderListQuery> {
   const fields: FieldError[] = [];
@@ -41,6 +69,19 @@ export function parseAdminOrderListQuery(search: URLSearchParams): ParseResult<A
     fields.push({ field: "status", code: "invalid", message: "Choose a supported order status." });
   }
 
+  const group = search.get("group") ?? "all";
+  const payment = search.get("payment") ?? "all";
+  const environment = search.get("environment") ?? "razorpay_test";
+  if (!(ADMIN_ORDER_GROUPS as readonly string[]).includes(group)) fields.push({ field: "group", code: "invalid", message: "Choose a supported order group." });
+  if (payment !== "all" && !(ADMIN_ORDER_PAYMENT_STATES as readonly string[]).includes(payment)) fields.push({ field: "payment", code: "invalid", message: "Choose a supported payment status." });
+  if (!(ADMIN_ORDER_ENVIRONMENTS as readonly string[]).includes(environment)) fields.push({ field: "environment", code: "invalid", message: "Choose Test, Simulation, or Legacy." });
+  const from = search.get("from") ?? "";
+  const to = search.get("to") ?? "";
+  for (const [field, date] of [["from", from], ["to", to]]) {
+    if (!validDate(date)) fields.push({ field, code: "invalid", message: "Use a valid date from 2000 to 2099." });
+  }
+  if (from && to && from > to) fields.push({ field: "to", code: "invalid", message: "End date must follow the start date." });
+
   const sort = search.get("sort") ?? "created_desc";
   if (!(ADMIN_ORDER_SORTS as readonly string[]).includes(sort)) fields.push({ field: "sort", code: "invalid", message: "Choose a supported sort order." });
 
@@ -53,7 +94,7 @@ export function parseAdminOrderListQuery(search: URLSearchParams): ParseResult<A
   if (!Number.isSafeInteger(offset) || offset > 10_000) fields.push({ field: "offset", code: "invalid", message: "Use a whole number from 0 to 10000." });
 
   if (fields.length || limit === undefined || !Number.isSafeInteger(offset)) return { ok: false, fields };
-  return { ok: true, value: { q, status: status as AdminOrderListQuery["status"], sort: sort as AdminOrderListQuery["sort"], limit: limit as AdminOrderListQuery["limit"], offset } };
+  return { ok: true, value: { q, status: status as AdminOrderListQuery["status"], group: group as AdminOrderListQuery["group"], payment: payment as AdminOrderListQuery["payment"], environment: environment as AdminOrderEnvironment, from, to, sort: sort as AdminOrderListQuery["sort"], limit: limit as AdminOrderListQuery["limit"], offset } };
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -69,20 +110,38 @@ function parseTimestamp(value: unknown): string | null {
   return new Date(value).toISOString();
 }
 
-export function parseAdminOrderListRpcResult(value: unknown, query: Pick<AdminOrderListQuery, "limit" | "offset">): { items: AdminOrderSummary[]; total: number; limit: number; offset: number } | null {
-  if (!isObject(value) || !hasExactKeys(value, ["items", "total", "limit", "offset"]) || !Array.isArray(value.items) || value.items.length > query.limit ||
+export function parseAdminOrderListRpcResult(value: unknown, query: Pick<AdminOrderListQuery, "limit" | "offset" | "environment" | "from" | "to">): AdminOrderListResponse | null {
+  if (!isObject(value) || !hasExactKeys(value, ["items", "total", "limit", "offset", "stats", "scope"]) || !Array.isArray(value.items) || value.items.length > query.limit ||
     value.limit !== query.limit || value.offset !== query.offset || !Number.isSafeInteger(value.total) || (value.total as number) < value.items.length) return null;
+
+  const stats = value.stats;
+  if (!isObject(stats) || !hasExactKeys(stats, ["total", "pending", "active", "delivered", "cancelled", "exceptional"]) ||
+    Object.values(stats).some((count) => !Number.isSafeInteger(count) || (count as number) < 0) ||
+    stats.total !== (stats.pending as number) + (stats.active as number) + (stats.delivered as number) + (stats.cancelled as number) + (stats.exceptional as number) ||
+    (value.total as number) > (stats.total as number) || stats.delivered !== 0) return null;
+  const scope = value.scope;
+  if (!isObject(scope) || !hasExactKeys(scope, ["environment", "from", "to"]) ||
+    scope.environment !== query.environment || scope.from !== query.from || scope.to !== query.to) return null;
 
   const items: AdminOrderSummary[] = [];
   for (const item of value.items) {
-    if (!isObject(item) || !hasExactKeys(item, ["reference", "status", "totalPaise", "currency", "createdAt", "updatedAt"]) ||
+    if (!isObject(item) || !hasExactKeys(item, ["reference", "status", "totalPaise", "currency", "createdAt", "updatedAt", "paymentState", "environment", "customer", "lineCount", "unitCount"]) ||
       typeof item.reference !== "string" || !item.reference.trim() || Array.from(item.reference).length > 80 || CONTROL_CHARS.test(item.reference) ||
       !(ADMIN_ORDER_STATUSES as readonly unknown[]).includes(item.status) ||
-      !Number.isSafeInteger(item.totalPaise) || (item.totalPaise as number) < 0 || item.currency !== "INR") return null;
+      !Number.isSafeInteger(item.totalPaise) || (item.totalPaise as number) < 0 || item.currency !== "INR" ||
+      !(ADMIN_ORDER_PAYMENT_STATES as readonly unknown[]).includes(item.paymentState) || item.environment !== query.environment) return null;
+    if (item.customer !== null && (!isObject(item.customer) || !hasExactKeys(item.customer, ["name", "email", "phone"]) ||
+      Object.entries(item.customer).some(([key, text]) => typeof text !== "string" || Array.from(text).length > (key === "name" ? 241 : key === "email" ? 254 : 40) || CONTROL_CHARS.test(text)))) return null;
+    if ((item.lineCount === null) !== (item.unitCount === null) ||
+      (item.lineCount !== null && (!Number.isSafeInteger(item.lineCount) || (item.lineCount as number) < 0 ||
+        !Number.isSafeInteger(item.unitCount) || (item.unitCount as number) < (item.lineCount as number)))) return null;
     const createdAt = parseTimestamp(item.createdAt);
     const updatedAt = parseTimestamp(item.updatedAt);
     if (!createdAt || !updatedAt) return null;
-    items.push({ reference: item.reference, status: item.status as AdminOrderStatus, totalPaise: item.totalPaise as number, currency: "INR", createdAt, updatedAt });
+    items.push({ reference: item.reference, status: item.status as AdminOrderStatus, totalPaise: item.totalPaise as number, currency: "INR", createdAt, updatedAt,
+      paymentState: item.paymentState as AdminOrderPaymentState, environment: item.environment as AdminOrderEnvironment,
+      customer: item.customer as AdminOrderSummary["customer"], lineCount: item.lineCount as number | null, unitCount: item.unitCount as number | null });
   }
-  return { items, total: value.total as number, limit: query.limit, offset: query.offset };
+  return { items, total: value.total as number, limit: query.limit, offset: query.offset, stats: stats as AdminOrderStats,
+    scope: { environment: query.environment, from: query.from, to: query.to } };
 }

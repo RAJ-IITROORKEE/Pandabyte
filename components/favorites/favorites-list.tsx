@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { parsePublicVariant, type PublicVariant } from "@/lib/editorial/public-record";
+import { cardPricing } from "@/components/catalog/card-pricing";
 import { cardImageIds } from "@/components/catalog/card-image-selection";
 import { FavoritesButton } from "./favorites-button";
 import { useFavorites } from "./use-favorites";
@@ -26,7 +27,7 @@ export function FavoritesList() {
 }
 
 function FavoriteItem({ item, onRemoved }: { item: { productId: string; title: string | null; slug: string | null }; onRemoved: (button: HTMLButtonElement) => void }) {
-  const [result, setResult] = useState<{ title: string; slug: string; image?: string; variants: PublicVariant[] } | "unavailable" | "error" | null>(null);
+  const [result, setResult] = useState<{ title: string; slug: string; image?: string; variants: PublicVariant[]; sourceObservation: boolean } | "unavailable" | "error" | null>(null);
   useEffect(() => {
     if (!item.slug) return;
     const controller = new AbortController();
@@ -38,13 +39,17 @@ function FavoriteItem({ item, onRemoved }: { item: { productId: string; title: s
         if (record?.id !== item.productId || typeof record.title !== "string" || typeof record.slug !== "string" || !Array.isArray(record.document?.mediaIds) || !Array.isArray(record.variants) || record.variants.length > 100) return "unavailable" as const;
         const ids = record.document.mediaIds.filter((id: unknown): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id));
         const variants = record.variants.map((variant: unknown) => ({ ...parsePublicVariant(variant), purchasable: !record.document.sourceObservation }));
-        return { title: record.title as string, slug: record.slug as string, image: cardImageIds(item.productId, ids)[0], variants };
+        return { title: record.title as string, slug: record.slug as string, image: cardImageIds(item.productId, ids)[0], variants, sourceObservation: Boolean(record.document.sourceObservation) };
       }).then((value) => { if (!controller.signal.aborted) setResult(value); }).catch(() => { if (!controller.signal.aborted) setResult("error"); });
     return () => controller.abort();
   }, [item.productId, item.slug]);
   return <li className={styles.item}>
     {result && typeof result === "object" && result.image && <Image src={`/api/media/${encodeURIComponent(result.image)}?w=96`} alt="" width={96} height={96} unoptimized />}
     <div>{result && typeof result === "object" ? <Link href={`/products/${encodeURIComponent(result.slug)}`}>{result.title}</Link> : <strong>{item.title ?? "Unavailable product"}</strong>}
+      {result && typeof result === "object" && (() => {
+        const pricing = cardPricing(result.variants, result.sourceObservation ? "" : undefined);
+        return <p className={styles.metadata}><strong>{pricing.price}</strong><span>{pricing.availability}</span></p>;
+      })()}
       {result === null && <p>{item.slug ? "Loading current product…" : "This product is no longer available in the published catalog."}</p>}{result === "unavailable" && <p>This product is no longer available in the published catalog.</p>}{result === "error" && <p>Current product details could not be loaded.</p>}
     </div>
     {result && typeof result === "object" && (result.variants.length === 1 ? (() => {
