@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { HomeCircuit } from "@/components/home-circuit";
 import { HomeBrands } from "@/components/home-brands";
 import { HomeHero } from "@/components/home-hero";
@@ -29,12 +30,22 @@ function categoryHref(slug: string): string {
   return `/shop?${query.toString()}`;
 }
 
+async function HomeFaqs({ result }: { result: Promise<{ items: Awaited<ReturnType<typeof listPublishedRecords<"faqs">>>["items"] } | null> }) {
+  const faqs = await result;
+  if (!faqs) throw new Error("Published FAQs are temporarily unavailable.");
+  return faqs.items.length ? <FaqList items={faqs.items} /> : (
+    <EmptyState title="No frequently asked questions are published yet">
+      <p>Published answers will appear here when they are ready.</p>
+    </EmptyState>
+  );
+}
+
 export default async function HomePage() {
-  const [homeResult, categoryResult, products, faqs, contactResult] = await Promise.all([
+  const faqResult = listPublishedRecords("faqs", { placement: "home", limit: 6, offset: 0 }).catch(() => null);
+  const [homeResult, categoryResult, products, contactResult] = await Promise.all([
     getPublishedRecord("pages", "home"),
     listPublishedRecords("categories", { limit: 100, offset: 0 }),
     listCatalogProducts({ sort: "newest", limit: 6 }),
-    listPublishedRecords("faqs", { placement: "home", limit: 6, offset: 0 }),
     getPublishedRecord("contact", "contact"),
   ]);
   if (homeResult && "redirectTo" in homeResult) permanentRedirect(`/${homeResult.redirectTo}`);
@@ -150,11 +161,11 @@ export default async function HomePage() {
             <p>Find answers to common questions, or visit our help centre for more.</p>
             <Link href="/help" className={sections.faqLink}>More FAQs <ArrowRight aria-hidden="true" /></Link>
           </div>
-          {faqs.items.length ? <FaqList items={faqs.items} /> : (
-            <EmptyState title="No frequently asked questions are published yet">
-              <p>Published answers will appear here when they are ready.</p>
-            </EmptyState>
-          )}
+          <div className={sections.faqResults}>
+            <Suspense fallback={<div role="status">Loading FAQs…</div>}>
+              <HomeFaqs result={faqResult} />
+            </Suspense>
+          </div>
         </section>
       </div>
     </main>

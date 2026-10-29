@@ -33,6 +33,7 @@
 .supportContact a:hover { color: var(--accent-ink); text-decoration: underline; }
 .faqSection { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; gap: clamp(32px, 6vw, 96px); }
 .faqIntro { max-width: 420px; }
+.faqResults { min-height: 550px; color: var(--muted); }
 .faqEyebrow { display: inline-flex; padding: 7px 14px; color: var(--accent-ink); border: 1px solid var(--divider); border-radius: 999px; font-size: 13px; font-weight: 600; }
 .faqIntro h2 { margin: 22px 0 16px; color: var(--foreground); font-size: clamp(36px, 4vw, 56px); font-weight: 600; line-height: 1.08; letter-spacing: -.04em; text-wrap: balance; }
 .faqIntro p { margin: 0 0 24px; color: var(--muted); line-height: 1.7; }
