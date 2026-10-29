@@ -6,8 +6,8 @@
 
 - Public address: https://pandabyte-iot.vercel.app
 - Vercel project: `unfiltered-iit-ians/pandabyte-iot`.
-- Ready deployment: https://pandabyte-6cstg55kq-unfiltered-iit-ians.vercel.app
-- Application source: Git commit `097e4fb` on `main`, including the preceding frontend theme checkpoint `bae02e5`. The original deployment used `000189a`.
+- Ready deployment: https://pandabyte-6hxlxc6nm-unfiltered-iit-ians.vercel.app
+- Application source: Git commit `ad14528` on `main`, including the profile photo fix, desktop spacing and frontend theme checkpoints. Earlier deployments used `097e4fb` and `000189a`.
 - Next.js preset, Node.js 24.x and `npm ci` were configured through the dashboard. Vercel CLI 50.34.1 created/linked the project and deployed a clean source snapshot of the reviewed Git tree. The cloud build succeeded; its install audit reported zero vulnerabilities. No local environment file, credential store, product/CAD archive, build cache or private tool checkpoint was uploaded.
 - The deployment targets Vercel's **Production** environment for stable public routing, while the application deliberately uses the existing **development** Clerk/InsForge services. This is not a claim of production readiness.
 - The short alias is attached to this ready deployment and configured for the project's Production environment. No custom domain was purchased and `pandabyte.in` was not moved.
@@ -32,7 +32,7 @@ Nine bounded anonymous HTTPS checks pass on the short alias: Home and public cat
 
 Built-in-browser checks confirm the homepage hydrates without observed console errors or broken completed images, the catalog renders **42 published products**, and Clerk renders its Google/email sign-in form in development mode. Contact explicitly says sending is unavailable pending verification and its Send control is disabled. No login, account change, inquiry, cart update, order or payment was submitted. The local owner session was preserved.
 
-Signed-in hosted account/Admin behavior, OAuth completion, real contact protection/delivery, full browser/accessibility coverage, capacity, recovery and production-business readiness remain unverified. The site retains development-preview wording and noindex/robots protection.
+The later profile checkpoint below verifies hosted Google sign-in and the owner's profile read/preview/cancel flow. Other account mutations, hosted Admin behavior, real contact protection/delivery, full browser/accessibility coverage, capacity, recovery and production-business readiness remain unverified. The site retains development-preview wording and noindex/robots protection.
 
 ## Frontend spacing update — 29 October 2026
 
@@ -41,3 +41,20 @@ The owner authorized 1440px desktop outer containers and 24px horizontal padding
 Vercel CLI deployed a clean Git archive of `097e4fb` using the existing project/environment, excluding local configuration, archives, caches and private checkpoints. The cloud production build and TypeScript checks passed; package installation reported zero vulnerabilities. The ready candidate was promoted to the existing project routing as deployment `dpl_2xS344F8gT2GXxriz1uEacWVbtd6`; the stable address remains https://pandabyte-iot.vercel.app. The Production environment still hosts the bounded development preview; no new environment variables were entered.
 
 Brave at 1536px confirms the stable hosted homepage and catalog use 1440px containers with 24px gutters and no document overflow. Hero images completed loading, and no browser console errors were observed in the checked tab. Anonymous HTTPS requests to Home, Shop, About, Contact and Help return 200 on the application host. The stable application's JSON capability responses confirm `simulationAvailable: false` and `razorpayTestAvailable: false`. No order, payment or contact submission was performed. Hosted signed-in customer flows and screen-reader speech were not rerun.
+
+## Profile photo deployment — 29 October 2026
+
+The owner explicitly requested deployment of the latest `main` and verification of the profile fix, keeping payments and real invoice issuance disabled. Local and fetched `origin/main` both resolved to `ad145282e2fa3ebb30733b8f8d8cb60e0294a2c1` before deployment.
+
+Vercel CLI deployed a clean Git archive of that exact revision to the existing project and Production environment, first using `--skip-domain`, then promoting the Ready build to the stable address. Deployment: `dpl_4qvMwiaZWpgbrzuAaQD1T36aqzjv`, https://pandabyte-6hxlxc6nm-unfiltered-iit-ians.vercel.app. CLI inspection of `pandabyte-iot.vercel.app` resolves to this Ready deployment. The cloud build, TypeScript and all 37 static-page generations passed; installation reported zero vulnerabilities. Existing environment variables were retained without value reads or changes. No local credentials, source/CAD archives, build output or unrelated uncommitted UI work was uploaded. The protected candidate URL's Vercel sign-in redirect was respected; deployment protection was not changed.
+
+Stable-host verification:
+
+- Anonymous Home and Shop return 200. Profile redirects anonymous requests to Sign in, and `/api/account/profile` returns 401.
+- Both JSON checkout capabilities remain false: `simulationAvailable: false`, `razorpayTestAvailable: false`. The general payment route remains the unchanged `payment_not_configured` response; no payment request was submitted.
+- The sample invoice PDF returns 200 and its SHA-256 matches the reviewed repository asset. Real invoice issuance remains absent/disabled; no invoice was issued.
+- The built-in browser completed normal returning-account Google sign-in with the existing owner account, loaded the hosted profile and its private form, and rendered the saved avatar at **112×112** with the image loaded and `object-fit: cover`.
+- Choosing the disposable local PNG showed the local-only preview and enabled Save. Unsupported text and a PNG larger than 5 MiB were rejected with `aria-invalid` and the linked error. The preview remained 112×112 at a 320px viewport without document overflow.
+- Cancel restored the saved avatar, disabled the unchanged Save action, cleared feedback and returned focus to Choose photo. The viewport override was reset and no console errors were observed in the checked hosted tab. No Save action, actual photo upload, profile/address/cart/order mutation, contact submission or invoice/payment action was performed.
+
+The profile fix already passed its 14 focused local checks, scoped ESLint and TypeScript before source commit `ad14528`. The actual Clerk upload/save was intentionally not repeated against the owner's account. Raw logs and screenshots remain ignored local evidence. This record is documentation only; subsequent uncommitted cart/button work belongs to a separate checkpoint.
