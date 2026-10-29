@@ -91,8 +91,9 @@ test("returns normalized lossy, alpha and lossless WebP bytes unchanged without 
 test("accepts only one allowlisted image size and leaves a missing size unset", () => {
   assert.equal(parseEditorialImageSize(new URLSearchParams()), undefined);
   assert.equal(parseEditorialImageSize(new URLSearchParams("w=96")), 96);
+  assert.equal(parseEditorialImageSize(new URLSearchParams("w=480")), 480);
   assert.equal(parseEditorialImageSize(new URLSearchParams("w=960")), 960);
-  for (const value of ["", "95", "97", "961", "1200", "96.0"]) {
+  for (const value of ["", "95", "97", "479", "481", "961", "1200", "96.0", "480.0"]) {
     assert.equal(parseEditorialImageSize(new URLSearchParams(`w=${value}`)), null);
   }
   assert.equal(parseEditorialImageSize(new URLSearchParams("w=96&w=960")), null);
@@ -101,7 +102,7 @@ test("accepts only one allowlisted image size and leaves a missing size unset", 
 test("returns bounded clean WebP derivatives, preserving alpha and never enlarging", async () => {
   const large = await webp({ alpha: true, width: 1200, height: 900 });
   const largeMetadata = await record(large);
-  for (const [size, width, height] of [[96, 96, 72], [960, 960, 720]]) {
+  for (const [size, width, height] of [[96, 96, 72], [480, 480, 360], [960, 960, 720]]) {
     const prepared = await prepareEditorialDownload(large, largeMetadata, size);
     assert.ok(prepared);
     assert.equal(prepared.mimeType, "image/webp");
@@ -121,7 +122,7 @@ test("returns bounded clean WebP derivatives, preserving alpha and never enlargi
 
   const small = await webp({ alpha: true });
   const smallMetadata = await record(small);
-  for (const size of [96, 960]) {
+  for (const size of [96, 480, 960]) {
     const prepared = await prepareEditorialDownload(small, smallMetadata, size);
     assert.ok(prepared);
     assert.equal(prepared.width, WIDTH);
@@ -132,17 +133,19 @@ test("returns bounded clean WebP derivatives, preserving alpha and never enlargi
 
 test("encodes resized lossless WebP without changing resized pixels", async () => {
   const source = await webp({ alpha: true, lossless: true, width: 1200, height: 900 });
-  const prepared = await prepareEditorialDownload(source, await record(source), 96);
-  assert.ok(prepared);
-  assert.ok(webpChunks(prepared.bytes).includes("VP8L"));
-  const expectedPixels = await sharp(source).resize(96, 96, { fit: "inside", withoutEnlargement: true }).raw().toBuffer();
-  assert.deepEqual(await sharp(prepared.bytes).raw().toBuffer(), expectedPixels);
+  for (const size of [96, 480, 960]) {
+    const prepared = await prepareEditorialDownload(source, await record(source), size);
+    assert.ok(prepared);
+    assert.ok(webpChunks(prepared.bytes).includes("VP8L"));
+    const expectedPixels = await sharp(source).resize(size, size, { fit: "inside", withoutEnlargement: true }).raw().toBuffer();
+    assert.deepEqual(await sharp(prepared.bytes).raw().toBuffer(), expectedPixels);
+  }
 });
 
 test("rejects unsupported runtime sizes and derivative requests for PDFs", async () => {
   const image = await webp();
   const imageMetadata = await record(image);
-  for (const size of [0, 97, 961, NaN, "96", null]) {
+  for (const size of [0, 97, 479, 481, 961, NaN, "96", null]) {
     assert.equal(await prepareEditorialDownload(image, imageMetadata, size), null);
   }
 
@@ -219,7 +222,7 @@ test("rejects structurally repaired truncated pixels on resized lossy and lossle
     const damaged = Buffer.from(original.subarray(0, original.length - 16));
     damaged.writeUInt32LE(damaged.length - 8, 4);
     damaged.writeUInt32LE(length - 16, last + 4);
-    for (const size of [96, 960]) {
+    for (const size of [96, 480, 960]) {
       assert.equal(await prepareEditorialDownload(damaged, { ...info, byteSize: damaged.length }, size), null);
     }
   }

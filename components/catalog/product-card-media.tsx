@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- The private-aware media endpoint supplies the responsive lossless variants. */
+
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
@@ -47,15 +49,20 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   const currentIndex = Math.min(activeIndex, Math.max(0, slides.length - 1));
   const activeSlide = slides[currentIndex];
   const activeImage = activeSlide?.type === "image" ? activeSlide.image : undefined;
+  const activeImageId = activeImage?.id;
+  const cardSizes = featured
+    ? "(max-width: 680px) calc(100vw - 48px), (max-width: 1150px) calc(50vw - 36px), (min-width: 1488px) 448px, calc(33vw - 32px)"
+    : "(max-width: 680px) calc(100vw - 48px), (max-width: 767px) calc(50vw - 32px), (max-width: 900px) calc(100vw - 280px), (max-width: 1250px) calc(50vw - 160px), (min-width: 1488px) 384px, calc(33vw - 108px)";
+  const cardImageSources = (id: string) => `/api/media/${encodeURIComponent(id)}?w=480 480w, /api/media/${encodeURIComponent(id)}?w=960 960w`;
   const onViewerActiveChange = useCallback((active: boolean) => setViewerActive(active), []);
 
   useEffect(() => () => window.clearTimeout(transitionTimer.current), []);
 
-  const animateSlide = useCallback((direction: number) => {
+  const animateSlide = useCallback((direction: number, image: ProductCardMediaImage | undefined) => {
     window.clearTimeout(transitionTimer.current);
-    setTransition({ image: activeImage, direction });
+    setTransition({ image, direction });
     transitionTimer.current = window.setTimeout(() => setTransition(undefined), 350);
-  }, [activeImage]);
+  }, []);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -83,13 +90,12 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
   useEffect(() => {
     if (modal || suspend || paused || engaged || focused || viewerActive || reducedMotion || !inView || !documentVisible || slides.length < 2) return;
     const timer = window.setTimeout(() => {
-      animateSlide(1);
+      animateSlide(1, activeImage);
       setActiveIndex((current) => (Math.min(current, slides.length - 1) + 1) % slides.length);
     }, 3000);
     return () => window.clearTimeout(timer);
-  }, [modal, suspend, paused, engaged, focused, viewerActive, reducedMotion, inView, documentVisible, slides.length, animateSlide, currentIndex]);
+  }, [modal, suspend, paused, engaged, focused, viewerActive, reducedMotion, inView, documentVisible, slides.length, animateSlide, currentIndex, activeImage]);
 
-  const activeImageId = activeSlide?.type === "image" ? activeSlide.image.id : undefined;
   useEffect(() => {
     onImageChange?.(activeImageId);
   }, [activeImageId, onImageChange]);
@@ -104,7 +110,7 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
     setPaused(true);
     const next = (currentIndex + offset + slides.length) % slides.length;
     const slide = slides[next];
-    animateSlide(offset);
+    animateSlide(offset, activeImage);
     setActiveIndex(next);
     setAnnouncement(`${slide.type === "image" ? slide.image.alt || title : "3D preview"}, ${next + 1} of ${slides.length}`);
   }
@@ -122,25 +128,29 @@ export function ProductCardMedia({ href, title, images, model3d, featured = fals
         if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
       }}
     >
-      {transition?.image && !reducedMotion && <Image className={styles.productCardOutgoing} src={`/api/media/${encodeURIComponent(transition.image.id)}?w=960`} alt="" width={800} height={600} unoptimized aria-hidden="true" />}
+      {transition?.image && !reducedMotion && (modal ? <Image className={styles.productCardOutgoing} src={`/api/media/${encodeURIComponent(transition.image.id)}?w=960`} alt="" width={800} height={600} unoptimized aria-hidden="true" /> : <img className={styles.productCardOutgoing} src={`/api/media/${encodeURIComponent(transition.image.id)}?w=480`} srcSet={cardImageSources(transition.image.id)} sizes={cardSizes} alt="" width={800} height={600} aria-hidden="true" />)}
       <div key={activeSlideId} className={`${styles.productCardSlide} ${transition && !reducedMotion ? transition.direction > 0 ? styles.productCardSlideNext : styles.productCardSlidePrevious : ""}`}>
       {activeSlide?.type === "image" ? (modal ? <div className={styles.productCardSlideLink}>
         <Image src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=960`} alt={activeSlide.image.alt} width={800} height={600} unoptimized sizes="(max-width: 900px) 100vw, 50vw" />
       </div> : <Link className={styles.productCardSlideLink} href={href} aria-label={`View product: ${title}`}>
         {morphing ? <MorphingDialogImage
-          src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=960`}
+          src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=480`}
+          srcSet={cardImageSources(activeSlide.image.id)}
+          sizes={cardSizes}
           alt={activeSlide.image.alt}
           width={800}
           height={600}
           loading="lazy"
           decoding="async"
-        /> : <Image
-          src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=960`}
+        /> : <img
+          src={`/api/media/${encodeURIComponent(activeSlide.image.id)}?w=480`}
+          srcSet={cardImageSources(activeSlide.image.id)}
           alt={activeSlide.image.alt}
           width={800}
           height={600}
-          unoptimized
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30vw"
+          loading="lazy"
+          decoding="async"
+          sizes={cardSizes}
         />}
       </Link>) : activeSlide?.type === "model" && model3d ? (suspend ? <Image src={`/api/media/${encodeURIComponent(model3d.posterId)}?w=960`} alt={model3d.alt} width={800} height={600} unoptimized /> : <ProductModelViewer model={model3d} title={title} compact onActiveChange={onViewerActiveChange} />) : images.length === 0 && !model3d ? <span>No product image published</span> : null}
       </div>

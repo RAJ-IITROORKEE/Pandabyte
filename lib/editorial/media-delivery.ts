@@ -4,18 +4,18 @@ import { MAX_MEDIA_BYTES } from "./validation.ts";
 import { DOCX_MIME } from "./docx-validation.ts";
 
 type StoredMedia = { mimeType: string; byteSize: number; width: number | null; height: number | null; modelSha256?: string | null; documentSha256?: string | null };
-type EditorialImageSize = 96 | 960;
+type EditorialImageSize = 96 | 480 | 960;
 
 export function parseEditorialImageSize(params: URLSearchParams): EditorialImageSize | undefined | null {
   const sizes = params.getAll("w");
   if (sizes.length === 0) return undefined;
   if (sizes.length !== 1) return null;
-  return sizes[0] === "96" ? 96 : sizes[0] === "960" ? 960 : null;
+  return sizes[0] === "96" ? 96 : sizes[0] === "480" ? 480 : sizes[0] === "960" ? 960 : null;
 }
 
 // Original reads validate normalized upload bytes; only requested previews are re-encoded.
 export async function prepareEditorialDownload(input: Buffer, media: StoredMedia, size?: EditorialImageSize) {
-  if (size !== undefined && size !== 96 && size !== 960) return null;
+  if (size !== undefined && size !== 96 && size !== 480 && size !== 960) return null;
   if (!Number.isSafeInteger(media.byteSize) || media.byteSize < 1 || media.byteSize > MAX_MEDIA_BYTES || input.length !== media.byteSize) return null;
   if (media.mimeType === DOCX_MIME) {
     return size === undefined && media.width === null && media.height === null && /^[0-9a-f]{64}$/.test(media.documentSha256 ?? "") && createHash("sha256").update(input).digest("hex") === media.documentSha256
