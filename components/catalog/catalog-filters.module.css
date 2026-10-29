@@ -7,6 +7,7 @@
 .drawer::backdrop { background: rgb(0 0 0 / 55%); }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .heading h2 { margin: 0; font-size: 20px; font-weight: 650; }
+.heading h2:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
 .close { width: 44px; }
 @media (min-width: 768px) {
   .sidebar { padding-right: 24px; border-right: 1px solid var(--divider); }

@@ -1,5 +1,12 @@
 # PandaByte phase progress
 
+## 29 October 2026 — accessibility browser retry
+
+- Continued after `8bc4215` with two bounded Luna xhigh reviewers and the built-in browser, preserving unrelated dirty account/Admin/checkout work. Fixed confirmed filter focus loss when reflow hides the mobile opener and added a polite atomic enlarged-photo position announcement. The account disclosure already stacks correctly at measured 320 CSS pixels; no account change was needed.
+- Both regressions fail before/pass after; all five focused filter/gallery tests, targeted ESLint and `tsc --noEmit` pass. Browser checks confirm modal opening/Escape return, 320 → 1024 filter-heading focus and next checkbox, gallery Next/ArrowLeft status updates and opener focus restoration. This checks actual CSS widths and keyboard/DOM behavior, not native zoom or speech. [Details and manual gates](phase-6-accessibility-oct29.md), [evidence](verification/phase-6-accessibility-oct29.json).
+- The owner will test reduced motion personally. Actual 200%/400% zoom and text resizing remain unverified; guided Narrator/NVDA speech confirmation is pending. No full build, broad mutation suite or complete theme/viewport matrix rerun is claimed. Existing session/cart and other-chat artifacts are preserved.
+- Local commit titled `fix: preserve filter reflow focus and announce gallery photos`; resolve its hash from Git history. Commit only this checkpoint's code/tests/docs. Payments, content publication, load tests, deployment, live email/billing and recovery stay deferred; full Phase 6 exit remains open.
+
 ## 26 October 2026 — protected product 3D galleries
 
 - Integrated 18 visual models (17 shortlisted plus corrected xLoRa V3) using bounded Luna xhigh workers, pinned ECC React-performance/accessibility skills, lazy MIT Three.js and an additive development migration. Twelve previews are visible in the development storefront; xC5, xC3, xC3m, Maker UNO, WS2812B ring and xLoRa model/poster pairs remain private with draft-only references pending redistribution permission. No download controls; interactive browser data remains extractable as accepted by the owner.

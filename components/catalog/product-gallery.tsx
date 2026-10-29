@@ -47,7 +47,7 @@ export function ProductGallery({ images, model3d, title }: {
           {selected && <Image src={`/api/media/${selected.id}`} alt={selected.alt} width={1600} height={1600} unoptimized sizes="90vw" />}
           {images.length > 1 && <div className={styles.galleryDialogNav}>
             <button type="button" aria-label="Previous photo" onClick={() => setSelectedIndex((selectedIndex + images.length - 1) % images.length)}><ChevronLeft aria-hidden="true" /></button>
-            <span>{selectedIndex + 1} / {images.length}</span>
+            <span role="status" aria-live="polite" aria-atomic={true}>Photo {selectedIndex + 1} of {images.length}</span>
             <button type="button" aria-label="Next photo" onClick={() => setSelectedIndex((selectedIndex + 1) % images.length)}><ChevronRight aria-hidden="true" /></button>
           </div>}
         </Dialog.Content></Dialog.Portal>

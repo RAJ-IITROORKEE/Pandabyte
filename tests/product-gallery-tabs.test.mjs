@@ -89,6 +89,10 @@ test("enlarged photo navigation wraps without entering the separate 3D slide and
   byLabel(tree, "Next photo").props.onClick();
   tree = render(props);
   assert.ok(byLabel(tree, "Enlarge image 2 of 2"));
+  const announcement = byRole(tree, "status")[0];
+  assert.ok(announcement, "Enlarged photo changes need a live selection announcement");
+  assert.equal(announcement.props["aria-atomic"], true);
+  assert.match(announcement.props.children.join(""), /Photo 2 of 2/);
   byLabel(tree, "Previous photo").props.onClick();
   tree = render(props);
   byLabel(tree, "Enlarge image 1 of 2").props.ref.current = { focus: () => { focused = true; } };

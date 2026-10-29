@@ -14,11 +14,17 @@ const desktopSnapshot = () => false;
 
 export function CatalogFilters({ children }: { children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
   const mobile = useSyncExternalStore(subscribeMobile, isMobile, desktopSnapshot);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 768px)");
-    const closeOnDesktop = () => { if (desktop.matches && dialog.current?.open) dialog.current.close(); };
+    const closeOnDesktop = () => {
+      if (desktop.matches && dialog.current?.open) {
+        dialog.current.close();
+        heading.current?.focus();
+      }
+    };
     desktop.addEventListener("change", closeOnDesktop);
     return () => desktop.removeEventListener("change", closeOnDesktop);
   }, []);
@@ -29,7 +35,7 @@ export function CatalogFilters({ children }: { children: ReactNode }) {
     </button>
     <dialog ref={dialog} className={styles.drawer} role={mobile ? "dialog" : "group"} aria-labelledby="catalog-filters-title">
       <div className={styles.heading}>
-        <h2 id="catalog-filters-title">Filters</h2>
+        <h2 ref={heading} id="catalog-filters-title" tabIndex={-1}>Filters</h2>
         <button className={styles.close} type="button" onClick={() => dialog.current?.close()} aria-label="Close filters"><X aria-hidden="true" /></button>
       </div>
       {children}

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-29",
+  "timezone": "Asia/Calcutta",
+  "priorCommit": "8bc4215",
+  "scope": "bounded accessibility retry in current development working tree; unrelated changes excluded from commit",
+  "workers": { "model": "gpt-6-luna", "reasoning": "xhigh", "tasks": ["account reflow source review", "gallery/filter focus and announcement review, then final patch review"] },
+  "fixes": ["Focus the visible Filters heading when a mobile modal closes at the desktop breakpoint", "Expose changing enlarged-gallery photo position as an atomic polite status"],
+  "checks": {
+    "focusedUnitTests": { "files": ["tests/catalog-filter-focus.test.mjs", "tests/product-gallery-tabs.test.mjs"], "before": "two new regression assertions failed", "after": "5 passed" },
+    "targetedEslint": "passed for both changed TSX components",
+    "typescript": "tsc --noEmit passed",
+    "finalReadOnlyReview": "no blocking finding",
+    "browser": {
+      "surface": "built-in localhost browser, current development source",
+      "observedDpr": 1.2000000476837158,
+      "measuredCssWidths": [320, 1024],
+      "account": "Open disclosure stacks links as grid without page overflow at 320; Tab reaches Overview",
+      "filters": "Enter opens with Close filters focused; Escape returns to Filters; crossing to1024 closes modal and focuses visible Filters H2; Tab reaches checkbox; no page overflow",
+      "gallery": "Enter opens named modal; Next changes polite atomic status to Photo2of2; ArrowLeft returns Photo1of2; Escape restores image-opener focus",
+      "speechVerified": false
+    },
+    "fullBuildRerun": false,
+    "broadMutationSuitesRerun": false
+  },
+  "manualGates": {
+    "reducedMotion": "Owner opted to test personally; observed false; runtime reduction not verified",
+    "nativeZoomAndTextResize": "Not verified: Ctrl+0 unchanged; viewport sizing is not native zoom",
+    "screenReader": "Guidance supplied, awaiting human spoken-output result; broader reader matrix open"
+  },
+  "fullPhase6Exit": false,
+  "notPerformed": ["data/cart/role changes", "content publication", "payments/provider actions", "load tests", "deployment", "live email or billing changes", "backup/export/restore", "OS preference changes", "reader installation"],
+  "privacy": "No customer values, raw record/session identities, tokens or private configuration values in evidence"
+}
