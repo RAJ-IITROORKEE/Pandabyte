@@ -145,3 +145,7 @@
   .emptyRow { padding: 20px; gap: 12px; }
   .contactCallout { margin-top: 56px; }
 }
+
+@media screen and (min-width: 1024px) {
+  .page { width: min(100%, 1440px); padding-inline: 24px; }
+}

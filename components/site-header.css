@@ -75,3 +75,7 @@
 @media (prefers-reduced-motion: reduce) {
   .pb-site-header *, .pb-site-header *::before, .pb-site-header *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+@media screen and (min-width: 1024px) {
+  .pb-header-inner { width: min(100%, 1440px); padding-inline: 24px; }
+}

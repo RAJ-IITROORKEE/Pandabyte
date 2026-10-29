@@ -64,3 +64,7 @@
   .metrics strong { font-size: 32px; }
   .metrics span { font-size: 12px; }
 }
+
+@media screen and (min-width: 1024px) {
+  .page { width: min(100%, 1440px); padding-inline: 24px; }
+}

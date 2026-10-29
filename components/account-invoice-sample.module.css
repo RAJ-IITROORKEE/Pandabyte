@@ -41,3 +41,8 @@
   .document tr { break-inside: avoid; }
   .details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+@media screen and (min-width: 1024px) {
+  .preview { width: min(100%, 1440px); padding-inline: 24px; }
+  .document, .notice { max-width: 900px; margin-inline: auto; }
+}

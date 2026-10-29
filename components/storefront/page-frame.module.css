@@ -8,3 +8,7 @@
 .empty h2 { margin-bottom: 12px; }
 .empty div { margin-bottom: 16px; }
 @media (max-width: 380px) { .page { padding-inline: 16px; } }
+
+@media screen and (min-width: 1024px) {
+  .page, .wide { width: min(100%, 1440px); padding-inline: 24px; }
+}

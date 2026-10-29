@@ -144,3 +144,7 @@
     margin-top: 24px;
   }
 }
+
+@media screen and (min-width: 1024px) {
+  .pb-site-footer__inner { max-width: 1440px; padding-inline: 24px; }
+}

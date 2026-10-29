@@ -34,3 +34,7 @@
 .stepper button:focus-visible { outline:2px solid var(--focus-ring); outline-offset:4px; border-radius:8px; }
 
 .fields input, .select select { font-weight:400; }
+
+@media screen and (min-width: 1024px) {
+  .page { width: min(100%, 1440px); padding-inline: 24px; }
+}

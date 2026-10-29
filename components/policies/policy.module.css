@@ -36,3 +36,7 @@
   .mobileToc summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
   .mobileToc nav { padding: 0 6px 6px; max-height: 50vh; overflow-y: auto; }
 }
+
+@media screen and (min-width: 1024px) {
+  .page { width: min(100%, 1440px); padding-inline: 24px; }
+}

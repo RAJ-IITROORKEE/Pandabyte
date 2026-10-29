@@ -68,3 +68,7 @@
   .mobileNavigation .navigation { display: grid; padding: 8px 0; }
   .desktopNavigation { display: none; }
 }
+
+@media screen and (min-width: 1024px) {
+  .dashboard { width: min(100%, 1440px); padding-inline: 24px; }
+}

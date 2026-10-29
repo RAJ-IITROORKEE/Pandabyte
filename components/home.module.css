@@ -94,3 +94,7 @@
   .primaryAction, .secondaryAction, .categoryCard { transition: none; }
   .primaryAction:hover, .secondaryAction:hover { transform: none; }
 }
+
+@media screen and (min-width: 1024px) {
+  .homeInner { max-width: 1440px; padding-inline: 24px; }
+}

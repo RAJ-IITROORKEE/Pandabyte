@@ -59,3 +59,7 @@
 .contact a:hover { opacity: .9; }
 .contact a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
 @media (max-width: 380px) { .page { padding-inline: 16px; } }
+
+@media screen and (min-width: 1024px) {
+  .page { width: min(100%, 1440px); padding-inline: 24px; }
+}

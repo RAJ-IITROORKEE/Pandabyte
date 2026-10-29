@@ -33,3 +33,7 @@
 @media print { :global(.pb-site-header), :global(.pb-site-footer), :global(.skip-link), .actions, .successIcon { display: none !important; } .page { width: 100%; padding: 0; color: #000; } .columns { grid-template-columns: 1.7fr 1fr; } .card, .strip { color: #000; background: #fff; break-inside: avoid; } .card p { color: #333; } }
 
 .header button { margin: 20px auto 0; }
+
+@media screen and (min-width: 1024px) {
+  .page { width: min(100%, 1440px); padding-inline: 24px; }
+}
