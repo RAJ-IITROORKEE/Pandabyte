@@ -51,3 +51,17 @@
 .cartButtonActive { color: var(--foreground); background: var(--status-soft); border-color: var(--action-border); }
 
 @container (max-width: 300px) { .purchaseRow { grid-template-columns: minmax(0, 1fr); } }
+
+.cardBody { padding: 16px; gap: 10px; }
+.titleRow h2, .titleRow h3 { display: -webkit-box; overflow: hidden; min-height: 2.7em; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.titleRow > :first-child { min-width: 0; }
+.metaLine { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; color: var(--muted); font-size: 12px; }
+.categories { margin: 0; }
+.categories span { padding: 3px 6px; }
+.pricing { min-width: 0; margin: 0; gap: 3px; }
+.discountLine { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.discountLine del { color: var(--muted); font-size: 12px; }
+.trigger, .chooseBuy { width: 100%; min-height: 44px; }
+.chooseBuy { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--action-text); background: var(--accent); border: 1px solid var(--action-border); border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.cartButton { width: 44px; min-width: 44px; border-color: var(--action-border); }
+.card :is(input):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }

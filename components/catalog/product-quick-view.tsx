@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, ShoppingCart } from "lucide-react";
+import { Eye, ShoppingCart, Zap } from "lucide-react";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useUser } from "@clerk/nextjs";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, subscribeGuestCart } from "@/components/cart/guest-cart-store";
@@ -54,17 +54,16 @@ export function ProductQuickView({ productId, slug, title, href, summary, catego
       <ProductCardMedia href={href} title={title} images={images} model3d={model3d} featured={featured} morphing suspend={open} onSlideChange={handleSlideChange} />
       <div className={styles.cardBody}>
         <div className={styles.titleRow}><MorphingDialogTitle>{featured ? <h3><Link href={href}>{title}</Link></h3> : <h2><Link href={href}>{title}</Link></h2>}</MorphingDialogTitle><FavoritesButton productId={productId} slug={slug} title={title} /></div>
-        {categories.length > 0 && <div className={styles.categories} aria-label="Product categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}
-        <div className={styles.purchaseRow}>
-          <div className={styles.pricing}>
-            <span>{availability}</span>
-            <div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong>{originalPrice && <><del>{originalPrice}</del><span className={styles.saleBadge}>{discount}</span></>}</div>
-          </div>
-          {singleVariant ? <AddToCartButton variantId={singleVariant.id} available={singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null)} compactLabel={title} showBuyNow /> : canChooseVariant ? <MorphingDialogTrigger className={`${styles.cartButton} ${multiCount ? styles.cartButtonActive : ""}`} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title={multiCount ? `${multiCount} in cart; choose a variant` : "Choose a variant"}><ShoppingCart aria-hidden="true" size={18} /> Choose options</MorphingDialogTrigger> : <button className={styles.cartButton} type="button" disabled aria-label={`Purchasing unavailable: ${title}`} title="Purchasing unavailable"><ShoppingCart aria-hidden="true" size={18} /> Unavailable</button>}
-        </div>
-        <div className={styles.cardActions}>
-          <MorphingDialogTrigger className={styles.trigger} aria-label={`Quick view: ${title}`}><Plus aria-hidden="true" size={18} /> Quick view</MorphingDialogTrigger>
-        </div>
+        <div className={styles.metaLine}>{categories.length > 0 && <div className={styles.categories} aria-label="Product categories">{categories.map((category) => <span key={category}>{category}</span>)}</div>}<span>{availability}</span></div>
+        <AddToCartButton variantId={singleVariant?.id ?? ""} available={!!singleVariant && (singleVariant.cartEligible === true || (singleVariant.purchasable !== false && singleVariant.availability === "available" && singleVariant.effectivePricePaise !== null))} card={{
+          title,
+          pricing: <div className={styles.pricing}><div className={styles.priceLine}>{sourcePrice && <span>Source price</span>}<strong className={originalPrice ? styles.salePrice : undefined}>{price}</strong></div>{originalPrice && <div className={styles.discountLine}><del>{originalPrice}</del><span className={styles.saleBadge}>{discount}</span></div>}</div>,
+          quickView: <MorphingDialogTrigger className={styles.trigger} aria-label={`Quick view: ${title}`}><Eye aria-hidden="true" size={16} /> Quick view</MorphingDialogTrigger>,
+          ...(canChooseVariant ? {
+            chooseCart: <MorphingDialogTrigger className={styles.cartButton} aria-label={`Choose a variant for ${title}${multiCount ? `, ${multiCount} in cart` : ""}`} title="Choose a variant"><ShoppingCart aria-hidden="true" size={18} /></MorphingDialogTrigger>,
+            chooseBuy: <MorphingDialogTrigger className={styles.chooseBuy} aria-label={`Choose a variant to buy ${title}`}><Zap aria-hidden="true" size={16} /> Buy</MorphingDialogTrigger>,
+          } : {}),
+        }} />
       </div>
     </MorphingDialogCard>
     <MorphingDialogContainer>

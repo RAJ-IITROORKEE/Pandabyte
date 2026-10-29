@@ -48,9 +48,10 @@
   .supportContact { padding: 24px 0 0; border-top: 1px solid var(--divider); border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .supportAction svg { transition: none; } .supportAction:hover svg, .supportAction:focus-visible svg { transform: none; } }
-@media (max-width: 1023px) {
+@media (max-width: 1150px) {
   .productGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+@media (max-width: 680px) { .productGrid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 539px) {
   .sectionHeading { align-items: start; flex-direction: column; gap: 8px; }
   .productGrid { grid-template-columns: minmax(0, 1fr); }

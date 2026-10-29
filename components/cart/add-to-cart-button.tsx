@@ -2,9 +2,9 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ShoppingCartPlus, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { CartInputLine } from "@/lib/cart/validation";
 import { cartErrorMessage, loadCustomerCart, replaceCustomerCart } from "./cart-api";
 import { addCartItem, removeCartItem, setCartItemQuantity } from "./cart-utils";
@@ -12,20 +12,25 @@ import { setBuyNowSelection } from "./buy-now-store";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, saveGuestCart, subscribeGuestCart } from "./guest-cart-store";
 import { getCustomerCartServerSnapshot, getCustomerCartSnapshot, prepareCustomerCart, publishCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
 import { buttonClassName } from "@/components/ui/button";
+import { cardQuantityValue } from "./card-quantity";
 import styles from "./cart.module.css";
 
-export function AddToCartButton({ variantId, available, quantity = 1, showBuyNow = false, compactLabel }: { variantId: string; available: boolean; quantity?: number; showBuyNow?: boolean; compactLabel?: string }) {
+type CardLayout = { title: string; pricing: ReactNode; quickView: ReactNode; chooseCart?: ReactNode; chooseBuy?: ReactNode };
+
+export function AddToCartButton({ variantId, available, quantity = 1, showBuyNow = false, compactLabel, card }: { variantId: string; available: boolean; quantity?: number; showBuyNow?: boolean; compactLabel?: string; card?: CardLayout }) {
   const { user, isLoaded } = useUser();
-  if (!isLoaded) return <button className={buttonClassName({ variant: compactLabel ? "secondary" : "primary", className: compactLabel ? styles.compactButton : styles.addButton })} type="button" disabled aria-label="Loading account">{compactLabel && <ShoppingCart aria-hidden="true" size={18} />}Loading account…</button>;
+  if (!isLoaded && !card) return <button className={buttonClassName({ variant: compactLabel ? "secondary" : "primary", className: compactLabel ? styles.compactButton : styles.addButton })} type="button" disabled aria-label="Loading account">{compactLabel && <ShoppingCart aria-hidden="true" size={18} />}Loading account…</button>;
   const userId = user?.id ?? null;
-  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} showBuyNow={showBuyNow} compactLabel={compactLabel} />;
+  return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available && isLoaded} quantity={quantity} userId={userId} showBuyNow={showBuyNow} compactLabel={compactLabel} card={card} />;
 }
 
-function AddToCartButtonSession({ variantId, available, quantity, userId, showBuyNow, compactLabel }: { variantId: string; available: boolean; quantity: number; userId: string | null; showBuyNow: boolean; compactLabel?: string }) {
+function AddToCartButtonSession({ variantId, available, quantity: initialQuantity, userId, showBuyNow, compactLabel, card }: { variantId: string; available: boolean; quantity: number; userId: string | null; showBuyNow: boolean; compactLabel?: string; card?: CardLayout }) {
   const router = useRouter();
   const guest = useSyncExternalStore(subscribeGuestCart, getGuestCartSnapshot, getGuestCartServerSnapshot);
   const customer = useSyncExternalStore(subscribeCustomerCart, getCustomerCartSnapshot, getCustomerCartServerSnapshot);
   useEffect(() => { if (userId && compactLabel) prepareCustomerCart(userId); }, [userId, compactLabel]);
+  const [cardQuantity, setCardQuantity] = useState("1");
+  const quantity = card ? cardQuantityValue(cardQuantity) : initialQuantity;
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -184,6 +189,21 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       : "";
   const buttonText = busy ? "Adding…" : needsReview ? "Review cart before retrying" : initialNotice ? "Cart needs attention" : available ? "Add to cart" : "Currently unavailable";
   const compactUnavailable = !!compactLabel && !!userId && (customer.userId !== userId || !customer.cart);
+  if (card) return <div className={styles.cardCart}>
+    <div className={styles.cardPurchase}>{card.pricing}<div className={styles.cardControls}>
+      <div className={styles.cardStepper}>
+        <button type="button" aria-label={`Decrease quantity for ${card.title}`} disabled={!available || (validQuantity && quantity <= 1)} onClick={() => setCardQuantity(String(validQuantity ? Math.max(1, quantity - 1) : 1))}><Minus size={15} aria-hidden="true" /></button>
+        <input type="number" min={1} max={99} step={1} inputMode="numeric" aria-label={`Quantity for ${card.title}`} aria-invalid={!validQuantity} value={cardQuantity} disabled={!available} onChange={event => setCardQuantity(event.currentTarget.value)} />
+        <button type="button" aria-label={`Increase quantity for ${card.title}`} disabled={!available || (validQuantity && quantity >= 99)} onClick={() => setCardQuantity(String(validQuantity ? Math.min(99, quantity + 1) : 1))}><Plus size={15} aria-hidden="true" /></button>
+      </div>
+      {card.chooseCart ?? <button className={styles.cardAdd} type="button" onClick={() => handleAdd()} disabled={disabled} aria-disabled={busy || undefined} aria-label={`${busy ? "Adding" : "Add to cart"}: ${card.title}`} title={busy ? "Adding…" : "Add to cart"}><ShoppingCartPlus size={18} aria-hidden="true" /></button>}
+    </div></div>
+    <div className={styles.cardFooter}>{card.chooseBuy ?? <button className={styles.cardBuy} type="button" onClick={() => handleAdd(true)} disabled={!available || !validQuantity || busy}><Zap size={16} aria-hidden="true" /> Buy</button>}{card.quickView}</div>
+    {!validQuantity && <p className={styles.addError} role="alert">Enter a whole number from 1 to 99.</p>}
+    {error && <p className={styles.addError} role="alert">{error} <Link href="/cart">Open cart</Link></p>}
+    {initialNotice && available && <p className={styles.addMessage} role="status">{initialNotice}</p>}
+    {message && <p className={styles.addMessage} role="status">{message} {added && <Link href="/cart">View cart</Link>}</p>}
+  </div>;
   return <div className={compactLabel ? styles.compactCart : styles.addToCart}>
     {compactLabel && currentQuantity > 0 ? <div className={styles.compactSelected}><div className={styles.compactQuantity} aria-label={`Cart quantity for ${compactLabel}`}>
       <button type="button" onClick={event => void changeCompactQuantity(-1, event.currentTarget)} onBlur={() => { quantityFocusCandidate.current = null; }} disabled={needsReview} aria-disabled={busy ? true : undefined} aria-label={`Remove one ${compactLabel} from cart`}><Minus size={16} aria-hidden="true" /></button>

@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { cardQuantityValue } from "./card-quantity.ts";
 
 const require = createRequire(import.meta.url);
 const source = readFileSync(new URL("./add-to-cart-button.tsx", import.meta.url), "utf8");
@@ -32,6 +33,7 @@ for (const available of [true, false]) test(`final removal focuses ${available ?
     "./cart-api": {}, "./customer-cart-store": {}, "./buy-now-store": {},
     "./cart-utils": { removeCartItem: items => items.filter(item => item.variantId !== "a"), setCartItemQuantity: () => null },
     "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: 2 }; return { persisted: true }; } },
+    "./card-quantity": { cardQuantityValue },
     "./cart.module.css": { default: {} },
     "@/components/ui/button": { buttonClassName: () => "button" },
   };
@@ -75,6 +77,7 @@ for (const signedIn of [false, true]) test(`${signedIn ? "signed-in" : "guest"} 
     "./buy-now-store": {},
     "./cart-utils": { addCartItem: items => [...items, { variantId: "a", quantity: 1 }], setCartItemQuantity: (items, _id, quantity) => items.map(item => ({ ...item, quantity })), removeCartItem: () => [] },
     "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: 2 }; return { persisted: true }; } },
+    "./card-quantity": { cardQuantityValue },
     "./cart.module.css": { default: {} },
     "@/components/ui/button": { buttonClassName: () => "button" },
   };
@@ -168,6 +171,7 @@ test("full-size add keeps focus while pending and does not steal it on error", a
     },
     "./cart-api": { loadCustomerCart: () => new Promise((_resolve, reject) => { rejectLoad = reject; }), cartErrorMessage: () => "Could not load cart" },
     "./customer-cart-store": {}, "./guest-cart-store": {}, "./cart-utils": {}, "./buy-now-store": {},
+    "./card-quantity": { cardQuantityValue },
     "./cart.module.css": { default: {} },
     "@/components/ui/button": { buttonClassName: () => "button" },
   };
