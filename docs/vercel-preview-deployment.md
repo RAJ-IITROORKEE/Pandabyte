@@ -58,3 +58,9 @@ Stable-host verification:
 - Cancel restored the saved avatar, disabled the unchanged Save action, cleared feedback and returned focus to Choose photo. The viewport override was reset and no console errors were observed in the checked hosted tab. No Save action, actual photo upload, profile/address/cart/order mutation, contact submission or invoice/payment action was performed.
 
 The profile fix already passed its 14 focused local checks, scoped ESLint and TypeScript before source commit `ad14528`. The actual Clerk upload/save was intentionally not repeated against the owner's account. Raw logs and screenshots remain ignored local evidence. This record is documentation only; subsequent uncommitted cart/button work belongs to a separate checkpoint.
+
+## Product-card cart controls — 29 October 2026
+
+The owner authorized a disposable-account cart test and a preview update. On localhost:3000, a disposable customer added an existing catalog product, increased its quantity, reloaded to confirm persistence, entered a quantity, decreased it and removed the last item. The cart badge and product-card controls reflected each saved state. The owner account was restored with its original 11-item cart count; the disposable accounts and their carts were removed.
+
+A clean Git archive of `8c04cf8` was deployed and promoted to the existing preview as `dpl_HoXUorKriZDz7aH9x5oKkn5MDCve`. The Vercel build and TypeScript passed; the stable Home and Shop returned 200, and the browser rendered the 42-product catalog. Both checkout capability endpoints reported disabled. Hosted signed-in cart mutations and payment transactions were not tested.
