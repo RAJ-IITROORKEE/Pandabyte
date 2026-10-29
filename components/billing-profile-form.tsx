@@ -1,7 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import { RefreshCw, Save } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { buttonClassName } from "@/components/ui/button";
 import { parseBillingProfile, type BillingProfile } from "@/lib/account/billing-profile";
 import styles from "@/components/account-dashboard.module.css";
 import formStyles from "@/components/account.module.css";
@@ -55,7 +57,7 @@ function BillingSession({ userId }: { userId: string }) {
     <h2 id="billing-profile-heading">Billing details</h2>
     <p>Business name and GSTIN can prefill future checkouts. Billing email is saved for future use. GSTIN format is checked, not verified.</p>
     {loading ? <p role="status">Loading billing details…</p> : <>
-      {error && <div role="alert"><p>{error}</p><button type="button" disabled={saving} onClick={() => { setLoading(true); setReload(n => n + 1); }}>Reload saved details</button></div>}
+      {error && <div role="alert"><p>{error}</p><button className={buttonClassName({ variant: "secondary" })} type="button" disabled={saving} onClick={() => { setLoading(true); setReload(n => n + 1); }}><RefreshCw aria-hidden="true" size={16} />Reload saved details</button></div>}
       {profile && <form onSubmit={event => void save(event)}>
         <div className={formStyles.formGrid}>
           <label className={formStyles.field}>Business name (optional)<input maxLength={160} value={businessName} onChange={event => { setBusinessName(event.target.value); setMessage(""); }} disabled={saving} /></label>
@@ -63,7 +65,7 @@ function BillingSession({ userId }: { userId: string }) {
           <label className={formStyles.field}>GSTIN (optional)<input maxLength={15} value={gstin} onChange={event => { setGstin(event.target.value.toUpperCase()); setMessage(""); }} disabled={saving} /></label>
         </div>
         {dirty && <p>Unsaved changes.</p>}
-        <button className={formStyles.primaryAction} type="submit" disabled={saving || !dirty}>{saving ? "Saving…" : "Save billing details"}</button>
+        <button className={buttonClassName({ className: formStyles.primaryAction })} type="submit" disabled={saving || !dirty}><Save aria-hidden="true" size={16} />{saving ? "Saving…" : "Save billing details"}</button>
       </form>}
       {message && <p role="status">{message}</p>}
     </>}

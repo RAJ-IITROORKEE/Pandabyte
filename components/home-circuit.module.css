@@ -29,7 +29,7 @@
 .board:focus-visible,
 .sensor:focus-visible,
 .wireHit:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
@@ -246,7 +246,7 @@
 .sensorLabel small { display: block; margin-top: 2px; color: var(--muted); font-size: calc(9px / var(--scene-scale, .9)); font-weight: 400; }
 .sensorLabel { top: calc(100% + 14px); }
 .sensorAir .sensorLabel { top: auto; bottom: calc(100% + 14px); }
-.sensorActive .sensorLabel { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.sensorActive .sensorLabel { border-color: color-mix(in srgb, var(--action-border) 40%, transparent); }
 .sensorActive .sensorLabel::before { display: inline-block; width: 5px; height: 5px; margin-right: 6px; transform: translateY(-2px); border-radius: 50%; background: var(--accent); content: ""; }
 
 .sensor {

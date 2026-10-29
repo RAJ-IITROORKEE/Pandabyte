@@ -1,11 +1,11 @@
 .faqList { display: grid; width: 100%; gap: 28px; }
 .faqGroup { display: grid; min-width: 0; gap: 12px; }
-.faqTopic { justify-self: start; margin: 0 0 4px; padding: 6px 13px; color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); border: 1px solid var(--divider); border-radius: 999px; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.faqTopic { justify-self: start; margin: 0 0 4px; padding: 6px 13px; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); border: 1px solid var(--divider); border-radius: 999px; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
 .faqItem { min-width: 0; background: var(--surface); border: 1px solid var(--divider); border-radius: 14px; }
 .faqItem summary { display: flex; min-height: 72px; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 24px; color: var(--foreground); font-size: 16px; font-weight: 600; line-height: 1.5; cursor: pointer; list-style: none; overflow-wrap: anywhere; }
 .faqItem summary::-webkit-details-marker { display: none; }
-.faqItem summary:hover, .faqItem[open] summary { color: var(--accent); }
-.faqItem summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 12px; }
+.faqItem summary:hover, .faqItem[open] summary { color: var(--accent-ink); }
+.faqItem summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; border-radius: 12px; }
 .faqItem summary svg { width: 20px; height: 20px; flex: none; transition: transform 160ms ease; }
 .faqItem[open] summary svg { transform: rotate(180deg); }
 .faqAnswer { max-width: 70ch; padding: 0 24px 24px; color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; }

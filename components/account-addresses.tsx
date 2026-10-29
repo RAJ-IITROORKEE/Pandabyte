@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
-import { MapPin, Plus, Trash2 } from "lucide-react";
+import { MapPin, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
+import { buttonClassName } from "@/components/ui/button";
 import type { CustomerAddress as Address } from "@/lib/account/addresses";
 import styles from "@/components/account.module.css";
 
@@ -312,7 +313,7 @@ function AddressSession({ userId }: { userId: string }) {
           </div>
         </div>
         {!editing && (
-          <button ref={addAddressRef} className={styles.primaryAction} type="button" onClick={(event) => startNewAddress(event.currentTarget)} disabled={loading || saving}>
+          <button ref={addAddressRef} className={buttonClassName({ className: styles.primaryAction })} type="button" onClick={(event) => startNewAddress(event.currentTarget)} disabled={loading || saving}>
             <Plus aria-hidden="true" size={17} /> Add address
           </button>
         )}
@@ -334,8 +335,8 @@ function AddressSession({ userId }: { userId: string }) {
       ) : error && addresses.length === 0 ? (
         <div className={styles.errorState} role="alert">
           <p>{error}</p>
-          <button className={styles.secondaryAction} type="button" onClick={() => void loadAddresses()}>
-            Try again
+          <button className={buttonClassName({ variant: "secondary", className: styles.secondaryAction })} type="button" onClick={() => void loadAddresses()}>
+            <RefreshCw aria-hidden="true" size={16} />Try again
           </button>
         </div>
       ) : addresses.length === 0 ? (
@@ -353,11 +354,11 @@ function AddressSession({ userId }: { userId: string }) {
                   </div>
                 </div>
                 <div className={styles.addressCardActions}>
-                  <button className={styles.textAction} type="button" aria-label={`Edit ${address.label} address`} onClick={(event) => startEdit(address, event.currentTarget)} disabled={saving}>
+                  <button className={buttonClassName({ variant: "ghost", size: "compact", className: styles.textAction })} type="button" aria-label={`Edit ${address.label} address`} onClick={(event) => startEdit(address, event.currentTarget)} disabled={saving}>
                     Edit
                   </button>
                   <button
-                    className={styles.textAction}
+                    className={buttonClassName({ variant: "ghost", size: "compact", className: styles.textAction })}
                     type="button"
                     onClick={(event) => {
                       deleteTriggerRef.current = event.currentTarget;
@@ -379,10 +380,10 @@ function AddressSession({ userId }: { userId: string }) {
                 <div className={styles.deleteConfirm} role="group" aria-label={`Confirm deletion of ${address.label} address`}>
                   <p>Delete this saved address?</p>
                   <div className={styles.deleteConfirmActions}>
-                    <button className={styles.dangerAction} type="button" onClick={() => void deleteAddress(address)} disabled={saving}>
+                    <button className={buttonClassName({ variant: "danger", className: styles.dangerAction })} type="button" onClick={() => void deleteAddress(address)} disabled={saving}>
                       {saving ? "Deleting…" : "Delete address"}
                     </button>
-                    <button className={styles.secondaryAction} type="button" onClick={() => {
+                    <button className={buttonClassName({ variant: "secondary", className: styles.secondaryAction })} type="button" onClick={() => {
                       focusAfterCloseRef.current = deleteTriggerRef.current;
                       deleteTriggerRef.current = null;
                       setConfirmDeleteId(null);
@@ -455,18 +456,18 @@ function AddressSession({ userId }: { userId: string }) {
             </fieldset>
 
             <div className={styles.formActions}>
-              <button className={styles.secondaryAction} type="button" onClick={closeEditor} disabled={saving}>
+              <button className={buttonClassName({ variant: "secondary", className: styles.secondaryAction })} type="button" onClick={closeEditor} disabled={saving}>
                 Cancel
               </button>
-              <button className={styles.primaryAction} type="submit" disabled={saving}>
-                {saving ? "Saving…" : editing.id ? "Save address" : "Add address"}
+              <button className={buttonClassName({ className: styles.primaryAction })} type="submit" disabled={saving}>
+                <Save aria-hidden="true" size={16} />{saving ? "Saving…" : editing.id ? "Save address" : "Add address"}
               </button>
             </div>
             {error && <div id="address-form-error" ref={formErrorRef} className={styles.errorState} role="alert" tabIndex={-1}>
               <p>{error}</p>
               {editing.id && (
                 <button
-                  className={styles.secondaryAction}
+                  className={buttonClassName({ variant: "secondary", className: styles.secondaryAction })}
                   type="button"
                   onClick={() => {
                     closeEditor();
@@ -489,12 +490,12 @@ function AddressSession({ userId }: { userId: string }) {
         <div className={styles.errorState} role="alert">
           <p>{error}</p>
           <button
-            className={styles.secondaryAction}
+            className={buttonClassName({ variant: "secondary", className: styles.secondaryAction })}
             type="button"
             onClick={() => void loadAddresses()}
             disabled={saving}
           >
-            Reload address book
+            <RefreshCw aria-hidden="true" size={16} />Reload address book
           </button>
         </div>
       )}

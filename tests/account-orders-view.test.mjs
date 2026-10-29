@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
 const require = createRequire(import.meta.url), exports = {};
 const source = readFileSync(new URL("../components/account-orders.tsx", import.meta.url), "utf8");
-runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText, { exports, URL, Intl, Date, require: name => name.endsWith(".module.css") ? { default: {} } : name === "next/link" ? { default: ({ children, ...props }) => createElement("a", props, children) } : require(name) });
+runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText, { exports, URL, Intl, Date, require: name => name === "@/components/ui/button" ? { buttonClassName: () => "button" } : name === "lucide-react" ? Object.fromEntries(["Package", "Search", "ExternalLink", "RefreshCw"].map(icon => [icon, () => createElement("svg")])) : name.endsWith(".module.css") ? { default: {} } : name === "next/link" ? { default: ({ children, ...props }) => createElement("a", props, children) } : require(name) });
 const data = overrides => ({ query: "", status: "all", search() {}, filter() {}, retry() {}, setOffset() {}, error: "", orders: { items: [], total: 0, offset: 0, limit: 20 }, ...overrides });
 const render = value => renderToStaticMarkup(createElement(exports.AccountOrders, { data: value }));
 test("failed, loading, empty and filtered histories remain distinct", () => {

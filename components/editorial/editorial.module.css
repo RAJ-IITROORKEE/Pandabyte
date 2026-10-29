@@ -64,7 +64,7 @@
 
 .card:hover {
   background: var(--status-soft);
-  border-color: var(--accent);
+  border-color: var(--action-border);
 }
 
 .card:focus-visible,
@@ -74,7 +74,7 @@
 .searchForm button:focus-visible,
 .form button:focus-visible,
 .videoButton:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
@@ -129,7 +129,7 @@
 .cardArrow {
   margin-top: auto;
   padding-top: 8px;
-  color: var(--accent);
+  color: var(--accent-ink);
   font-size: 14px;
   font-weight: 600;
 }
@@ -156,14 +156,14 @@
 }
 
 .filterLink:hover {
-  border-color: var(--accent);
+  border-color: var(--action-border);
   background: var(--status-soft);
 }
 
 .filterLink[aria-current="page"] {
   color: var(--action-text);
   background: var(--accent);
-  border-color: var(--accent);
+  border-color: var(--action-border);
 }
 
 .searchForm {
@@ -213,7 +213,7 @@
 .searchForm select:focus-visible,
 .form input:focus-visible,
 .form textarea:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -224,7 +224,7 @@
   padding: 10px 16px;
   color: var(--action-text);
   background: var(--accent);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--action-border);
   border-radius: 8px;
   font: inherit;
   font-weight: 600;
@@ -276,7 +276,7 @@
 }
 
 .formStatus[data-state="success"] {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 :global([data-theme="dark"]) .formStatus[data-state="error"] {
@@ -295,7 +295,7 @@
 
 .pagination a,
 .inlineLink {
-  color: var(--accent);
+  color: var(--accent-ink);
   font-weight: 600;
   text-underline-offset: 4px;
 }
@@ -380,7 +380,7 @@
 }
 
 .faqItem summary:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .faqItem summary {
@@ -392,7 +392,7 @@
 }
 
 .faqItem summary:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
   border-radius: 8px;
 }

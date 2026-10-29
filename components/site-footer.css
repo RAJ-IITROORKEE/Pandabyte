@@ -86,13 +86,13 @@
 }
 
 .pb-site-footer a:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
   text-decoration: underline;
 }
 
 .pb-site-footer a:focus-visible {
   border-radius: 3px;
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 

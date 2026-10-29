@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import { Send } from "lucide-react";
+import { buttonClassName } from "@/components/ui/button";
 import { ContactChallenge, type ContactChallengeConfig } from "./contact-challenge";
 import styles from "./editorial.module.css";
 
@@ -89,8 +91,8 @@ export function ContactForm({ challengeConfig, nonce }: { challengeConfig: Conta
       resetVersion={challengeReset}
       onToken={setChallengeToken}
     />
-    <button type="submit" disabled={sending || !challengeConfig.enabled || !challengeConfig.siteKey || !challengeToken}>
-      {sending ? "Sending…" : "Send message"}
+    <button className={buttonClassName()} type="submit" disabled={sending || !challengeConfig.enabled || !challengeConfig.siteKey || !challengeToken}>
+      <Send aria-hidden="true" size={16} />{sending ? "Sending…" : "Send message"}
     </button>
     <p className={styles.formStatus} data-state={state.kind} role={state.kind === "error" ? "alert" : "status"}>{state.message}</p>
   </form>;

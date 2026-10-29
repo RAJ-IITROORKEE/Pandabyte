@@ -14,7 +14,7 @@
   font: inherit;
 }
 .input:focus-visible, .select:focus-visible, .checkbox:focus-visible + span {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 .searchButton, .filterButton, .paginationLink {
@@ -26,7 +26,7 @@
   padding: 10px 18px;
   color: var(--action-text);
   background: var(--accent);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--action-border);
   border-radius: 8px;
   font: inherit;
   font-weight: 600;
@@ -54,13 +54,13 @@
 }
 .categoryImage { width: 64px; height: 48px; flex: 0 0 auto; object-fit: contain; background: var(--surface); border: 1px solid var(--divider); border-radius: 6px; }
 .categoryCard > span { overflow-wrap: anywhere; }
-.categoryCard:hover { border-color: var(--accent); color: var(--accent); }
+.categoryCard:hover { border-color: var(--action-border); color: var(--accent-ink); }
 .categoryLimit { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 .catalogLayout { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 32px; align-items: start; }
 .filters { min-width: 0; padding: 22px; background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; }
 .filterDisclosure { min-width: 0; }
 .filterSummary { display: list-item; min-height: 44px; padding: 8px 0; font-weight: 650; cursor: pointer; }
-.filterSummary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.filterSummary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .filterContents { display: block; }
 .filterGroup { min-width: 0; padding: 0; border: 0; }
 .filterGroup + .filterGroup { margin-top: 24px; }
@@ -79,9 +79,9 @@
 .sortField .select { width: auto; min-width: 180px; }
 .productGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .productCard { display: flex; min-width: 0; flex-direction: column; overflow: hidden; background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; transition: border-color 150ms ease; }
-.productCard:hover { border-color: var(--accent); }
+.productCard:hover { border-color: var(--action-border); }
 .productCardLink { display: flex; min-width: 0; flex: 1; flex-direction: column; color: inherit; text-decoration: none; }
-.productCard:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+.productCard:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
 .productCardLink:focus-visible { outline: none; }
 .productCardImage { position: relative; display: grid; aspect-ratio: 5 / 3; place-items: center; overflow: hidden; padding: 12px; background: #fff; border-bottom: 1px solid var(--divider); color: #525252; }
 .productCardImage img { position: absolute; inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); object-fit: contain; }
@@ -96,7 +96,7 @@
 .productCardSlideLink { position: absolute; inset: 0; display: grid; }
 .productCardMediaControls { position: absolute; z-index: 4; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; pointer-events: none; }
 .productCardMediaControls button { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; padding: 0; color: #171717; background: rgb(255 255 255 / 78%); border: 1px solid rgb(82 82 82 / 45%); border-radius: 50%; backdrop-filter: blur(8px); cursor: pointer; pointer-events: auto; }
-.productCardMediaControls button:focus-visible, .productModelActivate:focus-visible, .productModelEngineControls button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.productCardMediaControls button:focus-visible, .productModelActivate:focus-visible, .productModelEngineControls button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 .productCardMediaCount { position: absolute; bottom: 10px; left: 50%; padding: 3px 8px; transform: translateX(-50%); color: #171717; background: rgb(255 255 255 / 88%); border: 1px solid rgb(82 82 82 / 35%); border-radius: 999px; font-size: 12px; font-weight: 650; text-align: center; }
 .productCardMediaControls .productCardRotation { position: absolute; right: 8px; bottom: 8px; }
 .productCardRotation:disabled { opacity: .6; cursor: default; }
@@ -104,14 +104,14 @@
 .productModelViewer { position: absolute; inset: 0; display: grid; overflow: hidden; background: #fff; }
 .productModelViewerCompact { border-radius: 0; }
 .productModelPoster { z-index: 0; object-fit: contain; background: #fff; }
-.productModelActivate { position: absolute; z-index: 2; top: 50%; left: 50%; display: inline-flex; min-height: 48px; align-items: center; gap: 8px; padding: 11px 18px; transform: translate(-50%, -50%); color: var(--action-text); background: var(--accent); border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; font: inherit; font-weight: 650; }
+.productModelActivate { position: absolute; z-index: 2; top: 50%; left: 50%; display: inline-flex; min-height: 48px; align-items: center; gap: 8px; padding: 11px 18px; transform: translate(-50%, -50%); color: var(--action-text); background: var(--accent); border: 1px solid var(--action-border); border-radius: 8px; cursor: pointer; font: inherit; font-weight: 650; }
 .productModelViewerCompact .productModelActivate { min-height: 44px; gap: 5px; padding: 8px 12px; color: #171717; background: rgb(255 255 255 / 82%); border-color: rgb(82 82 82 / 45%); border-radius: 999px; backdrop-filter: blur(8px); }
 .productModelEngine { position: absolute; inset: 0; overflow: hidden; background: #fff; }
 .productModelEngineCompact { border-radius: 0; }
 .productModelCanvas { display: block; width: 100%; height: 100%; touch-action: pan-y; }
 .productModelEngineLoading, .productModelEngineFailed { background: transparent; }
 .productModelEngineLoading .productModelCanvas, .productModelEngineFailed .productModelCanvas { opacity: 0; }
-.productModelCanvas:focus-visible { outline: 3px solid var(--accent); outline-offset: -4px; }
+.productModelCanvas:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: -4px; }
 .productModelEngineControls { position: absolute; z-index: 3; inset: 8px 8px auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .productModelEngineControls button { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; padding: 8px 10px; color: #171717; background: rgb(255 255 255 / 96%); border: 1px solid #737373; border-radius: 8px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; }
 .productModelEngineControls button:first-child { margin-left: auto; }
@@ -124,7 +124,7 @@
 .productCardContent { display: flex; min-width: 0; flex: 1; flex-direction: column; padding: 18px; }
 .productCardTags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .available, .unavailable, .saleTag { display: inline-flex; min-height: 26px; align-items: center; padding: 3px 9px; border: 1px solid var(--divider); border-radius: 999px; font-size: 12px; font-weight: 600; }
-.available { color: var(--accent); background: var(--status-soft); border-color: transparent; }
+.available { color: var(--accent-ink); background: var(--status-soft); border-color: transparent; }
 .unavailable { color: var(--foreground); background: var(--background); }
 .saleTag { color: var(--foreground); background: var(--surface); }
 .productCardContent h2 { margin: 0; font-size: 18px; font-weight: 650; line-height: 1.35; }
@@ -143,7 +143,7 @@
 .featuredSku { margin: 0; color: var(--muted); font: 14px/1.5 ui-monospace, Consolas, monospace; }
 .featuredCard .productCardPrice { margin-top: 0; font-size: 20px; }
 .featuredCard .sourceObservationPrice { font-size: 20px; }
-.productCardAction { position: relative; isolation: isolate; display: inline-flex; min-height: 48px; align-items: center; justify-content: center; margin-top: auto; padding: 12px 24px; overflow: hidden; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent); color: var(--action-text); font-size: 16px; font-weight: 600; text-align: center; }
+.productCardAction { position: relative; isolation: isolate; display: inline-flex; min-height: 48px; align-items: center; justify-content: center; margin-top: auto; padding: 12px 24px; overflow: hidden; border: 1px solid var(--action-border); border-radius: 8px; background: var(--accent); color: var(--action-text); font-size: 16px; font-weight: 600; text-align: center; }
 .productCardAction > span { position: relative; z-index: 1; }
 /* Shimmer-style CTA motion inspired by Aceternity's Tailwind CSS Buttons: https://ui.aceternity.com/components/tailwindcss-buttons */
 .productCardAction::after { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 40%, color-mix(in srgb, var(--action-text) 26%, transparent) 50%, transparent 60%); background-position: 100% 0; background-size: 200% 100%; content: ""; opacity: 0; pointer-events: none; }
@@ -185,7 +185,7 @@
 .galleryEmpty { padding: 24px; color: #525252; text-align: center; }
 .galleryThumbs { display: flex; gap: 10px; overflow-x: auto; padding: 12px 1px 4px; }
 .galleryThumb { position: relative; width: 72px; height: 72px; flex: 0 0 72px; padding: 3px; overflow: hidden; background: #fff; border: 1px solid var(--divider); border-radius: 8px; cursor: pointer; }
-.galleryThumb[aria-pressed="true"] { border: 2px solid var(--accent); }
+.galleryThumb[aria-pressed="true"] { border: 2px solid var(--action-border); }
 .galleryThumb img { width: 100%; height: 100%; object-fit: contain; }
 .productPanel { min-width: 0; padding: clamp(20px, 3vw, 32px); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; }
 .productMeta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
@@ -205,7 +205,7 @@
 .specList dd { margin: 0; overflow-wrap: anywhere; }
 .detailList { display: grid; gap: 8px; margin: 0; padding-left: 22px; }
 .resourceList { display: grid; gap: 10px; padding: 0; list-style: none; }
-.resourceList a, .contentBlock a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.resourceList a, .contentBlock a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
 .contentBlock { max-width: 760px; overflow-wrap: anywhere; line-height: 1.75; }
 .contentBlock p, .contentBlock ul, .contentBlock ol, .contentBlock pre { margin-block: 16px; }
 .contentBlock ul { padding-left: 24px; list-style: disc; }
@@ -213,7 +213,7 @@
 .contentBlock pre { overflow-x: auto; padding: 16px; background: var(--surface); border: 1px solid var(--divider); border-radius: 8px; }
 .contentBlock img { max-width: 100%; height: auto; margin-block: 16px; }
 .tableWrap { max-width: 100%; overflow-x: auto; }
-.tableWrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.tableWrap:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .tableWrap table { width: 100%; border-collapse: collapse; }
 .tableWrap th, .tableWrap td { min-width: 96px; padding: 10px; text-align: left; border: 1px solid var(--border); }
 
@@ -264,9 +264,9 @@
 .quantityControl button:first-child { border-radius: 8px 0 0 8px; }
 .quantityControl button:last-child { border-radius: 0 8px 8px 0; }
 .quantityControl button:disabled { color: var(--muted); cursor: not-allowed; }
-.quantityControl button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.quantityControl button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .galleryOpen { position: absolute; inset: 0; padding: 0; background: #fff; border: 0; cursor: zoom-in; }
-.galleryOpen:focus-visible, .galleryThumb:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.galleryOpen:focus-visible, .galleryThumb:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: -3px; }
 .galleryOpen span { position: absolute; right: 16px; bottom: 16px; padding: 7px 12px; color: #171717; background: #fff; border: 1px solid #ddd; border-radius: 999px; font: 600 13px/1.2 sans-serif; }
 .galleryOverlay { position: fixed; z-index: 100; inset: 0; background: rgb(0 0 0 / 72%); }
 .galleryDialog { position: fixed; z-index: 101; inset: 4vh 4vw; display: grid; place-items: center; padding: 56px 48px 64px; background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; }
@@ -274,4 +274,4 @@
 .galleryClose, .galleryDialogNav button { display: grid; width: 44px; height: 44px; place-items: center; color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; }
 .galleryClose { position: absolute; top: 8px; right: 8px; }
 .galleryDialogNav { position: absolute; bottom: 8px; display: flex; align-items: center; gap: 16px; }
-.galleryClose:focus-visible, .galleryDialogNav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.galleryClose:focus-visible, .galleryDialogNav button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

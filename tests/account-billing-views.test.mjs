@@ -46,6 +46,8 @@ function harness(kind) {
       if (name === "react") return hooks;
       if (name === "@clerk/nextjs") return { useUser: () => identity };
       if (name === "@/lib/account/billing-profile") return { parseBillingProfile };
+      if (name === "@/components/ui/button") return { buttonClassName: () => "button" };
+      if (name === "lucide-react") return { ...require(name), RefreshCw: () => null, Save: () => null };
       if (name === "next/link") return { default: ({ children, ...props }) => createElement("a", props, children) };
       if (name.endsWith(".module.css")) return { default: {} };
       return require(name);
@@ -72,7 +74,7 @@ function harness(kind) {
     focus: () => events.get("focus")?.(),
     change(index, value) { nodes(tree).filter(node => node.type === "input")[index].props.onChange({ target: { value } }); },
     submit: () => find(node => node.type === "form").props.onSubmit({ preventDefault() {} }),
-    reload: () => find(node => node.type === "button" && node.props.children === "Reload saved details").props.onClick(),
+    reload: () => find(node => node.type === "button" && node.props.children?.includes?.("Reload saved details")).props.onClick(),
   };
 }
 

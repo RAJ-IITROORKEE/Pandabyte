@@ -28,7 +28,7 @@
 .trigger:focus-visible,
 .item:focus-visible,
 .logout:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -145,7 +145,7 @@
   width: 17px;
   height: 17px;
   flex: 0 0 17px;
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .logout {

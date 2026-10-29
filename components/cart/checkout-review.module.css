@@ -22,7 +22,7 @@
 .review section { border-bottom:1px solid var(--divider); }.review h3 { display:flex; justify-content:space-between; }.review button:not(.disabled) { border:0; background:none; color:var(--foreground); text-decoration:underline; font:inherit; cursor:pointer; }
 .summary h2 { margin-bottom:20px; }.items { margin:0; padding:0; list-style:none; }.items li { display:flex; align-items:start; gap:12px; padding:16px 0; border-bottom:1px solid var(--divider); font-size:13px; }.items li:first-child { padding-top:0; }.items li > strong { margin-left:auto; white-space:nowrap; }.itemName { display:grid; min-width:0; gap:4px; }.itemName span { color:var(--muted); }.thumbnail { position:relative; display:grid; place-items:center; width:48px; height:48px; flex:none; border:1px solid var(--divider); border-radius:7px; background:var(--background); font-size:9px; color:var(--muted); }.thumbnail img { object-fit:contain; border-radius:7px; }.badge { position:absolute; top:-8px; right:-8px; min-width:20px; height:20px; display:grid; place-items:center; padding:0 4px; border-radius:50%; background:var(--foreground); color:var(--background); font-size:11px; }
 .totals { margin:12px 0 0; font-size:14px; }.totals div { display:flex; justify-content:space-between; gap:12px; padding:9px 0; }.totals dt { color:var(--muted); }.totals dd { margin:0; text-align:right; }.totals div:last-child { border-top:1px solid var(--divider); padding-top:16px; font-weight:700; }.totals div:last-child dt { color:var(--foreground); }.link { display:inline-block; margin-top:12px; color:var(--foreground); text-underline-offset:4px; font-size:14px; }
-.panel :is(a,button,input,select):focus-visible,.panel h2:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.panel :is(a,button,input,select):focus-visible,.panel h2:focus-visible { outline:2px solid var(--focus-ring); outline-offset:3px; }
 @media(max-width:767px) { .layout { display:flex; flex-direction:column; }.summary { order:-1; width:100%; }.left { width:100%; }.stepper { margin-bottom:24px; }.stepper li { font-size:12px; } }
 @media(max-width:480px) { .panel { padding:18px; }.fields { grid-template-columns:minmax(0,1fr); }.full { grid-column:auto; }.stepper li { font-size:11px; }.circle { width:36px; height:36px; }.stepper li:not(:last-child)::after { top:17px; } }
 
@@ -31,6 +31,6 @@
 
 .stepper button { display:flex; flex-direction:column; align-items:center; gap:9px; padding:0; border:0; background:transparent; color:inherit; font:inherit; cursor:pointer; }
 .stepper button:disabled { cursor:default; }
-.stepper button:focus-visible { outline:2px solid var(--accent); outline-offset:4px; border-radius:8px; }
+.stepper button:focus-visible { outline:2px solid var(--focus-ring); outline-offset:4px; border-radius:8px; }
 
 .fields input, .select select { font-weight:400; }

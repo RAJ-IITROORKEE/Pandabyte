@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Package, Search, ExternalLink, RefreshCw } from "lucide-react";
+import { buttonClassName } from "@/components/ui/button";
 import styles from "./account-orders.module.css";
 
 type Address = { recipientName: string; phone: string; line1: string; line2: string; city: string; state: string; postalCode: string; country: string };
@@ -64,13 +65,13 @@ export function AccountOrders({ data }: { data: ReturnType<typeof useAccountOrde
       </div>
       <form className={styles.search} onSubmit={event => { event.preventDefault(); search(searchText); }} role="search" aria-label="Search your orders">
         <input aria-label="Order number" placeholder="Search order number" value={searchText} onChange={event => setSearchText(event.target.value)} maxLength={80} pattern={"[A-Za-z0-9\\-]*"} title="Use letters, numbers and hyphens" />
-        <button type="submit" aria-label="Search orders"><Search size={18} aria-hidden="true" /></button>
+        <button className={buttonClassName({ variant: "ghost", size: "icon" })} type="submit" aria-label="Search orders"><Search size={18} aria-hidden="true" /></button>
       </form>
     </div>
-    <div className={styles.refresh}><span>Newest first · Updates on return to this window</span><button type="button" onClick={retry}><RefreshCw size={14} aria-hidden="true" />Refresh</button></div>
-    {error ? <div className={styles.empty} role="alert"><p>{error}</p><button type="button" onClick={retry}>Retry</button></div>
+    <div className={styles.refresh}><span>Newest first · Updates on return to this window</span><button className={buttonClassName({ variant: "ghost", size: "compact" })} type="button" onClick={retry}><RefreshCw size={14} aria-hidden="true" />Refresh</button></div>
+    {error ? <div className={styles.empty} role="alert"><p>{error}</p><button className={buttonClassName({ variant: "secondary" })} type="button" onClick={retry}>Retry</button></div>
       : !orders ? <div role="status" aria-label="Loading orders" className={styles.skeletons}>{[1, 2, 3].map(n => <div className={styles.skeleton} key={n} />)}<span>Loading orders…</span></div>
-      : !orders.total ? <div className={styles.empty}><Package aria-hidden="true" size={28} /><h2>{filtered ? "No matching orders" : "No orders yet"}</h2><p>{status === "delivered" ? "Confirmed delivery is not recorded yet. Check Fulfilled for completed fulfillment." : filtered ? "Try another order number or clear the filters." : "Your PandaByte purchases will appear here."}</p>{filtered ? <button type="button" onClick={() => { setSearchText(""); search(""); filter("all"); }}>Clear filters</button> : <Link href="/shop">Explore the shop</Link>}</div>
+      : !orders.total ? <div className={styles.empty}><Package aria-hidden="true" size={28} /><h2>{filtered ? "No matching orders" : "No orders yet"}</h2><p>{status === "delivered" ? "Confirmed delivery is not recorded yet. Check Fulfilled for completed fulfillment." : filtered ? "Try another order number or clear the filters." : "Your PandaByte purchases will appear here."}</p>{filtered ? <button className={buttonClassName({ variant: "secondary" })} type="button" onClick={() => { setSearchText(""); search(""); filter("all"); }}>Clear filters</button> : <Link className={buttonClassName()} href="/shop">Explore the shop</Link>}</div>
       : <div className={styles.list}>{orders.items.map(order => {
       const shipment = order.snapshot.shipment;
       const tracking = trackingLink(shipment?.trackingUrl);

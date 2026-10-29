@@ -1,0 +1,18 @@
+.link {
+  position: relative; isolation: isolate; display: inline-flex; min-height: 50px; align-items: center; justify-content: center;
+  overflow: hidden; padding: 2px; border: 0; border-radius: 9px; color: var(--action-text); font-size: 16px; font-weight: 500;
+  line-height: 1.5; text-decoration: none; background: var(--accent);
+}
+.link:focus-visible { outline: 3px solid var(--focus-ring, var(--accent)); outline-offset: 4px; }
+.gradient { position: absolute; inset: -100%; z-index: 0; pointer-events: none; opacity: .2; background: conic-gradient(transparent 0deg 250deg, var(--action-border) 278deg, var(--focus-ring) 314deg, var(--accent-ink) 338deg, transparent 360deg); transition: opacity 160ms ease; }
+.link:hover .gradient, .link:focus-visible .gradient { opacity: .9; animation: borderTurn 5s linear infinite; }
+.content {
+  position: relative; z-index: 1; display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 23px; border-radius: 8px; background: var(--accent); white-space: nowrap;
+}
+.content svg { width: 24px; height: 24px; flex: 0 0 auto; }
+@keyframes borderTurn { to { transform: rotate(1turn); } }
+@media (max-width: 480px) { .content { padding-inline: 17px; font-size: 15px; } }
+@media (prefers-reduced-motion: reduce) {
+  .gradient, .link:hover .gradient, .link:focus-visible .gradient { animation: none; transition: none; }
+}

@@ -24,31 +24,31 @@
   font: inherit; font-size: 14px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
 }
 .navigation a:hover, .navigation a[aria-current], .sidebarActions a:hover { color: var(--foreground); background: var(--status-soft); }
-.navigation a[aria-current] { color: var(--accent); }
+.navigation a[aria-current] { color: var(--accent-ink); }
 .sidebarActions button { color: light-dark(#b42318, #fda29b); }
 .sidebarActions button:hover { background: var(--status-soft); }
 .sidebarActions p { color: light-dark(#b42318, #fda29b); font-size: 13px; }
 .content { min-width: 0; }
 .shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-block: 18px; }
 .shortcuts a { display: grid; gap: 10px; padding: 18px; color: var(--foreground); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; text-decoration: none; }
-.shortcuts svg { color: var(--accent); }
+.shortcuts svg { color: var(--accent-ink); }
 .shortcuts span { color: var(--muted); font-size: 13px; line-height: 1.5; }
-.shortcuts a:hover { border-color: var(--accent); }
+.shortcuts a:hover { border-color: var(--action-border); }
 @media (max-width: 980px) { .shortcuts { grid-template-columns: minmax(0, 1fr); } }
 .content > section, .overview { scroll-margin-top: 100px; }
 .overview, .panel { padding: clamp(20px, 4vw, 28px); background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; }
 .overview { padding: clamp(24px, 5vw, 40px); }
-.eyebrow { color: var(--accent) !important; font-size: 12px !important; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.eyebrow { color: var(--accent-ink) !important; font-size: 12px !important; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .overview h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 38px); letter-spacing: -.04em; line-height: 1.15; }
 .overview p, .panel > p, .identityNote { color: var(--muted); font-size: 14px; line-height: 1.6; }
-.overview a, .identityNote a { color: var(--accent); font-weight: 600; }
+.overview a, .identityNote a { color: var(--accent-ink); font-weight: 600; }
 .overview a { display: inline-block; margin-top: 12px; }
 .panel { margin-top: 18px; }
 .panel h2 { margin: 0; font-size: 22px; letter-spacing: -.025em; }
 .panel > p { margin: 8px 0 16px; }
 .identityNote { margin: 10px 4px 0; }
 .message { margin: 48px auto; width: min(100% - 32px, 760px); color: var(--muted); }
-.dashboard :is(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.dashboard :is(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 @media (max-width: 760px) {
   .dashboard { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .sidebar { position: static; }
@@ -60,7 +60,7 @@
 .pageHeading { margin-bottom: 24px; }
 .pageHeading h1, .panel h1 { margin: 0; font-size: clamp(28px, 4vw, 38px); letter-spacing: -.04em; line-height: 1.15; }
 .pageHeading p { color: var(--muted); line-height: 1.6; }
-.pageHeading a { color: var(--accent); font-weight: 600; }
+.pageHeading a { color: var(--accent-ink); font-weight: 600; }
 .mobileNavigation { display: none; }
 .mobileNavigation summary { min-height: 44px; padding: 12px; border: 1px solid var(--divider); border-radius: 8px; cursor: pointer; font-weight: 600; }
 @media (max-width: 760px) {

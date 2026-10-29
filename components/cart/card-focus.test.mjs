@@ -33,6 +33,7 @@ for (const available of [true, false]) test(`final removal focuses ${available ?
     "./cart-utils": { removeCartItem: items => items.filter(item => item.variantId !== "a"), setCartItemQuantity: () => null },
     "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: 2 }; return { persisted: true }; } },
     "./cart.module.css": { default: {} },
+    "@/components/ui/button": { buttonClassName: () => "button" },
   };
   runInNewContext(`${compiled}\nexports.Session = AddToCartButtonSession;`, { exports, require: name => dependencies[name] ?? require(name), AbortController, document });
   function render() {
@@ -75,6 +76,7 @@ for (const signedIn of [false, true]) test(`${signedIn ? "signed-in" : "guest"} 
     "./cart-utils": { addCartItem: items => [...items, { variantId: "a", quantity: 1 }], setCartItemQuantity: (items, _id, quantity) => items.map(item => ({ ...item, quantity })), removeCartItem: () => [] },
     "./guest-cart-store": { saveGuestCart: items => { guest = { ...guest, items, revision: 2 }; return { persisted: true }; } },
     "./cart.module.css": { default: {} },
+    "@/components/ui/button": { buttonClassName: () => "button" },
   };
   runInNewContext(`${compiled}\nexports.Session = AddToCartButtonSession;`, { exports, require: name => dependencies[name] ?? require(name), AbortController, document });
   function render() {
@@ -167,6 +169,7 @@ test("full-size add keeps focus while pending and does not steal it on error", a
     "./cart-api": { loadCustomerCart: () => new Promise((_resolve, reject) => { rejectLoad = reject; }), cartErrorMessage: () => "Could not load cart" },
     "./customer-cart-store": {}, "./guest-cart-store": {}, "./cart-utils": {}, "./buy-now-store": {},
     "./cart.module.css": { default: {} },
+    "@/components/ui/button": { buttonClassName: () => "button" },
   };
   runInNewContext(`${compiled}\nexports.Session = AddToCartButtonSession;`, { exports, require: name => dependencies[name] ?? require(name), AbortController, document });
   function render() {

@@ -24,6 +24,8 @@ function harness() {
     if (name === "react") return hooks;
     if (name === "@clerk/nextjs") return { useUser: () => ({ isLoaded: true, user }), useClerk: () => ({ user }), UserAvatar: () => null };
     if (name === "@/lib/account/billing-profile") return billingExports;
+    if (name === "@/components/ui/button") return { buttonClassName: () => "button" };
+    if (name === "lucide-react") return { RefreshCw: () => null, Save: () => null };
     if (name.endsWith(".module.css")) return { default: {} };
     return require(name);
   } });

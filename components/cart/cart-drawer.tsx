@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ShoppingCart, X } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useUser } from "@clerk/nextjs";
+import { buttonClassName } from "@/components/ui/button";
 import { clearCustomerCart, getCustomerCartServerSnapshot, getCustomerCartSnapshot, prepareCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, subscribeGuestCart } from "./guest-cart-store";
 import styles from "./cart-drawer.module.css";
@@ -28,12 +29,12 @@ export function CartDrawer({ onOpen, onCartPage = false }: { onOpen?: () => void
   const label = count ? `Cart, ${count} ${count === 1 ? "item" : "items"}` : "Cart";
   const icon = <><ShoppingCart aria-hidden="true" />{count > 0 && <span className={styles.badge} aria-hidden="true">{count}</span>}</>;
   const [open, setOpen] = useState(false);
-  if (onCartPage) return <Link className={`pb-icon-button ${styles.trigger}`} href="/cart" aria-label={label} onClick={onOpen}>{icon}</Link>;
+  if (onCartPage) return <Link className={buttonClassName({ variant: "ghost", size: "icon", className: `pb-icon-button ${styles.trigger}` })} href="/cart" aria-label={label} onClick={onOpen}>{icon}</Link>;
   return <Dialog.Root open={open} onOpenChange={(next) => {
     setOpen(next);
     if (next) onOpen?.();
   }}>
-    <Dialog.Trigger className={`pb-icon-button ${styles.trigger}`} aria-label={label}>{icon}</Dialog.Trigger>
+    <Dialog.Trigger className={buttonClassName({ variant: "ghost", size: "icon", className: `pb-icon-button ${styles.trigger}` })} aria-label={label}>{icon}</Dialog.Trigger>
     <Dialog.Portal>
       <Dialog.Overlay className={styles.overlay} />
       <Dialog.Content className={styles.drawer}>
@@ -46,7 +47,7 @@ export function CartDrawer({ onOpen, onCartPage = false }: { onOpen?: () => void
         }}>
           <CartScreen embedded />
         </div>
-        <div className={styles.footer}><Link href="/cart" onClick={() => setOpen(false)}>View full cart</Link></div>
+        <div className={styles.footer}><Link className={buttonClassName({ variant: "secondary" })} href="/cart" onClick={() => setOpen(false)}>View full cart</Link></div>
       </Dialog.Content>
     </Dialog.Portal>
   </Dialog.Root>;

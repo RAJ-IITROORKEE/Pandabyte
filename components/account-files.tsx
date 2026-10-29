@@ -255,7 +255,7 @@ export function AccountFiles() {
 
 const buttonStyle = {
   padding: "8px 12px",
-  color: "var(--accent)",
+  color: "var(--accent-ink)",
   background: "var(--status-soft)",
   border: "1px solid var(--border)",
   borderRadius: 8,

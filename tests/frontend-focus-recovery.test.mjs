@@ -108,6 +108,7 @@ function favoritesHarness(initial = favorites) {
     react, "./use-favorites": { useFavorites }, "./favorites-button": { FavoritesButton },
     "next/image": { default: "img" }, "next/link": { default: "a" },
     "@/components/cart/add-to-cart-button": {}, "@/lib/editorial/public-record": {},
+    "@/components/ui/button": { buttonClassName: () => "button" },
     "@/components/catalog/card-image-selection": {}, "@/components/catalog/card-pricing": { cardPricing: () => ({ price: "Price unavailable", availability: "Availability unavailable" }) }, "./favorites.module.css": { default: {} },
   }, { document, requestAnimationFrame: callback => frames.push(callback) });
   function run(key, component, props) {

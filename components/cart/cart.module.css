@@ -37,7 +37,7 @@
 .quantityControls span { min-width: 26px; text-align: center; font-size: 14px; }
 .quantityControls input { width: 78px; min-width: 0; min-height: 44px; padding: 8px; color: var(--foreground); background: var(--background); border: 1px solid var(--border); border-radius: 8px; font: inherit; }
 .quantityButton, .secondaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 9px 13px; color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; }
-.quantityButton:hover:not(:disabled):not([aria-disabled="true"]), .secondaryButton:hover:not(:disabled) { border-color: var(--accent); background: var(--status-soft); }
+.quantityButton:hover:not(:disabled):not([aria-disabled="true"]), .secondaryButton:hover:not(:disabled) { border-color: var(--action-border); background: var(--status-soft); }
 .lineTotal { margin: 0; font-size: 15px; font-weight: 650; text-align: right; overflow-wrap: anywhere; }
 .summary { position: sticky; top: 100px; }
 .subtotalRow { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--divider); }
@@ -45,7 +45,7 @@
 .subtotalRow strong { font-size: 18px; }
 .smallText, .setupNote { margin: 16px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .setupNote { padding: 12px; color: var(--foreground); background: var(--background); border: 1px solid var(--divider); border-radius: 8px; }
-.primaryButton { display: flex; min-height: 48px; align-items: center; justify-content: center; margin-top: 20px; padding: 12px 16px; color: var(--action-text); background: var(--accent); border: 1px solid var(--accent); border-radius: 8px; font: inherit; font-weight: 650; text-align: center; text-decoration: none; cursor: pointer; transition: filter 150ms ease; }
+.primaryButton { display: flex; min-height: 48px; align-items: center; justify-content: center; margin-top: 20px; padding: 12px 16px; color: var(--action-text); background: var(--accent); border: 1px solid var(--action-border); border-radius: 8px; font: inherit; font-weight: 650; text-align: center; text-decoration: none; cursor: pointer; transition: filter 150ms ease; }
 .primaryButton:hover:not(:disabled) { filter: brightness(.94); }
 .primaryButton:disabled { color: var(--muted); background: var(--background); border-color: var(--divider); cursor: not-allowed; filter: none; }
 .addToCart { margin-top: 22px; }
@@ -53,15 +53,15 @@
 .compactCart > :is(p, a) { grid-column: 1 / -1; }
 .compactButton { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; gap: 1px; padding: 8px; color: var(--foreground); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
 .compactSelected { display: flex; align-items: center; gap: 5px; }
-.compactActive { color: var(--foreground); background: var(--status-soft); border-color: var(--accent); }
-.compactQuantity { display: inline-flex; align-items: center; background: var(--status-soft); border: 1px solid var(--accent); border-radius: 8px; }
+.compactActive { color: var(--foreground); background: var(--status-soft); border-color: var(--action-border); }
+.compactQuantity { display: inline-flex; align-items: center; background: var(--status-soft); border: 1px solid var(--action-border); border-radius: 8px; }
 .compactQuantity button { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; color: var(--foreground); background: transparent; border: 0; cursor: pointer; }
 .compactQuantity button:disabled { opacity: .5; cursor: not-allowed; }
 .compactQuantity span { min-width: 22px; font-size: 14px; font-weight: 650; text-align: center; }
-.compactQuantity button:focus-visible, .compactButton:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.compactButton:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.compactQuantity button:focus-visible, .compactButton:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.compactButton:hover:not(:disabled) { color: var(--accent-ink); border-color: var(--action-border); }
 .compactButton:disabled { color: var(--muted); background: var(--background); border-color: var(--divider); cursor: not-allowed; }
-.addButton { display: flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; padding: 12px 16px; color: var(--action-text); background: var(--accent); border: 1px solid var(--accent); border-radius: 8px; font: inherit; font-weight: 650; text-align: center; cursor: pointer; transition: filter 150ms ease; }
+.addButton { display: flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; padding: 12px 16px; color: var(--action-text); background: var(--accent); border: 1px solid var(--action-border); border-radius: 8px; font: inherit; font-weight: 650; text-align: center; cursor: pointer; transition: filter 150ms ease; }
 .addButton:hover:not(:disabled) { filter: brightness(.94); }
 .addButton:disabled { color: var(--muted); background: var(--background); border-color: var(--divider); cursor: not-allowed; }
 .addButton[aria-disabled="true"], .compactButton[aria-disabled="true"], .compactQuantity button[aria-disabled="true"] { cursor: wait; opacity: .7; }
@@ -70,7 +70,7 @@
 .addError { color: var(--foreground); }
 .addMessage { color: var(--muted); }
 .viewCartLink { display: inline-flex; min-height: 40px; align-items: center; margin-top: 4px; color: var(--foreground); font-size: 13px; text-decoration: underline; text-underline-offset: 4px; transition: color 150ms ease; }
-.viewCartLink:hover, .secondaryLink:hover { color: var(--accent); }
+.viewCartLink:hover, .secondaryLink:hover { color: var(--accent-ink); }
 .secondaryLink { display: block; min-height: 44px; margin-top: 10px; padding: 11px 8px; color: var(--foreground); font-size: 14px; text-align: center; text-decoration: underline; text-underline-offset: 4px; transition: color 150ms ease; }
 .empty, .errorPanel, .notice { max-width: 720px; }
 .empty p, .errorPanel p, .notice p { margin: 10px 0 0; color: var(--muted); line-height: 1.6; }
@@ -82,14 +82,14 @@
 .mergeNotice p { max-width: 660px; margin: 7px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
 .mergeNotice .smallText { font-size: 12px; }
 .storageWarning, .error { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; padding: 14px 16px; color: var(--foreground); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; line-height: 1.5; }
-.error { border-color: var(--accent); }
+.error { border-color: var(--action-border); }
 .error p { flex: 1 1 320px; margin: 0; }
 .storageWarning { color: var(--muted); }
 .fieldError { display: block; margin-top: 6px; color: var(--foreground); font-size: 12px; line-height: 1.4; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 .page :is(a, button, input):focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 .quantityControls button:disabled, .removeButton:disabled, .secondaryButton:disabled { cursor: wait; opacity: .7; }

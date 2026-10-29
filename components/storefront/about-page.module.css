@@ -1,17 +1,17 @@
 .page { width: min(100%, 1248px); margin-inline: auto; padding: 36px 24px 112px; overflow-wrap: anywhere; }
 .breadcrumb { display: flex; flex-wrap: wrap; gap: 9px; color: var(--muted); font-size: 13px; }
 .breadcrumb a { text-decoration: none; }
-.breadcrumb a:hover { color: var(--accent); }
+.breadcrumb a:hover { color: var(--accent-ink); }
 .aboutHero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .86fr); align-items: center; gap: clamp(40px, 7vw, 100px); padding-block: clamp(64px, 8vw, 104px); }
 .heading { min-width: 0; }
 .heading h1 { margin: 0; font-size: clamp(42px, 5.4vw, 68px); font-weight: 600; line-height: 1.06; letter-spacing: -.035em; text-wrap: balance; }
 .lede { max-width: 60ch; margin: 28px 0 0; color: var(--muted); font-size: clamp(17px, 1.5vw, 19px); line-height: 1.75; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 .primary, .secondary { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 10px; padding: 12px 18px; border: 1px solid var(--border); border-radius: 8px; font-weight: 600; line-height: 1.4; text-decoration: none; }
-.primary { color: var(--action-text); background: var(--accent); border-color: var(--accent); }
+.primary { color: var(--action-text); background: var(--accent); border-color: var(--action-border); }
 .secondary { color: var(--foreground); background: var(--surface); }
 .primary:hover { opacity: .9; }
-.secondary:hover { border-color: var(--accent); }
+.secondary:hover { border-color: var(--action-border); }
 .primary svg, .secondary svg { flex: none; }
 .heroImage { min-width: 0; overflow: hidden; background: var(--surface); border: 1px solid var(--divider); border-radius: 16px; }
 .heroImage img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain; background: #f3f4f2; }
@@ -31,7 +31,7 @@
 .companyContent :global(.published-document) > :last-child { margin-bottom: 0; }
 .panel { padding: clamp(24px, 3vw, 36px); }
 .empty { display: grid; justify-items: start; gap: 16px; }
-.empty > svg, .emptyRow > svg { color: var(--accent); }
+.empty > svg, .emptyRow > svg { color: var(--accent-ink); }
 .empty p, .emptyRow p { margin: 0; color: var(--muted); line-height: 1.7; }
 .section { display: grid; gap: 32px; padding-top: clamp(40px, 6vw, 72px); border-top: 1px solid var(--divider); }
 .sectionHeading h2, .contactCallout h2 { margin: 0; font-size: clamp(30px, 4vw, 44px); font-weight: 600; line-height: 1.12; letter-spacing: -.035em; }
@@ -48,7 +48,7 @@
 .contactCallout { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-top: clamp(64px, 8vw, 112px); padding: clamp(28px, 5vw, 56px); background: var(--status-soft); }
 .contactCallout p { max-width: 60ch; margin: 16px 0 0; color: var(--muted); line-height: 1.7; }
 .contactCallout > a { flex: none; }
-.page a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.page a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
 @media (max-width: 767px) {
   .aboutHero, .companyContent { grid-template-columns: minmax(0, 1fr); }
   .companyContent :global(.published-document):last-child:nth-child(odd) ul { grid-template-columns: minmax(0, 1fr); gap: 16px; }

@@ -127,7 +127,7 @@
 .primaryAction {
   color: var(--action-text);
   background: var(--accent);
-  border-color: var(--accent);
+  border-color: var(--action-border);
   transition: filter 150ms ease;
 }
 
@@ -147,7 +147,7 @@
 
 .dashboard :is(a, button, input, select, textarea, summary):focus-visible,
 .settingsPage :is(a, button, input, select, textarea, summary):focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -193,7 +193,7 @@
   height: 42px;
   flex: 0 0 42px;
   place-items: center;
-  color: var(--accent);
+  color: var(--accent-ink);
   background: var(--status-soft);
   border-radius: 12px;
 }
@@ -288,7 +288,7 @@
 
 .addressBadge {
   padding: 4px 8px;
-  color: var(--accent);
+  color: var(--accent-ink);
   background: var(--status-soft);
   border-radius: 999px;
   font-size: 11px;
@@ -319,7 +319,7 @@
 .textAction {
   min-height: 44px;
   padding: 6px 8px;
-  color: var(--accent);
+  color: var(--accent-ink);
   background: transparent;
   border: 0;
   border-radius: 8px;
@@ -526,7 +526,7 @@
 .moreDetails[open] .summaryChevron { transform: rotate(180deg); }
 
 .moreDetails summary:hover .summaryChevron {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .detailContent {
@@ -567,7 +567,7 @@
   min-height: 40px;
   align-items: center;
   gap: 7px;
-  color: var(--accent);
+  color: var(--accent-ink);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;

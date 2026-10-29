@@ -10,7 +10,7 @@
 .body > p { padding: 24px; }
 .footer { flex: 0 0 auto; padding: 16px 24px; border-top: 1px solid var(--divider); }
 .footer a { display: inline-flex; min-height: 44px; align-items: center; color: var(--foreground); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
-.drawer :is(a, button, input):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.drawer :is(a, button, input):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 
 .trigger { position: relative; }
 .badge { position: absolute; top: 0; right: 0; min-width: 18px; height: 18px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 9px; color: var(--action-text); background: var(--accent); font-size: 10px; font-weight: 700; line-height: 1; }

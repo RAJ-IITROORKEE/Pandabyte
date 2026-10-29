@@ -27,6 +27,7 @@ function harness(kind = "profile") {
   runInNewContext(compiled(kind), { exports, AbortController, queueMicrotask, fetch: (url, options) => new Promise(resolve => requests.push({ url, options, resolve })), require(name) {
     if (name === "react") return hooks;
     if (name === "@clerk/nextjs") return { useUser: () => identity };
+    if (name === "@/components/ui/button") return { buttonClassName: () => "button" };
     if (name.endsWith(".module.css")) return { default: {} };
     return require(name);
   } });

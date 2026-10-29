@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { buttonClassName } from "@/components/ui/button";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { parsePublicVariant, type PublicVariant } from "@/lib/editorial/public-record";
 import { cardPricing } from "@/components/catalog/card-pricing";
@@ -56,7 +57,7 @@ function FavoriteItem({ item, onRemoved }: { item: { productId: string; title: s
       const variant = result.variants[0];
       const eligible = variant.cartEligible === true || (variant.purchasable !== false && variant.availability === "available" && variant.effectivePricePaise !== null);
       return eligible ? <AddToCartButton variantId={variant.id} available compactLabel={result.title} /> : null;
-    })() : result.variants.length > 1 ? <Link href={`/products/${encodeURIComponent(result.slug)}`}>Choose options</Link> : null)}
+    })() : result.variants.length > 1 ? <Link className={buttonClassName({ variant: "secondary" })} href={`/products/${encodeURIComponent(result.slug)}`}>Choose options</Link> : null)}
     <FavoritesButton productId={item.productId} title={item.title ?? "unavailable product"} slug={item.slug ?? "unavailable"} onRemoved={onRemoved} />
   </li>;
 }

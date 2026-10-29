@@ -2,6 +2,8 @@
 
 import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { RefreshCw, Save } from "lucide-react";
+import { buttonClassName } from "@/components/ui/button";
 import { parseBillingProfile, type BillingProfile } from "@/lib/account/billing-profile";
 import styles from "@/components/account-profile-card.module.css";
 
@@ -108,7 +110,7 @@ function ProfileCardSession({ user }: { user: NonNullable<ReturnType<typeof useU
 
   return <section className={styles.card} aria-labelledby="profile-card-heading">
     <header><h1 id="profile-card-heading">Profile</h1><p>Manage your personal and contact details.</p></header>
-    {loading ? <p role="status">Loading your profile details…</p> : !billing ? <div role="alert"><p>{error}</p><button type="button" onClick={() => { setLoading(true); setReload(value => value + 1); }}>Try again</button></div> :
+    {loading ? <p role="status">Loading your profile details…</p> : !billing ? <div role="alert"><p>{error}</p><button className={buttonClassName({ variant: "secondary" })} type="button" onClick={() => { setLoading(true); setReload(value => value + 1); }}><RefreshCw aria-hidden="true" size={16} />Try again</button></div> :
       <form onSubmit={event => void save(event)} aria-busy={saving}>
         <div className={styles.photoRow}>
           <span className={styles.avatar}><UserAvatar rounded appearance={{ elements: { avatarBox: styles.avatarBox, avatarImage: styles.avatarImage } }} /></span>
@@ -124,9 +126,9 @@ function ProfileCardSession({ user }: { user: NonNullable<ReturnType<typeof useU
           <label className={styles.full}>Billing email <span>(optional)</span><input type="email" autoComplete="email" maxLength={254} value={email} onChange={event => { setEmail(event.target.value); clearFeedback(); }} disabled={saving} /><small>For future billing use; this does not change your sign-in email.</small></label>
           <label className={styles.full}>Contact phone <span>(optional)</span><input type="tel" autoComplete="tel" maxLength={48} value={phone} onChange={event => { setPhone(event.target.value); clearFeedback(); }} disabled={saving} /><small>Unverified contact detail. Leave blank to clear it.</small></label>
         </div>
-        {error && <div className={styles.error} role="alert"><p>{error}</p><button type="button" disabled={saving} onClick={() => { setLoading(true); setReload(value => value + 1); }}>Reload saved contact and billing details</button></div>}
+        {error && <div className={styles.error} role="alert"><p>{error}</p><button className={buttonClassName({ variant: "secondary" })} type="button" disabled={saving} onClick={() => { setLoading(true); setReload(value => value + 1); }}><RefreshCw aria-hidden="true" size={16} />Reload saved contact and billing details</button></div>}
         {message && <p role="status">{message}</p>}
-        <div className={styles.actions}><button type="submit" disabled={saving || !dirty}>{saving ? "Saving…" : "Save changes"}</button></div>
+        <div className={styles.actions}><button className={buttonClassName()} type="submit" disabled={saving || !dirty}><Save aria-hidden="true" size={16} />{saving ? "Saving…" : "Save changes"}</button></div>
       </form>}
   </section>;
 }

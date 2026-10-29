@@ -1,4 +1,9 @@
 .scope {
+  /* Keep inherited public-page tokens inside the existing monochrome Admin palette. */
+  --accent-ink: var(--accent);
+  --action-border: var(--accent);
+  --focus-ring: var(--accent);
+  --action-hover: var(--accent);
   --background: #ffffff;
   --surface: #ffffff;
   --foreground: #171717;

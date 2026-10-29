@@ -17,6 +17,7 @@ function harness() {
   const exports = {};
   const dependencies = {
     "@/lib/account/billing-profile": { parseBillingProfile: value => value },
+    "@/components/ui/button": { buttonClassName: () => "button" },
     "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },
     react: { useState: initial => { const i = cursor++; if (!(i in hooks)) hooks[i] = initial; return [hooks[i], value => { hooks[i] = value; }]; }, useRef: initial => { const i = cursor++; return hooks[i] ??= { current: initial }; }, useEffect: fn => { effect = fn; } },
     "next/link": { default: "a" }, "next/image": { default: "img" }, "@clerk/nextjs": {}, "lucide-react": {},

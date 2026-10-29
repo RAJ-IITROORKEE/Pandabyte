@@ -11,11 +11,12 @@ import { addCartItem, removeCartItem, setCartItemQuantity } from "./cart-utils";
 import { setBuyNowSelection } from "./buy-now-store";
 import { getGuestCartServerSnapshot, getGuestCartSnapshot, saveGuestCart, subscribeGuestCart } from "./guest-cart-store";
 import { getCustomerCartServerSnapshot, getCustomerCartSnapshot, prepareCustomerCart, publishCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
+import { buttonClassName } from "@/components/ui/button";
 import styles from "./cart.module.css";
 
 export function AddToCartButton({ variantId, available, quantity = 1, showBuyNow = false, compactLabel }: { variantId: string; available: boolean; quantity?: number; showBuyNow?: boolean; compactLabel?: string }) {
   const { user, isLoaded } = useUser();
-  if (!isLoaded) return <button className={compactLabel ? styles.compactButton : styles.addButton} type="button" disabled aria-label="Loading account">{compactLabel ? <ShoppingCart aria-hidden="true" size={19} /> : "Loading account…"}</button>;
+  if (!isLoaded) return <button className={buttonClassName({ variant: compactLabel ? "secondary" : "primary", size: compactLabel ? "icon" : "standard", className: compactLabel ? styles.compactButton : styles.addButton })} type="button" disabled aria-label="Loading account">{compactLabel ? <ShoppingCart aria-hidden="true" size={19} /> : "Loading account…"}</button>;
   const userId = user?.id ?? null;
   return <AddToCartButtonSession key={userId ?? "guest"} variantId={variantId} available={available} quantity={quantity} userId={userId} showBuyNow={showBuyNow} compactLabel={compactLabel} />;
 }
@@ -188,12 +189,12 @@ function AddToCartButtonSession({ variantId, available, quantity, userId, showBu
       <button type="button" onClick={event => void changeCompactQuantity(-1, event.currentTarget)} onBlur={() => { quantityFocusCandidate.current = null; }} disabled={needsReview} aria-disabled={busy ? true : undefined} aria-label={`Remove one ${compactLabel} from cart`}><Minus size={16} aria-hidden="true" /></button>
       <span aria-live="polite">{currentQuantity}</span>
       <button type="button" onClick={event => void changeCompactQuantity(1, event.currentTarget)} onBlur={() => { quantityFocusCandidate.current = null; }} disabled={needsReview || !available || currentQuantity >= 99} aria-disabled={busy ? true : undefined} aria-label={`Add one ${compactLabel} to cart`}><Plus size={16} aria-hidden="true" /></button>
-    </div><Link ref={compactViewRef} className={`${styles.compactButton} ${styles.compactActive}`} href="/cart" aria-label={`View cart: ${compactLabel}, quantity ${currentQuantity}`} title="View cart"><ShoppingCart aria-hidden="true" size={19} /></Link></div> : <button ref={compactLabel ? compactAddRef : undefined} className={compactLabel ? styles.compactButton : styles.addButton} type="button" onClick={() => handleAdd()} onBlur={() => { addFocusCandidate.current = null; }} disabled={disabled || compactUnavailable} aria-disabled={busy ? true : undefined} aria-label={compactLabel ? `${buttonText}: ${compactLabel}` : undefined} title={compactLabel ? buttonText : undefined}>
+    </div><Link ref={compactViewRef} className={`${styles.compactButton} ${styles.compactActive}`} href="/cart" aria-label={`View cart: ${compactLabel}, quantity ${currentQuantity}`} title="View cart"><ShoppingCart aria-hidden="true" size={19} /></Link></div> : <button ref={compactLabel ? compactAddRef : undefined} className={buttonClassName({ variant: compactLabel ? "secondary" : "primary", size: compactLabel ? "icon" : "standard", className: compactLabel ? styles.compactButton : styles.addButton })} type="button" onClick={() => handleAdd()} onBlur={() => { addFocusCandidate.current = null; }} disabled={disabled || compactUnavailable} aria-disabled={busy ? true : undefined} aria-label={compactLabel ? `${buttonText}: ${compactLabel}` : undefined} title={compactLabel ? buttonText : undefined}>
       <ShoppingCart aria-hidden="true" size={18} /> {buttonText}
     </button>}
     {compactLabel && currentQuantity === 0 && <span ref={removalStatusRef} tabIndex={-1} className={styles.srOnly}>Cart quantity is zero for {compactLabel}. {available ? "Use Add to cart to select this product." : "This product is currently unavailable."}</span>}
     {compactUnavailable && customer.error && <p className={styles.addError} role="alert">Could not load your cart. <Link href="/cart">Open cart to review</Link></p>}
-    {showBuyNow && <button className={styles.buyButton} type="button" onClick={() => handleAdd(true)} disabled={!available || !validQuantity || busy}>Buy now</button>}
+    {showBuyNow && <button className={buttonClassName({ variant: "outline", className: styles.buyButton })} type="button" onClick={() => handleAdd(true)} disabled={!available || !validQuantity || busy}>Buy now</button>}
     {error && <p className={styles.addError} role="alert">{error}</p>}
     {initialNotice && <p className={styles.addMessage} role="status">{initialNotice}</p>}
     {message && <p className={styles.addMessage} role="status" aria-live="polite">{message}</p>}

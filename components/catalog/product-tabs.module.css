@@ -1,7 +1,7 @@
 .details { margin-top: 48px; }
 .tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--divider); }
 .tabs button { flex: 0 0 auto; min-height: 48px; padding: 12px 20px; color: var(--muted); background: transparent; border: 0; border-bottom: 2px solid transparent; font: inherit; font-weight: 600; cursor: pointer; }
-.tabs button[aria-selected="true"] { color: var(--foreground); border-bottom-color: var(--accent); }
-.tabs button:focus-visible, .panel:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.tabs button[aria-selected="true"] { color: var(--foreground); border-bottom-color: var(--action-border); }
+.tabs button:focus-visible, .panel:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; }
 .panel { min-width: 0; padding: clamp(20px, 3vw, 32px); border: 1px solid var(--divider); border-top: 0; border-radius: 0 0 12px 12px; }
 .panel[hidden] { display: none; }

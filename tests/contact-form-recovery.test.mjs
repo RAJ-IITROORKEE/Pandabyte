@@ -25,7 +25,7 @@ function harness() {
     },
   };
   const Challenge = () => null;
-  const dependencies = { react, "./contact-challenge": { ContactChallenge: Challenge }, "./editorial.module.css": { default: {} } };
+  const dependencies = { react, "lucide-react": { Send: () => null }, "@/components/ui/button": { buttonClassName: () => "button" }, "./contact-challenge": { ContactChallenge: Challenge }, "./editorial.module.css": { default: {} } };
   const signal = {};
   runInNewContext(compiled, {
     exports, require: name => dependencies[name] ?? require(name),

@@ -1,4 +1,6 @@
-27 October source-cart override: the owner enabled imported-product cart actions with captured prices. Show unverified availability, preserve source provenance and provide a cart/checkout review with payment disabled. Admin and the homepage hero remain protected. See [source-cart contract](docs/source-cart-review.md).
+29 October frontend override: use the Supabase homepage color reference for public/customer screens only; simplify the hero to static text without CanvasText, entry animation or pointer-follow glow. Preserve Admin's existing theme and the circuit/logo. The owner requests shared button polish, tests, commit and push. See [current theme contract](docs/frontend-theme.md). This supersedes earlier hero/color restrictions only within this presentation scope.
+
+27 October source-cart override: the owner enabled imported-product cart actions with captured prices. Show unverified availability, preserve source provenance and provide a cart/checkout review with payment disabled. See [source-cart contract](docs/source-cart-review.md).
 
 # PandaByte.in — editable website and design contract
 

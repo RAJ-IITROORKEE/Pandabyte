@@ -19,6 +19,7 @@ function render(result) {
     "next/image": { default: () => null },
     "next/link": { default: ({ children, ...props }) => createElement("a", props, children) },
     "@/components/cart/add-to-cart-button": { AddToCartButton: () => createElement("button", null, "Add to cart") },
+    "@/components/ui/button": { buttonClassName: () => "button" },
     "@/components/catalog/card-pricing": { cardPricing },
     "@/lib/editorial/public-record": {},
     "@/components/catalog/card-image-selection": {},

@@ -26,6 +26,7 @@ function checkoutHarness() {
     "@clerk/nextjs": { useUser: () => identity },
     "next/image": { default: () => createElement("img") },
     "@/components/catalog/card-image-selection": { cardImageIds: () => [] },
+    "@/components/ui/button": { buttonClassName: () => "button" },
     "./checkout-money": { includedDiscount: () => 0, formatPaise: value => value == null ? "Unavailable" : `₹${(value / 100).toFixed(2)}` },
     "./checkout-draft": { readDraft: () => null, saveDraft() {}, clearDraft() {} },
     "next/link": { default: ({ children, ...props }) => createElement("a", props, children) },

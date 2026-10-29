@@ -2,5 +2,5 @@
 .container { position: fixed; z-index: 101; inset: 0; display: grid; place-items: center; padding: 24px; pointer-events: none; }
 .content { position: relative; width: min(100%, 900px); max-height: calc(100dvh - 48px); overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; color: var(--foreground); background: var(--surface); border-radius: 16px; box-shadow: 0 24px 80px rgb(0 0 0 / 20%); }
 .content:focus { outline: none; }
-.content:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.content:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
 @media (max-width: 539px) { .container { padding: 12px; } .content { max-height: calc(100dvh - 24px); } }

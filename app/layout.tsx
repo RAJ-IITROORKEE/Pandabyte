@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <ClerkProvider dynamic appearance={{
           variables: {
-            colorPrimary: "var(--pb-accent)",
+            colorPrimary: "var(--pb-accent-ink)",
             colorPrimaryForeground: "var(--pb-action-text)",
             colorBackground: "var(--pb-surface)",
             colorForeground: "var(--pb-foreground)",

@@ -8,15 +8,15 @@
 .avatarBox { width: 100%; height: 100%; }
 .avatarImage { object-fit: cover; }
 .upload { display: inline-block; padding: 9px 18px; border: 1px solid var(--divider); border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color .2s ease, background-color .2s ease; }
-.upload:hover { border-color: var(--accent); background: var(--status-soft); }
+.upload:hover { border-color: var(--action-border); background: var(--status-soft); }
 .fileInput { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.photoRow:focus-within .upload { outline: 2px solid var(--accent); outline-offset: 3px; }
+.photoRow:focus-within .upload { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .photoRow p { margin: 6px 0 0; }
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .fields label { display: block; font-size: 14px; font-weight: 600; }
 .fields label span { color: var(--muted); font-weight: 400; }
 .fields input { display: block; width: 100%; min-width: 0; min-height: 46px; margin-top: 8px; padding: 10px 16px; color: var(--foreground); background: var(--background); border: 1px solid var(--divider); border-radius: 999px; font: inherit; }
-.fields input:focus-visible, .actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.fields input:focus-visible, .actions button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .fields small { display: block; margin-top: 8px; font-weight: 400; }
 .full { grid-column: 1 / -1; }
 .actions { display: flex; margin-top: 28px; }

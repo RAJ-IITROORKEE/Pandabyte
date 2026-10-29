@@ -5,7 +5,7 @@
 .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
 .filters { display: flex; overflow-x: auto; max-width: 100%; gap: 3px; padding: 4px; border-radius: 9px; background: var(--surface); }
 .filters button { border: 0; background: transparent; flex-shrink: 0; }
-.filters button[aria-pressed="true"] { color: var(--accent); background: var(--status-soft); }
+.filters button[aria-pressed="true"] { color: var(--accent-ink); background: var(--status-soft); }
 .search { display: flex; min-width: 0; flex: 1 1 220px; max-width: 340px; border: 1px solid var(--border); border-radius: 8px; }
 .search input { width: 100%; min-width: 0; color: var(--foreground); background: transparent; border: 0; padding: 12px; font: inherit; font-size: 14px; }
 .search button { border: 0; background: transparent; display: grid; place-items: center; }
@@ -19,7 +19,7 @@
 .metadata { flex: 1; min-width: 0; }
 .reference { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .reference strong { font-size: 14px; overflow-wrap: anywhere; }
-.badge { color: var(--accent); background: var(--status-soft); padding: 4px 8px; border-radius: 5px; font-size: 12px; }
+.badge { color: var(--accent-ink); background: var(--status-soft); padding: 4px 8px; border-radius: 5px; font-size: 12px; }
 .badge[data-status="cancelled"] { color: light-dark(#a52622, #ffb4ab); background: light-dark(#fce9e7, #3b2424); }
 .badge[data-status="pending"] { color: light-dark(#78540d, #efcf7d); background: light-dark(#fff3d7, #332c1c); }
 .detailBody dl { display: grid; grid-template-columns: 1fr auto; gap: 8px; max-width: 400px; }

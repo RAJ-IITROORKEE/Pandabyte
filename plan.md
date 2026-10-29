@@ -1,3 +1,5 @@
+> Frontend presentation checkpoint, 29 October 2026: public/customer pages use the Supabase homepage palette, a static minimal hero and shared native action styles. Admin keeps its independent monochrome theme. Verification and provenance are recorded in [the theme checkpoint](docs/frontend-theme.md). This does not enable commerce, publish content or redeploy the preview.
+
 > Hosted preview, 29 October 2026: the owner authorized Vercel CLI deployment and browser-entered environment variables. The hosted development preview is available at https://pandabyte-iot.vercel.app; see docs/vercel-preview-deployment.md. This supersedes deployment deferral only for that preview. Production-commerce, real invoices/payments, live email, load tests and restore remain held; full Phase 6/release exit remains open.
 
 > Repository checkpoint, 29 October 2026: public GitHub publication of the reviewed code on main is now authorized. Earlier no-GitHub statements below are historical. Deployment, real invoice issuance/payments, content mutation, load tests and restore remain deferred. See README.md for current status.

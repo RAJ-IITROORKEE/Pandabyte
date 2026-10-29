@@ -17,7 +17,7 @@ test("orders hide the previous account and ignore an aborted response", async ()
     useEffect(effect, deps) { if (!dependencies || deps.some((value, index) => value !== dependencies[index])) { dependencies = deps; pendingEffect = effect; } },
   };
   const exports = {};
-  runInNewContext(compiled, { exports, require: name => name === "react" ? hooks : name.endsWith(".module.css") ? { default: {} } : require(name), AbortController, URL, Intl,
+  runInNewContext(compiled, { exports, require: name => name === "react" ? hooks : name === "@/components/ui/button" ? { buttonClassName: () => "button" } : name === "lucide-react" ? { Package: "package", Search: "search", ExternalLink: "external", RefreshCw: "refresh" } : name.endsWith(".module.css") ? { default: {} } : require(name), AbortController, URL, Intl,
     window: { addEventListener() {}, removeEventListener() {} },
     fetch: (url, options) => new Promise(resolve => requests.push({ url, resolve, signal: options.signal })) });
   function render(user) {

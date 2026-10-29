@@ -32,6 +32,8 @@ function addressHarness() {
   const exports = {};
   const dependencies = {
     "@clerk/nextjs": { useUser: () => ({ isLoaded: true, user: { id: "test-customer" } }) },
+    "@/components/ui/button": { buttonClassName: () => "button" },
+    "lucide-react": { MapPin: "map-pin", Plus: "plus", RefreshCw: "refresh", Save: "save", Trash2: "trash" },
     react: {
       useState: initial => {
         const index = cursor++;

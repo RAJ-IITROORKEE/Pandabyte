@@ -3,6 +3,7 @@ import Image from "next/image";
 import { HomeCircuit } from "@/components/home-circuit";
 import { HomeBrands } from "@/components/home-brands";
 import { HomeHero } from "@/components/home-hero";
+import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { ArrowRight, ChevronRight, Clock3, Mail, MessageSquareText, Phone } from "lucide-react";
 import { ProductCard } from "@/components/catalog/product-card";
 import { FaqList } from "@/components/storefront/faq-list";
@@ -56,13 +57,14 @@ export default async function HomePage() {
             <p className={styles.eyebrow}><span aria-hidden="true" />IoT &amp; Embedded</p>
             <h1 id="home-title" className={styles.heroTitle}>
               {title === defaultTitle ? <>
-                <span>Incredible Products</span>
-                <span className={styles.titleAccent}>for all your IoT Experiments</span>
+                <span>Incredible Products </span>
+                <span>for all your </span>
+                <span className={styles.titleAccent}>IoT Experiments</span>
               </> : title}
             </h1>
             {summary && <p className={styles.heroSummary}>{summary}</p>}
             <div className={styles.heroActions}>
-              <Link className={styles.primaryAction} href="/shop">Shop All <ArrowRight aria-hidden="true" /></Link>
+              <HoverBorderGradient href="/shop">Shop All <ArrowRight aria-hidden="true" /></HoverBorderGradient>
               <Link className={styles.secondaryAction} href="/help">Help Center</Link>
             </div>
           </div>
