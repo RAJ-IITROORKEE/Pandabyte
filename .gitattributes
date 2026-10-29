@@ -1,6 +1,7 @@
 # Stable source bytes across Windows checkouts (including vendored skill hashes).
 * text=auto eol=lf
 *.png binary
+*.pdf binary
 
 # Markdown hard-break spaces in documentation and the preserved audit are intentional.
 *.md whitespace=-blank-at-eol
