@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { pointerToCircuitPlane, type PlanePoint } from "./home-circuit-geometry";
+import { createCircuitFrameQueue } from "./home-circuit-frame";
 import styles from "./home-circuit.module.css";
 
 const devices = {
@@ -140,6 +141,7 @@ export function HomeCircuit() {
   const stageRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<Drag | null>(null);
+  const dragFrameRef = useRef<ReturnType<typeof createCircuitFrameQueue> | null>(null);
   const suppressClickRef = useRef<SensorId | null>(null);
   const positionsRef = useRef<Record<SensorId, Point>>(initialPositions());
   const [positions, setPositions] = useState<Record<SensorId, Point>>(initialPositions);
@@ -154,12 +156,40 @@ export function HomeCircuit() {
   const announcementTarget = focused ?? selected;
   const screen = sampleFor(active);
 
+  function updateDrag() {
+    const drag = dragRef.current;
+    const stage = stageRef.current;
+    const world = worldRef.current;
+    if (!drag || !stage || !world || !drag.moved) return;
+
+    if (drag.id && drag.startPoint && drag.startPosition) {
+      const point = pointerToPlane(stage, world, drag.lastClientX, drag.lastClientY);
+      const id = drag.id;
+      const next = {
+        ...positionsRef.current,
+        [id]: clampPosition(id, {
+          x: drag.startPosition.x + point.x - drag.startPoint.x,
+          y: drag.startPosition.y + point.y - drag.startPoint.y,
+        }),
+      };
+      positionsRef.current = next;
+      setPositions(next);
+    } else if (!drag.id) {
+      setRotation({
+        x: clamp(drag.startRotation.x - (drag.lastClientY - drag.startY) * 0.14, -22, 42),
+        y: clamp(drag.startRotation.y + (drag.lastClientX - drag.startX) * 0.14, -30, 30),
+      });
+    }
+  }
+
   useEffect(() => {
     const stage = stageRef.current;
     const world = worldRef.current;
     if (!stage || !world) return;
+    dragFrameRef.current = createCircuitFrameQueue(updateDrag);
 
     const resize = () => {
+      dragFrameRef.current?.flush();
       const scale = Math.min(stage.clientWidth / 900, stage.clientHeight / 620);
       world.style.setProperty("--scene-scale", String(scale));
       const drag = dragRef.current;
@@ -171,7 +201,12 @@ export function HomeCircuit() {
     const observer = new ResizeObserver(resize);
     observer.observe(stage);
     resize();
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      dragFrameRef.current?.cancel();
+      dragFrameRef.current = null;
+      dragRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
@@ -182,7 +217,7 @@ export function HomeCircuit() {
   }, [announcementTarget]);
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || dragRef.current) return;
     const stage = stageRef.current;
     const world = worldRef.current;
     if (!stage || !world) return;
@@ -216,42 +251,25 @@ export function HomeCircuit() {
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
-    const stage = stageRef.current;
-    const world = worldRef.current;
-    if (!drag || !stage || !world || drag.pointerId !== event.pointerId) return;
+    if (!drag || drag.pointerId !== event.pointerId) return;
     drag.lastClientX = event.clientX;
     drag.lastClientY = event.clientY;
-    const deltaX = event.clientX - drag.startX;
-    const deltaY = event.clientY - drag.startY;
-    if (!drag.moved && Math.hypot(deltaX, deltaY) > 4) drag.moved = true;
+    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4) drag.moved = true;
     if (!drag.moved) return;
 
     event.preventDefault();
-    if (drag.id && drag.startPoint && drag.startPosition) {
-      const point = pointerToPlane(stage, world, event.clientX, event.clientY);
-      const id = drag.id;
-      setPositions((current) => {
-        const next = {
-          ...current,
-          [id]: clampPosition(id, {
-            x: drag.startPosition!.x + point.x - drag.startPoint!.x,
-            y: drag.startPosition!.y + point.y - drag.startPoint!.y,
-          }),
-        };
-        positionsRef.current = next;
-        return next;
-      });
-    } else if (!drag.id) {
-      setRotation({
-        x: clamp(drag.startRotation.x - deltaY * 0.14, -22, 42),
-        y: clamp(drag.startRotation.y + deltaX * 0.14, -30, 30),
-      });
-    }
+    dragFrameRef.current?.schedule();
   }
 
   function finishPointer(event: PointerEvent<HTMLDivElement>, cancelled: boolean, captureLost = false) {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!cancelled && drag.moved && (drag.lastClientX !== event.clientX || drag.lastClientY !== event.clientY)) {
+      drag.lastClientX = event.clientX;
+      drag.lastClientY = event.clientY;
+      dragFrameRef.current?.schedule();
+    }
+    dragFrameRef.current?.flush();
     dragRef.current = null;
     if (!captureLost && drag.captureTarget.hasPointerCapture(event.pointerId)) {
       drag.captureTarget.releasePointerCapture(event.pointerId);
@@ -273,6 +291,11 @@ export function HomeCircuit() {
       setFocused(null);
     } else if (event.key === "Home") {
       event.preventDefault();
+      dragFrameRef.current?.cancel();
+      const drag = dragRef.current;
+      dragRef.current = null;
+      if (drag?.captureTarget.hasPointerCapture(drag.pointerId)) drag.captureTarget.releasePointerCapture(drag.pointerId);
+      setGesture(null);
       const reset = initialPositions();
       positionsRef.current = reset;
       setPositions(reset);
