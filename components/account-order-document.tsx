@@ -59,7 +59,7 @@ function DocumentSession({ reference }: { reference: string }) {
   }, [reference, reload]);
   const date = order?.createdAt && !Number.isNaN(Date.parse(order.createdAt)) ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "Not available";
   return <main id="main" tabIndex={-1} className={styles.page}>
-    <div className={styles.actions}><Link href="/account#orders">Back to orders</Link>{order && <button type="button" onClick={() => window.print()}>Print / Save as PDF</button>}</div>
+    <div className={styles.actions}><Link href="/account#orders">Back to orders</Link>{order && <><button type="button" onClick={() => window.print()}>Print / Save as PDF</button>{order.environment === "razorpay_test" && order.paymentState === "paid" && <a href={`/api/account/orders/${encodeURIComponent(reference)}/document`} download>Download test bill PDF</a>}</>}</div>
     <article className={styles.document}>
       <h1>ORDER SUMMARY — NOT A TAX INVOICE</h1>
       <p>This is an order summary, not an issued invoice.</p>

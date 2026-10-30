@@ -17,7 +17,7 @@ export function AccountBilling() {
     <section className={styles.panel} aria-labelledby="billing-documents-heading">
       <h2 id="billing-documents-heading">Invoices and receipts</h2>
       <p>Issued documents are not available in your account yet.</p>
-      <p>For a printable summary of an existing order, visit <Link href="/account/orders">My Orders</Link>. Order summaries are not tax invoices.</p>
+      <p>For a printable order summary or a paid Razorpay test order’s test bill PDF, visit <Link href="/account/orders">My Orders</Link>. These documents are not tax invoices.</p>
       <p>Review the layout using a fictional sample. It is not an issued tax invoice.</p>
       <InvoiceTemplateActions />
     </section>

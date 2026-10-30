@@ -62,7 +62,7 @@ export function SiteFooter({ navigationLinks = [], tagline = getSiteCopy().foote
 
         <div className="pb-site-footer__bottom">
           <p>© {new Date().getFullYear()} {copyrightName}. All rights reserved.</p>
-          <p>Development preview · ordering and payment are not available yet</p>
+          <p>{process.env.NODE_ENV === "development" && process.env.PANDABYTE_STOREFRONT_TEST_ENABLED === "true" && process.env.PANDABYTE_RAZORPAY_TEST_ENABLED === "true" ? "Development preview · Razorpay TEST orders only · no real charges" : "Development preview · ordering and payment are not available yet"}</p>
         </div>
       </div>
     </footer>

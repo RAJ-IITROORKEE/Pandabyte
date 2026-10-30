@@ -35,6 +35,7 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems,
   const focused = [];
   const exports = {};
   const dependencies = {
+    "./test-quote": { testQuoteKey: (items, subtotal) => JSON.stringify({ items, subtotal }), fetchTestQuote: () => Promise.reject(new Error("offline")) },
     "@clerk/nextjs": { useUser: () => ({ isLoaded: true, user: signedIn ? { id: "customer" } : null }) },
     "next/link": { default: "a" },
     react: {
@@ -76,7 +77,7 @@ function cartHarness({ signedIn = true, readError = false, items = initialItems,
     "@/components/catalog/card-image-selection": { cardImageIds: (_id, ids) => ids },
   };
   runInNewContext(`${compiled}\nexports.CartSession = CartSession; exports.CartContents = CartContents; exports.QuantityEditor = QuantityEditor;`, {
-    exports, require: name => dependencies[name] ?? require(name), AbortController,
+    exports, require: name => dependencies[name] ?? require(name), AbortController, fetch: () => Promise.reject(new Error("offline")),
   });
   return {
     focused,

@@ -18,6 +18,7 @@ import {
 } from "./guest-cart-store";
 import { getCustomerCartSnapshot, activateCustomerCart, publishCustomerCart, subscribeCustomerCart } from "./customer-cart-store";
 import styles from "./cart.module.css";
+import { fetchTestQuote, testQuoteKey, type TestQuote } from "./test-quote";
 import { cardImageIds } from "@/components/catalog/card-image-selection";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
@@ -58,6 +59,29 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     const customer = getCustomerCartSnapshot();
     return userId && customer.userId === userId && customer.cart ? viewOfCustomerCart(customer.cart) : { status: "loading" };
   });
+  const [storefrontTest, setStorefrontTest] = useState(false);
+  const [testResult, setTestResult] = useState<{ key: string; quote: TestQuote | null } | null>(null);
+  const [testQuoteAttempt, setTestQuoteAttempt] = useState(0);
+  const testItems = view.status === "ready" ? view.items : [];
+  const testSubtotal = view.status === "ready" ? view.quote.subtotalPaise : null;
+  const testKey = testQuoteKey(testItems, testSubtotal, view.status === "ready" ? view.quote : null);
+  const currentTestQuote = storefrontTest && testResult?.key === testKey ? testResult.quote : null;
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/checkout/razorpay-test/capabilities", { cache: "no-store", signal: controller.signal, headers: userId ? { "x-account-owner": userId } : {} }).then(response => response.ok ? response.json() : null).then(body => {
+      if (!controller.signal.aborted) setStorefrontTest(body?.razorpayTestAvailable === true && body?.storefrontTest === true);
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [userId]);
+  useEffect(() => {
+    const { items, subtotal } = JSON.parse(testKey) as { items: CartInputLine[]; subtotal: number | null };
+    if (!storefrontTest || view.status !== "ready" || !items.length || subtotal === null) return;
+    const controller = new AbortController();
+    void fetchTestQuote(items, subtotal, controller.signal).then(quote => {
+      if (!controller.signal.aborted) setTestResult({ key: testKey, quote });
+    }).catch(() => { if (!controller.signal.aborted) setTestResult({ key: testKey, quote: null }); });
+    return () => controller.abort();
+  }, [storefrontTest, testKey, testQuoteAttempt, view.status]);
   const [busy, setBusy] = useState(false);
   const [customerRefreshing, setCustomerRefreshing] = useState(!!userId);
   const [reloadRequired, setReloadRequired] = useState(false);
@@ -290,6 +314,9 @@ function CartSession({ userId, embedded }: { userId: string | null; embedded: bo
     </section>}
     {view.status === "ready" && <CartContents
       view={view}
+      storefrontTest={storefrontTest}
+      testQuote={busy || guestViewStale || customerRefreshing || reloadRequired ? null : currentTestQuote}
+      onRetryTestQuote={() => setTestQuoteAttempt(value => value + 1)}
       id={id}
       locked={busy || reloadRequired || guestViewStale || customerRefreshing}
       refreshing={guestViewStale || customerRefreshing}
@@ -311,8 +338,11 @@ function CartLayout({ children, embedded, itemCount }: { children: ReactNode; em
   </main>;
 }
 
-function CartContents({ view, id, locked, refreshing, headingRef, onRemove, onUpdateQuantity }: {
+function CartContents({ view, storefrontTest, testQuote, onRetryTestQuote, id, locked, refreshing, headingRef, onRemove, onUpdateQuantity }: {
   view: Extract<CartView, { status: "ready" }>;
+  storefrontTest: boolean;
+  testQuote: TestQuote | null;
+  onRetryTestQuote: () => void;
   id: string;
   locked: boolean;
   refreshing: boolean;
@@ -349,12 +379,11 @@ function CartContents({ view, id, locked, refreshing, headingRef, onRemove, onUp
       <h2 id={`${id}-summary-title`}>Order summary</h2>
       <div className={styles.summaryRows}>
         <div><span>Subtotal</span><strong>{view.quote.subtotalPaise === null ? "Unavailable" : formatPaise(view.quote.subtotalPaise)}</strong></div>
-        <div><span>Shipping</span><span>Pending</span></div>
-        <div><span>GST</span><span>Pending</span></div>
-        <div className={styles.summaryTotal}><strong>Total</strong><strong>Pending</strong></div>
+        <div><span>{storefrontTest ? "Shipping (test)" : "Shipping"}</span><span>{testQuote ? formatPaise(testQuote.shippingPaise) : "Pending"}</span></div>
+        <div><span>{storefrontTest ? "GST (18%, test)" : "GST"}</span><span>{testQuote ? formatPaise(testQuote.taxPaise) : "Pending"}</span></div>
+        <div className={styles.summaryTotal}><strong>Total</strong><strong>{testQuote ? formatPaise(testQuote.totalPaise) : "Pending"}</strong></div>
       </div>
-      <p className={styles.smallText}>Prices and availability may change. Shipping and GST must be checked before ordering is enabled.</p>
-      <p className={styles.setupNote}>Order placement and payment are not configured in this development build.</p>
+      {storefrontTest ? <p className={styles.smallText}>Provisional TEST totals; test payment only. Stock is unverified. {!testQuote && <>Test total unavailable. <button type="button" onClick={onRetryTestQuote}>Retry quote</button></>}</p> : <><p className={styles.smallText}>Prices and availability may change. Shipping and GST must be checked before ordering is enabled.</p><p className={styles.setupNote}>Order placement and payment are not configured in this development build.</p></>}
       {locked
         ? <button className={styles.primaryButton} type="button" disabled>{refreshing ? "Refreshing current cart…" : "Wait for cart updates before checkout"}</button>
         : view.quote.lines.every((line) => line.issue === null || (line.issue === "quantity_unavailable" && line.variant?.cartEligible === true))

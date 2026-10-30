@@ -16,6 +16,7 @@ function harness() {
   const calls = [];
   const exports = {};
   const dependencies = {
+    "./test-quote": { testQuoteKey: (items, subtotal) => JSON.stringify({ items, subtotal }), fetchTestQuote: () => Promise.reject(new Error("offline")) },
     "@/lib/account/billing-profile": { parseBillingProfile: value => value },
     "@/components/ui/button": { buttonClassName: () => "button" },
     "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },

@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   distDir: process.env.PANDABYTE_NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/api/account/orders/*/document": ["./public/fonts/noto-sans/*.ttf"],
+    "/api/admin/orders/*/document": ["./public/fonts/noto-sans/*.ttf"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: [
       { key: "X-Content-Type-Options", value: "nosniff" },

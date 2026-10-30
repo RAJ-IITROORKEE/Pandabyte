@@ -20,6 +20,7 @@ function harness() {
   let cursor = 0, effects = [], focused = "", focusEffectIndex;
   const exports = {};
   const dependencies = {
+    "./test-quote": { testQuoteKey: (items, subtotal) => JSON.stringify({ items, subtotal }), fetchTestQuote: () => Promise.reject(new Error("offline")) },
     "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },
     react: {
       useState: initial => { const index = cursor++; if (!(index in hooks)) hooks[index] = typeof initial === "function" ? initial() : initial; return [hooks[index], value => { hooks[index] = typeof value === "function" ? value(hooks[index]) : value; }]; },

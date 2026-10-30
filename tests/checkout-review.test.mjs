@@ -21,6 +21,7 @@ function checkoutHarness() {
   const signals = [];
   const exports = {};
   const dependencies = {
+    "./test-quote": { testQuoteKey: (items, subtotal) => JSON.stringify({ items, subtotal }), fetchTestQuote: () => Promise.reject(new Error("offline")) },
     "./razorpay-test-payment": { RazorpayTest: () => null, markerKey: user => `pending:${user}` },
     "@/lib/account/billing-profile": { parseBillingProfile: value => value },
     "@clerk/nextjs": { useUser: () => identity },

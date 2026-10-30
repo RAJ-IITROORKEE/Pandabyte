@@ -2,6 +2,7 @@ import "server-only";
 import { auth } from "@clerk/nextjs/server";
 import { cartError, cartJson, checkoutOwnerError, readCheckoutBody } from "@/lib/checkout/http";
 import { parseSimulationRequest } from "@/lib/checkout/validation";
+import { parseStorefrontTestRequest, storefrontTestEnabled } from "./storefront-test-validation";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { parseTestRequest, prepareTest, safeTestDto, TestConnectionChanged, verifyTest } from "./razorpay-test-core";
 
@@ -31,8 +32,10 @@ export async function razorpayTestRoute(request: Request, action: "capabilities"
     const body = await readCheckoutBody(request);
     if (body instanceof Response) return body;
     if (action === "prepare") {
-      const input = parseSimulationRequest(body.value);
-      return input ? cartJson(await prepareTest(rpc, client.payments.razorpay, input, proof, key, session.userId)) : cartError("invalid_input", 400);
+      const storefront = storefrontTestEnabled(request, process.env);
+      const input = storefront ? parseStorefrontTestRequest(body.value) : parseSimulationRequest(body.value);
+      const prepareRpc = storefront ? (name: string, args: Record<string, unknown>) => rpc(name === "razorpay_test_prepare" ? "razorpay_storefront_test_prepare" : name, args) : rpc;
+      return input ? cartJson(await prepareTest(prepareRpc, client.payments.razorpay, input, proof, key, session.userId)) : cartError("invalid_input", 400);
     }
     const input = parseTestRequest(body.value, action === "verify");
     if (!input) return cartError("invalid_input", 400);
