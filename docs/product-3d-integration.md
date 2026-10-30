@@ -1,5 +1,11 @@
 # Product 3D gallery integration
 
+**Update, 30 October 2026:** The owner approved publication of the previously private xC5, xC3, xC3m, Maker UNO, WS2812B ring and xLoRa models. Their existing model/poster pairs are now public through the development catalog and hosted preview. This supersedes the earlier six-model privacy hold below. The owner also approved the BMV080, xC6, xS3, 18650 holder and OLED models; those five were integrated separately. The two Grove female headers remain on hold.
+
+The six-model update reused existing media and version-checked product records. Independent anonymous checks verified the six product references and all twelve model/poster files on localhost and the hosted preview; the six interactive cards were also tested in the built-in browser. Models remain visual estimates, not manufacturing specifications. Earlier checkpoint counts and restrictions below are historical.
+
+The six newly public GLBs are 3.05–3.81 MB each, with posters of 74–179 KB and at most 254,255 triangles. A frontend review confirmed activation-only model and viewer loading, one active viewer, offscreen and hidden-tab rendering pauses, a 1.5 pixel-ratio cap, and cleanup of GPU resources. Eight focused preparation and import tests passed. Physical-mobile GPU performance and frame rates have not been measured.
+
 Owner authorization, 26 October 2026: extend the existing development catalog and Admin with image carousels and interactive product-model previews. This supersedes the earlier catalog contract's exclusion of 3D for this separate checkpoint. No production deployment or commerce work is included.
 
 ## Confirmed boundaries
