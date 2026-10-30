@@ -1,5 +1,15 @@
 # Vercel hosted development preview
 
+## Frontend backgrounds — 30 October 2026
+
+The owner approved the faint backgrounds, requested light/mobile browser validation, commit/push and updating the existing preview. Application commits `95b4245` and `ac2ff13` add public/customer dots, original full-width hero PCB artwork with 2.8-second CSS signals in dark mode, and dots only behind the light-mode hero. Admin, the interactive product circuit, media access and commerce logic are unchanged. See `docs/frontend-theme.md` for the design and local checks.
+
+The final clean Git archive of `ac2ff13` was deployed without build cache and promoted as **`dpl_HKaEdqn3J4sUJYVkD83biR3oegEQ`**, https://pandabyte-qx9sgumm4-unfiltered-iit-ians.vercel.app. The stable address remains https://pandabyte-iot.vercel.app. An earlier cached build of `95b4245` had the new hero but omitted the global dot CSS; direct stylesheet inspection and the hosted browser caught the mismatch. The final uncached build includes the dot declarations and light-mode PCB exclusion. Do not treat the earlier build as the final verified preview.
+
+Verification: full ESLint, TypeScript, 441 unit and 10 media tests passed before the presentation commit; four focused theme/Admin-isolation checks passed after the CSS-only light-hero refinement. The final cloud build, TypeScript and all 37 static generations passed; package installation reported zero vulnerabilities. Hosted Home and Shop return 200; the Admin roles API returns 401 to anonymous requests. Both capability endpoints remain false (`simulationAvailable`, `razorpayTestAvailable`). No environment variable values were read or changed, and no account/cart/order/payment forms were submitted.
+
+Codex browser checks show the hosted light hero with dots and `display: none` on the decorative PCB layer, dark mode with the faint PCB and a 2.8-second animation duration, and no page overflow. A visible hosted mobile tab at **320px CSS width** also shows dots-only light mode without horizontal overflow. Local Admin has neither the public shell nor hero PCB. Temporary viewport overrides were reset; the owner's existing 12-item cart was preserved. Performance tracing of the new background and actual OS reduced-motion switching remain unverified.
+
 29 October 2026: the owner requested a new Vercel deployment, browser-entered environment variables and a short public default subdomain. This resumes the bounded hosted-preview operation; it does not complete Phase 6 or authorize live commerce, real invoice issuance, service data/content mutation, live email, load tests or restore operations.
 
 ## Deployment
