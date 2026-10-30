@@ -1,11 +1,32 @@
 .homeMain { position: relative; width: 100%; overflow: clip; overflow-wrap: anywhere; }
-.homeInner { position: relative; max-width: 1280px; margin-inline: auto; padding: 48px 16px; }
+.homeInner { --hero-top-space: 48px; position: relative; max-width: 1280px; margin-inline: auto; padding: var(--hero-top-space) 16px; }
 .hero {
   position: relative; isolation: isolate; display: grid;
   grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
   gap: clamp(24px, 3vw, 40px); align-items: start; margin-bottom: 64px;
+  padding-inline: clamp(8px, 1.7vw, 24px);
 }
 .heroCopy, .heroVisual { min-width: 0; width: 100%; }
+.heroPattern {
+  position: absolute; inset: calc(-1 * var(--hero-top-space)) auto auto 50%; width: 100vw; height: calc(100% + var(--hero-top-space));
+  transform: translateX(-50%);
+  z-index: -1; pointer-events: none; color: var(--pattern-trace);
+  background: var(--background);
+  mask-image: linear-gradient(to bottom, #000 94%, transparent);
+}
+.connectionSignals { color: var(--pattern-signal); }
+.connectionSignals path { opacity: 0; stroke-dasharray: .12 1; stroke-dashoffset: .12; }
+@media (prefers-reduced-motion: no-preference) {
+  .connectionSignals path { animation: connectionPulse 2.8s linear infinite; }
+  .connectionSignals path:nth-child(2n) { animation-delay: -.9s; }
+  .connectionSignals path:nth-child(3n) { animation-delay: -1.8s; }
+}
+@keyframes connectionPulse {
+  0% { stroke-dashoffset: .12; opacity: 0; }
+  12%, 70% { opacity: 1; }
+  85%, 100% { stroke-dashoffset: -1; opacity: 0; }
+}
+@media print, (forced-colors: active) { .heroPattern { display: none; } }
 .heroCopy { padding-top: clamp(40px, 4.5vw, 64px); }
 .eyebrow {
   display: flex; align-items: center; gap: 10px; margin: 0 0 16px;
@@ -65,13 +86,13 @@
 .faqSection { max-width: 896px; }
 .faqSection .sectionHeading { max-width: 768px; }
 @media (min-width: 768px) {
-  .homeInner { padding-block: 64px; }
+  .homeInner { --hero-top-space: 64px; }
   .sectionHeading h2, .supportPanel h2 { font-size: 30px; }
   .supportPanel { padding: 40px; }
   .supportContact { font-size: 16px; }
 }
 @media (min-width: 1024px) {
-  .homeInner { padding: 112px 48px; }
+  .homeInner { --hero-top-space: 112px; padding-inline: 48px; }
   .hero, .contentSection, .supportPanel, .homeContent { margin-bottom: 112px; }
   .productGrid { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 28px; }
   .supportPanel { flex-direction: row; gap: 48px; }

@@ -27,6 +27,12 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-image: radial-gradient(var(--pattern-dot) .8px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@media print, (forced-colors: active) {
+  .pb-site-frame { background-image: none; }
 }
 
 .pb-page-content {

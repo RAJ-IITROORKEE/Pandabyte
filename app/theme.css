@@ -16,6 +16,9 @@
   --border: #737373;
   --divider: #e4e4e7;
   --status-soft: #edf7f1;
+  --pattern-dot: rgb(57 91 73 / .2);
+  --pattern-trace: rgb(70 108 89 / .13);
+  --pattern-signal: rgb(0 99 56 / .24);
 }
 
 :root[data-theme="dark"] {
@@ -33,6 +36,9 @@
   --border: #737373;
   --divider: #303030;
   --status-soft: #172b22;
+  --pattern-dot: rgb(237 239 238 / .12);
+  --pattern-trace: rgb(74 205 139 / .07);
+  --pattern-signal: rgb(74 205 139 / .18);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -51,6 +57,9 @@
     --border: #737373;
     --divider: #303030;
     --status-soft: #172b22;
+    --pattern-dot: rgb(237 239 238 / .12);
+    --pattern-trace: rgb(74 205 139 / .07);
+    --pattern-signal: rgb(74 205 139 / .18);
   }
 }
 
