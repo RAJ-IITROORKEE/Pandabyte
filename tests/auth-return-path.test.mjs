@@ -11,6 +11,8 @@ const publicPaths = Object.keys(foundationPages);
 
 test("return paths allow registered public routes and explicit protected destinations", () => {
   assert.equal(safeAuthReturnPath("/", publicPaths), "/");
+  assert.equal(safeAuthReturnPath("/panda-agent", publicPaths), "/panda-agent");
+  assert.equal(safeAuthReturnPath("/panda-agent/untrusted", publicPaths), null);
   assert.equal(safeAuthReturnPath("/shop?category=kit", publicPaths), "/shop?category=kit");
   assert.equal(safeAuthReturnPath("/shop?q=ESP32%20kit", publicPaths), "/shop?q=ESP32%20kit");
   assert.equal(safeAuthReturnPath("/products/pandapulse?variant=one#details", publicPaths), "/products/pandapulse?variant=one#details");

@@ -64,7 +64,7 @@ export function safeAuthReturnPath(value: unknown, publicPaths: readonly string[
     (pathname.startsWith("/checkout/confirmation/") && isOrderReference(pathname.slice("/checkout/confirmation/".length))) ||
     /^\/account(?:\/[^/]+)*$/.test(pathname) ||
     /^\/admin(?:\/[^/]+)*$/.test(pathname) ||
-    ["/staff", "/checkout", "/agent"].includes(pathname);
+    ["/staff", "/checkout", "/agent", "/panda-agent"].includes(pathname);
 
   if (!allowed) return null;
   return `${pathname}${target.search}${target.hash}`;

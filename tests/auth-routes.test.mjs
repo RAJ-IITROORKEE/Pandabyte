@@ -49,7 +49,7 @@ test("signed-out admin entry preserves the guarded admin destination", async () 
 });
 
 test("checkout and Agent require an active session while public storefront routes stay open", async () => {
-  for (const path of ["/checkout", "/agent"]) {
+  for (const path of ["/checkout", "/agent", "/panda-agent"]) {
     const response = await request(path);
     assert.equal(response.status, 307, path);
     assert.equal(response.headers.get("location"), `/sign-in?redirect_url=${encodeURIComponent(path)}`);
@@ -73,6 +73,7 @@ test("auth return paths reject external and duplicate redirect parameters", asyn
     assert.equal((await request(`/${route}?redirect_url=%2Fadmin`)).status, 200);
     assert.equal((await request(`/${route}?redirect_url=%2Fcheckout`)).status, 200);
     assert.equal((await request(`/${route}?redirect_url=%2Fagent`)).status, 200);
+    assert.equal((await request(`/${route}?redirect_url=%2Fpanda-agent`)).status, 200);
     assert.equal((await request(`/${route}?redirect_url=%2Fshop%3Fcategory%3Dkit`)).status, 200);
     for (const key of ["redirect", "redirectTo", "return_to", "next", "callbackUrl"]) {
       const response = await request(`/${route}?${key}=%2F%2Fevil.example`);

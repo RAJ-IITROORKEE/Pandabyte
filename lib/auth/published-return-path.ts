@@ -5,7 +5,7 @@ import { safeAuthReturnPath } from "@/lib/auth/return-path";
 
 const RETURN_ORIGIN = "https://auth-return.invalid";
 const ROOT_PAGE_PATH = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/)?$/;
-const PRIVATE_ROOT_SLUGS = new Set(["account", "admin", "staff", "sign-in", "sign-up", "api", "admin-preview", "checkout", "cart", "agent"]);
+const PRIVATE_ROOT_SLUGS = new Set(["account", "admin", "staff", "sign-in", "sign-up", "api", "admin-preview", "checkout", "cart", "agent", "panda-agent"]);
 
 export async function safePublishedAuthReturnPath(value: unknown): Promise<string | null> {
   const publicPaths = Object.keys(foundationPages);

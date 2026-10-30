@@ -1,0 +1,44 @@
+.workspace { display: flex; min-height: calc(100vh - 80px); background: var(--background); color: var(--foreground); }
+.sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--divider); background: var(--surface); }
+.sidebarTop { padding: 12px; }
+.newChat { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 7px 12px; border: 1px solid var(--divider); border-radius: 8px; background: transparent; color: var(--foreground); text-align: left; font-weight: 600; }
+.newChat span:nth-child(2) { flex: 1; }
+.logoSmall, .logo { display: inline-flex; overflow: hidden; align-items: center; justify-content: center; background: white; border-radius: 5px; }
+.logoSmall img, .logo img { object-fit: contain; }
+.sidebarLabel { margin: 24px 8px 0; color: var(--muted); font-size: 12px; font-weight: 600; }
+.history { display: grid; justify-items: center; gap: 10px; padding: 48px 16px; color: var(--muted); font-size: 12px; text-align: center; }
+.account { display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 16px 24px; border-top: 1px solid var(--divider); color: var(--foreground); font-size: 14px; font-weight: 600; text-decoration: none; }
+.account:hover { background: var(--status-soft); }
+.account:focus-visible, .workspace button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.header { display: flex; align-items: center; justify-content: space-between; min-height: 68px; padding: 12px 20px; font-size: 14px; }
+.badge { margin-left: 6px; padding: 4px 7px; border: 1px solid var(--divider); border-radius: 4px; background: var(--status-soft); color: var(--accent-ink); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.thread { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.viewport { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+.intro { max-width: 660px; text-align: center; }
+.intro h1 { margin: 24px 0 8px; font-size: clamp(1.75rem, 3vw, 2rem); line-height: 1.2; letter-spacing: -.03em; }
+.intro > p { max-width: 480px; margin: 0 auto; color: var(--muted); line-height: 1.6; }
+.notice { display: flex; gap: 12px; max-width: 512px; margin: 32px auto 0; padding: 18px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); text-align: left; font-size: 14px; line-height: 1.5; }
+.notice > svg { flex: 0 0 auto; color: var(--accent-ink); margin-top: 2px; }
+.notice p { margin: 4px 0 0; color: var(--muted); }
+.composerArea { width: min(100% - 48px, 768px); margin: 0 auto; padding-bottom: 18px; }
+.composer { padding: 16px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); }
+.composer textarea { display: block; width: 100%; min-height: 44px; resize: none; border: 0; outline: 0; background: transparent; color: var(--muted); font: inherit; }
+.composer textarea::placeholder { color: var(--muted); opacity: 1; }
+.composerActions, .composerActions > div { display: flex; align-items: center; gap: 8px; }
+.composerActions { justify-content: space-between; }
+.composerActions button { display: grid; width: 34px; height: 34px; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); opacity: .55; }
+.composerActions > button { background: var(--divider); }
+.disclaimer { margin: 12px 0 0; color: var(--muted); text-align: center; font-size: 12px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (max-width: 700px) {
+  .workspace { min-height: calc(100dvh - 80px); flex-direction: column; }
+  .sidebar { width: 100%; flex: none; flex-direction: row; align-items: center; border-right: 0; border-bottom: 1px solid var(--divider); }
+  .sidebarTop { padding: 8px 12px; }
+  .newChat { width: auto; }
+  .sidebarLabel, .history { display: none; }
+  .account { min-height: 44px; padding: 8px 16px; border: 0; }
+  .header { min-height: 60px; padding: 8px 16px; }
+  .viewport { padding: 36px 20px; }
+  .composerArea { width: calc(100% - 32px); }
+}

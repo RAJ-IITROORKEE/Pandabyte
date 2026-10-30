@@ -28,7 +28,7 @@ function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: N
   const menus: { label: string; sections: MenuSection[] }[] = [
     { label: "Products", sections: [{ title: "Hardware", links: header.hardware }] },
     { label: "Solutions", sections: [
-      { title: "Explore", links: [...primary("/solutions"), ...header.tools.filter((link) => link.href === "/solutions/skills-cli")] },
+      { title: "Explore", links: [...primary("/solutions"), { label: "Panda Agent", href: "/panda-agent" }, ...header.tools.filter((link) => link.href === "/solutions/skills-cli")] },
       { title: "Coming soon", links: [...header.upcoming, ...header.tools.filter((link) => link.href !== "/solutions/skills-cli"), { label: "Agent tools", href: "/agent" }], comingSoon: true },
     ] },
     { label: "Company", sections: [
@@ -72,7 +72,7 @@ function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: N
         <p className="pb-menu-heading">{section.title}</p>
         {section.links.map((link) => {
           const label = section.comingSoon ? link.label.replace(/\s*[·-]\s*coming soon\s*$/i, "") : link.label;
-          const content = <>{label}{section.comingSoon && <span className="pb-coming-soon">Coming soon</span>}</>;
+          const content = <>{label}{link.href === "/panda-agent" && <span className="pb-new-badge">New</span>}{section.comingSoon && <span className="pb-coming-soon">Coming soon</span>}</>;
           return desktop ? <NavigationMenuLink asChild key={link.href}><Link className="pb-menu-link" href={link.href}>{content}</Link></NavigationMenuLink>
             : <Link className="pb-menu-link" href={link.href} key={link.href} onClick={() => setMobileOpen(false)}>{content}</Link>;
         })}
