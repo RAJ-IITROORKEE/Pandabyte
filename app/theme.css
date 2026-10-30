@@ -19,6 +19,7 @@
   --pattern-dot: rgb(57 91 73 / .2);
   --pattern-trace: rgb(70 108 89 / .13);
   --pattern-signal: rgb(0 99 56 / .24);
+  --pattern-hero-display: none;
 }
 
 :root[data-theme="dark"] {
@@ -39,6 +40,7 @@
   --pattern-dot: rgb(237 239 238 / .12);
   --pattern-trace: rgb(74 205 139 / .07);
   --pattern-signal: rgb(74 205 139 / .18);
+  --pattern-hero-display: block;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,6 +62,7 @@
     --pattern-dot: rgb(237 239 238 / .12);
     --pattern-trace: rgb(74 205 139 / .07);
     --pattern-signal: rgb(74 205 139 / .18);
+    --pattern-hero-display: block;
   }
 }
 

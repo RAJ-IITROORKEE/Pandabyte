@@ -4,6 +4,8 @@
 
 ### Approved publication and light-theme correction
 
+Final owner-directed refinement: the light hero uses the same dots as the rest of the frontend, with the decorative PCB layer hidden. Only dark mode shows the faint PCB pulses. The real interactive product circuit remains visible and unchanged in both themes. Browser verification confirmed the light PCB layer is `display: none`, dots render behind the hero, and the 426px mobile layout has no page overflow; dark mode retains the PCB layer. Four focused palette/Admin-isolation tests passed after this CSS-only refinement.
+
 The owner approved commit/push and updating the existing hosted preview after light/mobile verification. The light theme now uses its own muted sage-gray pattern tokens rather than dark-theme opacity values: dots `rgb(57 91 73 / .2)`, traces `rgb(70 108 89 / .13)` and signals `rgb(0 99 56 / .24)`. Dark traces/signals retain the approved 7%/18% treatment. Dots have a 0.8px core at 28px spacing for clearer rendering on light surfaces. These tokens are only consumed by the public/customer shell and homepage hero; Admin has neither background layer.
 
 The corrected light theme was visually checked in the Codex browser at desktop and an effective 426px CSS viewport. Pattern top/bottom match the main content top and hero bottom, with no horizontal overflow. Local Admin inspection confirmed zero public-shell or hero-pattern elements. No account/cart forms were submitted. ESLint and TypeScript passed; all 441 unit and 10 media tests passed. Earlier local-only notes below describe the design-review sequence; this final checkpoint is now authorized for the hosted development preview. Payments and real invoice issuance remain disabled.

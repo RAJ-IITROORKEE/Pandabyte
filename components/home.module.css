@@ -8,6 +8,7 @@
 }
 .heroCopy, .heroVisual { min-width: 0; width: 100%; }
 .heroPattern {
+  display: var(--pattern-hero-display);
   position: absolute; inset: calc(-1 * var(--hero-top-space)) auto auto 50%; width: 100vw; height: calc(100% + var(--hero-top-space));
   transform: translateX(-50%);
   z-index: -1; pointer-events: none; color: var(--pattern-trace);
