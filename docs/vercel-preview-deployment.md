@@ -2,6 +2,14 @@
 
 ## Frontend backgrounds — 30 October 2026
 
+### Softer dark-background follow-up
+
+Application commit `f944486` lowers dark trace/pulse opacity to 5.5%/14%, including the system-dark fallback. A clean Git archive was built without cache and promoted as `dpl_7pcsPXT9yEXeuy8EhGHtMpczjthN`, https://pandabyte-mu1iyiklw-unfiltered-iit-ians.vercel.app, at the existing short alias. Cloud compilation, TypeScript and all 37 static generations passed; installation reported zero vulnerabilities. No environment values, private/local archives or the unrelated untracked `Panda-agent/` work were uploaded.
+
+The Codex in-app browser confirmed the new hosted colors, the unchanged 2.8-second cycle, no horizontal page overflow, and a 12-item owner cart badge throughout. Light mode still hides the PCB and keeps dots; the original hosted light preference was restored. Anonymous Admin roles access remains 401 and both simulation and Razorpay-test capability endpoints return false. Four focused palette/Admin-isolation tests pass. No cart/account/order/payment forms were submitted. Background rendering observations are recorded in `docs/frontend-theme.md`; full Core Web Vitals/frame-time profiling is unavailable in this browser tool, and the owner explicitly left OS reduced-motion switching untested. No new performance score or complete runtime reduced-motion coverage is claimed.
+
+### Initial background publication
+
 The owner approved the faint backgrounds, requested light/mobile browser validation, commit/push and updating the existing preview. Application commits `95b4245` and `ac2ff13` add public/customer dots, original full-width hero PCB artwork with 2.8-second CSS signals in dark mode, and dots only behind the light-mode hero. Admin, the interactive product circuit, media access and commerce logic are unchanged. See `docs/frontend-theme.md` for the design and local checks.
 
 The final clean Git archive of `ac2ff13` was deployed without build cache and promoted as **`dpl_HKaEdqn3J4sUJYVkD83biR3oegEQ`**, https://pandabyte-qx9sgumm4-unfiltered-iit-ians.vercel.app. The stable address remains https://pandabyte-iot.vercel.app. An earlier cached build of `95b4245` had the new hero but omitted the global dot CSS; direct stylesheet inspection and the hosted browser caught the mismatch. The final uncached build includes the dot declarations and light-mode PCB exclusion. Do not treat the earlier build as the final verified preview.
