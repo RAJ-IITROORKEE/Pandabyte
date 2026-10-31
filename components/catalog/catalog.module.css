@@ -188,7 +188,8 @@
 .galleryThumb[aria-pressed="true"] { border: 2px solid var(--action-border); }
 .galleryThumb img { width: 100%; height: 100%; object-fit: contain; }
 .productPanel { min-width: 0; padding: clamp(20px, 3vw, 32px); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; }
-.productMeta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.productPanelHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.productMeta { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .productMeta span { padding: 5px 9px; color: var(--muted); background: var(--background); border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }
 .variantField { margin-top: 24px; }
 .selectedPrice { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-top: 22px; }

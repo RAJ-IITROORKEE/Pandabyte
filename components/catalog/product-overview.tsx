@@ -23,10 +23,10 @@ export function ProductOverview({ product, gallery, panel, children }: {
       <div className={styles.productInformation}>
         <header className={styles.productHeading}>
           <h1>{product.title}</h1>
-          {product.summary && <p>{product.summary}</p>}
         </header>
         {panel}
       </div>
+      {product.summary && <section className={styles.productSummary} aria-labelledby="product-summary-title"><h2 id="product-summary-title">About this product</h2><p>{product.summary}</p></section>}
     </div>
     {children}
   </main>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import type { PublicVariant } from "@/lib/editorial/published";
 import type { SourceObservation } from "@/lib/admin/validation";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
@@ -8,7 +8,7 @@ import styles from "./catalog.module.css";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
 
-export function ProductVariantPanel({ variants, observation }: { variants: PublicVariant[]; observation?: SourceObservation }) {
+export function ProductVariantPanel({ variants, observation, favorite }: { variants: PublicVariant[]; observation?: SourceObservation; favorite?: ReactNode }) {
   const fieldId = useId();
   const [selectedId, setSelectedId] = useState(variants[0]?.id ?? "");
   const [quantity, setQuantity] = useState("1");
@@ -17,7 +17,7 @@ export function ProductVariantPanel({ variants, observation }: { variants: Publi
   const selected = variants.find((variant) => variant.id === selectedId) ?? variants[0];
 
   return <section className={styles.productPanel} aria-label="Variant and price">
-    {selected && <div className={styles.productMeta}><span>{selected.sku}</span></div>}
+    <div className={styles.productPanelHeader}>{selected ? <div className={styles.productMeta}><span>{selected.sku}</span></div> : <span />}{favorite}</div>
 
     {variants.length > 1 && <div className={styles.variantField}>
       <label className={styles.fieldLabel} htmlFor={`${fieldId}-variant`}>Choose a variant</label>

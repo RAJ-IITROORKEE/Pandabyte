@@ -7,7 +7,7 @@ import { buttonClassName } from "@/components/ui/button";
 import styles from "./account-orders.module.css";
 
 type Address = { recipientName: string; phone: string; line1: string; line2: string; city: string; state: string; postalCode: string; country: string };
-type Order = { reference: string; createdAt?: string; status: string; totalPaise: number; paymentState: string; environment: string; snapshot: { fictionalShippingPaise?: number; fictionalTaxPaise?: number; shipping?: Address; billing?: Address; shipment?: { carrier?: string; trackingNumber?: string; trackingUrl?: string }; chargesAreFictional?: boolean; quote?: { subtotalPaise?: number; lines: { title: string; quantity: number; lineTotalPaise: number; variant?: { label?: string } }[] } } };
+type Order = { reference: string; createdAt?: string; status: string; totalPaise: number; paymentState: string; environment: string; snapshot: { fictionalShippingPaise?: number; fictionalTaxPaise?: number; shipping?: Address; billing?: Address; shipment?: { carrier?: string; trackingNumber?: string; trackingUrl?: string }; chargesAreFictional?: boolean; quote?: { subtotalPaise?: number; lines: { title: string; slug?: string | null; quantity: number; lineTotalPaise: number; variant?: { label?: string; effectivePricePaise?: number | null } }[] } } };
 type Orders = { items: Order[]; total: number; limit: number; offset: number };
 const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value / 100);
 
@@ -77,7 +77,7 @@ export function AccountOrders({ data }: { data: ReturnType<typeof useAccountOrde
       const tracking = trackingLink(shipment?.trackingUrl);
       const lines = order.snapshot.quote?.lines ?? [];
       const units = lines.reduce((sum, line) => sum + line.quantity, 0);
-      const date = order.createdAt && !Number.isNaN(Date.parse(order.createdAt)) ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "Date unavailable";
+      const date = order.createdAt && !Number.isNaN(Date.parse(order.createdAt)) ? new Date(order.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST" : "Date unavailable";
       return <article key={order.reference} className={styles.card}>
         <div className={styles.cardTop}>
           <div className={styles.thumbnails} aria-label={`${lines.length} product lines; purchased images unavailable`}>
@@ -90,15 +90,11 @@ export function AccountOrders({ data }: { data: ReturnType<typeof useAccountOrde
         <details className={styles.details}>
         <summary>View order <span className={styles.srOnly}>{order.reference}</span></summary>
         <div className={styles.detailBody}>
-        {order.environment === "simulation" && <p>Simulated order. No payment was collected and no stock was reserved.</p>}
-        {order.reference.startsWith("TST-") && <p>Razorpay test order. No real stock was reserved.</p>}
-        {order.snapshot.chargesAreFictional && <p>Shipping and tax are fictional test amounts.</p>}
-        <p>Payment: {order.paymentState === "simulated" ? "Simulated" : order.paymentState}</p>
-        {order.snapshot.quote?.lines.map((line, index) => <p key={index}>{line.title}{line.variant?.label && ` · ${line.variant.label}`} × {line.quantity} — {money(line.lineTotalPaise)}</p>)}
-        <h3>Shipping address</h3><AddressView address={order.snapshot.shipping} />
-        <h3>Billing address</h3><AddressView address={order.snapshot.billing} />
-        {(shipment?.carrier || shipment?.trackingNumber || tracking) && <p>Shipment: {shipment?.carrier}{shipment?.trackingNumber && ` · ${shipment.trackingNumber}`} {tracking && <a href={tracking} target="_blank" rel="noopener noreferrer">Track shipment</a>}</p>}
-        {!tracking && <p>Tracking link is not available.</p>}<p><Link href={`/account/order-summary/${encodeURIComponent(order.reference)}`}>Print or save order summary</Link>{order.environment === "razorpay_test" && order.paymentState === "paid" ? <> · <a href={`/api/account/orders/${encodeURIComponent(order.reference)}/document`} download>Download test bill PDF</a> (not a tax invoice)</> : " · No issued invoice is available."}</p><dl>{order.snapshot.quote?.subtotalPaise !== undefined && <><dt>Subtotal</dt><dd>{money(order.snapshot.quote.subtotalPaise)}</dd></>}{order.snapshot.fictionalShippingPaise !== undefined && <><dt>Test shipping</dt><dd>{money(order.snapshot.fictionalShippingPaise)}</dd></>}{order.snapshot.fictionalTaxPaise !== undefined && <><dt>Test tax</dt><dd>{money(order.snapshot.fictionalTaxPaise)}</dd></>}<dt>Order total</dt><dd>{money(order.totalPaise)}</dd></dl>
+        {(order.environment === "simulation" || order.environment === "razorpay_test") && <p className={styles.notice}>{order.environment === "simulation" ? "Simulated order. No payment was collected and no stock was reserved." : "Razorpay test order. No real stock was reserved."}{order.snapshot.chargesAreFictional && " Shipping and tax are fictional test amounts."}</p>}
+        <section aria-label="Ordered items"><h3>Items in this order</h3>{lines.length ? <ul className={styles.items}>{lines.map((line, index) => <li className={styles.item} key={index}><span className={styles.itemIcon}><Package size={20} aria-hidden="true" /></span><div className={styles.itemInfo}>{line.slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(line.slug) ? <Link href={`/products/${line.slug}`}>{line.title}</Link> : <strong>{line.title}</strong>}{line.variant?.label && line.variant.label !== line.title && <span>{line.variant.label}</span>}<span>Qty {line.quantity}{typeof line.variant?.effectivePricePaise === "number" && ` · ${money(line.variant.effectivePricePaise)} each`}</span></div><strong>{money(line.lineTotalPaise)}</strong></li>)}</ul> : <p>Item details are unavailable for this order.</p>}</section>
+        <div className={styles.detailGrid}><section><h3>Delivery details</h3><h4>Shipping address</h4><AddressView address={order.snapshot.shipping} /><h4>Billing address</h4><AddressView address={order.snapshot.billing} />{(shipment?.carrier || shipment?.trackingNumber) && <p>Shipment: {shipment?.carrier}{shipment?.trackingNumber && ` · ${shipment.trackingNumber}`}</p>}{tracking ? <a href={tracking} target="_blank" rel="noopener noreferrer">Track shipment</a> : <p>Tracking link is not available.</p>}</section>
+        <section><h3>Order summary</h3><dl>{order.snapshot.quote?.subtotalPaise !== undefined && <><dt>Subtotal</dt><dd>{money(order.snapshot.quote.subtotalPaise)}</dd></>}{order.snapshot.fictionalShippingPaise !== undefined && <><dt>Test shipping</dt><dd>{money(order.snapshot.fictionalShippingPaise)}</dd></>}{order.snapshot.fictionalTaxPaise !== undefined && <><dt>Test tax</dt><dd>{money(order.snapshot.fictionalTaxPaise)}</dd></>}<dt className={styles.grandTotal}>Order total</dt><dd className={styles.grandTotal}>{money(order.totalPaise)}</dd></dl><p>Payment: {order.paymentState === "simulated" ? "Simulated" : order.paymentState.replaceAll("_", " ")}</p></section></div>
+        <div className={styles.documents}><Link href={`/account/order-summary/${encodeURIComponent(order.reference)}`}>Print or save order summary</Link>{order.environment === "razorpay_test" && order.paymentState === "paid" ? <a href={`/api/account/orders/${encodeURIComponent(order.reference)}/document`} download>Download test bill PDF (not a tax invoice)</a> : <span>No issued invoice is available.</span>}</div>
         </div></details>
       </article>;
     })}</div>}

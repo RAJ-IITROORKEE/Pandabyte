@@ -14,11 +14,14 @@
 .breadcrumb a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; border-radius: 4px; }
 .breadcrumb svg { width: 14px; height: 14px; flex: none; }
 
-.productOverview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: clamp(32px, 5vw, 64px); margin-bottom: 64px; }
-.productMedia, .productInformation { min-width: 0; }
-.productInformation { display: grid; gap: 24px; align-content: start; }
+.productOverview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "gallery information" "summary information"; align-items: start; gap: 24px clamp(32px, 5vw, 64px); margin-bottom: 64px; }
+.productMedia, .productInformation, .productSummary { min-width: 0; }
+.productMedia { grid-area: gallery; }
+.productInformation { grid-area: information; display: grid; gap: 24px; align-content: start; }
+.productSummary { grid-area: summary; padding: 22px 24px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); }
+.productSummary h2 { margin: 0 0 10px; font-size: 16px; line-height: 1.4; }
+.productSummary p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; }
 .productHeading h1 { margin: 0; font-size: clamp(30px, 3.2vw, 40px); font-weight: 650; line-height: 1.15; letter-spacing: -.04em; text-wrap: balance; }
-.productHeading p { max-width: 60ch; margin: 20px 0 0; color: var(--muted); font-size: 16px; line-height: 1.75; }
 
 /* Add these classes alongside existing catalog classes; card and media internals stay owned by their components. */
 .catalogPage { min-width: 0; }
@@ -38,7 +41,7 @@
 }
 
 @media (max-width: 900px) {
-  .productOverview { grid-template-columns: minmax(0, 1fr); gap: 32px; margin-bottom: 48px; }
+  .productOverview { grid-template-columns: minmax(0, 1fr); grid-template-areas: "gallery" "information" "summary"; gap: 24px; margin-bottom: 48px; }
 }
 
 @media (min-width: 768px) and (max-width: 900px), (max-width: 680px) {
@@ -61,7 +64,7 @@
   .breadcrumb { margin-bottom: 24px; }
 }
 
-.productOverview { gap: clamp(32px, 6vw, 80px); }
+.productOverview { column-gap: clamp(32px, 6vw, 80px); }
 .productHeading h1 { font-size: clamp(32px, 4vw, 48px); letter-spacing: -.035em; }
 .catalogPage .categorySection { margin-bottom: 32px; }
 .catalogPage .searchRow { width: 100%; margin-bottom: 32px; }

@@ -44,7 +44,7 @@ export default async function ProductDetail({ params }: ProductPageProps) {
   return <ProductOverview
     product={product}
     gallery={<ProductGallery key={product.id} images={images} model3d={product.document.model3d} title={product.title} />}
-    panel={<><ProductVariantPanel key={product.id} variants={product.variants} observation={product.document.sourceObservation} /><FavoritesButton productId={product.id} title={product.title} slug={product.slug} /></>}
+    panel={<ProductVariantPanel key={product.id} variants={product.variants} observation={product.document.sourceObservation} favorite={<FavoritesButton productId={product.id} title={product.title} slug={product.slug} />} />}
   >
     <ProductDetails product={product} gallery={images.length || product.document.model3d ? <ProductGallery images={images} model3d={product.document.model3d} title={product.title} /> : undefined} />
   </ProductOverview>;
