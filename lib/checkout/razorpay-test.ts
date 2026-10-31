@@ -3,13 +3,14 @@ import { auth } from "@clerk/nextjs/server";
 import { cartError, cartJson, checkoutOwnerError, readCheckoutBody } from "@/lib/checkout/http";
 import { parseSimulationRequest } from "@/lib/checkout/validation";
 import { parseStorefrontTestRequest, storefrontTestEnabled } from "./storefront-test-validation";
+import { localRazorpayTestEnabled } from "./test-deployment";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { parseTestRequest, prepareTest, safeTestDto, TestConnectionChanged, verifyTest } from "./razorpay-test-core";
 
 export async function razorpayTestRoute(request: Request, action: "capabilities" | "prepare" | "recover" | "verify" | "cancel") {
   const proof = process.env.RAZORPAY_CHECKOUT_TEST_KEY;
   const key = process.env.RAZORPAY_TEST_KEY_ID;
-  const enabled = process.env.NODE_ENV === "development" && process.env.PANDABYTE_RAZORPAY_TEST_ENABLED === "true" && ["localhost", "127.0.0.1", "[::1]"].includes(new URL(request.url).hostname) && !!proof && !!key && /^rzp_test_[a-zA-Z0-9]+$/.test(key);
+  const enabled = localRazorpayTestEnabled(request, process.env) || storefrontTestEnabled(request, process.env);
   if (!enabled || !proof || !key) return action === "capabilities" ? cartJson({ razorpayTestAvailable: false }) : cartError("test_checkout_unavailable", 503);
   try {
     const session = await auth();

@@ -1,5 +1,9 @@
 # Local storefront test checkout — 30 October 2026
 
+## Hosted test-preview authorization — 1 November 2026
+
+The owner authorized Razorpay TEST checkout, test billing and order handling on `https://pandabyte-iot.vercel.app`. Hosted activation requires the explicit hosted, storefront and Razorpay test flags, the server-side proof and a test key, plus the canonical HTTPS origin and Vercel production environment. The managed InsForge test provider, signed webhook and fictional inventory remain authoritative. Live payment, simulation, email and real invoice issuance remain disabled. The provisional test tax and shipping rules below apply to this preview and are not production tax or shipping policy.
+
 ## Owner-approved scope
 
 The owner requested complete local Razorpay TEST checkout, totals, test bills, customer tracking and Admin order handling. After the official PandaByte pages did not establish a GST percentage, price inclusion or complete rate table, the owner explicitly approved these provisional TEST rules:

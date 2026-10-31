@@ -1,4 +1,5 @@
 import { parseSimulationRequest } from "./validation.ts";
+import { hostedStorefrontTestEnabled, localRazorpayTestEnabled } from "./test-deployment.ts";
 
 export function parseStorefrontTestRequest(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -9,8 +10,7 @@ export function parseStorefrontTestRequest(value: unknown) {
 }
 
 export function storefrontTestEnabled(request: Request, env: Record<string, string | undefined>) {
-  return env.NODE_ENV === "development" && env.PANDABYTE_STOREFRONT_TEST_ENABLED === "true" && env.PANDABYTE_RAZORPAY_TEST_ENABLED === "true"
-    && ["localhost", "127.0.0.1", "[::1]"].includes(new URL(request.url).hostname)
+  return hostedStorefrontTestEnabled(request, env) || (localRazorpayTestEnabled(request, env) && env.PANDABYTE_STOREFRONT_TEST_ENABLED === "true"
     && typeof env.RAZORPAY_CHECKOUT_TEST_KEY === "string" && env.RAZORPAY_CHECKOUT_TEST_KEY.length >= 32
-    && /^rzp_test_[A-Za-z0-9]{1,100}$/.test(env.RAZORPAY_TEST_KEY_ID ?? "");
+    && /^rzp_test_[A-Za-z0-9]{1,100}$/.test(env.RAZORPAY_TEST_KEY_ID ?? ""));
 }

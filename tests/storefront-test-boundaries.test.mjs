@@ -5,12 +5,14 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import { parseStorefrontTestRequest, storefrontTestEnabled } from "../lib/checkout/storefront-test-validation.ts";
 import { parseSimulationRequest } from "../lib/checkout/validation.ts";
+import { hostedStorefrontTestEnabled, localRazorpayTestEnabled } from "../lib/checkout/test-deployment.ts";
 import { parseCartQuoteRequest } from "../lib/cart/validation.ts";
 
 const compile = path => ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 const quoteSource = compile("../lib/checkout/storefront-test.ts");
 const paymentSource = compile("../lib/checkout/razorpay-test.ts");
 const capabilitiesSource = compile("../app/api/checkout/razorpay-test/capabilities/route.ts");
+const proxySource = compile("../proxy.ts");
 const id = "11111111-1111-4111-8111-111111111111";
 const item = { variantId: id, quantity: 1 };
 const env = { NODE_ENV: "development", PANDABYTE_STOREFRONT_TEST_ENABLED: "true", PANDABYTE_RAZORPAY_TEST_ENABLED: "true", RAZORPAY_CHECKOUT_TEST_KEY: "p".repeat(32), RAZORPAY_TEST_KEY_ID: "rzp_test_123" };
@@ -29,7 +31,7 @@ function storefrontHarness({ settings = env, body = { value: { items: [item] } }
 }
 function paymentHarness({ settings = env, body = { value: request }, ownerError = null } = {}) {
   const exports = {}, calls = [], captured = [];
-  const deps = { "server-only": {}, "@clerk/nextjs/server": { auth: async () => ({ isAuthenticated: true, sessionStatus: "active", userId: "user-a" }) }, "@/lib/checkout/http": { cartError: error, cartJson: json, checkoutOwnerError: async () => ownerError, readCheckoutBody: async () => body }, "@/lib/checkout/validation": { parseSimulationRequest }, "./storefront-test-validation": { parseStorefrontTestRequest, storefrontTestEnabled }, "@/lib/insforge/server": { createInsforgeServerClient: async () => ({ payments: { razorpay: {} }, database: { schema: () => ({ rpc: async (name, args) => { calls.push({ name, args }); return { data: { state: "creating" }, error: null }; } }) } }) }, "./razorpay-test-core": { prepareTest: async (rpc, _provider, input, proof, key, subject) => { captured.push({ input, proof, key, subject }); await rpc("razorpay_test_prepare", { p_request: input }); return { state: "creating" }; }, TestConnectionChanged: class extends Error {} } };
+  const deps = { "server-only": {}, "@clerk/nextjs/server": { auth: async () => ({ isAuthenticated: true, sessionStatus: "active", userId: "user-a" }) }, "@/lib/checkout/http": { cartError: error, cartJson: json, checkoutOwnerError: async () => ownerError, readCheckoutBody: async () => body }, "@/lib/checkout/validation": { parseSimulationRequest }, "./storefront-test-validation": { parseStorefrontTestRequest, storefrontTestEnabled }, "./test-deployment": { localRazorpayTestEnabled }, "@/lib/insforge/server": { createInsforgeServerClient: async () => ({ payments: { razorpay: {} }, database: { schema: () => ({ rpc: async (name, args) => { calls.push({ name, args }); return { data: { state: "creating" }, error: null }; } }) } }) }, "./razorpay-test-core": { prepareTest: async (rpc, _provider, input, proof, key, subject) => { captured.push({ input, proof, key, subject }); await rpc("razorpay_test_prepare", { p_request: input }); return { state: "creating" }; }, TestConnectionChanged: class extends Error {} } };
   runInNewContext(paymentSource, { exports, Response, URL, process: { env: settings }, require: name => { if (!(name in deps)) throw Error(name); return deps[name]; } });
   return { ...exports, calls, captured };
 }
@@ -80,4 +82,58 @@ test("legacy fixture prepare keeps old request shape and RPC", async () => {
   assert.equal((await h.razorpayTestRoute(new Request(url), "prepare")).status, 200);
   assert.equal(h.calls[0].name, "razorpay_test_prepare"); assert.deepEqual(h.captured[0].input, parseSimulationRequest(base));
   const denied = paymentHarness({ settings: { ...env, PANDABYTE_STOREFRONT_TEST_ENABLED: "false" }, body: { value: request } }); assert.equal((await denied.razorpayTestRoute(new Request(url), "prepare")).status, 400); assert.equal(denied.calls.length, 0);
+});
+
+test("hosted checkout requires production deployment, explicit test flags, fixed HTTPS origin and test credentials", async () => {
+  const hosted = { ...env, NODE_ENV: "production", VERCEL_ENV: "production", PANDABYTE_HOSTED_TEST_ENABLED: "true" };
+  const hostUrl = "https://pandabyte-iot.vercel.app/api/checkout/razorpay-test/quote";
+  const req = new Request(hostUrl);
+  assert.equal(hostedStorefrontTestEnabled(req, hosted), true);
+  assert.equal(storefrontTestEnabled(req, hosted), true);
+  const h = paymentHarness({ settings: hosted });
+  assert.equal((await h.razorpayTestRoute(req, "prepare")).status, 200);
+  assert.equal(h.calls[0].name, "razorpay_storefront_test_prepare");
+  const negatives = [
+    [hostUrl, { ...hosted, VERCEL_ENV: "preview" }],
+    [hostUrl, { ...hosted, VERCEL_ENV: undefined }],
+    [hostUrl, { ...hosted, PANDABYTE_HOSTED_TEST_ENABLED: "false" }],
+    [hostUrl, { ...hosted, PANDABYTE_STOREFRONT_TEST_ENABLED: "false" }],
+    [hostUrl, { ...hosted, PANDABYTE_RAZORPAY_TEST_ENABLED: "false" }],
+    [hostUrl, { ...hosted, RAZORPAY_TEST_KEY_ID: "rzp_live_123" }],
+    [hostUrl, { ...hosted, RAZORPAY_CHECKOUT_TEST_KEY: "short" }],
+    ["http://pandabyte-iot.vercel.app/api", hosted],
+    ["https://pandabyte-iot.vercel.app:444/api", hosted],
+    ["https://evil.test/api", hosted],
+  ];
+  for (const [location, settings] of negatives) {
+    const denied = paymentHarness({ settings, body: { value: base } });
+    const badRequest = new Request(location, { headers: { host: "pandabyte-iot.vercel.app", "x-forwarded-host": "pandabyte-iot.vercel.app", "x-forwarded-proto": "https" } });
+    assert.equal(hostedStorefrontTestEnabled(badRequest, settings), false);
+    assert.equal((await denied.razorpayTestRoute(badRequest, "prepare")).status, 503);
+    assert.equal(denied.calls.length, 0);
+  }
+  const fixture = paymentHarness({ settings: hosted, body: { value: base } });
+  assert.equal((await fixture.razorpayTestRoute(req, "prepare")).status, 400);
+  assert.equal(fixture.calls.length, 0);
+});
+
+test("hosted CSP opens Razorpay only on the exact enabled test deployment", () => {
+  const hosted = { ...env, NODE_ENV: "production", VERCEL_ENV: "production", PANDABYTE_HOSTED_TEST_ENABLED: "true" };
+  function policy(requestUrl, settings) {
+    const exports = {};
+    const deps = { "@clerk/nextjs/server": { clerkMiddleware: (_handler, options) => options }, "./lib/checkout/test-deployment": { hostedStorefrontTestEnabled } };
+    runInNewContext(proxySource, { exports, process: { env: settings }, require: name => { if (!(name in deps)) throw Error(name); return deps[name]; } });
+    return exports.default(new Request(requestUrl)).contentSecurityPolicy.directives;
+  }
+  const origin = "https://pandabyte-iot.vercel.app/checkout";
+  const allowed = policy(origin, hosted);
+  assert.ok(allowed["script-src"].includes("https://checkout.razorpay.com"));
+  assert.ok(allowed["frame-src"].includes("https://api.razorpay.com"));
+  assert.ok(allowed["connect-src"].includes("https://checkout.razorpay.com"));
+  for (const [requestUrl, settings] of [[origin, { ...hosted, VERCEL_ENV: "preview" }], [origin, { ...hosted, PANDABYTE_HOSTED_TEST_ENABLED: "false" }], ["https://other.example/checkout", hosted], [origin, { ...hosted, RAZORPAY_TEST_KEY_ID: "rzp_live_1" }]]) {
+    const denied = policy(requestUrl, settings);
+    assert.equal(denied["script-src"], undefined);
+    assert.ok(!denied["frame-src"].includes("https://checkout.razorpay.com"));
+    assert.ok(!denied["connect-src"].includes("https://api.razorpay.com"));
+  }
 });
