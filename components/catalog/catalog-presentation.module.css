@@ -22,7 +22,7 @@
 .productSummary h2 { margin: 0 0 10px; font-size: 16px; line-height: 1.4; }
 .productSummary h3 { margin: 20px 0 8px; color: var(--foreground); font-size: 14px; line-height: 1.4; }
 .productSummary p, .productSummary ul { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
-.productSummary ul { padding-left: 1.25em; }
+.productSummary ul { padding-left: 1.25em; list-style: disc outside; }
 .productSummary li + li { margin-top: 6px; }
 .productHeading h1 { margin: 0; font-size: clamp(30px, 3.2vw, 40px); font-weight: 650; line-height: 1.15; letter-spacing: -.04em; text-wrap: balance; }
 
