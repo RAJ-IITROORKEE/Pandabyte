@@ -33,12 +33,14 @@ export function ProductDetails({ product, gallery }: { product: PublishedRecord<
     {Boolean(document.modelNumbers?.length) && <p>Models: {document.modelNumbers?.join(", ")}</p>}
     {document.specifications.length > 0 && <dl className={styles.specList}>{document.specifications.map((specification, index) => <div key={`${specification.name}-${index}`}><dt>{specification.name}</dt><dd>{specification.value}</dd></div>)}</dl>}
   </> });
-  if (document.compatibility.length || document.kitContents.length || document.resources.length || document.documentMediaId || document.tags?.length) tabs.push({ label: "More details", content: <div className={styles.productSections}>
+  if (document.compatibility.length || document.kitContents.length || document.tags?.length) tabs.push({ label: "More details", content: <div className={styles.productSections}>
     {document.compatibility.length > 0 && <section><h2>Compatibility</h2><ul className={styles.detailList}>{document.compatibility.map((item, index) => <li key={index}>{item}</li>)}</ul></section>}
     {document.kitContents.length > 0 && <section><h2>Kit contents</h2><ul className={styles.detailList}>{document.kitContents.map((item, index) => <li key={index}>{item.title} × {item.quantity}</li>)}</ul></section>}
+    {Boolean(document.tags?.length) && <section><h2>Tags</h2><ul className={styles.detailList}>{document.tags?.map(tag => <li key={tag}>{tag}</li>)}</ul></section>}
+  </div> });
+  if (document.resources.length || document.documentMediaId) tabs.push({ label: "Resources", content: <div className={styles.productSections}>
     {document.resources.length > 0 && <section><h2>Resources</h2><ul className={styles.resourceList}>{document.resources.map((resource, index) => <li key={`${resource.url}-${index}`}><a href={resource.url} rel="noopener noreferrer">{resource.label}</a></li>)}</ul></section>}
     {document.documentMediaId && <section><h2>Product document</h2><ProductDocumentPreview mediaId={document.documentMediaId} /></section>}
-    {Boolean(document.tags?.length) && <section><h2>Tags</h2><ul className={styles.detailList}>{document.tags?.map(tag => <li key={tag}>{tag}</li>)}</ul></section>}
   </div> });
   if (gallery) tabs.push({ label: "Gallery", content: gallery });
   return <ProductTabs tabs={tabs} />;

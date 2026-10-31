@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import type { PublishedRecord } from "@/lib/editorial/published";
+import { structureProductSummary } from "@/lib/catalog/product-summary";
 import styles from "./catalog-presentation.module.css";
 
 export function ProductOverview({ product, gallery, panel, children }: {
@@ -26,7 +27,7 @@ export function ProductOverview({ product, gallery, panel, children }: {
         </header>
         {panel}
       </div>
-      {product.summary && <section className={styles.productSummary} aria-labelledby="product-summary-title"><h2 id="product-summary-title">About this product</h2><p>{product.summary}</p></section>}
+      {product.summary && <section className={styles.productSummary} aria-labelledby="product-summary-title"><h2 id="product-summary-title">About this product</h2>{structureProductSummary(product.summary).map((part, index) => part.type === "heading" ? <h3 key={index}>{part.text}</h3> : part.type === "list" ? <ul key={index}>{part.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul> : <p key={index}>{part.text}</p>)}</section>}
     </div>
     {children}
   </main>;

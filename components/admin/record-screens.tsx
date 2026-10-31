@@ -672,7 +672,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
 
     {module === "products" && <section className={styles.panel}>
       <div className={styles.sectionHeading}><div><h2>Summary</h2><p>A concise product introduction.</p></div></div>
-      <Field label="Summary" className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>
+      <Field label="Summary" hint="Shown under the product image. Put headings on their own lines and indent list items; add specifications and resource links in Catalog details." className={styles.spanTwo}><TextArea value={str("summary")} onChange={(value) => set("summary", value)} rows={3} /></Field>
     </section>}
     {module === "products" && <ProductDocumentEditor value={typeof doc.documentMediaId === "string" ? doc.documentMediaId : undefined} onChange={(value) => set("documentMediaId", value)} canManageMedia={canManageMedia} onUploadDelta={onUploadDelta} />}
     {module === "products" && <section className={styles.panel}>

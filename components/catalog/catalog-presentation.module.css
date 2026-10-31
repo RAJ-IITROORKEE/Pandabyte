@@ -20,7 +20,10 @@
 .productInformation { grid-area: information; display: grid; gap: 24px; align-content: start; }
 .productSummary { grid-area: summary; padding: 22px 24px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); }
 .productSummary h2 { margin: 0 0 10px; font-size: 16px; line-height: 1.4; }
-.productSummary p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; }
+.productSummary h3 { margin: 20px 0 8px; color: var(--foreground); font-size: 14px; line-height: 1.4; }
+.productSummary p, .productSummary ul { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+.productSummary ul { padding-left: 1.25em; }
+.productSummary li + li { margin-top: 6px; }
 .productHeading h1 { margin: 0; font-size: clamp(30px, 3.2vw, 40px); font-weight: 650; line-height: 1.15; letter-spacing: -.04em; text-wrap: balance; }
 
 /* Add these classes alongside existing catalog classes; card and media internals stay owned by their components. */
