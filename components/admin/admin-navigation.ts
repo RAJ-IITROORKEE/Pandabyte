@@ -40,6 +40,7 @@ export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
       { href: "/admin/workspaces", label: "Workspaces", icon: IconBriefcase2, comingSoon: true, group: "Workspace" },
       { href: "/admin/chat", label: "Chat", icon: IconMessage, comingSoon: true, group: "Workspace" },
       { href: "/admin/ai-chat", label: "AI Chat", icon: IconSparkles, comingSoon: true, group: "Workspace" },
+      { href: "/admin/rag-control-room", label: "RAG Control Room", icon: IconBook2, capability: "staff.manage", group: "Workspace" },
     ],
   },
   {
