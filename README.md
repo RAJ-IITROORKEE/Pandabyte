@@ -11,7 +11,7 @@ An India-first IoT hardware catalog and company website with an editable adminis
 - Responsive storefront, product search/filtering, product galleries, cart and signed-in checkout review.
 - Supabase-inspired frontend palette, static hero and shared accessible actions; Admin uses an independent Supabase preset with Outfit typography. [Theme scope](docs/frontend-theme.md).
 - Company, solutions, learning, blog, FAQ and contact page families backed by published CMS records.
-- Clerk sign-in and account pages for profile, addresses, favorites, orders, settings and Billing.
+- Themed Chakra sign-in/sign-up with Clerk's combined new-account flow, validated return paths and dismissible session-success feedback; account pages for profile, addresses, favorites, orders, settings and Billing. [Auth behavior and checks](docs/auth-entry.md).
 - Fictional invoice-template preview and downloadable sample PDF, clearly marked **SAMPLE — NOT A TAX INVOICE**.
 - Private order-specific **TEST — NOT A TAX INVOICE** PDFs for paid Razorpay test orders, available to their customer or authorized Admin.
 - Role-based Admin editing for products, categories, pricing, inventory, orders, inquiries and company/editorial content.

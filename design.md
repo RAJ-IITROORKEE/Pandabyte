@@ -1,3 +1,5 @@
+> Current auth entry, 1 November 2026: use a scoped Chakra shell with neutral surfaces, existing emerald tokens, the exact logo, responsive two-column/single-column composition and Clerk-owned fields/verification. Combined sign-in/sign-up returns to the validated destination and provides dismissible active-session feedback. Admin styling and role/access guards remain independent. See [auth contract and checks](docs/auth-entry.md).
+
 > Current Admin design: Supabase preset from the selected Kiranism dashboard, Outfit typography, neutral light/dark surfaces and green accents. See [theme checkpoint](docs/frontend-theme.md). Public/customer styling is unchanged.
 
 29 October frontend override: use the Supabase homepage color reference for public/customer screens only; simplify the hero to static text without CanvasText, entry animation or pointer-follow glow. Preserve Admin's existing theme and the circuit/logo. The owner requests shared button polish, tests, commit and push. See [current theme contract](docs/frontend-theme.md). This supersedes earlier hero/color restrictions only within this presentation scope.

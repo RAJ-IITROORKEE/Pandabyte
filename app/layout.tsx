@@ -7,6 +7,7 @@ import { PublishedHeader, PublishedFooter } from "@/components/published-site-sh
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteFrame } from "@/components/site-frame";
+import { SessionFeedback } from "@/components/auth/session-feedback";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 import "./theme.css";
@@ -57,6 +58,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <SiteFrame header={<Suspense fallback={<SiteHeader />}><PublishedHeader /></Suspense>} footer={<Suspense fallback={<SiteFooter />}><PublishedFooter /></Suspense>}>
             {children}
           </SiteFrame>
+          <Suspense fallback={null}><SessionFeedback nonce={nonce} /></Suspense>
         </ClerkProvider>
       </body>
     </html>

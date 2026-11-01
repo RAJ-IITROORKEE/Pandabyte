@@ -5,6 +5,9 @@ import { pandaAgentVoiceHeaders } from "./Panda-agent/config/voice-headers";
 const nextConfig: NextConfig = {
   distDir: process.env.PANDABYTE_NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
+  experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
+  },
   outputFileTracingExcludes: { "/*": pandaAgentTraceExclusions },
   outputFileTracingIncludes: {
     "/api/account/orders/*/document": ["./public/fonts/noto-sans/*.ttf"],

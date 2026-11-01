@@ -1,0 +1,90 @@
+.page {
+  min-height: 70vh;
+  padding: clamp(48px, 7vw, 88px) 24px 96px;
+  color: var(--pb-foreground);
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  align-items: center;
+  gap: clamp(48px, 7vw, 96px);
+  max-width: 1000px;
+  margin-inline: auto;
+}
+.intro { max-width: 440px; }
+.logoBacking {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 40px;
+  border-radius: 6px;
+  background: #fff;
+}
+.logo { display: block; width: 56px; height: auto; }
+.eyebrow {
+  margin: 0 0 16px;
+  color: var(--pb-accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.intro h1 {
+  margin: 0;
+  font-size: clamp(38px, 4.7vw, 56px);
+  font-weight: 650;
+  letter-spacing: -.04em;
+  line-height: 1.08;
+}
+.description {
+  max-width: 350px;
+  margin: 22px 0 0;
+  color: var(--pb-muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.form { display: flex; justify-content: center; min-width: 0; }
+.form :global(.cl-rootBox), .form :global(.cl-cardBox) { width: 100%; max-width: 440px; }
+@media (max-width: 720px) {
+  .page { padding: 40px 20px 64px; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .logoBacking { margin-bottom: 28px; }
+  .intro h1 { font-size: 38px; }
+  .description { margin-top: 14px; }
+}
+
+/* Clerk keeps ownership of the form, validation and account recovery. */
+.form :global(.cl-card) {
+  border: 1px solid var(--divider);
+  border-radius: 16px;
+  background: var(--pb-surface);
+  box-shadow: 0 12px 36px rgb(0 0 0 / .06);
+}
+.form :global(.cl-headerTitle) { color: var(--pb-foreground); font-size: 24px; letter-spacing: -.025em; }
+.form :global(.cl-headerSubtitle) { color: var(--pb-muted); line-height: 1.5; }
+.form :global(.cl-formFieldLabel) { color: var(--pb-foreground); }
+.form :global(.cl-formFieldInput),
+.form :global(.cl-socialButtonsBlockButton),
+.form :global(.cl-formButtonPrimary) { min-height: 44px; border-radius: 8px; }
+.form :global(.cl-formFieldInput) {
+  border-color: var(--border);
+  background: var(--pb-background);
+  color: var(--pb-foreground);
+}
+.form :global(.cl-socialButtonsBlockButton) {
+  border-color: var(--border);
+  background: var(--pb-surface);
+  color: var(--pb-foreground);
+}
+.form :global(.cl-formButtonPrimary) {
+  background: var(--pb-accent);
+  color: var(--pb-action-text);
+}
+.form :global(.cl-footerActionLink),
+.form :global(.cl-identityPreviewEditButton),
+.form :global(.cl-formFieldAction) { color: var(--pb-accent-ink); }
+.form :global(input):focus-visible,
+.form :global(button):focus-visible,
+.form :global(a):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

@@ -1,0 +1,18 @@
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--pb-divider, var(--divider));
+  border-radius: 10px;
+  background: var(--pb-surface);
+  color: var(--pb-foreground);
+  box-shadow: 0 8px 28px rgb(0 0 0 / .12);
+}
+.message { flex: 1; min-width: 0; }
+.message > :first-child { font-weight: 650; }
+.message > :last-child { margin-top: 4px; color: var(--pb-muted); font-size: 14px; }
+.close { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: inherit; font-size: 22px; cursor: pointer; }
+.close:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.toast > svg { color: var(--pb-accent-ink); flex: none; }

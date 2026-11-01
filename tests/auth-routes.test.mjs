@@ -24,6 +24,17 @@ test("account content requires a session", async () => {
   assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Faccount");
 });
 
+test("completion requires a real session and rejects unsafe destinations", async () => {
+  const response = await request("/auth/complete?return_to=%2Faccount");
+  assert.equal(response.status, 307);
+  assert.equal(response.headers.get("location"), "/sign-in?redirect_url=%2Faccount");
+  for (const query of ["return_to=https%3A%2F%2Fevil.example", "return_to=%2F%2Fevil.example", "return_to=%2Faccount&return_to=%2Fadmin"]) {
+    const rejected = await request(`/auth/complete?${query}`);
+    assert.equal(rejected.status, 307);
+    assert.equal(rejected.headers.get("location"), "/");
+  }
+});
+
 test("private settings preserve their exact intended destination", async () => {
   for (const path of ["/account/settings", "/account/settings/security"]) {
     const response = await request(path);
