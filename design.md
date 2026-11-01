@@ -1,3 +1,5 @@
+> Admin layout follow-up, 1 November 2026: preserve the Supabase preset while sharing contextual stat cards across Users, Dashboard, Products and Categories. Users have restrained role-colored outlines, page-scoped sort/filter/CSV and unchanged authorization; the sidebar footer stores Open storefront behind an ellipsis. See [layout scope and verification](docs/admin-layout-refresh.md).
+
 > Current auth entry, 1 November 2026: use a scoped Chakra shell with neutral surfaces, existing emerald tokens, the exact logo, responsive two-column/single-column composition and Clerk-owned fields/verification. Combined sign-in/sign-up returns to the validated destination and provides dismissible active-session feedback. Admin styling and role/access guards remain independent. See [auth contract and checks](docs/auth-entry.md).
 
 > Current Admin design: Supabase preset from the selected Kiranism dashboard, Outfit typography, neutral light/dark surfaces and green accents. See [theme checkpoint](docs/frontend-theme.md). Public/customer styling is unchanged.

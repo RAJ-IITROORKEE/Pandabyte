@@ -273,7 +273,7 @@
   .sidebar[data-rail="true"] .navLabel { display: block; width: 100%; text-align: center; }
   .sidebar[data-rail="true"] .navLabel > span { display: block; font-size: 10px; line-height: 1.2; overflow-wrap: anywhere; }
   .sidebar[data-rail="true"] .navLabel small { display: none; }
-  .sidebar[data-rail="true"] .userFooter { justify-content: center; padding-inline: 0; }
+  .sidebar[data-rail="true"] .userFooter { flex-direction: column; justify-content: center; padding-inline: 0; }
   .sidebar[data-rail="true"] .storeLink { justify-content: center; padding-inline: 0; }
   .sidebar[data-rail="true"] .storeLink span { display: none; }
 }

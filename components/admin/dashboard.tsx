@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { canAdminPermission } from "@/lib/admin/access-contract";
 import { AdminNotice } from "./admin-notice";
+import { AdminStatCards } from "./admin-stat-cards";
 import styles from "./dashboard.module.css";
 
 const countable = [
@@ -107,13 +108,10 @@ export function AdminDashboard() {
       {failed && <AdminNotice key={refreshKey} tone="error">Some counts could not be loaded. Refresh to try again.</AdminNotice>}
 
       <section aria-label="Current record counts" aria-busy={loading} className={styles.metrics}>
-        {summaries.map(({ module, label, href, Icon }) => (
-          <article className={styles.metric} key={module}>
-            <div className={styles.metricHeading}><Icon aria-hidden="true" size={17} stroke={1.8} /><span>{label}</span></div>
-            <strong>{loading ? "…" : counts?.[module] ?? "Unavailable"}</strong>
-            <Link href={href}>Open {label.toLowerCase()} <IconArrowRight aria-hidden="true" size={14} /></Link>
-          </article>
-        ))}
+        <AdminStatCards items={summaries.map(({ module, label, Icon }) => ({
+          label, value: loading ? "Loading" : counts?.[module] ?? "Unavailable",
+          description: "Current records", icon: <Icon size={16} stroke={1.8} />,
+        }))} />
         {!loading && summaries.length === 0 && <p className={styles.emptyMetrics}>Your available record areas are listed below.</p>}
       </section>
 

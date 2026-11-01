@@ -44,3 +44,15 @@
 .removeButton:focus-visible, .dangerButton:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .dangerButton { min-height: 40px; padding: 8px 14px; border: 1px solid #b42318; border-radius: 4px; background: #b42318; color: white; font: inherit; font-weight: 600; cursor: pointer; }
 .formError { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.toolbar .search { flex: 1 1 220px; margin: 0; }
+.scope { margin: 8px 0 16px; color: var(--muted); font-size: 12px; }
+.sortButton { padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; }
+.sortButton:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.roleBadge { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid color-mix(in srgb, currentColor 45%, var(--divider)); border-radius: 999px; font-size: 12px; font-weight: 500; line-height: 1.4; }
+.neutral { color: var(--muted); border-color: var(--divider); }
+.red { color: light-dark(#a3211a, #ff9a91); }
+.blue { color: light-dark(#1759a0, #9ac7ff); }
+.green { color: light-dark(#14663e, #8fe0b2); }
+.amber { color: light-dark(#805000, #e9c57b); }
+.violet { color: light-dark(#6941a0, #d1b5ff); }

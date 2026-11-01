@@ -3,6 +3,7 @@ import { IconAlertTriangle, IconCategory, IconPackages, IconTags } from "@tabler
 import type { ProductTableStats } from "@/lib/admin/product-contract";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "./chart";
 import styles from "./product-stats.module.css";
+import { AdminStatCards } from "./admin-stat-cards";
 
 const countFormat = new Intl.NumberFormat("en-IN");
 const moneyFormat = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
@@ -37,28 +38,12 @@ export function ProductStats({ stats, loading }: { stats: ProductTableStats | un
   ] : [];
 
   return <section aria-busy={loading} aria-label="Product statistics" className={styles.stats}>
-    <div className={styles.kpis}>
-      <article className={styles.kpi}>
-        <header className={styles.kpiHeading}><IconPackages aria-hidden="true" size={16} stroke={1.7} /><h2>Total products</h2></header>
-        <strong className={styles.kpiValue}>{count(stats.totalProducts)}</strong>
-        <p className={styles.kpiCaption}>Non-archived catalog</p>
-      </article>
-      <article className={styles.kpi}>
-        <header className={styles.kpiHeading}><IconCategory aria-hidden="true" size={16} stroke={1.7} /><h2>Categories</h2></header>
-        <strong className={styles.kpiValue}>{count(stats.categories.length)}</strong>
-        <p className={styles.kpiCaption}>Product groups</p>
-      </article>
-      <article className={styles.kpi}>
-        <header className={styles.kpiHeading}><IconTags aria-hidden="true" size={16} stroke={1.7} /><h2>Priced products</h2></header>
-        <strong className={styles.kpiValue}>{prices ? count(prices.pricedProducts) : "0"}</strong>
-        <p className={styles.kpiCaption}>{prices ? "With a current price" : "No configured prices"}</p>
-      </article>
-      <article className={styles.kpi}>
-        <header className={styles.kpiHeading}><IconAlertTriangle aria-hidden="true" size={16} stroke={1.7} /><h2>Unpriced products</h2></header>
-        <strong className={styles.kpiValue}>{count(stats.unpricedProducts)}</strong>
-        <p className={styles.kpiCaption}>Need pricing</p>
-      </article>
-    </div>
+    <AdminStatCards items={[
+      { label: "Total products", value: count(stats.totalProducts), description: "Non-archived catalog", icon: <IconPackages size={16} stroke={1.7} /> },
+      { label: "Categories", value: count(stats.categories.length), description: "Non-archived groups, up to 500", icon: <IconCategory size={16} stroke={1.7} /> },
+      { label: "Priced products", value: prices ? count(prices.pricedProducts) : "0", description: prices ? "With a current price" : "No configured prices", icon: <IconTags size={16} stroke={1.7} /> },
+      { label: "Unpriced products", value: count(stats.unpricedProducts), description: "Need pricing", tone: "amber", icon: <IconAlertTriangle size={16} stroke={1.7} /> },
+    ]} />
 
     <div className={styles.charts}>
       <article className={styles.panel}>

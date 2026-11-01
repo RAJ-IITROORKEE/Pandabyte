@@ -1,8 +1,9 @@
 "use client";
 
 import { AdminNotice } from "./admin-notice";
+import { AdminStatCards } from "./admin-stat-cards";
 
-import { IconArrowLeft, IconArrowRight, IconEye, IconPencil, IconRefresh, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowRight, IconCategory, IconCircleCheck, IconFile, IconArchive, IconEye, IconPencil, IconRefresh, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -169,6 +170,15 @@ export function CategoriesTable() {
       <div><h1>Categories</h1><p>Manage catalog categories and their parent relationships.</p></div>
       {canCreate && <Link className={tableStyles.newButton} href="/admin/categories/new">New category</Link>}
     </header>
+
+    <section aria-label="Category statistics" aria-busy={loading}>
+      <AdminStatCards items={[
+        { label: "Matching categories", value: total ?? (loading ? "Loading" : "Unavailable"), description: "Across current filters", icon: <IconCategory size={16} /> },
+        { label: "Published on page", value: response ? rows.filter((row) => row.status === "published").length : loading ? "Loading" : "Unavailable", description: "Current page only", tone: "green", icon: <IconCircleCheck size={16} /> },
+        { label: "Drafts on page", value: response ? rows.filter((row) => row.status === "draft").length : loading ? "Loading" : "Unavailable", description: "Current page only", icon: <IconFile size={16} /> },
+        { label: "Archived on page", value: response ? rows.filter((row) => row.status === "archived").length : loading ? "Loading" : "Unavailable", description: "Current page only", icon: <IconArchive size={16} /> },
+      ]} />
+    </section>
 
     <section className={tableStyles.controls} aria-label="Category table filters">
       <label className={tableStyles.search} htmlFor="categories-search">

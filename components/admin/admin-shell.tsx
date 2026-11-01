@@ -4,7 +4,6 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import {
   IconChevronDown,
   IconBell,
-  IconExternalLink,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconMenu2,
@@ -19,6 +18,7 @@ import { SIDEBAR_STORAGE_KEY, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_MIN_WIDTH, SIDEBAR_
 import { AdminSearch } from "./admin-search";
 import { dashboardItem, navigationGroups, visibleNavigationGroups } from "./admin-navigation";
 import { AdminThemeProvider, AdminThemeSelect, useAdminTheme } from "./admin-theme";
+import { SidebarFooterActions } from "./sidebar-footer-actions";
 import styles from "./admin-shell.module.css";
 
 type Capability = string;
@@ -312,8 +312,8 @@ function AdminShellContent({ capabilities, children, fontFamily }: {
                   {displayEmail && <span className={styles.userEmail}>{displayEmail}</span>}
                 </div>}
                 <UserButton appearance={userButtonAppearance} userProfileProps={{ appearance: userProfileAppearance }} />
+                <SidebarFooterActions />
               </div>
-              <Link href="/" className={`${styles.storeLink} ${styles.navLink}`} aria-label="Open storefront"><IconExternalLink aria-hidden="true" /><span>Open storefront</span></Link>
             </div>
           </aside>
 

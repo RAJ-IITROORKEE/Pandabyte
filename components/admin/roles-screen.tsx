@@ -3,6 +3,9 @@
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { IconTrash } from "@tabler/icons-react";
+import { ShieldCheck, Users, UserRound, UserCog } from "lucide-react";
+import { AdminStatCards } from "./admin-stat-cards";
+import { accountsCsv, pageRows, roleTone, type AccountRow, type SortKey } from "./roles-table";
 import { toast } from "sonner";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AdminNotice } from "@/components/admin/admin-notice";
@@ -11,10 +14,9 @@ import ui from "@/components/admin/admin-ui.module.css";
 import { PERMISSION_CATALOG, type RoleDefinition } from "@/lib/admin/access-contract";
 import styles from "./roles.module.css";
 
-const PAGE_SIZE = 25;
 const RESOURCES: Record<string, readonly string[]> = Object.fromEntries(PERMISSION_CATALOG.map(({ resource, actions }) => [resource, actions]));
 const ACTIONS = ["read", "create", "update", "publish", "delete"];
-type Account = { userId: string; name: string | null; email: string | null; imageUrl: string | null; verified: boolean; removalPending: boolean; role: string; version: number; protected: boolean; updatedAt: string | null; createdAt: string | null; lastActiveAt: string | null; orderCount: number };
+type Account = AccountRow;
 type Role = RoleDefinition;
 type UsersResult = { items: Account[]; total: number; stats: { totalUsers: number; staffUsers: number; customerUsers: number; totalRoles: number; byRole: { role: string; count: number }[] } };
 type ApiError = Error & { status?: number; code?: string };
@@ -52,6 +54,11 @@ function RoleSession({ userId }: { userId: string }) {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [verification, setVerification] = useState("all");
+  const [sort, setSort] = useState<SortKey>("account");
+  const [descending, setDescending] = useState(false);
   const [data, setData] = useState<UsersResult | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,14 +94,14 @@ function RoleSession({ userId }: { userId: string }) {
   useEffect(() => {
     if (!canManage) return;
     const controller = new AbortController();
-    const params = new URLSearchParams({ query: search, limit: String(PAGE_SIZE), offset: String(offset) });
+    const params = new URLSearchParams({ query: search, limit: String(pageSize), offset: String(offset) });
     Promise.all([
       request<UsersResult>(`/api/admin/users?${params}`, { signal: controller.signal }),
       request<{ items: Role[] }>("/api/admin/role-definitions", { signal: controller.signal }),
     ]).then(([users, definitions]) => { if (!controller.signal.aborted) { setData(users); setRoles(definitions.items); setError(""); setErrorDismissed(false); setLoading(false); } })
       .catch((failure: unknown) => { if (!controller.signal.aborted) { setError(failure instanceof Error ? failure.message : "Users could not be loaded."); setErrorDismissed(false); if ((failure as ApiError)?.status === 401 || (failure as ApiError)?.status === 403) { setData(null); setRoles([]); } setLoading(false); } });
     return () => controller.abort();
-  }, [canManage, search, offset, reload]);
+  }, [canManage, search, offset, pageSize, reload]);
   function refresh() { setLoading(true); setError(""); setErrorDismissed(false); setReload((value) => value + 1); }
   function openAssignment(account: Account) {
     if (!account.verified || !account.email || account.removalPending || account.protected || account.userId === userId) return;
@@ -157,19 +164,38 @@ function RoleSession({ userId }: { userId: string }) {
     });
   }
   if (!canManage) return <div className={ui.screen}><section className={ui.panel}><h1>Access denied</h1><p className={ui.lede}>Your role does not allow you to manage users and roles.</p></section></div>;
-  const stats = data?.stats;
+  const stats = error || loading ? undefined : data?.stats;
+  const visibleRows = pageRows(data?.items ?? [], roleFilter, verification, sort, descending, (key) => roleLabel(key, roles));
+  function changeSort(key: SortKey) { if (key === sort) setDescending(!descending); else { setSort(key); setDescending(false); } }
+  function exportPage() {
+    const blob = new Blob(["\ufeff", accountsCsv(visibleRows, (key) => roleLabel(key, roles))], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "accounts-loaded-page.csv"; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function sortHeading(key: SortKey, text: string) { return <button type="button" className={styles.sortButton} onClick={() => changeSort(key)}>{text}<span aria-hidden="true"> {sort === key ? (descending ? "↓" : "↑") : "↕"}</span></button>; }
+  function sortState(key: SortKey): "ascending" | "descending" | undefined { return sort === key ? (descending ? "descending" : "ascending") : undefined; }
   return <div className={ui.screen}>
     <div className={ui.pageHeading}><div><h1>Users &amp; roles</h1><p className={ui.lede}>Manage account access and review role permissions.</p></div></div>
     {error && !errorDismissed && <AdminNotice tone="error" onDismiss={() => setErrorDismissed(true)}><p>{error}</p><button type="button" className={ui.secondaryButton} onClick={refresh}>Reload</button></AdminNotice>}
-    <div className={styles.stats} aria-label="Account summary">{[["Roles", stats?.totalRoles], ["All accounts", stats?.totalUsers], ["Staff accounts", stats?.staffUsers], ["Customers", stats?.customerUsers]].map(([title, count]) => <div className={styles.stat} key={title}><span>{title}</span><strong>{count ?? "—"}</strong></div>)}</div>
-    {stats && <div className={styles.distribution}><span>Role distribution</span>{stats.byRole.map((item) => <span className={ui.statusPill} key={item.role}>{roleLabel(item.role, roles)}: {item.count}</span>)}</div>}
+    <AdminStatCards items={[
+      { label: "Roles", value: stats?.totalRoles ?? (error ? "Unavailable" : "—"), description: "Built-in and custom definitions", tone: "violet", icon: <ShieldCheck size={16} /> },
+      { label: "All accounts", value: stats?.totalUsers ?? (error ? "Unavailable" : "—"), description: "Registered sign-in accounts", tone: "blue", icon: <Users size={16} /> },
+      { label: "Staff accounts", value: stats?.staffUsers ?? (error ? "Unavailable" : "—"), description: "Accounts with staff assignments", tone: "green", icon: <UserCog size={16} /> },
+      { label: "Customers", value: stats?.customerUsers ?? (error ? "Unavailable" : "—"), description: "Accounts with default customer access", icon: <UserRound size={16} /> },
+    ]} />
+    {stats && <div className={styles.distribution}><span>Role distribution</span>{stats.byRole.map((item) => <span className={`${styles.roleBadge} ${styles[roleTone(item.role)]}`} key={item.role}>{roleLabel(item.role, roles)}: {item.count}</span>)}</div>}
     <section className={ui.panel} aria-labelledby="users-title">
       <div className={ui.sectionHeading}><div><h2 id="users-title">Accounts</h2><p>Choose a verified account to assign or change its role.</p></div></div>
-      <label className={styles.search}><span className={ui.visuallyHidden}>Search accounts</span><input ref={searchInput} className={ui.input} type="search" placeholder="Search name or email" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-      <div className={`${ui.tableFrame} ${styles.tableFrame}`} role="region" aria-label="Accounts" tabIndex={0}><table className={`${ui.table} ${styles.table}`}><thead><tr><th scope="col">Account</th><th scope="col">Verification</th><th scope="col">Role</th><th scope="col">Orders</th><th scope="col">Updated</th><th scope="col">Action</th></tr></thead><tbody>
-        {loading ? <tr><td colSpan={6} className={ui.tableMessage}>Loading accounts…</td></tr> : error ? <tr><td colSpan={6} className={ui.tableMessage}>Could not load accounts. <button type="button" className={ui.secondaryButton} onClick={refresh}>Reload</button></td></tr> : !data?.items.length ? <tr><td colSpan={6} className={ui.tableMessage}>No accounts found.</td></tr> : data.items.map((account, index) => <tr key={account.userId}><td><div className={styles.identity}><span className={styles.avatar}>{account.imageUrl ? <Image src={account.imageUrl} alt="" width={36} height={36} unoptimized /> : (account.name || account.email || "?").charAt(0).toUpperCase()}</span><span><strong>{account.name || "Unnamed account"}</strong><small>{account.email || "Email unavailable"}</small></span></div></td><td>{account.verified ? "Verified" : "Unverified"}</td><td><span className={ui.statusPill}>{roleLabel(account.role, roles)}</span></td><td>{account.orderCount ?? 0}</td><td>{date(account.updatedAt)}</td><td>{account.protected ? "Protected" : account.userId === userId ? "Your account" : <div className={styles.rowActions}><button type="button" className={ui.secondaryButton} disabled={busy || account.removalPending || !account.verified || !account.email} onClick={() => openAssignment(account)}>{account.role === "CUSTOMER" ? "Assign role" : "Change role"}</button><button type="button" className={styles.removeButton} disabled={busy} aria-label={`${account.removalPending ? "Retry removal of" : "Delete"} ${account.name || account.email || "account"}${account.name && account.email ? `, ${account.email}` : ""}, row ${offset + index + 1}`} title={account.removalPending ? "Retry removal" : "Delete account"} onClick={(event) => openRemoval(account, event.currentTarget)}><IconTrash size={17} aria-hidden="true" />{account.removalPending && <span>Retry removal</span>}</button></div>}</td></tr>)}
+      <div className={styles.toolbar}>
+        <label className={styles.search}><span className={ui.visuallyHidden}>Search accounts</span><input ref={searchInput} className={ui.input} type="search" placeholder="Search name or email" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+        <label><span className={ui.visuallyHidden}>Filter loaded page by role</span><select className={ui.input} value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}><option value="all">All roles</option>{roles.map((role) => <option key={role.key} value={role.key}>{role.name}</option>)}</select></label>
+        <label><span className={ui.visuallyHidden}>Filter loaded page by verification</span><select className={ui.input} value={verification} onChange={(event) => setVerification(event.target.value)}><option value="all">All verification</option><option value="verified">Verified</option><option value="unverified">Unverified</option></select></label>
+        <button type="button" className={ui.secondaryButton} disabled={loading || query !== search || !!error || !visibleRows.length} onClick={exportPage}>Export {visibleRows.length} page {visibleRows.length === 1 ? "row" : "rows"} CSV</button>
+      </div>
+      <p className={styles.scope}>Search covers all accounts. Filters, sorting and export apply to the loaded page.</p>
+      <div className={`${ui.tableFrame} ${styles.tableFrame}`} role="region" aria-label="Accounts" tabIndex={0}><table className={`${ui.table} ${styles.table}`}><thead><tr><th scope="col" aria-sort={sortState("account")}>{sortHeading("account", "Account")}</th><th scope="col">Verification</th><th scope="col" aria-sort={sortState("role")}>{sortHeading("role", "Role")}</th><th scope="col" aria-sort={sortState("orders")}>{sortHeading("orders", "Orders")}</th><th scope="col" aria-sort={sortState("updated")}>{sortHeading("updated", "Updated")}</th><th scope="col">Action</th></tr></thead><tbody>
+        {loading ? <tr><td colSpan={6} className={ui.tableMessage}>Loading accounts…</td></tr> : error ? <tr><td colSpan={6} className={ui.tableMessage}>Could not load accounts. <button type="button" className={ui.secondaryButton} onClick={refresh}>Reload</button></td></tr> : !visibleRows.length ? <tr><td colSpan={6} className={ui.tableMessage}>No accounts on this page match the filters.</td></tr> : visibleRows.map((account, index) => <tr key={account.userId}><td><div className={styles.identity}><span className={styles.avatar}>{account.imageUrl ? <Image src={account.imageUrl} alt="" width={36} height={36} unoptimized /> : (account.name || account.email || "?").charAt(0).toUpperCase()}</span><span><strong>{account.name || "Unnamed account"}</strong><small>{account.email || "Email unavailable"}</small></span></div></td><td>{account.verified ? "Verified" : "Unverified"}</td><td><span className={`${styles.roleBadge} ${styles[roleTone(account.role)]}`}>{roleLabel(account.role, roles)}</span></td><td>{account.orderCount ?? 0}</td><td>{date(account.updatedAt)}</td><td>{account.protected ? "Protected" : account.userId === userId ? "Your account" : <div className={styles.rowActions}><button type="button" className={ui.secondaryButton} disabled={busy || account.removalPending || !account.verified || !account.email} onClick={() => openAssignment(account)}>{account.role === "CUSTOMER" ? "Assign role" : "Change role"}</button><button type="button" className={styles.removeButton} disabled={busy} aria-label={`${account.removalPending ? "Retry removal of" : "Delete"} ${account.name || account.email || "account"}${account.name && account.email ? `, ${account.email}` : ""}, displayed row ${index + 1}`} title={account.removalPending ? "Retry removal" : "Delete account"} onClick={(event) => openRemoval(account, event.currentTarget)}><IconTrash size={17} aria-hidden="true" />{account.removalPending && <span>Retry removal</span>}</button></div>}</td></tr>)}
       </tbody></table></div>
-      <div className={ui.pagination}><span>{data && data.total > 0 ? `${offset + 1}–${Math.min(offset + data.items.length, data.total)} of ${data.total}` : ""}</span><div><button className={ui.secondaryButton} type="button" disabled={loading || offset === 0} onClick={() => { setLoading(true); setOffset(Math.max(0, offset - PAGE_SIZE)); }}>Previous</button><button className={ui.secondaryButton} type="button" disabled={loading || !data || offset + PAGE_SIZE >= data.total || offset + PAGE_SIZE > 5000} onClick={() => { setLoading(true); setOffset(offset + PAGE_SIZE); }}>Next</button></div></div>
+      <div className={ui.pagination}><label>Rows per page <select className={ui.input} value={pageSize} onChange={(event) => { setLoading(true); setOffset(0); setPageSize(Number(event.target.value)); }}>{[10, 25, 50].map((size) => <option key={size} value={size}>{size}</option>)}</select></label><span>{data && data.total > 0 ? `${offset + 1}–${Math.min(offset + data.items.length, data.total)} of ${data.total}` : ""}</span><div><button className={ui.secondaryButton} type="button" disabled={loading || offset === 0} onClick={() => { setLoading(true); setOffset(Math.max(0, offset - pageSize)); }}>Previous</button><button className={ui.secondaryButton} type="button" disabled={loading || !data || offset + pageSize >= data.total || offset + pageSize > 5000} onClick={() => { setLoading(true); setOffset(offset + pageSize); }}>Next</button></div></div>
     </section>
     <section className={ui.panel} aria-labelledby="roles-title"><div className={ui.sectionHeading}><div><h2 id="roles-title">Role catalog</h2><p>Built-in roles are read-only. Access administration is reserved for administrators.</p></div><button className={ui.primaryButton} type="button" onClick={() => openRole()}>Create role</button></div>
       <div className={styles.tabs} aria-label="Role catalog views"><button type="button" aria-pressed={tab === "details"} onClick={() => setTab("details")}>Role details</button><button type="button" aria-pressed={tab === "custom"} onClick={() => setTab("custom")}>Custom roles</button></div>

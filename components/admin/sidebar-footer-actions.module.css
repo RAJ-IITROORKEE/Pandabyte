@@ -1,0 +1,17 @@
+.root { display: inline-flex; flex: 0 0 auto; }
+.trigger {
+  display: inline-grid; flex: 0 0 36px; width: 36px; min-height: 40px; place-items: center;
+  padding: 0; border: 1px solid transparent; border-radius: 5px; background: transparent;
+  color: var(--muted); cursor: pointer; list-style: none;
+}
+.trigger::-webkit-details-marker { display: none; }
+.trigger:hover, .root[open] > .trigger { background: var(--surface); color: var(--foreground); border-color: var(--divider); }
+.panel {
+  position: fixed; inset: auto; width: min(220px, calc(100vw - 24px)); margin: 0; padding: 5px;
+  border: 1px solid var(--divider); border-radius: 6px; background: var(--surface); color: var(--foreground);
+  box-shadow: 0 12px 32px rgb(0 0 0 / .18); font: inherit;
+}
+.item { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 4px; color: inherit; text-decoration: none; font-size: 13px; }
+.item:hover { background: var(--background); }
+.item svg { flex: 0 0 auto; color: var(--muted); }
+.trigger:focus-visible, .item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
