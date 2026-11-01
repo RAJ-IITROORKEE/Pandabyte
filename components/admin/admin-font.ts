@@ -1,3 +1,3 @@
-import { Geist_Mono } from "next/font/google";
+import { Outfit } from "next/font/google";
 
-export const adminFont = Geist_Mono({ subsets: ["latin"], display: "swap" });
+export const adminFont = Outfit({ subsets: ["latin"], display: "swap" });

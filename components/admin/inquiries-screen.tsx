@@ -93,6 +93,7 @@ export function InquiriesScreen() {
   const searchInput = useRef<HTMLInputElement>(null);
   const focusSearchAfterDelete = useRef(false);
   const refreshListAfterClose = useRef(false);
+  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null);
   const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset), sort });
   params.set("q", search);
   if (statusFilter) params.set("status", statusFilter);
@@ -324,7 +325,7 @@ export function InquiriesScreen() {
 
   if (!canManage) return <AdminAccessDeniedScreen title="Inquiries" />;
 
-  return <div className={styles.screen}>
+  return <div className={styles.screen} ref={setPortalContainer}>
     <header className={styles.heading}>
       <div><p className={styles.eyebrow}>Operations</p><h1>Inquiries</h1><p className={styles.lede}>Review customer messages, update status and leave private notes.</p></div>
     </header>
@@ -373,7 +374,7 @@ export function InquiriesScreen() {
                       <Eye aria-hidden="true" size={18} />
                     </MorphingDialogTrigger>
                   </MorphingDialogCard>
-                  <MorphingDialogContainer>
+                  <MorphingDialogContainer container={portalContainer}>
                     {selected?.id === item.id && <MorphingDialogContent className={styles.detailMorph}>
                       <header className={styles.dialogHeader}>
                         <div><p className={styles.eyebrow}>Customer message</p><MorphingDialogTitle expanded className={styles.dialogTitle}>{selected.subject || "No subject"}</MorphingDialogTitle></div>

@@ -1,5 +1,11 @@
 # Frontend theme checkpoint — 29 October 2026
 
+## Admin preset update — 1 November 2026
+
+The owner explicitly replaced the historical Admin Mono theme with the Supabase preset selected in Brave at https://shadcn-dashboard.kiranism.dev/dashboard/overview. Admin now uses self-hosted Outfit through next/font, light #fcfcfc and dark #121212 backgrounds, #171717 dark cards, mint #72e3ad light primary actions and deep green #006239 dark primary actions. Separate readable green text and focus tokens preserve contrast. The public/customer palette and exact logo remain unchanged. Clerk Admin widgets use the same palette; inquiry detail portals inherit the Admin scope. The article editor retains its independent document-preview appearance. Outfit uses SIL OFL 1.1; see docs/licenses/outfit-font.txt.
+
+Verification: light/dark/system token contrast and preference/layout tests (7) pass; TypeScript passes. ESLint passes. Browser verification covered the dark dashboard/inquiries, light products, theme switching, a themed search dialog, narrow navigation and an effective 520px CSS viewport without horizontal page overflow. No records were edited. Earlier Mono-preservation statements are historical and superseded for Admin by this request.
+
 ## Background review — 30 October 2026
 
 ### Softer dark background and in-app checks

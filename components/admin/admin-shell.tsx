@@ -114,21 +114,21 @@ function AdminShellContent({ capabilities, children, fontFamily }: {
   const dark = resolvedTheme === "dark";
   const clerkVariables = {
     fontFamily,
-    borderRadius: "0",
-    colorPrimary: dark ? "#f5f5f5" : "#171717",
-    colorPrimaryForeground: dark ? "#0a0a0a" : "#ffffff",
-    colorBackground: dark ? "#1b1b1b" : "#ffffff",
-    colorForeground: dark ? "#f5f5f5" : "#171717",
+    borderRadius: "0.5rem",
+    colorPrimary: dark ? "#006239" : "#72e3ad",
+    colorPrimaryForeground: dark ? "#dde8e3" : "#1e2723",
+    colorBackground: dark ? "#171717" : "#fcfcfc",
+    colorForeground: dark ? "#e2e8f0" : "#171717",
     colorMutedForeground: dark ? "#a3a3a3" : "#525252",
-    colorInput: dark ? "#0a0a0a" : "#ffffff",
-    colorInputForeground: dark ? "#f5f5f5" : "#171717",
-    colorBorder: "#737373",
+    colorInput: dark ? "#242424" : "#fcfcfc",
+    colorInputForeground: dark ? "#e2e8f0" : "#171717",
+    colorBorder: dark ? "#292929" : "#dfdfdf",
   };
   const clerkPrimaryButton = {
-    backgroundColor: dark ? "#f5f5f5" : "#171717",
+    backgroundColor: dark ? "#006239" : "#72e3ad",
     backgroundImage: "none",
-    color: dark ? "#0a0a0a" : "#ffffff",
-    borderRadius: "0",
+    color: dark ? "#dde8e3" : "#1e2723",
+    borderRadius: "0.5rem",
     minHeight: "44px",
   };
   const userButtonAppearance = {

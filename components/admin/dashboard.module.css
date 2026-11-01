@@ -155,7 +155,7 @@
 .panelHeading p { margin-top: 5px; font-size: 11px; }
 .panelState { display: grid; min-height: 184px; place-items: center; margin: 0; padding: 18px; color: var(--admin-muted, var(--muted)); font-size: 12px; line-height: 1.6; text-align: center; }
 .chartFrame { min-width: 0; overflow-x: auto; }
-.chartFrame:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.chartFrame:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .chart { width: 100%; height: 250px; min-width: 0; }
 @media (max-width: 480px) { .chart { min-width: 440px; } }
 .panelNote { margin: 0; padding-top: 12px; border-top: 1px solid var(--admin-divider, var(--divider)); color: var(--admin-muted, var(--muted)); font-size: 11px; line-height: 1.55; }

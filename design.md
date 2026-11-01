@@ -1,3 +1,5 @@
+> Current Admin design: Supabase preset from the selected Kiranism dashboard, Outfit typography, neutral light/dark surfaces and green accents. See [theme checkpoint](docs/frontend-theme.md). Public/customer styling is unchanged.
+
 29 October frontend override: use the Supabase homepage color reference for public/customer screens only; simplify the hero to static text without CanvasText, entry animation or pointer-follow glow. Preserve Admin's existing theme and the circuit/logo. The owner requests shared button polish, tests, commit and push. See [current theme contract](docs/frontend-theme.md). This supersedes earlier hero/color restrictions only within this presentation scope.
 
 27 October source-cart override: the owner enabled imported-product cart actions with captured prices. Show unverified availability, preserve source provenance and provide a cart/checkout review with payment disabled. See [source-cart contract](docs/source-cart-review.md).
@@ -112,7 +114,7 @@ Routes are the proposed implementation contract; reconcile actual prototype path
 
 ## Admin editability and publication matrix
 
-**Latest Admin visual selection, 26 October 2026:** the owner selected the Kiranism dashboard's Mono theme, Geist Mono and Tabler icons for an isolated Admin interface. This supersedes the previous Admin-only visual reference and icon direction; the public storefront retains its existing tokens, logo, hero and Lucide icons. Admin has independent light/dark preferences. See [migration contract](docs/admin-mono-migration.md) for source, component mapping, licensing and verification. Existing capabilities and backend/publication rules below remain in force.
+**Historical Admin visual selection, 26 October 2026 (superseded by the 1 November Supabase preset):** the owner selected the Kiranism dashboard's Mono theme, Geist Mono and Tabler icons for an isolated Admin interface. This supersedes the previous Admin-only visual reference and icon direction; the public storefront retains its existing tokens, logo, hero and Lucide icons. Admin has independent light/dark preferences. See [migration contract](docs/admin-mono-migration.md) for source, component mapping, licensing and verification. Existing capabilities and backend/publication rules below remain in force.
 
 All modules need list/search/filter, create/edit, validation, explicit save state, draft/preview/publish where relevant, recoverable errors and permission-denied states. Destructive changes need dependency-aware archive behavior; referenced products/orders must not vanish from history.
 

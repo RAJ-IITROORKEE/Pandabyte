@@ -45,10 +45,15 @@ for (const [name, tokens] of themes) {
   });
 }
 
-test("Admin retains its independent monochrome palette rather than inheriting public accents", () => {
-  const adminLight = declarations("../components/admin/admin-theme.module.css", ".scope");
-  for (const [selector, expected] of [[null, "#171717"], ['.scope[data-admin-theme="dark"]', "#f5f5f5"], ['.scope[data-admin-theme="system"]', "#f5f5f5"]]) {
-    const tokens = { ...adminLight, ...(selector ? declarations("../components/admin/admin-theme.module.css", selector) : {}) };
-    for (const key of ["accent", "accent-ink", "action-border", "focus-ring", "action-hover"]) assert.equal(color(tokens, key), expected);
+test("Admin has its own Supabase preset with readable actions, links and focus", () => {
+  const light = declarations("../components/admin/admin-theme.module.css", ".scope");
+  for (const selector of [null, '.scope[data-admin-theme="dark"]', '.scope[data-admin-theme="system"]']) {
+    const tokens = { ...light, ...(selector ? declarations("../components/admin/admin-theme.module.css", selector) : {}) };
+    assert.equal(color(tokens, "accent"), selector ? "#006239" : "#72e3ad");
+    assert.ok(contrast(color(tokens, "action-text"), color(tokens, "accent")) >= 4.5);
+    for (const surface of ["background", "surface", "status-soft"]) {
+      assert.ok(contrast(color(tokens, "accent-ink"), color(tokens, surface)) >= 4.5);
+      assert.ok(contrast(color(tokens, "focus-ring"), color(tokens, surface)) >= 3);
+    }
   }
 });

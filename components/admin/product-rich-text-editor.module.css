@@ -1,30 +1,30 @@
 .panel { display: grid; gap: 14px; }
-.articleEditor { --background: #ffffff; --surface: #ffffff; --foreground: #171717; --text: #171717; --muted: #525252; --accent: #171717; --action-text: #ffffff; --border: #737373; --divider: #e5e5e5; --status-soft: #f5f5f5; color: var(--foreground); color-scheme: light; }
-.articleEditor[data-editor-theme="dark"] { --background: #0a0a0a; --surface: #1b1b1b; --foreground: #f5f5f5; --text: #f5f5f5; --muted: #a3a3a3; --accent: #f5f5f5; --action-text: #0a0a0a; --divider: #303030; --status-soft: #1b1b1b; color-scheme: dark; }
+.articleEditor { --background: #ffffff; --surface: #ffffff; --foreground: #171717; --text: #171717; --muted: #525252; --accent: #171717; --accent-ink: #171717; --focus-ring: #171717; --action-text: #ffffff; --border: #737373; --divider: #e5e5e5; --status-soft: #f5f5f5; color: var(--foreground); color-scheme: light; }
+.articleEditor[data-editor-theme="dark"] { --background: #0a0a0a; --surface: #1b1b1b; --foreground: #f5f5f5; --text: #f5f5f5; --muted: #a3a3a3; --accent: #f5f5f5; --accent-ink: #f5f5f5; --focus-ring: #f5f5f5; --action-text: #0a0a0a; --divider: #303030; --status-soft: #1b1b1b; color-scheme: dark; }
 .themeControl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 .themeControl select { min-height: 36px; padding: 6px 8px; border: 1px solid var(--border); background: var(--background); color: var(--foreground); font: inherit; }
-.themeControl select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.themeControl select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .toolbar { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border: 1px solid var(--divider); background: var(--background); }
 .toolButton { display: inline-flex; min-width: 36px; min-height: 36px; align-items: center; justify-content: center; gap: 5px; padding: 6px 8px; border: 1px solid var(--divider); border-radius: 2px; background: var(--surface); color: var(--foreground); font: inherit; font-size: 11px; cursor: pointer; }
-.toolButton:hover:not(:disabled), .toolButtonActive { border-color: var(--accent); background: var(--status-soft); color: var(--accent); }
+.toolButton:hover:not(:disabled), .toolButtonActive { border-color: var(--accent); background: var(--status-soft); color: var(--accent-ink); }
 .toolButton:disabled { opacity: .5; cursor: not-allowed; }
 .toolbar select { width: auto; min-height: 36px; padding: 6px 8px; font-size: 11px; }
 .colorPicker { position: relative; }
 .colorPicker > summary { display: inline-flex; min-height: 36px; align-items: center; gap: 7px; padding: 6px 8px; border: 1px solid var(--divider); background: var(--surface); color: var(--foreground); cursor: pointer; font-size: 11px; list-style: none; }
 .colorPicker > summary::-webkit-details-marker { display: none; }
-.colorPicker > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.colorPicker > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .colorPicker[open] { z-index: 2; }
 .colorPicker[open] > summary { border-color: var(--accent); }
 .currentColor, .colorSwatch { display: block; width: 18px; height: 18px; border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent); }
 .colorPalette { position: absolute; z-index: 5; top: calc(100% + 5px); left: 0; display: grid; width: min(206px, calc(100vw - 32px)); grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; padding: 8px; border: 1px solid var(--divider); background: var(--surface); }
 .colorPalette > button { display: grid; min-width: 0; min-height: 36px; place-items: center; padding: 4px; border: 1px solid var(--divider); border-radius: 2px; background: var(--background); color: var(--foreground); cursor: pointer; font: inherit; font-size: 11px; }
-.colorPalette > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.colorPalette > button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .colorPalette > button[aria-pressed="true"] { border-color: var(--accent); background: var(--status-soft); }
 .colorPalette > .colorReset { grid-column: 1 / -1; justify-items: start; padding: 6px 8px; }
 .editorSurface { min-height: 280px; overflow-x: auto; border: 1px solid var(--border); background: var(--background); }
-.editorSurface:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editorSurface:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .editorSurface :global(.product-rich-editor) { min-height: 280px; padding: 18px; outline: none; color: var(--foreground); font-size: 14px; line-height: 1.7; }
-.editorSurface :global(.product-rich-editor:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editorSurface :global(.product-rich-editor:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .editorSurface :global(.product-rich-editor p) { min-height: 1.5em; margin: 0 0 12px; }
 .editorSurface :global(.product-rich-editor h2), .editorSurface :global(.product-rich-editor h3), .editorSurface :global(.product-rich-editor h4) { margin: 18px 0 8px; line-height: 1.25; }
 .editorSurface :global(.product-rich-editor h2) { font-size: 22px; }
@@ -36,7 +36,7 @@
 .editorSurface :global(.product-rich-editor table) { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .editorSurface :global(.product-rich-editor th), .editorSurface :global(.product-rich-editor td) { min-width: 80px; padding: 7px; border: 1px solid var(--divider); vertical-align: top; }
 .editorSurface :global(.product-rich-editor th) { background: var(--status-soft); text-align: left; }
-.editorSurface :global(.product-rich-editor a) { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.editorSurface :global(.product-rich-editor a) { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; }
 .editorSurface :global(.product-rich-editor mark) { color: #171717 !important; }
 .editorSurface :global(.product-rich-editor span[style*="color"]) { background-color: #ffffff; }
 .editorSurface :global(.product-rich-editor img) { display: block; max-width: min(100%, 600px); max-height: 380px; margin: 10px auto; object-fit: contain; }

@@ -16,7 +16,7 @@
 .iconButton { display: inline-flex; justify-content: center; align-items: center; flex: 0 0 36px; width: 36px; min-height: 36px; border: 1px solid var(--divider); border-radius: 4px; color: var(--foreground); background: var(--surface); cursor: pointer; }
 .iconButton:hover:not(:disabled) { background: var(--status-soft); }
 .iconButton:disabled { opacity: .5; cursor: not-allowed; }
-.iconButton:focus-visible, .back:focus-visible, .tableScroll:focus-visible, .card a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.iconButton:focus-visible, .back:focus-visible, .tableScroll:focus-visible, .card a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .fullReference { margin: -5px 0 0; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
 .fullReference span { color: var(--foreground); user-select: all; }
 .context { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px dashed var(--divider); border-radius: 5px; color: var(--muted); line-height: 1.6; }

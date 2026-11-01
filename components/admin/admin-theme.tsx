@@ -67,7 +67,7 @@ export function AdminThemeSelect() {
   const { preference, setPreference, ready } = useAdminTheme();
   return (
     <label className={styles.themeControl}>
-      <span>Mono</span>
+      <span>Supabase</span>
       <select className={styles.themeSelect} aria-label="Admin theme" value={preference} disabled={!ready}
         onChange={(event) => setPreference(event.target.value as AdminThemePreference)}>
         <option value="system">System</option>

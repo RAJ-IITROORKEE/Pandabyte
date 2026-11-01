@@ -9,7 +9,7 @@ An India-first IoT hardware catalog and company website with an editable adminis
 ## Implemented
 
 - Responsive storefront, product search/filtering, product galleries, cart and signed-in checkout review.
-- Supabase-inspired frontend palette, static hero and shared accessible actions; Admin keeps its monochrome theme. [Theme scope](docs/frontend-theme.md).
+- Supabase-inspired frontend palette, static hero and shared accessible actions; Admin uses an independent Supabase preset with Outfit typography. [Theme scope](docs/frontend-theme.md).
 - Company, solutions, learning, blog, FAQ and contact page families backed by published CMS records.
 - Clerk sign-in and account pages for profile, addresses, favorites, orders, settings and Billing.
 - Fictional invoice-template preview and downloadable sample PDF, clearly marked **SAMPLE — NOT A TAX INVOICE**.

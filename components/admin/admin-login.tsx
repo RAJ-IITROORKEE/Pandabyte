@@ -29,11 +29,11 @@ function LoginContent({ signedIn, fontFamily }: { signedIn: boolean; fontFamily:
         {signedIn ? <><IconLock aria-hidden="true" size={28} /><h2>You’re signed in</h2><p>Continue to the Admin workspace. Access is checked against your current staff permissions.</p><Link className={styles.continue} href="/admin">Continue to Admin <IconArrowRight aria-hidden="true" size={17} /></Link></> : <>
           <h2>Welcome back</h2><p>Sign in with your PandaByte staff account.</p>
           <SignIn path="/admin-login" routing="path" forceRedirectUrl="/admin" appearance={{ variables: {
-            fontFamily, borderRadius: "0", colorPrimary: dark ? "#fafafa" : "#171717", colorPrimaryForeground: dark ? "#171717" : "#ffffff",
-            colorBackground: dark ? "#1b1b1b" : "#ffffff", colorForeground: dark ? "#fafafa" : "#171717",
+            fontFamily, borderRadius: "0.5rem", colorPrimary: dark ? "#006239" : "#72e3ad", colorPrimaryForeground: dark ? "#dde8e3" : "#1e2723",
+            colorBackground: dark ? "#171717" : "#fcfcfc", colorForeground: dark ? "#e2e8f0" : "#171717",
             colorMutedForeground: dark ? "#b4b4b4" : "#525252", colorInput: dark ? "#121212" : "#ffffff",
-            colorInputForeground: dark ? "#fafafa" : "#171717", colorBorder: "#737373",
-          }, elements: { rootBox: { width: "100%" }, cardBox: { width: "100%", boxShadow: "none" }, formButtonPrimary: { backgroundColor: dark ? "#fafafa" : "#171717", color: dark ? "#171717" : "#ffffff", backgroundImage: "none", minHeight: "44px" } } }} />
+            colorInputForeground: dark ? "#e2e8f0" : "#171717", colorBorder: dark ? "#292929" : "#dfdfdf",
+          }, elements: { rootBox: { width: "100%" }, cardBox: { width: "100%", boxShadow: "none" }, formButtonPrimary: { backgroundColor: dark ? "#006239" : "#72e3ad", color: dark ? "#dde8e3" : "#1e2723", backgroundImage: "none", minHeight: "44px" } } }} />
         </>}
       </div>
       <p className={styles.security}>Identity secured by Clerk. Staff permissions are checked separately.</p>

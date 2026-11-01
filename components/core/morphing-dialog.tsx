@@ -38,10 +38,10 @@ export function MorphingDialogTrigger(props: HTMLMotionProps<"button">) {
   return <Dialog.Trigger asChild><motion.button {...props} type="button" onClick={event => { openerRef.current = event.currentTarget; props.onClick?.(event); }} /></Dialog.Trigger>;
 }
 
-export function MorphingDialogContainer({ children }: { children: ReactNode }) {
+export function MorphingDialogContainer({ children, container }: { children: ReactNode; container?: HTMLElement | null }) {
   const { isOpen, reduced } = useMorphingDialog();
   return <AnimatePresence initial={false}>
-    {isOpen && <Dialog.Portal forceMount>
+    {isOpen && <Dialog.Portal forceMount container={container}>
       <Dialog.Overlay asChild forceMount>
         <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: .15 }} />
       </Dialog.Overlay>
