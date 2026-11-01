@@ -192,6 +192,7 @@
 .searchForm input,
 .searchForm select,
 .form input,
+.form select,
 .form textarea {
   width: 100%;
   min-height: 46px;
@@ -212,6 +213,7 @@
 .searchForm input:focus-visible,
 .searchForm select:focus-visible,
 .form input:focus-visible,
+.form select:focus-visible,
 .form textarea:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
@@ -239,6 +241,7 @@
 }
 
 .form input:disabled,
+.form select:disabled,
 .form textarea:disabled,
 .form button:disabled {
   color: var(--muted);
@@ -264,11 +267,127 @@
   gap: 16px;
 }
 
+.phoneRow {
+  grid-template-columns: minmax(150px, .8fr) minmax(0, 1.2fr);
+  align-items: start;
+}
+
+.fieldHint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.attachments {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.attachmentList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachmentList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.attachmentList li > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 450;
+}
+
+.attachmentList li > span svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.attachmentList li small {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.form .fileRemove {
+  display: grid;
+  flex: 0 0 40px;
+  place-items: center;
+  width: 40px;
+  min-height: 40px;
+  padding: 8px;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.form .fileRemove:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--background);
+}
+
 .formStatus {
-  min-height: 24px;
   margin: 0;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.formStatus[data-state="idle"] {
+  display: none;
+}
+
+.formStatus[data-state="sending"] {
+  font-size: 14px;
+}
+
+.formStatus[data-state="error"],
+.formStatus[data-state="success"] {
+  position: fixed;
+  z-index: 100;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  width: min(420px, calc(100vw - 40px));
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 20%);
+  font-weight: 500;
+}
+
+.form .toastClose {
+  display: inline-flex;
+  flex: 0 0 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
 }
 
 .formStatus[data-state="error"] {

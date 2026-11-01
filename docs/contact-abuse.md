@@ -1,5 +1,19 @@
 # Contact submission boundary
 
+## Current implementation — 1 November 2026
+
+The owner requested removing Cloudflare verification when it prevented hosted submissions. The hosted page was unconfigured; the local dummy-key check succeeded but did not verify hosted protection. The current contact route no longer requires Turnstile. It keeps exact-origin checks, the scoped `CONTACT_SUBMISSION_KEY`, the existing five-per-email and 100-global hourly database limits, and idempotent receipts. Email addresses are unverified and can be spoofed, so the shared quota can be exhausted; these limits do not replace bot protection or a trusted-IP rate limiter.
+
+The form accepts up to three PDF, JPEG, PNG or WebP attachments, at most 1 MiB each. Image files are decoded with bounded dimensions and pixel counts; PDFs receive signature/type checks. Files are **not malware scanned**. They are stored in the private `private-inquiry-attachments` bucket, with direct anonymous and authenticated storage operations denied by a restrictive policy. Staff with `inquiries.manage` can download a file through a private, no-store attachment endpoint; downloads are forced as files. Uploads follow the quota reservation and are bound to an idempotent manifest. Failed uploads remain pending for a bounded retry; completed retries avoid repeat storage writes. Administrators should treat all received files as untrusted.
+
+The server additionally uses `INSFORGE_EDITORIAL_STORAGE_READ_KEY` for private inquiry storage writes and staff downloads. Despite its name, this credential is a broad server-only project key and must never reach browser code. `CONTACT_SITE_ORIGIN`, `CONTACT_SUBMISSION_KEY`, the InsForge URL and the storage key must be configured for the target environment. Inquiry email sending remains separately configured; saving a message does not indicate an email was sent.
+
+The Admin inbox permits authorized staff to remove an inquiry after confirmation. This is a version-checked soft removal: the inquiry, receipt, notes, audit actor and attachments remain in storage, while inbox reads and attachment downloads reject the removed item. Restoration requires a reviewed operator action; no staff restore interface is included. Already-started notification sends retain their recorded outcomes.
+
+Local verification on 1 November covered a disposable message with an image, staff-only retrieval and byte matching, anonymous and authenticated direct storage denial, a text-only message, invalid uploads, concurrent identical retry, changed-manifest conflict, status update and confirmed inbox removal. The disposable records and object were removed after testing. The browser confirmed the success and error messages, the dialog and narrow-screen form layout. Email delivery and malware scanning were not tested or enabled.
+
+The sections below describe the historical Turnstile implementation and are retained for evidence; their Turnstile runtime requirements do not describe the current contact route.
+
 25 October 2026. Authorized development hardening; checkout/payments remain deferred.
 
 The contact form now requires server-validated Cloudflare Turnstile before saving an inquiry. The historical anonymous `submit_inquiry` RPC is no longer executable by `PUBLIC`, `anon` or `authenticated`. A new wrapper requires a random, submission-only secret whose SHA-256 hash is stored in an RLS-enabled private configuration table. The Next route uses the existing anonymous SDK client plus this scoped secret; it does not use the project-admin/media credential. The wrapper preserves the existing atomic per-email/global quotas, receipt idempotency and private inquiry queue.

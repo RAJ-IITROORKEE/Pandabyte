@@ -8,8 +8,6 @@ import contactStyles from "./contact-page.module.css";
 import { PublishedDocument } from "@/components/published-document";
 import { getPublishedRecord } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
-import { headers } from "next/headers";
-import { contactProtection } from "@/lib/contact/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +17,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const protection = contactProtection(process.env);
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const contact = await getPublishedRecord("contact", "contact");
   const document = contact && !("redirectTo" in contact) ? contact.document : null;
   return <main id="main" tabIndex={-1} className={styles.page}>
@@ -56,7 +52,7 @@ export default async function ContactPage() {
       <section className={`${contactStyles.form} ${styles.formPanel}`} aria-labelledby="contact-form-title">
         <h2 id="contact-form-title">Send a message</h2>
         <p className={styles.formNote}><MessageSquare size={18} aria-hidden="true" /><span>Your message is saved for the team to review. This form does not confirm email delivery.</span></p>
-        <ContactForm challengeConfig={{ enabled: !!protection, siteKey: protection?.siteKey ?? null, testMode: protection?.testMode ?? false }} nonce={nonce} />
+        <ContactForm />
       </section>
     </div>
     <p className={styles.helpNote}>For product questions, visit the <Link href="/help">Help Center</Link>.</p>
