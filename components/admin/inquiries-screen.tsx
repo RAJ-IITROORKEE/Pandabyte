@@ -1,8 +1,11 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AlertTriangle, Eye, Trash2, X } from "lucide-react";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { AdminAccessDeniedScreen } from "@/components/admin/record-screens";
 import {
   MorphingDialog, MorphingDialogCard, MorphingDialogClose, MorphingDialogContainer,
@@ -55,7 +58,9 @@ function date(value: string) {
 
 export function InquiriesScreen() {
   const capabilities = useAdminCapabilities();
-  const canManage = capabilities.includes("inquiries.manage");
+  const canManage = capabilities.includes("inquiries.manage") && canAdminPermission(capabilities, "inquiries", "read");
+  const canUpdate = canManage && canAdminPermission(capabilities, "inquiries", "update");
+  const canDelete = canManage && canAdminPermission(capabilities, "inquiries", "delete");
   const [offset, setOffset] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [query, setQuery] = useState("");
@@ -198,7 +203,7 @@ export function InquiriesScreen() {
 
   async function update(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selected || busy || detailLoading || detailError) return;
+    if (!canUpdate || !selected || busy || detailLoading || detailError) return;
     setFormError("");
     if (note.length > 2000) { setFormError("Notes must be 2,000 characters or fewer."); return; }
     setBusy(true);
@@ -227,7 +232,7 @@ export function InquiriesScreen() {
   }
 
   async function sendNotification() {
-    if (!selected || busy || detailLoading || notificationBusy || notificationAvailable !== true || selected.status === "spam" || selected.notification.attempts >= 5 || !["unconfigured", "failed"].includes(selected.notification.status)) return;
+    if (!canUpdate || !selected || busy || detailLoading || notificationBusy || notificationAvailable !== true || selected.status === "spam" || selected.notification.attempts >= 5 || !["unconfigured", "failed"].includes(selected.notification.status)) return;
     const inquiryId = selected.id;
     setBusy(true);
     setNotificationBusy(true);
@@ -275,14 +280,14 @@ export function InquiriesScreen() {
   }
 
   function requestDelete(item: Inquiry) {
-    if (busy || detailLoading || notificationBusy || deleting) return;
+    if (!canDelete || busy || detailLoading || notificationBusy || deleting) return;
     setDeleteTarget(item);
     setDeleteError("");
     setDeleteNotice("");
   }
 
   async function removeFromInbox() {
-    if (!deleteTarget || busy || deleting) return;
+    if (!canDelete || !deleteTarget || busy || deleting) return;
     setDeleting(true);
     setDeleteError("");
     try {
@@ -350,8 +355,8 @@ export function InquiriesScreen() {
       <span className={styles.resultCount} aria-live="polite">{loading ? "Loading…" : total === null ? "Unavailable" : `${total} ${total === 1 ? "inquiry" : "inquiries"}`}</span>
     </form>
 
-    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button type="button" className={styles.button} onClick={() => setRefresh((current) => current + 1)}>Try again</button></div>}
-    {deleteNotice && <p className={styles.successBanner} role="status">{deleteNotice}</p>}
+    {error && <AdminNotice tone="error" key={`${requestKey}:${error}`} className={styles.errorBanner} actions={<button type="button" className={styles.button} onClick={() => setRefresh((current) => current + 1)}>Try again</button>}><p>{error}</p></AdminNotice>}
+    {deleteNotice && <AdminNotice tone="success" onDismiss={() => setDeleteNotice("")} className={styles.successBanner}>{deleteNotice}</AdminNotice>}
 
     <section className={styles.tablePanel} aria-labelledby="inquiry-list-heading" aria-busy={loading}>
       <div className={styles.panelHeading}><div><h2 id="inquiry-list-heading">Inbox</h2><p>Customer messages</p></div></div>
@@ -382,7 +387,7 @@ export function InquiriesScreen() {
                       </header>
                       <MorphingDialogDescription className={styles.visuallyHidden}>Review the message, attachments and staff notes. Update its status or add an internal note.</MorphingDialogDescription>
                       {detailLoading && <p className={styles.loadingNote} role="status">Loading inquiry details…</p>}
-                      {detailError && <p className={styles.inlineError} role="alert">{detailError}</p>}
+                      {detailError && <AdminNotice key={detailError} tone="error">{detailError}</AdminNotice>}
                       <dl className={styles.contactDetails}>
                         <div><dt>Name</dt><dd>{selected.name}</dd></div>
                         <div><dt>Email</dt><dd>{selected.email}</dd></div>
@@ -395,7 +400,7 @@ export function InquiriesScreen() {
                       <section className={styles.attachmentPanel} aria-labelledby="inquiry-attachments-heading">
                         <h3 id="inquiry-attachments-heading">Attachments</h3>
                         {attachmentsLoading ? <p className={styles.hint} role="status">Loading attachments…</p>
-                          : attachmentsError ? <p className={styles.inlineError} role="alert">{attachmentsError}</p>
+                          : attachmentsError ? <AdminNotice key={attachmentsError} tone="error">{attachmentsError}</AdminNotice>
                             : attachments.length ? <><p className={styles.hint}>Files are not malware scanned. Open only if you trust the sender.</p><ul className={styles.attachmentList}>{attachments.map((file) => <li key={file.id}>
                               {file.ready ? <a href={`/api/admin/inquiries/${encodeURIComponent(selected.id)}/attachments/${encodeURIComponent(file.id)}`} download>{file.filename}</a> : <span>{file.filename} · Upload incomplete</span>}
                               <small>{Math.ceil(file.size / 1024)} KB</small>
@@ -410,29 +415,29 @@ export function InquiriesScreen() {
                           {notificationAvailable === null && <p className={styles.hint}>Team notification setup could not be confirmed.</p>}
                           {selected.notification.attempts > 0 && <p className={styles.hint}>Attempt {selected.notification.attempts} of 5{selected.notification.lastAttemptAt ? ` · Last attempt ${date(selected.notification.lastAttemptAt)}` : ""}</p>}
                           {selected.notification.acceptedAt && selected.notification.status === "accepted" && <p className={styles.hint}>Accepted {date(selected.notification.acceptedAt)}. Delivery is not confirmed.</p>}
-                          {(selected.notification.status === "unconfigured" || selected.notification.status === "failed") && <button className={styles.button} type="button" onClick={() => void sendNotification()} disabled={busy || detailLoading || notificationAvailable !== true || selected.status === "spam" || selected.notification.attempts >= 5}>{notificationBusy && !notificationRefreshing ? "Sending…" : selected.notification.status === "unconfigured" ? "Send team notification" : "Retry team notification"}</button>}
+                          {canUpdate && (selected.notification.status === "unconfigured" || selected.notification.status === "failed") && <button className={styles.button} type="button" onClick={() => void sendNotification()} disabled={busy || detailLoading || notificationAvailable !== true || selected.status === "spam" || selected.notification.attempts >= 5}>{notificationBusy && !notificationRefreshing ? "Sending…" : selected.notification.status === "unconfigured" ? "Send team notification" : "Retry team notification"}</button>}
                           {(selected.notification.status === "unconfigured" || selected.notification.status === "failed") && selected.notification.attempts >= 5 && <p className={styles.hint}>Maximum of 5 attempts reached; no further retry is available.</p>}
                           <button className={styles.secondaryButton} type="button" onClick={() => void refreshNotificationStatus()} disabled={busy || detailLoading}>{notificationRefreshing ? "Refreshing…" : "Refresh status"}</button>
-                          {notificationError && <p className={styles.inlineError} role="alert">{notificationError}</p>}
-                          {notificationNotice && <p className={styles.hint} role="status">{notificationNotice}</p>}
+                          {notificationError && <AdminNotice key={notificationError} tone="error">{notificationError}</AdminNotice>}
+                          {notificationNotice && <AdminNotice tone="success" onDismiss={() => setNotificationNotice("")}>{notificationNotice}</AdminNotice>}
                         </div>
                       </details>
 
-                      <form onSubmit={update} className={styles.noteForm} aria-describedby={formError ? "inquiry-form-error" : undefined} aria-busy={busy}>
+                      {canUpdate && <form onSubmit={update} className={styles.noteForm} aria-describedby={formError ? "inquiry-form-error" : undefined} aria-busy={busy}>
                         <label className={styles.field} htmlFor="inquiry-status"><span>Status</span><select id="inquiry-status" className={styles.select} value={nextStatus} onChange={(event) => setNextStatus(event.target.value as InquiryStatus)} disabled={busy || detailLoading || !!detailError}><option value="new">New</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option><option value="spam">Spam</option></select></label>
                         <label className={styles.field} htmlFor="inquiry-note"><span>Internal note</span><textarea id="inquiry-note" className={styles.textarea} value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} rows={4} placeholder="Add context for staff" disabled={busy || detailLoading || !!detailError} /></label>
                         {formError && <p id="inquiry-form-error" ref={formErrorRef} className={styles.inlineError} role="alert" tabIndex={-1}>{formError}</p>}
-                        {notice && <p className={styles.successBanner} role="status">{notice}</p>}
+                        {notice && <AdminNotice tone="success" onDismiss={() => setNotice("")} className={styles.successBanner}>{notice}</AdminNotice>}
                         <button className={styles.primaryButton} type="submit" disabled={busy || detailLoading || !!detailError}>{busy ? "Saving…" : "Save changes"}</button>
-                      </form>
+                      </form>}
 
                       <section className={styles.noteHistory} aria-labelledby="staff-notes-heading"><h3 id="staff-notes-heading">Staff notes</h3>{notes.length ? notes.map((entry) => <article key={entry.id}><p>{entry.text}</p><small>Staff · {date(entry.createdAt)}</small></article>) : <p className={styles.hint}>No staff notes yet.</p>}</section>
                     </MorphingDialogContent>}
                   </MorphingDialogContainer>
                 </MorphingDialog>
-                <button className={`${styles.iconButton} ${styles.deleteIcon}`} type="button" aria-label={`Remove inquiry from inbox from ${item.name}: ${item.subject || "No subject"}`} onClick={() => requestDelete(item)} disabled={actionsDisabled}>
+                {canDelete && <button className={`${styles.iconButton} ${styles.deleteIcon}`} type="button" aria-label={`Remove inquiry from inbox from ${item.name}: ${item.subject || "No subject"}`} onClick={() => requestDelete(item)} disabled={actionsDisabled}>
                   <Trash2 aria-hidden="true" size={18} />
-                </button>
+                </button>}
               </div></td>
             </tr>)}
           </tbody>
@@ -461,7 +466,7 @@ export function InquiriesScreen() {
         </header>
         <p id="inquiry-delete-warning" className={styles.confirmWarning}>{deleteTarget.name} · {deleteTarget.subject || "No subject"}</p>
         <p className={styles.confirmCopy}>This inquiry will leave the staff inbox. Its message, notes, attachments, receipt and audit history remain retained. No files are deleted. This action does not send a new email; any email already in progress keeps its recorded outcome.</p>
-        {deleteError && <p className={styles.inlineError} role="alert">{deleteError}</p>}
+        {deleteError && <AdminNotice key={deleteError} tone="error">{deleteError}</AdminNotice>}
         <div className={styles.confirmActions}>
           <button className={styles.secondaryButton} type="button" autoFocus disabled={deleting} onClick={() => deleteDialog.current?.close()}>Cancel</button>
           <button className={styles.deleteConfirm} type="button" disabled={deleting} onClick={() => void removeFromInbox()}>{deleting ? "Removing…" : "Remove from inbox"}</button>

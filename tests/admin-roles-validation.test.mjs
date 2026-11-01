@@ -56,7 +56,6 @@ test("role mutation accepts only exact fields and distinguishes first assignment
     { ...valid, expectedVersion: Number.MAX_SAFE_INTEGER + 1 },
     { ...valid, expectedVersion: Number.MAX_SAFE_INTEGER },
     { ...valid, targetUserId: null },
-    { ...valid, expectedVersion: 0 },
     { ...valid, email: "not-an-email" },
     { ...valid, reason: "  " },
     { ...valid, reason: "x".repeat(501) },

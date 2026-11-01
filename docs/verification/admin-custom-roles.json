@@ -1,0 +1,71 @@
+{
+  "checkpoint": "admin-users-custom-roles",
+  "date": "2026-11-01",
+  "environment": "existing development Clerk and InsForge project; localhost:3012",
+  "migrationsApplied": [
+    "20261101143000",
+    "20261101143500",
+    "20261101144000",
+    "20261101150000",
+    "20261101151000"
+  ],
+  "independentReview": {
+    "model": "Sol 6.1 high",
+    "guardedAuthenticatedRpcSignatures": 51,
+    "anonymousPrivilegedExecution": false,
+    "internalPriceHelpersRuntimeExecution": false,
+    "findingsFixed": [
+      "preserve DOCX storage support",
+      "require ADMIN membership for access management",
+      "restrict custom media cleanup to uploader",
+      "make mutation controls action-aware",
+      "serialize pending-removal freeze after advisory lock",
+      "verify Clerk even for completed removal receipts"
+    ]
+  },
+  "integrationPassed": [
+    "anonymous/customer user directory denied",
+    "verified account lookup and genuine zero-order summaries",
+    "closed custom permission inputs and duplicate role conflict",
+    "selected first assignment and stale version conflict",
+    "blog read allowed while other sections and mutation denied",
+    "role edits revoke previous grants on subsequent requests",
+    "order reader cannot manage roles or read other membership rows",
+    "create-only blog draft cannot update or publish",
+    "create-only product with initial pricing succeeds",
+    "both direct price edit overloads and private pricing helper denied",
+    "custom creator cannot remove another uploader's unregistered object",
+    "own upload compensation succeeds",
+    "self role change denied and protected owner membership unchanged",
+    "disposable identities, grants, role definitions, drafts, media and fixture audits cleaned",
+    "real disposable Clerk removal, idempotent retry and unchanged order snapshots",
+    "self/protected/stale/anonymous/non-Admin deletion denied"
+  ],
+  "browserPassed": [
+    "owner session and protected account preserved",
+    "searchable account table with avatars, role names and historical nonzero order counts",
+    "create custom role and auto-select permission prerequisites",
+    "save CUSTOMER role change for disposable account and show success",
+    "role details below table, collapsed permission groups",
+    "light/dark and 390px viewport without page horizontal overflow",
+    "permission dialog focus, Escape and bounded horizontal matrix scrolling",
+    "centered deletion warning, cancellation and typed DELETE requirement",
+    "disposable account deleted and confirmed absent in Clerk",
+    "success toast close and error dismissal retain conflict guards"
+  ],
+  "notClaimed": [
+    "every permission combination in a separately signed-in browser",
+    "screen-reader speech",
+    "load tests",
+    "deployment",
+    "real payments or invoice issuance"
+  ],
+  "checks": {
+    "unitPassed": 469,
+    "mediaPassed": 10,
+    "additionalFocusedPassed": 8,
+    "existingSkipped": 3,
+    "lint": "passed",
+    "productionBuild": "passed"
+  }
+}

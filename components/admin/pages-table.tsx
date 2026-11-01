@@ -1,9 +1,12 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import { IconArrowLeft, IconArrowRight, IconPencil, IconRefresh, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { isContentTableResult, type ContentTableModule, type ContentTableQuery, type ContentTableResult } from "@/lib/admin/pages-table-contract";
 import { ADMIN_MODULES } from "@/lib/admin/validation";
@@ -91,7 +94,9 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
   const copy = TABLE_COPY[module];
   const kind = module === "pages" ? "page" : module === "blog" ? "blog" : module === "faqs" ? "faq" : module === "team" ? "team" : module === "solutions" ? "solution" : module === "videos" ? "video" : "resource";
   const capabilities = useAdminCapabilities();
-  const canEdit = capabilities.includes(ADMIN_MODULES[module].editCapability);
+  const hasAccess = capabilities.includes(ADMIN_MODULES[module].editCapability);
+  const canRead = hasAccess && canAdminPermission(capabilities, module, "read");
+  const canCreate = hasAccess && canAdminPermission(capabilities, module, "create");
   const searchParams = useSearchParams();
   const searchString = searchParams?.toString() ?? "";
   const queryString = useMemo(() => serializeQuery(parseQuery(searchString, module)), [searchString, module]);
@@ -106,7 +111,7 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
   const rows = response?.items ?? [];
   const total = response?.total ?? null;
   const error = errorState?.key === requestKey ? errorState.message : "";
-  const loading = canEdit && responseState?.key !== requestKey && errorState?.key !== requestKey;
+  const loading = canRead && responseState?.key !== requestKey && errorState?.key !== requestKey;
 
   useEffect(() => {
     if (searchText.trim() === query.q) return;
@@ -115,7 +120,7 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
   }, [query, searchText]);
 
   useEffect(() => {
-    if (!canEdit) return;
+    if (!canRead) return;
     const url = new URL(window.location.href);
     if (url.search.slice(1) !== queryString) replaceQuery(query);
 
@@ -136,7 +141,7 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
         setErrorState({ key: requestKey, message: reason instanceof Error ? reason.message : copy.error });
       });
     return () => controller.abort();
-  }, [canEdit, copy.error, kind, module, query, queryString, reload, requestKey]);
+  }, [canRead, copy.error, kind, module, query, queryString, reload, requestKey]);
 
   const pageRange = useMemo(() => {
     if (total === null || total === 0) return "";
@@ -148,12 +153,12 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
     replaceQuery({ ...query, ...patch });
   }
 
-  if (!canEdit) return <div className={tableStyles.screen}><h1>{copy.title}</h1><p className={tableStyles.accessMessage} role="alert">You do not have permission to manage {copy.plural}.</p></div>;
+  if (!canRead) return <div className={tableStyles.screen}><h1>{copy.title}</h1><p className={tableStyles.accessMessage} role="alert">You do not have permission to manage {copy.plural}.</p></div>;
 
   return <div className={tableStyles.screen}>
     <header className={tableStyles.heading}>
       <div><h1>{copy.title}</h1><p>{copy.description}</p></div>
-      <Link className={tableStyles.newButton} href={`/admin/${module}/new`}>New {copy.singular}</Link>
+      {canCreate && <Link className={tableStyles.newButton} href={`/admin/${module}/new`}>New {copy.singular}</Link>}
     </header>
 
     <section className={tableStyles.controls} aria-label={`${copy.title} table filters`}>
@@ -184,7 +189,7 @@ export function ContentTable({ module = "pages" }: { module?: ContentTableModule
       <span className={tableStyles.count} aria-live="polite">{loading ? copy.loading : total === null ? "" : `${total} ${total === 1 ? copy.singular : copy.plural}`}</span>
     </section>
 
-    {error && <div className={tableStyles.errorBanner} role="alert"><p>{error}</p><button type="button" className={tableStyles.controlButton} onClick={retry}><IconRefresh aria-hidden="true" size={15} /> Try again</button></div>}
+    {error && <AdminNotice tone="error" key={`${requestKey}:${error}`} className={tableStyles.errorBanner} actions={<button type="button" className={tableStyles.controlButton} onClick={retry}><IconRefresh aria-hidden="true" size={15} /> Try again</button>}><p>{error}</p></AdminNotice>}
 
     <div className={tableStyles.tableScroller} role="region" aria-label={copy.title} tabIndex={0} aria-busy={loading}>
       <table className={`${tableStyles.table} ${styles.table}`}>

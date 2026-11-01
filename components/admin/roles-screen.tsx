@@ -1,379 +1,182 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+import { IconTrash } from "@tabler/icons-react";
+import { toast } from "sonner";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { AdminNotice } from "@/components/admin/admin-notice";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import ui from "@/components/admin/admin-ui.module.css";
-import { parseStaffRoleList, parseStaffRoleMembership, STAFF_ROLES, type StaffRole, type StaffRoleChange, type StaffRoleMembership } from "@/lib/admin/roles-validation";
+import { PERMISSION_CATALOG, type RoleDefinition } from "@/lib/admin/access-contract";
 import styles from "./roles.module.css";
 
 const PAGE_SIZE = 25;
-type SignedInUser = NonNullable<ReturnType<typeof useUser>["user"]>;
+const RESOURCES: Record<string, readonly string[]> = Object.fromEntries(PERMISSION_CATALOG.map(({ resource, actions }) => [resource, actions]));
+const ACTIONS = ["read", "create", "update", "publish", "delete"];
+type Account = { userId: string; name: string | null; email: string | null; imageUrl: string | null; verified: boolean; removalPending: boolean; role: string; version: number; protected: boolean; updatedAt: string | null; createdAt: string | null; lastActiveAt: string | null; orderCount: number };
+type Role = RoleDefinition;
+type UsersResult = { items: Account[]; total: number; stats: { totalUsers: number; staffUsers: number; customerUsers: number; totalRoles: number; byRole: { role: string; count: number }[] } };
+type ApiError = Error & { status?: number; code?: string };
 
-type RoleApiErrorBody = { error?: { code?: unknown } };
-type RoleMembershipResponse = { membership: StaffRoleMembership };
-
-class RoleRequestError extends Error {
-  constructor(readonly status: number, readonly code?: string) {
-    super("Role request failed.");
-  }
-}
-
-function parseRoleMembershipResponse(value: unknown): RoleMembershipResponse | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const response = value as Record<string, unknown>;
-  if (Object.keys(response).length !== 1 || !Object.hasOwn(response, "membership")) return null;
-  const membership = parseStaffRoleMembership(response.membership);
-  return membership ? { membership } : null;
-}
-
-async function request<T>(url: string, parse: (value: unknown) => T | null, init?: RequestInit): Promise<T> {
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { cache: "no-store", ...init });
-  const body: unknown = await response.json().catch(() => null);
+  const body = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = body && typeof body === "object" && !Array.isArray(body) && "error" in body
-      ? (body as RoleApiErrorBody).error
-      : undefined;
-    throw new RoleRequestError(response.status, error && typeof error.code === "string" ? error.code : undefined);
+    const error: ApiError = new Error(body?.error?.message || "The request could not be completed. Please try again.");
+    error.status = response.status;
+    error.code = body?.error?.code;
+    throw error;
   }
-  const parsed = parse(body);
-  if (!parsed) throw new RoleRequestError(503, "backend_unavailable");
-  return parsed;
+  return body as T;
 }
-
-function messageFor(reason: unknown) {
-  if (!(reason instanceof RoleRequestError)) return "Role services could not be reached. Try again.";
-  switch (reason.code) {
-    case "unauthorized": return "Your sign-in has expired. Sign in again before managing roles.";
-    case "forbidden": return "Your account does not have permission to manage roles.";
-    case "invalid_role_request": return "Check the verified email, role, and reason, then try again.";
-    case "identity_not_found": return "That email did not match one verified account or the selected membership. Recheck the email and row.";
-    case "conflict": return "The role changed after it was loaded. Reload the list and review the current membership before retrying.";
-    case "protected_admin": return "The protected administrator cannot be changed here.";
-    case "self_change": return "You cannot change your own role.";
-    case "last_admin": return "At least one administrator must remain assigned.";
-    case "staff_limit": return "The staff membership limit has been reached.";
-    case "backend_unavailable": return "Role services are temporarily unavailable. Try again shortly.";
-    default:
-      if (reason.status === 401) return "Your sign-in has expired. Sign in again before managing roles.";
-      if (reason.status === 403) return "Your account does not have permission to manage roles.";
-      return "Role services could not complete the request. Try again.";
-  }
+function date(value: string | null) {
+  if (!value) return "—";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.valueOf()) ? "—" : new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(parsed);
 }
-
-function statusOf(reason: unknown) {
-  return reason instanceof RoleRequestError ? reason.status : null;
-}
-
-const ROLE_DETAILS: Record<StaffRole, { description: string; capabilities: readonly string[] }> = {
-  ADMIN: {
-    description: "Full access to the admin workspace.",
-    capabilities: ["catalog.edit", "content.edit", "content.publish", "orders.manage", "media.manage", "inquiries.manage", "staff.manage"],
-  },
-  EDITOR: {
-    description: "Edit and publish site content, and manage media.",
-    capabilities: ["content.edit", "content.publish", "media.manage"],
-  },
-  CATALOG: {
-    description: "Edit the catalog and media, and adjust inventory.",
-    capabilities: ["catalog.edit", "media.manage", "orders.manage"],
-  },
-  SUPPORT: {
-    description: "Manage customer inquiries.",
-    capabilities: ["inquiries.manage"],
-  },
-  CUSTOMER: {
-    description: "Access to the storefront and personal account.",
-    capabilities: [],
-  },
-};
-
-const CAPABILITY_LABELS: Record<string, string> = {
-  "catalog.edit": "Catalog editing",
-  "content.edit": "Content editing",
-  "content.publish": "Content publishing",
-  "orders.manage": "Inventory management",
-  "media.manage": "Media library",
-  "inquiries.manage": "Customer inquiries",
-  "staff.manage": "Staff access and order viewing",
-};
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(date)
-    : "Unknown";
-}
+function label(value: string) { return value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase()); }
+function roleLabel(key: string, roles: Role[]) { return roles.find((role) => role.key === key)?.name ?? (key.startsWith("custom_") ? "Custom role" : label(key)); }
+function actionLabel(resource: string, action: string) { return action === "delete" ? (resource === "inquiries" ? "Delete" : "Archive") : label(action); }
 
 export function RolesScreen() {
   const { user, isLoaded } = useUser();
-  if (!isLoaded) return <div className={ui.screen}><p className={ui.loadingState} role="status">Loading staff access…</p></div>;
-  if (!user) return <div className={ui.screen}><p className={ui.inlineError} role="alert">Your account could not be loaded. Refresh the page and try again.</p></div>;
-  return <RoleSession key={user.id} user={user} />;
+  if (!isLoaded) return <div className={ui.screen}><p role="status">Loading users…</p></div>;
+  if (!user) return <div className={ui.screen}><p role="alert">Your account could not be loaded. Refresh and try again.</p></div>;
+  return <RoleSession key={user.id} userId={user.id} />;
 }
 
-function RoleSession({ user }: { user: SignedInUser }) {
+function RoleSession({ userId }: { userId: string }) {
   const capabilities = useAdminCapabilities();
-  const canManage = capabilities.includes("staff.manage");
-  const [memberships, setMemberships] = useState<StaffRoleMembership[]>([]);
-  const [total, setTotal] = useState<number | null>(null);
+  const canManage = capabilities.includes("staff.manage") && !capabilities.includes("__custom_role__");
+  const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
+  const [data, setData] = useState<UsersResult | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<unknown>(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const [busy, setBusy] = useState(false);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<StaffRole | "">("");
+  const [error, setError] = useState("");
+  const [errorDismissed, setErrorDismissed] = useState(false);
+  const [reload, setReload] = useState(0);
+  const [selected, setSelected] = useState<Account | null>(null);
+  const [chosenRole, setChosenRole] = useState("");
   const [reason, setReason] = useState("");
-  const [targetUserId, setTargetUserId] = useState<string | null>(null);
-  const [expectedVersion, setExpectedVersion] = useState(0);
-  const [submitError, setSubmitError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [conflictPending, setConflictPending] = useState(false);
-  const [conflictReloaded, setConflictReloaded] = useState(false);
-  const conflictPendingRef = useRef(false);
-  const sessionActiveRef = useRef(true);
-  const mutationControllerRef = useRef<AbortController | null>(null);
-  const verifiedEmails = new Set((user?.emailAddresses ?? [])
-    .filter((address) => address.verification?.status === "verified")
-    .map((address) => address.emailAddress.trim().toLowerCase()));
-  const isSelfEmail = Boolean(email.trim() && verifiedEmails.has(email.trim().toLowerCase()));
-  const accessBlocked = statusOf(loadError) === 401 || statusOf(loadError) === 403;
+  const [editing, setEditing] = useState<Role | null>(null);
+  const [roleName, setRoleName] = useState("");
+  const [description, setDescription] = useState("");
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [roleReason, setRoleReason] = useState("");
+  const [tab, setTab] = useState<"details" | "custom">("details");
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [conflict, setConflict] = useState(false);
+  const [removalTarget, setRemovalTarget] = useState<Account | null>(null);
+  const [removalConfirm, setRemovalConfirm] = useState("");
+  const [removalReason, setRemovalReason] = useState("");
+  const assignmentDialog = useRef<HTMLDialogElement>(null);
+  const roleDialog = useRef<HTMLDialogElement>(null);
+  const removalDialog = useRef<HTMLDialogElement>(null);
+  const removalInvoker = useRef<HTMLButtonElement | null>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const removed = useRef(false);
+  const mutation = useRef<AbortController | null>(null);
+  const active = useRef(true);
 
-  useEffect(() => {
-    sessionActiveRef.current = true;
-    return () => {
-      sessionActiveRef.current = false;
-      mutationControllerRef.current?.abort();
-    };
-  }, []);
-
+  useEffect(() => { active.current = true; return () => { active.current = false; mutation.current?.abort(); }; }, []);
+  useEffect(() => { if (query === search) return; const timer = setTimeout(() => { setLoading(true); setSearch(query); setOffset(0); }, 300); return () => clearTimeout(timer); }, [query, search]);
   useEffect(() => {
     if (!canManage) return;
-    let active = true;
     const controller = new AbortController();
-    const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) });
-
-    request(`/api/admin/roles?${params}`, parseStaffRoleList, { signal: controller.signal })
-      .then((result) => {
-        if (!active) return;
-        setMemberships(result.items);
-        setTotal(result.total);
-        if (conflictPendingRef.current) setConflictReloaded(true);
-      })
-      .catch((error: unknown) => {
-        if (active && !controller.signal.aborted) setLoadError(error);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => { active = false; controller.abort(); };
-  }, [canManage, offset, reloadKey]);
-
-  function startNewAssignment() {
-    setEmail("");
-    setRole("");
-    setReason("");
-    setTargetUserId(null);
-    setExpectedVersion(0);
-    setSubmitError("");
-    setNotice("");
-    setConflictPending(false);
-    setConflictReloaded(false);
-    conflictPendingRef.current = false;
+    const params = new URLSearchParams({ query: search, limit: String(PAGE_SIZE), offset: String(offset) });
+    Promise.all([
+      request<UsersResult>(`/api/admin/users?${params}`, { signal: controller.signal }),
+      request<{ items: Role[] }>("/api/admin/role-definitions", { signal: controller.signal }),
+    ]).then(([users, definitions]) => { if (!controller.signal.aborted) { setData(users); setRoles(definitions.items); setError(""); setErrorDismissed(false); setLoading(false); } })
+      .catch((failure: unknown) => { if (!controller.signal.aborted) { setError(failure instanceof Error ? failure.message : "Users could not be loaded."); setErrorDismissed(false); if ((failure as ApiError)?.status === 401 || (failure as ApiError)?.status === 403) { setData(null); setRoles([]); } setLoading(false); } });
+    return () => controller.abort();
+  }, [canManage, search, offset, reload]);
+  function refresh() { setLoading(true); setError(""); setErrorDismissed(false); setReload((value) => value + 1); }
+  function openAssignment(account: Account) {
+    if (!account.verified || !account.email || account.removalPending || account.protected || account.userId === userId) return;
+    setSelected(account); setChosenRole(account.role); setReason(""); setFormError(""); setConflict(false); assignmentDialog.current?.showModal();
   }
-
-  function selectMembership(membership: StaffRoleMembership) {
-    if (busy || loading || loadError || membership.protected || membership.userId === user.id) return;
-    if (conflictPending && conflictReloaded) {
-      setTargetUserId(membership.userId);
-      setExpectedVersion(membership.version);
-      setSubmitError("");
-      setNotice("Latest role selected. Confirm the account email and change details before saving.");
-      setConflictPending(false);
-      setConflictReloaded(false);
-      conflictPendingRef.current = false;
-      return;
-    }
-    if (conflictPending) return;
-    if (targetUserId === membership.userId) return;
-    setTargetUserId(membership.userId);
-    setExpectedVersion(membership.version);
-    setEmail(membership.identity?.email ?? "");
-    setRole(membership.role);
-    setReason("");
-    setSubmitError("");
-    setNotice("");
+  function openRole(role?: Role) {
+    setEditing(role ?? null); setRoleName(role?.name ?? ""); setDescription(role?.description ?? ""); setPermissions(role?.permissions ?? []); setRoleReason(""); setFormError(""); setConflict(false); roleDialog.current?.showModal();
   }
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!canManage || busy || accessBlocked || !role || !email.trim() || !reason.trim() || isSelfEmail || conflictPending) return;
-    const body: StaffRoleChange = {
-      email: email.trim(),
-      role,
-      expectedVersion: targetUserId ? expectedVersion : 0,
-      reason: reason.trim(),
-      targetUserId,
-    };
-    setBusy(true);
-    setSubmitError("");
-    setNotice("");
-    const controller = new AbortController();
-    mutationControllerRef.current = controller;
+  async function save(url: string, body: unknown, dialog: HTMLDialogElement | null, success: string) {
+    if (busy || conflict) return;
+    const controller = new AbortController(); mutation.current = controller; setBusy(true); setFormError("");
     try {
-      const result = await request("/api/admin/roles", parseRoleMembershipResponse, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      if (!sessionActiveRef.current || controller.signal.aborted) return;
-      const savedRole = result.membership.role;
-      setEmail("");
-      setRole("");
-      setReason("");
-      setTargetUserId(null);
-      setExpectedVersion(0);
-      setConflictPending(false);
-      setConflictReloaded(false);
-      conflictPendingRef.current = false;
-      setNotice(`${savedRole} role saved. The membership list is refreshing.`);
-      setLoading(true);
-      setLoadError(null);
-      setMemberships([]);
-      setTotal(null);
-      setOffset(0);
-      setReloadKey((value) => value + 1);
-    } catch (error) {
-      if (!sessionActiveRef.current || controller.signal.aborted) return;
-      setSubmitError(messageFor(error));
-      if (error instanceof RoleRequestError && error.code === "conflict") {
-        setConflictPending(true);
-        setConflictReloaded(false);
-        conflictPendingRef.current = true;
-      }
-    } finally {
-      if (mutationControllerRef.current === controller) mutationControllerRef.current = null;
-      if (sessionActiveRef.current && !controller.signal.aborted) setBusy(false);
-    }
+      await request(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal });
+      if (!active.current || controller.signal.aborted) return;
+      dialog?.close(); toast.success(success); refresh();
+    } catch (failure) {
+      if (!active.current || controller.signal.aborted) return;
+      const e = failure as ApiError;
+      if (e.code === "conflict" || e.status === 409) { setConflict(true); setFormError("This record changed since it was loaded. Close this dialog, reload and review the latest details before trying again."); }
+      else { setFormError(e.message || "The request could not be completed."); toast.error(e.message || "The request could not be completed."); }
+    } finally { if (mutation.current === controller) mutation.current = null; if (active.current && !controller.signal.aborted) setBusy(false); }
   }
-
-  function reloadRoles() {
-    setLoading(true);
-    setLoadError(null);
-    setMemberships([]);
-    setTotal(null);
-    setConflictReloaded(false);
-    if (conflictPending) setOffset(0);
-    setReloadKey((value) => value + 1);
+  function submitAssignment(event: FormEvent) {
+    event.preventDefault();
+    if (!selected?.email || !selected.verified || selected.removalPending || selected.protected || selected.userId === userId || !chosenRole || !reason.trim()) return;
+    void save("/api/admin/roles", { email: selected.email, role: chosenRole, expectedVersion: selected.version, reason: reason.trim(), targetUserId: selected.userId }, assignmentDialog.current, "Role updated.");
   }
-
-  function changePage(nextOffset: number) {
-    setLoading(true);
-    setLoadError(null);
-    setMemberships([]);
-    setTotal(null);
-    setOffset(nextOffset);
+  function submitRole(event: FormEvent) {
+    event.preventDefault();
+    if (!roleName.trim() || !roleReason.trim()) return;
+    void save("/api/admin/role-definitions", { key: editing?.key ?? null, name: roleName.trim(), description: description.trim(), permissions, expectedVersion: editing?.version ?? 0, reason: roleReason.trim() }, roleDialog.current, editing ? "Role updated." : "Role created.");
   }
-
-  if (!canManage) {
-    return <div className={ui.screen}><section className={ui.panel}>
-      <h1 className={styles.deniedTitle}>Access denied</h1>
-      <p className={ui.lede}>Your role does not allow you to view or change staff access.</p>
-    </section></div>;
+  function openRemoval(account: Account, invoker: HTMLButtonElement) {
+    if (busy || account.protected || account.userId === userId) return;
+    removalInvoker.current = invoker; removed.current = false; setRemovalTarget(account); setRemovalConfirm(""); setRemovalReason(""); setFormError(""); setConflict(false); removalDialog.current?.showModal();
   }
-
+  async function removeAccount(event: FormEvent) {
+    event.preventDefault();
+    const account = removalTarget;
+    if (!account || account.protected || account.userId === userId || busy || conflict || removalConfirm !== "DELETE" || !removalReason.trim()) return;
+    const controller = new AbortController(); mutation.current = controller; setBusy(true); setFormError("");
+    try {
+      await request(`/api/admin/users/${encodeURIComponent(account.userId)}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expectedVersion: account.version, reason: removalReason.trim() }), signal: controller.signal });
+      if (!active.current || controller.signal.aborted) return;
+      removed.current = true; removalDialog.current?.close(); setData((current) => current ? { ...current, items: current.items.filter((item) => item.userId !== account.userId) } : current); toast.success("Account deleted."); refresh();
+    } catch (failure) {
+      if (!active.current || controller.signal.aborted) return;
+      const e = failure as ApiError;
+      if (e.code === "removal_pending") { setConflict(true); setFormError("Staff access removed; account removal is pending. Reload to retry."); }
+      else if (e.code === "conflict" || e.status === 409) { setConflict(true); setFormError("This account changed since it was loaded. Close this dialog and reload before trying again."); }
+      else { const message = e.message || "Account could not be deleted."; setFormError(message); toast.error(message); }
+    } finally { if (mutation.current === controller) mutation.current = null; if (active.current && !controller.signal.aborted) setBusy(false); }
+  }
+  function toggle(resource: string, action: string, checked: boolean) {
+    setPermissions((current) => {
+      const next = new Set(current); const key = `${resource}.${action}`;
+      if (checked) { next.add(key); if (action !== "read") next.add(`${resource}.read`); if (action === "publish" || action === "delete") next.add(`${resource}.update`); }
+      else { next.delete(key); if (action === "read") RESOURCES[resource].forEach((item) => next.delete(`${resource}.${item}`)); if (action === "update") { next.delete(`${resource}.publish`); next.delete(`${resource}.delete`); } }
+      return [...next];
+    });
+  }
+  if (!canManage) return <div className={ui.screen}><section className={ui.panel}><h1>Access denied</h1><p className={ui.lede}>Your role does not allow you to manage users and roles.</p></section></div>;
+  const stats = data?.stats;
   return <div className={ui.screen}>
-    <div className={ui.pageHeading}><div>
-      <h1>Users &amp; roles</h1>
-      <p className={ui.lede}>Assign one role to an existing verified account.</p>
-    </div></div>
-
-    <section className={ui.panel} aria-labelledby="role-matrix-title">
-      <div className={ui.sectionHeading}><div><h2 id="role-matrix-title">What each role can do</h2><p>Each role replaces the person’s current staff permissions.</p></div></div>
-      <div className={styles.roleGrid}>
-        {STAFF_ROLES.map((staffRole) => <article className={styles.roleCard} key={staffRole}>
-          <div className={styles.roleHeading}><h3>{staffRole}</h3><p>{ROLE_DETAILS[staffRole].description}</p></div>
-          {ROLE_DETAILS[staffRole].capabilities.length
-            ? <ul className={styles.roleCapabilities}>{ROLE_DETAILS[staffRole].capabilities.map((capability) => <li key={capability}>{CAPABILITY_LABELS[capability]}</li>)}</ul>
-            : <p className={styles.noCapabilities}>No staff access</p>}
-        </article>)}
-      </div>
+    <div className={ui.pageHeading}><div><h1>Users &amp; roles</h1><p className={ui.lede}>Manage account access and review role permissions.</p></div></div>
+    {error && !errorDismissed && <AdminNotice tone="error" onDismiss={() => setErrorDismissed(true)}><p>{error}</p><button type="button" className={ui.secondaryButton} onClick={refresh}>Reload</button></AdminNotice>}
+    <div className={styles.stats} aria-label="Account summary">{[["Roles", stats?.totalRoles], ["All accounts", stats?.totalUsers], ["Staff accounts", stats?.staffUsers], ["Customers", stats?.customerUsers]].map(([title, count]) => <div className={styles.stat} key={title}><span>{title}</span><strong>{count ?? "—"}</strong></div>)}</div>
+    {stats && <div className={styles.distribution}><span>Role distribution</span>{stats.byRole.map((item) => <span className={ui.statusPill} key={item.role}>{roleLabel(item.role, roles)}: {item.count}</span>)}</div>}
+    <section className={ui.panel} aria-labelledby="users-title">
+      <div className={ui.sectionHeading}><div><h2 id="users-title">Accounts</h2><p>Choose a verified account to assign or change its role.</p></div></div>
+      <label className={styles.search}><span className={ui.visuallyHidden}>Search accounts</span><input ref={searchInput} className={ui.input} type="search" placeholder="Search name or email" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+      <div className={`${ui.tableFrame} ${styles.tableFrame}`} role="region" aria-label="Accounts" tabIndex={0}><table className={`${ui.table} ${styles.table}`}><thead><tr><th scope="col">Account</th><th scope="col">Verification</th><th scope="col">Role</th><th scope="col">Orders</th><th scope="col">Updated</th><th scope="col">Action</th></tr></thead><tbody>
+        {loading ? <tr><td colSpan={6} className={ui.tableMessage}>Loading accounts…</td></tr> : error ? <tr><td colSpan={6} className={ui.tableMessage}>Could not load accounts. <button type="button" className={ui.secondaryButton} onClick={refresh}>Reload</button></td></tr> : !data?.items.length ? <tr><td colSpan={6} className={ui.tableMessage}>No accounts found.</td></tr> : data.items.map((account, index) => <tr key={account.userId}><td><div className={styles.identity}><span className={styles.avatar}>{account.imageUrl ? <Image src={account.imageUrl} alt="" width={36} height={36} unoptimized /> : (account.name || account.email || "?").charAt(0).toUpperCase()}</span><span><strong>{account.name || "Unnamed account"}</strong><small>{account.email || "Email unavailable"}</small></span></div></td><td>{account.verified ? "Verified" : "Unverified"}</td><td><span className={ui.statusPill}>{roleLabel(account.role, roles)}</span></td><td>{account.orderCount ?? 0}</td><td>{date(account.updatedAt)}</td><td>{account.protected ? "Protected" : account.userId === userId ? "Your account" : <div className={styles.rowActions}><button type="button" className={ui.secondaryButton} disabled={busy || account.removalPending || !account.verified || !account.email} onClick={() => openAssignment(account)}>{account.role === "CUSTOMER" ? "Assign role" : "Change role"}</button><button type="button" className={styles.removeButton} disabled={busy} aria-label={`${account.removalPending ? "Retry removal of" : "Delete"} ${account.name || account.email || "account"}${account.name && account.email ? `, ${account.email}` : ""}, row ${offset + index + 1}`} title={account.removalPending ? "Retry removal" : "Delete account"} onClick={(event) => openRemoval(account, event.currentTarget)}><IconTrash size={17} aria-hidden="true" />{account.removalPending && <span>Retry removal</span>}</button></div>}</td></tr>)}
+      </tbody></table></div>
+      <div className={ui.pagination}><span>{data && data.total > 0 ? `${offset + 1}–${Math.min(offset + data.items.length, data.total)} of ${data.total}` : ""}</span><div><button className={ui.secondaryButton} type="button" disabled={loading || offset === 0} onClick={() => { setLoading(true); setOffset(Math.max(0, offset - PAGE_SIZE)); }}>Previous</button><button className={ui.secondaryButton} type="button" disabled={loading || !data || offset + PAGE_SIZE >= data.total || offset + PAGE_SIZE > 5000} onClick={() => { setLoading(true); setOffset(offset + PAGE_SIZE); }}>Next</button></div></div>
     </section>
-
-    <section className={ui.panel} aria-labelledby="memberships-title">
-      <div className={ui.sectionHeading}><div>
-        <h2 id="memberships-title">Role memberships</h2>
-        <p>{loading ? "Loading memberships…" : total === null ? "Membership count unavailable." : `${total} role ${total === 1 ? "membership" : "memberships"}.`}</p>
-      </div></div>
-      {loadError !== null && <div className={ui.errorBanner} role="alert"><p>{messageFor(loadError)}</p><button className={ui.secondaryButton} type="button" onClick={reloadRoles} disabled={loading}>Reload roles</button></div>}
-      {conflictPending && <div className={ui.errorBanner} role="alert"><p>{conflictReloaded
-        ? "The list is current. Select the intended role again to confirm the change; your email, requested role, and reason are preserved."
-        : "This membership changed after it was loaded. Reload and review the latest row before retrying; your form is preserved."}</p>{!conflictReloaded && <button className={ui.secondaryButton} type="button" onClick={reloadRoles} disabled={loading}>Reload roles</button>}</div>}
-      <div className={`${ui.tableFrame} ${styles.roleTableFrame}`} role="region" aria-label="Role memberships" tabIndex={0}>
-        <table className={`${ui.table} ${styles.roleTable}`}>
-          <thead><tr><th scope="col">Account</th><th scope="col">Role</th><th scope="col">Last updated</th><th scope="col">Protection</th></tr></thead>
-          <tbody>
-            {loading && <tr><td colSpan={4} className={ui.tableMessage}>Loading role memberships…</td></tr>}
-            {!loading && loadError !== null && <tr><td colSpan={4} className={ui.tableMessage}>Role memberships could not be loaded.</td></tr>}
-            {!loading && !loadError && memberships.length === 0 && <tr><td colSpan={4} className={ui.tableMessage}>No role memberships yet. Enter a verified account email below to assign a role.</td></tr>}
-            {!loading && !loadError && memberships.map((membership) => {
-              const isSelf = membership.userId === user.id;
-              const locked = membership.protected || isSelf;
-              const reviewWait = conflictPending && !conflictReloaded;
-              const accountEmail = membership.identity?.email?.trim() || "";
-              const accountName = membership.identity?.name?.trim() || accountEmail || "Account unavailable";
-              const accountLabel = accountEmail && accountEmail !== accountName ? `${accountName}, ${accountEmail}` : accountName;
-              return <tr className={targetUserId === membership.userId ? ui.selectedRow : ui.selectableRow} key={membership.userId}>
-                <td><div className={styles.memberIdentity}>
-                  <div className={styles.memberIdentityDetails}><strong>{accountName}</strong>{accountEmail && accountEmail !== accountName && <span>{accountEmail}</span>}</div>
-                  {locked ? <span>{membership.protected ? "Protected admin" : "Your account"}</span> : <button className={styles.membershipSelect} type="button" onClick={() => selectMembership(membership)} disabled={busy || loading || Boolean(loadError) || reviewWait} aria-label={`${conflictPending ? "Review" : "Select"} ${membership.role} membership for ${accountLabel}`}>
-                    {conflictPending ? "Review latest role" : targetUserId === membership.userId ? "Selected" : "Select membership"}
-                  </button>}
-                </div></td>
-                <td><span className={ui.statusPill}>{membership.role}</span></td>
-                <td>{formatDate(membership.updatedAt)}</td>
-                <td>{membership.protected ? <span className={styles.protectedLabel}>Protected</span> : isSelf ? "You" : "—"}</td>
-              </tr>;
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className={ui.pagination}>
-        <span>{total === null || total === 0 ? "" : `${offset + 1}–${Math.min(offset + memberships.length, total)} of ${total}`}</span>
-        <div>
-          <button className={ui.secondaryButton} type="button" onClick={() => changePage(Math.max(0, offset - PAGE_SIZE))} disabled={loading || offset === 0}>Previous</button>
-          <button className={ui.secondaryButton} type="button" onClick={() => changePage(offset + PAGE_SIZE)} disabled={loading || total === null || offset + PAGE_SIZE >= total || offset + PAGE_SIZE > 5000}>Next</button>
-        </div>
-      </div>
+    <section className={ui.panel} aria-labelledby="roles-title"><div className={ui.sectionHeading}><div><h2 id="roles-title">Role catalog</h2><p>Built-in roles are read-only. Access administration is reserved for administrators.</p></div><button className={ui.primaryButton} type="button" onClick={() => openRole()}>Create role</button></div>
+      <div className={styles.tabs} aria-label="Role catalog views"><button type="button" aria-pressed={tab === "details"} onClick={() => setTab("details")}>Role details</button><button type="button" aria-pressed={tab === "custom"} onClick={() => setTab("custom")}>Custom roles</button></div>
+      <div className={styles.roleGrid}>{roles.filter((role) => tab === "details" || !role.builtIn).map((role) => <article className={styles.roleCard} key={role.key}><div><h3>{role.name}</h3><p>{role.description || "No description."}</p><p>{role.memberCount} {role.memberCount === 1 ? "explicit assignment" : "explicit assignments"} · {role.builtIn ? "Built-in" : "Custom"}</p></div><details className={styles.permissionDetails}><summary>View permissions</summary>{role.permissions.length ? <ul>{PERMISSION_CATALOG.map(({ resource, label: resourceLabel, actions }) => { const selectedActions = actions.filter((action) => role.permissions.includes(`${resource}.${action}`)); return selectedActions.length ? <li key={resource}><strong>{resourceLabel}:</strong> {selectedActions.map((action) => actionLabel(resource, action)).join(", ")}</li> : null; })}</ul> : <p>No staff permissions</p>}</details>{!role.builtIn && <button className={ui.secondaryButton} type="button" onClick={() => openRole(role)}>Edit role</button>}</article>)}{tab === "custom" && !roles.some((role) => !role.builtIn) && <p>No custom roles yet.</p>}</div>
     </section>
-
-    <section className={ui.panel} aria-labelledby="assign-role-title">
-      <div className={ui.sectionHeading}><div><h2 id="assign-role-title">Assign or change a role</h2><p>Select a membership above, or enter a verified email for a new assignment.</p></div></div>
-      {conflictPending && <p className={styles.reviewHint} role="status">{conflictReloaded
-        ? "Select the intended role above to continue. Your email, requested role, and reason will stay filled."
-        : "Reload and review the membership list above before selecting the target again."}</p>}
-      <form className={styles.roleForm} onSubmit={submit}>
-        <fieldset className={styles.roleFieldset} disabled={busy || accessBlocked}>
-          <legend className={ui.visuallyHidden}>Role membership change details</legend>
-          <div className={styles.roleFormFields}>
-            <label className={ui.field} htmlFor="role-target-email"><span className={ui.fieldLabel}>Verified account email</span><input className={ui.input} id="role-target-email" type="email" autoComplete="off" required maxLength={254} value={email} onChange={(event) => { setEmail(event.target.value); setSubmitError(""); setNotice(""); }} aria-describedby="role-email-hint" /><span className={ui.fieldHint} id="role-email-hint">For an existing role, confirm the verified email shown in its row.</span></label>
-            <label className={ui.field} htmlFor="role-choice"><span className={ui.fieldLabel}>Role</span><select className={`${ui.input} ${styles.roleSelect}`} id="role-choice" value={role} onChange={(event) => { setRole(event.target.value as StaffRole | ""); setSubmitError(""); setNotice(""); }} required><option value="">Choose a role</option>{STAFF_ROLES.map((staffRole) => <option value={staffRole} key={staffRole}>{staffRole}</option>)}</select><span className={ui.fieldHint}>{role ? ROLE_DETAILS[role].description : "Choose one of the five fixed roles."}</span></label>
-            <label className={`${ui.field} ${styles.reasonField}`} htmlFor="role-reason"><span className={ui.fieldLabel}>Reason</span><textarea className={ui.textarea} id="role-reason" rows={3} maxLength={500} required value={reason} onChange={(event) => { setReason(event.target.value); setSubmitError(""); setNotice(""); }} aria-describedby="role-reason-hint" /><span className={ui.fieldHint} id="role-reason-hint">Required audit reason, up to 500 characters.</span></label>
-          </div>
-          <p className={styles.replacementNotice}>This replaces the person’s current staff permissions. CUSTOMER removes staff access.</p>
-          {targetUserId && <p className={ui.fieldHint}>Selected account. Confirm the verified email above before saving.</p>}
-          {isSelfEmail && <p className={ui.inlineError} role="status">This verified email belongs to your signed-in account. Self role changes are unavailable.</p>}
-          {submitError && !conflictPending && <div className={ui.errorBanner} role="alert"><p>{submitError}</p></div>}
-          {notice && <p className={ui.successBanner} role="status">{notice}</p>}
-          <div className={styles.formActions}>
-            <button className={ui.secondaryButton} type="button" onClick={startNewAssignment} disabled={busy}>Start new assignment</button>
-            <button className={ui.primaryButton} type="submit" disabled={busy || accessBlocked || !role || !email.trim() || !reason.trim() || isSelfEmail || conflictPending}>{busy ? "Saving role…" : targetUserId ? "Save role change" : "Assign role"}</button>
-          </div>
-        </fieldset>
-      </form>
-    </section>
+    <dialog ref={removalDialog} className={styles.dialog} aria-labelledby="remove-account-title" aria-describedby="remove-account-warning" onCancel={(event) => { if (busy) event.preventDefault(); }} onClose={() => { if (conflict) refresh(); const target = removed.current ? searchInput.current : removalInvoker.current; requestAnimationFrame(() => { if (target?.isConnected) target.focus(); else searchInput.current?.focus(); }); }}><form onSubmit={removeAccount}><h2 id="remove-account-title">{removalTarget?.removalPending ? "Retry account removal?" : "Delete account?"}</h2><p><strong>{removalTarget?.name || "Account"}</strong> · {removalTarget?.email || "Email unavailable"}</p><p id="remove-account-warning">This permanently deletes the sign-in account and revokes its sessions. Past orders and admin history are retained. This cannot be undone.</p><label className={ui.field}><span className={ui.fieldLabel}>Type DELETE to confirm</span><input className={ui.input} value={removalConfirm} onChange={(event) => setRemovalConfirm(event.target.value)} disabled={busy} autoComplete="off" /></label><label className={ui.field}><span className={ui.fieldLabel}>Reason</span><textarea className={ui.textarea} required maxLength={500} value={removalReason} onChange={(event) => setRemovalReason(event.target.value)} disabled={busy} /></label>{formError && <AdminNotice tone="error" onDismiss={() => setFormError("")}>{formError}</AdminNotice>}<div className={styles.actions}><button autoFocus type="button" className={ui.secondaryButton} disabled={busy} onClick={() => removalDialog.current?.close()}>Cancel</button><button type="submit" className={styles.dangerButton} disabled={busy || conflict || removalConfirm !== "DELETE" || !removalReason.trim()}>{busy ? "Deleting…" : removalTarget?.removalPending ? "Retry removal" : "Delete account"}</button></div></form></dialog>
+    <dialog ref={assignmentDialog} className={styles.dialog} aria-labelledby="assignment-title" onCancel={(event) => { if (busy) event.preventDefault(); }} onClose={() => { if (conflict) refresh(); }}><form onSubmit={submitAssignment}><h2 id="assignment-title">Change account role</h2><p>{selected?.name || "Account"} · {selected?.email}</p><label className={ui.field}><span className={ui.fieldLabel}>Role</span><select autoFocus className={ui.input} value={chosenRole} onChange={(event) => setChosenRole(event.target.value)} required disabled={busy}>{roles.map((role) => <option key={role.key} value={role.key}>{role.name}</option>)}</select></label><label className={ui.field}><span className={ui.fieldLabel}>Reason</span><textarea className={ui.textarea} required maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} disabled={busy} /></label><p className={ui.fieldHint}>This replaces the account’s current permissions.</p>{formError && <AdminNotice tone="error" onDismiss={() => setFormError("")}>{formError}</AdminNotice>}<div className={styles.actions}><button type="button" className={ui.secondaryButton} disabled={busy} onClick={() => assignmentDialog.current?.close()}>Cancel</button><button type="submit" className={ui.primaryButton} disabled={busy || conflict}>{busy ? "Saving…" : "Save role"}</button></div></form></dialog>
+    <dialog ref={roleDialog} className={`${styles.dialog} ${styles.roleDialog}`} aria-labelledby="role-editor-title" onCancel={(event) => { if (busy) event.preventDefault(); }} onClose={() => { if (conflict) refresh(); }}><form onSubmit={submitRole}><h2 id="role-editor-title">{editing ? "Edit custom role" : "Create custom role"}</h2><label className={ui.field}><span className={ui.fieldLabel}>Name</span><input autoFocus className={ui.input} required maxLength={80} value={roleName} onChange={(event) => setRoleName(event.target.value)} disabled={busy} /></label><label className={ui.field}><span className={ui.fieldLabel}>Description</span><textarea className={ui.textarea} maxLength={500} value={description} onChange={(event) => setDescription(event.target.value)} disabled={busy} /></label><h3>Permissions</h3><p className={ui.fieldHint}>Changes require read access; publish and archive/delete also require update. Staff and users are managed by administrators only.</p><div className={styles.matrixFrame} role="region" aria-label="Permissions matrix" tabIndex={0}><table className={styles.matrix}><thead><tr><th scope="col">Resource</th>{ACTIONS.map((action) => <th scope="col" key={action}>{action === "delete" ? "Archive/delete" : label(action)}</th>)}</tr></thead><tbody>{Object.entries(RESOURCES).map(([resource, actions]) => <tr key={resource}><th scope="row">{label(resource)}</th>{ACTIONS.map((action) => <td key={action}>{actions.includes(action) ? <input type="checkbox" aria-label={`${label(action === "delete" ? "archive/delete" : action)} ${resource}`} checked={permissions.includes(`${resource}.${action}`)} disabled={busy} onChange={(event) => toggle(resource, action, event.target.checked)} /> : "—"}</td>)}</tr>)}</tbody></table></div><label className={ui.field}><span className={ui.fieldLabel}>Reason</span><textarea className={ui.textarea} required maxLength={500} value={roleReason} onChange={(event) => setRoleReason(event.target.value)} disabled={busy} /></label>{formError && <AdminNotice tone="error" onDismiss={() => setFormError("")}>{formError}</AdminNotice>}<div className={styles.actions}><button type="button" className={ui.secondaryButton} disabled={busy} onClick={() => roleDialog.current?.close()}>Cancel</button><button type="submit" className={ui.primaryButton} disabled={busy || conflict}>{busy ? "Saving…" : "Save role"}</button></div></form></dialog>
   </div>;
 }

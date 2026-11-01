@@ -15,6 +15,7 @@ An India-first IoT hardware catalog and company website with an editable adminis
 - Fictional invoice-template preview and downloadable sample PDF, clearly marked **SAMPLE — NOT A TAX INVOICE**.
 - Private order-specific **TEST — NOT A TAX INVOICE** PDFs for paid Razorpay test orders, available to their customer or authorized Admin.
 - Role-based Admin editing for products, categories, pricing, inventory, orders, inquiries and company/editorial content.
+- Searchable account directory with avatars, verified-account role assignment, actual order counts, role statistics, custom section/action permissions and protected account-removal controls. [Access contract](docs/admin-users-roles.md).
 - Draft/published revisions, version guards, private media, ownership checks and InsForge row-level security.
 - Contact abuse protection, prepared inquiry notifications, bounded diagnostics and development accessibility checks.
 

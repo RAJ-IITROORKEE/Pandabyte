@@ -1,11 +1,14 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import { IconArrowLeft, IconArrowRight, IconRefresh, IconSearch, IconDots, IconPhoto } from "@tabler/icons-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { AdminAccessDeniedScreen } from "@/components/admin/record-screens";
 import type { AdminVariantDto } from "@/lib/admin/validation";
 import styles from "./inventory-screen.module.css";
@@ -35,8 +38,9 @@ function InventoryThumbnail({ imageId }: { imageId: string | null }) {
 
 export function InventoryScreen() {
   const capabilities = useAdminCapabilities();
-  const canAdjust = capabilities.includes("orders.manage");
-  const canEdit = capabilities.includes("catalog.edit");
+  const canRead = capabilities.includes("orders.manage") && canAdminPermission(capabilities, "inventory", "read");
+  const canAdjust = canRead && canAdminPermission(capabilities, "inventory", "update");
+  const canEdit = capabilities.includes("catalog.edit") && canAdminPermission(capabilities, "products", "update");
   const [listState, setListState] = useState<KeyedInventoryList | null>(null);
   const [listErrorState, setListErrorState] = useState<KeyedError | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -67,14 +71,14 @@ export function InventoryScreen() {
   const items = response?.items ?? [];
   const total = response?.total ?? null;
   const listError = listErrorState?.key === requestKey ? listErrorState.message : "";
-  const loading = canAdjust && !response && !listError;
+  const loading = canRead && !response && !listError;
 
   const historyKey = `${historyItem?.id ?? ""}#${historyOffset}#${historyRefresh}`;
   const history = historyState?.key === historyKey ? historyState.value : null;
   const historyError = historyErrorState?.key === historyKey ? historyErrorState.message : "";
 
   useEffect(() => {
-    if (!historyItem || !canAdjust) return;
+    if (!historyItem || !canRead) return;
     const controller = new AbortController();
     void fetch(`/api/admin/inventory/${encodeURIComponent(historyItem.id)}/history?offset=${historyOffset}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
@@ -86,14 +90,14 @@ export function InventoryScreen() {
         if (!controller.signal.aborted) setHistoryErrorState({ key: historyKey, message: error instanceof Error ? error.message : "Stock history could not be loaded." });
       });
     return () => controller.abort();
-  }, [canAdjust, historyItem, historyKey, historyOffset]);
+  }, [canRead, historyItem, historyKey, historyOffset]);
 
   useEffect(() => {
     if (actionError) errorRef.current?.focus();
   }, [actionError]);
 
   useEffect(() => {
-    if (!canAdjust) return;
+    if (!canRead) return;
     const controller = new AbortController();
     const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset), stock: stockFilter, sort });
     if (query) params.set("q", query);
@@ -113,7 +117,7 @@ export function InventoryScreen() {
         setListErrorState({ key: requestKey, message: reason instanceof Error ? reason.message : "Inventory could not be loaded. Try again." });
       });
     return () => controller.abort();
-  }, [canAdjust, category, offset, pageSize, query, refresh, requestKey, sort, stockFilter]);
+  }, [canRead, category, offset, pageSize, query, refresh, requestKey, sort, stockFilter]);
 
   function choose(item: InventoryVariant) {
     requestId.current = null;
@@ -177,7 +181,7 @@ export function InventoryScreen() {
     }
   }
 
-  if (!canAdjust) return <AdminAccessDeniedScreen title="Inventory" />;
+  if (!canRead) return <AdminAccessDeniedScreen title="Inventory" />;
 
   const pageRange = total === null || total === 0 ? "" : `${offset + 1}–${Math.min(offset + items.length, total)} of ${total} ${total === 1 ? "variant" : "variants"}`;
   const offsetLimitReached = total !== null && offset + items.length < total && offset + pageSize > 10_000;
@@ -251,7 +255,7 @@ export function InventoryScreen() {
             <span className={styles.count} aria-live="polite">{loading ? "Loading inventory…" : total === null ? "Unavailable" : `${total.toLocaleString("en-IN")} ${total === 1 ? "variant" : "variants"}`}</span>
           </form>
 
-          {listError && <div className={styles.errorBanner} role="alert"><p>{listError}</p><button className={styles.button} type="button" onClick={() => setRefresh((value) => value + 1)}><IconRefresh size={15} aria-hidden="true" />Try again</button></div>}
+          {listError && <AdminNotice tone="error" key={`${refresh}:${listError}`} className={styles.errorBanner} actions={<button className={styles.button} type="button" onClick={() => setRefresh((value) => value + 1)}><IconRefresh size={15} aria-hidden="true" />Try again</button>}><p>{listError}</p></AdminNotice>}
 
           <div className={styles.tableScroller} role="region" aria-label="Inventory variants" tabIndex={0}>
             <table className={styles.table}>
@@ -271,7 +275,7 @@ export function InventoryScreen() {
                   {columns.category && <td>{(item.categoryNames ?? []).length ? item.categoryNames.join(", ") : <span className={styles.unconfigured}>Uncategorized</span>}</td>}
                   {columns.stock && <td className={styles.quantity}>{item.stock === null ? <span className={styles.unconfigured}>Not set</span> : <>{item.stock.toLocaleString("en-IN")}<small>{item.stock === 0 ? "Recorded: zero" : "Recorded: above zero"}</small></>}</td>}
                   {columns.price && <td>{item.unitPricePaise == null ? <span className={styles.unconfigured}>{canEdit ? "Not configured" : "Restricted"}</span> : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(item.unitPricePaise / 100)}</td>}
-                  <td><details className={styles.rowMenu}><summary className={styles.iconButton} aria-label={`Actions for ${item.productTitle}, ${item.sku}`}><IconDots size={18} aria-hidden="true" /></summary><div className={styles.menu}>{canEdit && <Link href={`/admin/products/${encodeURIComponent(item.productId)}`}>Edit product</Link>}<button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); choose(item); }}>{item.stock === null ? "Set stock count" : "Adjust stock"}</button><button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); setHistoryOffset(0); setHistoryRefresh((value) => value + 1); setHistoryItem(item); }}>View stock history</button></div></details></td>
+                  <td><details className={styles.rowMenu}><summary className={styles.iconButton} aria-label={`Actions for ${item.productTitle}, ${item.sku}`}><IconDots size={18} aria-hidden="true" /></summary><div className={styles.menu}>{canEdit && <Link href={`/admin/products/${encodeURIComponent(item.productId)}`}>Edit product</Link>}{canAdjust && <button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); choose(item); }}>{item.stock === null ? "Set stock count" : "Adjust stock"}</button>}<button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); setHistoryOffset(0); setHistoryRefresh((value) => value + 1); setHistoryItem(item); }}>View stock history</button></div></details></td>
                 </tr>)}
               </tbody>
             </table>
@@ -297,7 +301,7 @@ export function InventoryScreen() {
           </div>
           <div className={styles.historyBody} aria-busy={!history && !historyError}>
             {!history && !historyError && <p role="status">Loading stock history...</p>}
-            {historyError && <div className={styles.errorBanner} role="alert"><p>{historyError}</p><button className={styles.button} type="button" onClick={() => setHistoryRefresh((value) => value + 1)}>Try again</button></div>}
+            {historyError && <AdminNotice tone="error" key={`${historyRefresh}:${historyError}`} className={styles.errorBanner} actions={<button className={styles.button} type="button" onClick={() => setHistoryRefresh((value) => value + 1)}>Try again</button>}><p>{historyError}</p></AdminNotice>}
             {history && history.items.length === 0 && <p>No stock movements recorded yet.</p>}
             {history && history.items.length > 0 && <ol className={styles.historyList}>{history.items.map((movement, index) => <li key={`${history.offset}-${index}`}>
               <div className={styles.historyRow}><strong>{movement.operation === "initialize" ? "Initial count" : "Adjustment"}</strong><time dateTime={movement.occurredAt}>{new Date(movement.occurredAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</time></div>
@@ -343,7 +347,7 @@ export function InventoryScreen() {
               </fieldset>
               {delta !== "" && Number.isSafeInteger(Number(delta)) && selected.stock !== null && Number(delta) !== 0 && <p className={styles.helper}>Resulting on hand: {((selected.stock ?? 0) + Number(delta)).toLocaleString("en-IN")}</p>}
               {actionError && <p ref={errorRef} className={styles.formError} role="alert" tabIndex={-1}>{actionError}</p>}
-              {notice && <p className={styles.success} role="status">{notice}</p>}
+              {notice && <AdminNotice tone="success" onDismiss={() => setNotice("")}>{notice}</AdminNotice>}
               <button className={`${styles.button} ${styles.primaryButton}`} type="submit" disabled={busy}>
                 {busy ? "Recording…" : "Record adjustment"}
               </button>

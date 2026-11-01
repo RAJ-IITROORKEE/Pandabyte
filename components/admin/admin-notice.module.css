@@ -1,0 +1,9 @@
+.notice { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border: 1px solid var(--divider); border-radius: 5px; color: var(--foreground); background: var(--surface); font-size: 13px; }
+.error { border-color: color-mix(in srgb, light-dark(#b42318, #fda29b) 35%, var(--divider)); background: color-mix(in srgb, light-dark(#b42318, #fda29b) 5%, var(--surface)); }
+.success { border-color: color-mix(in srgb, var(--accent) 30%, var(--divider)); background: var(--status-soft); }
+.content { display: flex; flex: 1; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 12px; min-width: 0; align-self: center; overflow-wrap: anywhere; }
+.content p { margin: 0; line-height: 1.5; }
+.close { display: grid; place-items: center; flex: 0 0 44px; width: 44px; min-height: 44px; margin: -4px -6px -4px 0; padding: 0; border: 0; border-radius: 4px; color: var(--muted); background: transparent; cursor: pointer; }
+.close:hover { color: var(--foreground); background: color-mix(in srgb, var(--foreground) 7%, transparent); }
+.close:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.dismissedActions { display: flex; flex-wrap: wrap; gap: 8px; }

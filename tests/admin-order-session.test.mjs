@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
+import { canAdminPermission } from "../lib/admin/access-contract.ts";
 const require = createRequire(import.meta.url);
 const source = readFileSync(new URL("../components/admin/order-detail.tsx", import.meta.url), "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
@@ -14,8 +15,10 @@ function harness() {
     "@clerk/nextjs": { useUser: () => identity },
     react: { useState(initial) { const i = cursor++; state[i] = initial; return [initial, value => { state[i] = value; }]; }, useEffect(callback) { effect = callback; } },
     "@/components/admin/admin-shell": { useAdminCapabilities: () => ["staff.manage"] },
+    "@/lib/admin/access-contract": { canAdminPermission },
     "@/components/admin/record-screens": { AdminAccessDeniedScreen: () => null },
     "next/link": { default: () => null },
+    "./admin-notice": { AdminNotice: ({ children, tone, actions }) => require("react").createElement("div", { role: tone === "error" ? "alert" : "status" }, children, actions) },
     "./admin-ui.module.css": { default: {} }, "./order-detail.module.css": { default: {} },
   };
   runInNewContext(compiled + "\nexports.Session = OrderDetailSession;", {

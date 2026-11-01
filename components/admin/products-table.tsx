@@ -1,11 +1,14 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import { IconArrowLeft, IconArrowRight, IconEye, IconPencil, IconRefresh, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { ADMIN_MODULES } from "@/lib/admin/validation";
 import {
@@ -64,8 +67,10 @@ function replaceTableQuery(query: ProductTableQuery) {
 
 export function ProductsTable() {
   const capabilities = useAdminCapabilities();
-  const canEdit = capabilities.includes(ADMIN_MODULES.products.editCapability);
-  const canArchive = canEdit && capabilities.includes("content.publish");
+  const hasAccess = capabilities.includes(ADMIN_MODULES.products.editCapability);
+  const canRead = hasAccess && canAdminPermission(capabilities, "products", "read");
+  const canCreate = hasAccess && canAdminPermission(capabilities, "products", "create");
+  const canArchive = hasAccess && capabilities.includes("content.publish") && canAdminPermission(capabilities, "products", "delete");
   const searchParams = useSearchParams();
   const searchString = searchParams?.toString() ?? "";
   const queryString = useMemo(() => serializeProductTableQuery(parseProductTableQuery(searchString)), [searchString]);
@@ -90,7 +95,7 @@ export function ProductsTable() {
   const categoryOptions = response?.categoryOptions ?? EMPTY_CATEGORY_OPTIONS;
   const total = response?.total ?? null;
   const error = errorState?.key === requestKey ? errorState.message : "";
-  const loading = canEdit && responseState?.key !== requestKey && errorState?.key !== requestKey;
+  const loading = canRead && responseState?.key !== requestKey && errorState?.key !== requestKey;
   const previewLoadKey = preview ? `${preview.requestId}:${previewAttempt}` : "";
   const previewLoading = Boolean(preview && previewLoadState?.key !== previewLoadKey);
   const previewError = previewLoadState?.key === previewLoadKey && previewLoadState.status === "error";
@@ -119,7 +124,7 @@ export function ProductsTable() {
   }, [archiveTarget]);
 
   useEffect(() => {
-    if (!canEdit) return;
+    if (!canRead) return;
     const url = new URL(window.location.href);
     if (url.search.slice(1) !== queryString) replaceTableQuery(query);
 
@@ -142,7 +147,7 @@ export function ProductsTable() {
         setErrorState({ key: requestKey, message: reason instanceof Error ? reason.message : "Products could not be loaded. Try again." });
       });
     return () => controller.abort();
-  }, [canEdit, query, queryString, reload, requestKey]);
+  }, [canRead, query, queryString, reload, requestKey]);
 
   const categoryTitles = useMemo(() => new Map(categoryOptions.map((category) => [category.id, category.title])), [categoryOptions]);
   const pageRange = useMemo(() => {
@@ -179,12 +184,12 @@ export function ProductsTable() {
     }
   }
 
-  if (!canEdit) return <div className={styles.screen}><h1>Products</h1><p className={styles.accessMessage} role="alert">You do not have permission to manage products.</p></div>;
+  if (!canRead) return <div className={styles.screen}><h1>Products</h1><p className={styles.accessMessage} role="alert">You do not have permission to manage products.</p></div>;
 
   return <div className={styles.screen}>
     <header className={styles.heading}>
       <div><h1>Products</h1><p>Manage product descriptions, categories, and specifications.</p></div>
-      <Link className={styles.newButton} href="/admin/products/new">New product</Link>
+      {canCreate && <Link className={styles.newButton} href="/admin/products/new">New product</Link>}
     </header>
 
     <ProductStats stats={responseState?.value.stats} loading={loading} />
@@ -220,7 +225,7 @@ export function ProductsTable() {
       <span className={styles.count} aria-live="polite">{loading ? "Loading products…" : total === null ? "" : `${total} ${total === 1 ? "product" : "products"}`}</span>
     </section>
 
-    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button type="button" className={styles.controlButton} onClick={retry}><IconRefresh aria-hidden="true" size={15} /> Try again</button></div>}
+    {error && <AdminNotice tone="error" key={`${requestKey}:${error}`} className={styles.errorBanner} actions={<button type="button" className={styles.controlButton} onClick={retry}><IconRefresh aria-hidden="true" size={15} /> Try again</button>}><p>{error}</p></AdminNotice>}
 
     <div className={styles.tableScroller} role="region" aria-label="Products" tabIndex={0} aria-busy={loading}>
       <table className={styles.table}>
@@ -291,7 +296,7 @@ export function ProductsTable() {
       {archiveTarget && <>
         <header className={styles.dialogHeader}><h2 id="archive-product-title">Archive product?</h2><button type="button" className={styles.iconButton} aria-label="Close archive confirmation" disabled={archiving} onClick={() => archiveDialog.current?.close()}><IconX aria-hidden="true" size={18} /></button></header>
         <p id="archive-product-warning" className={styles.confirmCopy}><strong>{archiveTarget.title || "Untitled product"}</strong> will be removed from the active catalog. Published revisions and its history will be preserved.</p>
-        {archiveError && <p role="alert" className={styles.confirmCopy}>{archiveError}</p>}
+        {archiveError && <AdminNotice key={archiveError} tone="error">{archiveError}</AdminNotice>}
         <div className={styles.confirmActions}><button type="button" className={styles.controlButton} disabled={archiving} onClick={() => archiveDialog.current?.close()}>Cancel</button><button type="button" className={styles.archiveConfirm} disabled={archiving} onClick={() => void archiveProduct()}>{archiving ? "Archiving…" : "Archive product"}</button></div>
       </>}
     </dialog>

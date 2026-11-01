@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminVariantDto } from "@/lib/admin/validation";
 import type { ProductPriceWrite } from "@/lib/admin/product-contract";
@@ -168,7 +170,7 @@ export function ProductPricingEditor({
     <div className={styles.sectionHeading}><div><h2>Prices</h2><p>Set prices per product variant. Changes save with the product draft.</p></div></div>
     {isObservation && <p className={styles.fieldHint}>Source-only product. Saving prices here keeps it non-purchasable on the storefront.</p>}
     {loading ? <p className={styles.fieldHint} role="status">Loading variant prices…</p> :
-        loadError ? <div className={styles.errorBanner} role="alert"><p>{loadError}</p><button className={styles.secondaryButton} onClick={() => setRetry((value) => value + 1)} type="button">Retry</button></div> :
+        loadError ? <AdminNotice tone="error" key={`${requestKey}:${loadError}`} className={styles.errorBanner} actions={<button className={styles.secondaryButton} onClick={() => setRetry((value) => value + 1)} type="button">Retry</button>}><p>{loadError}</p></AdminNotice> :
           !variants.some(({ sku }) => Boolean(sku.trim())) ? <p className={styles.fieldHint}>Add a variant with a SKU above before setting a price.</p> :
             <div className={pricingStyles.priceRows}>
               {variants.filter(({ sku }) => Boolean(sku.trim())).map((variant, index) => {

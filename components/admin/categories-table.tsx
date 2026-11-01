@@ -1,11 +1,14 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import { IconArrowLeft, IconArrowRight, IconEye, IconPencil, IconRefresh, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
 import { ADMIN_MODULES } from "@/lib/admin/validation";
 import { isCategoryTableResult, type CategoryTableItem, type CategoryTableResult } from "@/lib/admin/category-contract";
@@ -50,8 +53,10 @@ function replaceTableQuery(query: CategoryTableQuery) {
 
 export function CategoriesTable() {
   const capabilities = useAdminCapabilities();
-  const canEdit = capabilities.includes(ADMIN_MODULES.categories.editCapability);
-  const canArchive = canEdit && capabilities.includes("content.publish");
+  const hasAccess = capabilities.includes(ADMIN_MODULES.categories.editCapability);
+  const canRead = hasAccess && canAdminPermission(capabilities, "categories", "read");
+  const canCreate = hasAccess && canAdminPermission(capabilities, "categories", "create");
+  const canArchive = hasAccess && capabilities.includes("content.publish") && canAdminPermission(capabilities, "categories", "delete");
   const searchParams = useSearchParams();
   const searchString = searchParams?.toString() ?? "";
   const queryString = useMemo(() => serializeCategoryTableQuery(parseCategoryTableQuery(searchString)), [searchString]);
@@ -76,7 +81,7 @@ export function CategoriesTable() {
   const rows = response?.items ?? [];
   const total = response?.total ?? null;
   const error = errorState?.key === requestKey ? errorState.message : "";
-  const loading = canEdit && responseState?.key !== requestKey && errorState?.key !== requestKey;
+  const loading = canRead && responseState?.key !== requestKey && errorState?.key !== requestKey;
 
   useEffect(() => {
     if (searchText.trim() === query.q) return;
@@ -99,7 +104,7 @@ export function CategoriesTable() {
   }, [archiveTarget]);
 
   useEffect(() => {
-    if (!canEdit) return;
+    if (!canRead) return;
     const url = new URL(window.location.href);
     if (url.search.slice(1) !== queryString) replaceTableQuery(query);
 
@@ -120,7 +125,7 @@ export function CategoriesTable() {
         setErrorState({ key: requestKey, message: reason instanceof Error ? reason.message : "Categories could not be loaded. Try again." });
       });
     return () => controller.abort();
-  }, [canEdit, query, queryString, reload, requestKey]);
+  }, [canRead, query, queryString, reload, requestKey]);
 
   const pageRange = useMemo(() => {
     if (total === null || total === 0) return "";
@@ -157,12 +162,12 @@ export function CategoriesTable() {
     }
   }
 
-  if (!canEdit) return <div className={tableStyles.screen}><h1>Categories</h1><p className={tableStyles.accessMessage} role="alert">You do not have permission to manage categories.</p></div>;
+  if (!canRead) return <div className={tableStyles.screen}><h1>Categories</h1><p className={tableStyles.accessMessage} role="alert">You do not have permission to manage categories.</p></div>;
 
   return <div className={tableStyles.screen}>
     <header className={tableStyles.heading}>
       <div><h1>Categories</h1><p>Manage catalog categories and their parent relationships.</p></div>
-      <Link className={tableStyles.newButton} href="/admin/categories/new">New category</Link>
+      {canCreate && <Link className={tableStyles.newButton} href="/admin/categories/new">New category</Link>}
     </header>
 
     <section className={tableStyles.controls} aria-label="Category table filters">
@@ -189,7 +194,7 @@ export function CategoriesTable() {
       <span className={tableStyles.count} aria-live="polite">{loading ? "Loading categories…" : total === null ? "" : `${total} ${total === 1 ? "category" : "categories"}`}</span>
     </section>
 
-    {error && <div className={tableStyles.errorBanner} role="alert"><p>{error}</p><button type="button" className={tableStyles.controlButton} onClick={retry}><IconRefresh aria-hidden="true" size={15} /> Try again</button></div>}
+    {error && <AdminNotice tone="error" key={`${requestKey}:${error}`} className={tableStyles.errorBanner} actions={<button type="button" className={tableStyles.controlButton} onClick={retry}><IconRefresh aria-hidden="true" size={15} /> Try again</button>}><p>{error}</p></AdminNotice>}
 
     <div ref={tableScroller} className={tableStyles.tableScroller} role="region" aria-label="Categories" tabIndex={0} aria-busy={loading}>
       <table className={tableStyles.table}>
@@ -254,7 +259,7 @@ export function CategoriesTable() {
       {archiveTarget && <>
         <header className={tableStyles.dialogHeader}><h2 id="archive-category-title">Archive category?</h2><button type="button" className={tableStyles.iconButton} aria-label="Close archive confirmation" disabled={archiving} onClick={() => archiveDialog.current?.close()}><IconX aria-hidden="true" size={18} /></button></header>
         <p id="archive-category-warning" className={tableStyles.confirmCopy}><strong>{archiveTarget.title || "Untitled category"}</strong> will be archived. Public references, child categories, or linked products can block this action. No links will be removed.</p>
-        {archiveError && <p role="alert" className={`${tableStyles.confirmCopy} ${styles.archiveError}`}>{archiveError}</p>}
+        {archiveError && <AdminNotice key={archiveError} tone="error">{archiveError}</AdminNotice>}
         <p className={`${tableStyles.confirmCopy} ${styles.dependencyNote}`}>Resolve dependencies through the existing category and product editors, then review the category again before archiving.</p>
         <div className={tableStyles.confirmActions}><button type="button" className={tableStyles.controlButton} autoFocus disabled={archiving} onClick={() => archiveDialog.current?.close()}>Cancel</button><button type="button" className={tableStyles.archiveConfirm} disabled={archiving || archiveTarget.status === "archived"} onClick={() => void archiveCategory()}>{archiving ? "Archiving…" : "Archive category"}</button></div>
       </>}

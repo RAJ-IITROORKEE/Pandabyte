@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { canAdminPermission } from "../lib/admin/access-contract.ts";
 const require = createRequire(import.meta.url);
 const { renderToStaticMarkup } = require("react-dom/server");
 const source = readFileSync(new URL("../components/admin/order-detail.tsx", import.meta.url), "utf8");
@@ -16,8 +17,10 @@ function harness(order, activity = null) {
     react: { ...require("react"), useState(initial) { const i = cursor++; if (!(i in state)) state[i] = i === 0 ? order : i === 11 ? activity : initial; return [state[i], next => { state[i] = typeof next === "function" ? next(state[i]) : next; }]; }, useEffect() {} },
     "@clerk/nextjs": { useUser: () => ({ isLoaded: true, user: { id: "test" } }) },
     "@/components/admin/admin-shell": { useAdminCapabilities: () => ["staff.manage"] },
+    "@/lib/admin/access-contract": { canAdminPermission },
     "@/components/admin/record-screens": { AdminAccessDeniedScreen: () => null },
     "next/link": { __esModule: true, default: ({ children, ...props }) => require("react").createElement("a", props, children) },
+    "./admin-notice": { AdminNotice: ({ children, tone, actions }) => require("react").createElement("div", { role: tone === "error" ? "alert" : "status" }, children, actions) },
     "./admin-ui.module.css": { default: {} }, "./order-detail.module.css": { default: {} },
   };
   runInNewContext(compiled + "\nexports.testApi = { allowedStatuses, orderBackHref, OrderDetailSession, TrackingLink };", { exports, require: name => deps[name] ?? require(name), AbortController, URL, Intl, Date, fetch: async (...args) => { requests.push(args); return response; } });

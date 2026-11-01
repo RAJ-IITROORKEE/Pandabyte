@@ -1,11 +1,14 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Clipboard, Clock3, PackageCheck, PackageOpen, Truck, XCircle } from "lucide-react";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { AdminAccessDeniedScreen } from "@/components/admin/record-screens";
 import { parseAdminOrderListQuery, type AdminOrderListResponse } from "@/lib/admin/orders-contract";
 import styles from "./admin-ui.module.css";
@@ -27,7 +30,8 @@ const groups = [
 ] as const;
 
 export function AdminOrdersScreen() {
-  const canRead = useAdminCapabilities().includes("staff.manage");
+  const capabilities = useAdminCapabilities();
+  const canRead = capabilities.includes("staff.manage") && canAdminPermission(capabilities, "orders", "read");
   const router = useRouter(), pathname = usePathname(), params = useSearchParams();
   const raw = params.toString();
   const parsed = parseAdminOrderListQuery(new URLSearchParams(raw));
@@ -85,7 +89,7 @@ export function AdminOrdersScreen() {
       <button className={styles.secondaryButton} type="submit">Search</button><button className={styles.secondaryButton} type="button" onClick={clear}>Clear filters</button>
       <details className={css.columnsMenu}><summary>Columns</summary><label><input type="checkbox" checked={showCustomer} onChange={event => setShowCustomer(event.target.checked)} /> Name</label><label><input type="checkbox" checked={showItems} onChange={event => setShowItems(event.target.checked)} /> Items</label></details>
     </form>
-    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => setRefresh(n => n + 1)}>Try again</button></div>}
+    {error && <AdminNotice tone="error" key={`${error}:${refresh}`} className={styles.errorBanner} actions={<button className={styles.secondaryButton} type="button" onClick={() => setRefresh(n => n + 1)}>Try again</button>}><p>{error}</p></AdminNotice>}
     <section aria-label="Order records" aria-busy={loading}>
       <div className={`${styles.tableFrame} ${css.tableFrame}`} role="region" tabIndex={0} aria-label="Order records table"><table className={styles.table}>
         <caption className={styles.visuallyHidden}>Orders, customer name, items, payment, fulfillment and date</caption><thead><tr><th scope="col">Order</th>{showCustomer && <th scope="col">Name</th>}{showItems && <th scope="col">Items</th>}<th scope="col">Total</th><th scope="col">Payment</th><th scope="col">Order status</th><th scope="col">Placed</th><th scope="col">Actions</th></tr></thead>

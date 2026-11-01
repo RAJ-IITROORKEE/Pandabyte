@@ -1,3 +1,5 @@
+> Historical built-in-role checkpoint. The [1 November Users & custom roles contract](admin-users-roles.md) supersedes the directory restriction, fixed-role-only rule, capability-only access administration and initial-assignment DTO below. Retained for migration provenance.
+
 # Admin roles and non-commerce hardening
 
 24 October 2026: the owner explicitly deferred checkout/payments and authorized securing the remaining backend, role-based administration, and default ADMIN access for `rajrabidas001@gmail.com`. This supersedes the prior instruction that the owner remain a normal customer. No payment configuration, order implementation, deployment or Phase 6 migration/capacity work is resumed. Production readiness remains evidence-based, with release limits recorded separately.

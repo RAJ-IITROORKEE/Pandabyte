@@ -1,8 +1,7 @@
 import "server-only";
 import { operationalJson } from "@/lib/observability/events";
 
-import { clerkClient } from "@clerk/nextjs/server";
-import { requireCapability } from "@/lib/authorization";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { isSameOriginRequest, readBoundedBody } from "@/lib/storage/http";
 import {
@@ -29,9 +28,12 @@ function error(code: string, status: number) {
 
 async function requireRoleManager() {
   try {
-    const access = await requireCapability("staff.manage");
-    if (access.allowed) return access;
-    return error(access.status === 401 ? "unauthorized" : access.status === 403 ? "forbidden" : "backend_unavailable", access.status);
+    const session = await auth();
+    if (!session.isAuthenticated || session.sessionStatus !== "active" || !session.userId) return error("unauthorized", 401);
+    const client = await createInsforgeServerClient();
+    const result = await client.database.schema("public").rpc("staff_can_manage_roles", {});
+    if (result.error || typeof result.data !== "boolean") return error("backend_unavailable", 503);
+    return result.data ? { userId: session.userId } : error("forbidden", 403);
   } catch {
     return error("backend_unavailable", 503);
   }

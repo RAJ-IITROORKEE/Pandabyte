@@ -1,5 +1,8 @@
 export const STAFF_ROLES = ["ADMIN", "EDITOR", "CATALOG", "SUPPORT", "CUSTOMER"] as const;
-export type StaffRole = (typeof STAFF_ROLES)[number];
+export type StaffRole = (typeof STAFF_ROLES)[number] | `custom_${string}`;
+export function isStaffRole(value: unknown): value is StaffRole {
+  return typeof value === "string" && (ROLE_SET.has(value) || /^custom_[a-z0-9-]{3,48}$/.test(value));
+}
 
 export type StaffRoleMembership = {
   userId: string;
@@ -73,7 +76,7 @@ export function parseRoleChangeInput(value: unknown): StaffRoleChange | null {
       ROLE_CHANGE_FIELDS.some((field) => !Object.hasOwn(value, field))) return null;
 
   const email = typeof value.email === "string" ? value.email.trim().toLowerCase() : "";
-  const role = typeof value.role === "string" && ROLE_SET.has(value.role) ? value.role as StaffRole : null;
+  const role = isStaffRole(value.role) ? value.role : null;
   const expectedVersion = parseBoundedInteger(value.expectedVersion, 0, Number.MAX_SAFE_INTEGER - 1);
   const reason = typeof value.reason === "string" ? value.reason.trim() : "";
   const targetUserId = value.targetUserId;
@@ -85,7 +88,7 @@ export function parseRoleChangeInput(value: unknown): StaffRoleChange | null {
     targetUserId === targetUserId.trim() && !CONTROL_CHARS.test(targetUserId));
 
   if (!validEmail || !role || expectedVersion === null || !validReason || !validTarget ||
-      (targetUserId === null ? expectedVersion !== 0 : expectedVersion === 0)) return null;
+      (targetUserId === null && expectedVersion !== 0)) return null;
   return { email, role, expectedVersion, reason, targetUserId: targetUserId as string | null };
 }
 
@@ -93,7 +96,7 @@ export function parseStaffRoleMembership(value: unknown): StaffRoleMembership | 
   if (!isObject(value) || !hasOnlyKeys(value, ["userId", "role", "version", "protected", "updatedAt", "identity"])) return null;
   const { userId, role, version, protected: isProtected, updatedAt } = value;
   if (typeof userId !== "string" || !userId || userId.length > 256 || userId !== userId.trim() || CONTROL_CHARS.test(userId) ||
-      typeof role !== "string" || !ROLE_SET.has(role) || parseBoundedInteger(version, 1, Number.MAX_SAFE_INTEGER) === null ||
+      !isStaffRole(role) || parseBoundedInteger(version, 1, Number.MAX_SAFE_INTEGER) === null ||
       typeof isProtected !== "boolean" || (isProtected && role !== "ADMIN") || typeof updatedAt !== "string" ||
       !isTimestamp(updatedAt)) return null;
   let identity: StaffRoleMembership["identity"];

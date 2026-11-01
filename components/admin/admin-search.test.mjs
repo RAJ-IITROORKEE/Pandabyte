@@ -20,3 +20,9 @@ test("orders and inventory navigation follow their separate permissions", () => 
   assert.equal(urls(["staff.manage"]).includes("/admin/inventory"), false);
   assert.deepEqual(searchAdminNavigation("orders", ["staff.manage"]).map(({ href }) => href), ["/admin/orders"]);
 });
+
+test("custom roles only expose their readable sections", () => {
+  const capabilities = ["__custom_role__", "products.read", "orders.read", "staff.manage"];
+  const urls = visibleNavigationGroups(capabilities).flatMap(({ items }) => items.map(({ href }) => href));
+  assert.deepEqual(urls, ["/admin/products", "/admin/orders"]);
+});

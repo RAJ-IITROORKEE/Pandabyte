@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminNotice } from "./admin-notice";
+
 import {
   IconArrowLeft as ArrowLeft,
   IconArrowRight as ArrowRight,
@@ -19,6 +21,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type Dispatch, type FormEvent, type ReactNode, type SetStateAction } from "react";
 import { toast } from "sonner";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import { ProductRichContentView } from "@/components/catalog/product-rich-content";
 import { ProductDocumentPreview } from "@/components/catalog/product-document-preview";
 import { legacyBlocksToRichContent, parseProductRichContent, type ProductRichContent } from "@/lib/admin/product-content";
@@ -178,6 +181,8 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
   const meta = META[module];
   const capability = ADMIN_MODULES[module].editCapability;
   const capabilities = useAdminCapabilities();
+  const canRead = capabilities.includes(capability) && canAdminPermission(capabilities, module, "read");
+  const canCreate = capabilities.includes(capability) && canAdminPermission(capabilities, module, "create");
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
@@ -192,7 +197,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
   const pageSize = 20;
 
   useEffect(() => {
-    if (module !== "contact" && module !== "navigation") return;
+    if (!canRead || (module !== "contact" && module !== "navigation")) return;
     let active = true;
     async function findSingleton() {
       try {
@@ -204,7 +209,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
     }
     void findSingleton();
     return () => { active = false; };
-  }, [module]);
+  }, [canRead, module]);
 
   const load = useCallback(async (nextOffset = 0, search = submittedQuery) => {
     try {
@@ -224,6 +229,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
   }, [module, submittedQuery]);
 
   useEffect(() => {
+    if (!canRead) return;
     let active = true;
     const params = new URLSearchParams({ limit: String(pageSize), offset: "0" });
     if (submittedQuery.trim()) params.set("q", submittedQuery.trim());
@@ -232,7 +238,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
       .catch((reason) => { if (active) { setError(reason instanceof Error ? reason.message : "Records could not be loaded."); setItems([]); setTotal(null); } })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [module, submittedQuery, reloadKey]);
+  }, [canRead, module, submittedQuery, reloadKey]);
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -243,7 +249,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
     setReloadKey((value) => value + 1);
   }
 
-  if (!capabilities.includes(capability)) return <AdminAccessDeniedScreen title={meta.title} />;
+  if (!canRead) return <AdminAccessDeniedScreen title={meta.title} />;
 
   return (
     <div className={styles.screen}>
@@ -252,10 +258,10 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
           <h1>{meta.title}</h1>
           <p className={styles.lede}>{meta.description}</p>
         </div>
-        {capabilities.includes(capability) && ((module !== "contact" && module !== "navigation") || singleton === null ? <Link className={styles.primaryButton} href={`/admin/${module}/new`}><Plus aria-hidden="true" size={17} /> New {meta.singular}</Link> : singleton ? <Link className={styles.primaryButton} href={`/admin/${module}/${singleton}`}>Edit {meta.singular}</Link> : null)}
+        {((module !== "contact" && module !== "navigation") || singleton === null ? canCreate && <Link className={styles.primaryButton} href={`/admin/${module}/new`}><Plus aria-hidden="true" size={17} /> New {meta.singular}</Link> : singleton ? <Link className={styles.primaryButton} href={`/admin/${module}/${singleton}`}>Edit {meta.singular}</Link> : null)}
       </div>
 
-      {singletonError && <div className={styles.errorBanner} role="alert"><p>{singletonError}</p></div>}
+      {singletonError && <AdminNotice tone="error" key={singletonError} className={styles.errorBanner}><p>{singletonError}</p></AdminNotice>}
 
       <form className={styles.toolbar} onSubmit={search} role="search">
         <label className={styles.searchBox}>
@@ -267,7 +273,7 @@ export function RecordListScreen({ module }: { module: AdminModule }) {
         <span className={styles.toolbarCount} aria-live="polite">{loading ? "Loading records…" : total === null ? "" : `${total} ${total === 1 ? "record" : "records"}`}</span>
       </form>
 
-      {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} onClick={() => { setLoading(true); setError(""); void load(offset); }} type="button"><RefreshCw size={15} aria-hidden="true" /> Try again</button></div>}
+      {error && <AdminNotice tone="error" key={error} className={styles.errorBanner} actions={<button className={styles.secondaryButton} onClick={() => { setLoading(true); setError(""); void load(offset); }} type="button"><RefreshCw size={15} aria-hidden="true" /> Try again</button>}><p>{error}</p></AdminNotice>}
       <div className={styles.tableFrame} role="region" aria-label={`${meta.title} records`} tabIndex={0}>
         <table className={styles.table}>
           <thead><tr><th scope="col">Title</th><th scope="col">Slug</th><th scope="col">Status</th><th scope="col">Updated</th><th scope="col"><span className={styles.visuallyHidden}>Open</span></th></tr></thead>
@@ -504,7 +510,7 @@ function ProductModelPicker({ value, onChange, title }: { value?: ProductModel3d
       <Field label="3D alternative text" className={styles.spanTwo}><TextInput value={alt} onChange={(next) => commit(modelId, posterId, next)} maxLength={300} placeholder="Describe the model and its visible subject" /></Field>
     </div>
     {loading && <p className={styles.fieldHint} role="status">Loading model and poster choices…</p>}
-    {error && <div className={styles.errorBanner} role="alert"><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setRetry((current) => current + 1); }}>Retry</button></div>}
+    {error && <AdminNotice tone="error" key={`${error}:${retry}`} className={styles.errorBanner} actions={<button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setRetry((current) => current + 1); }}>Retry</button>}><p>{error}</p></AdminNotice>}
     {total !== null && offset + 50 < total && <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => { setLoading(true); setOffset((current) => current + 50); }}>Load more media assets</button>}
     {value && <div className={`${styles.spanTwo} ${styles.modelPreview}`}><ProductModelViewer model={value} title={title} /></div>}
     {value && <button className={styles.secondaryButton} type="button" onClick={remove}>Remove 3D model</button>}
@@ -601,7 +607,7 @@ function DraftPreview({ document, module }: { document: AdminDocument; module: A
   </section>;
 }
 
-function DocumentFields({ module, document, setDocument, recordId, slugAuto, setSlugAuto, onPricingChange, pricingRefreshKey, canManageMedia, onRichContentValidityChange, richContentResetKey, onUploadDelta }: {
+function DocumentFields({ module, document, setDocument, recordId, slugAuto, setSlugAuto, onPricingChange, pricingRefreshKey, canManageMedia, readOnly, onRichContentValidityChange, richContentResetKey, onUploadDelta }: {
   module: AdminModule;
   document: AdminDocument;
   setDocument: Dispatch<SetStateAction<AdminDocument>>;
@@ -611,6 +617,7 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
   onPricingChange: (next: ProductPricingState) => void;
   pricingRefreshKey: number;
   canManageMedia: boolean;
+  readOnly: boolean;
   onRichContentValidityChange: (valid: boolean) => void;
   richContentResetKey: number;
   onUploadDelta: (change: 1 | -1) => void;
@@ -767,14 +774,14 @@ function DocumentFields({ module, document, setDocument, recordId, slugAuto, set
     {(module === "products" || module === "team") && <section className={styles.panel} id={module === "products" ? "product-gallery" : undefined}><div className={styles.sectionHeading}><div><h2>{module === "products" ? "Product image gallery" : module === "team" ? "Profile media" : "Media"}</h2><p>{module === "products" ? "Upload up to five WebP images and order the attached gallery." : module === "team" ? "Only published WebP images can be selected. The first image is used as the public profile portrait; additional selected media IDs remain attached but are not shown on the About card." : "Choose published WebP images or upload an image. The first selected image is the article cover."}</p></div></div><RelationPicker label={module === "products" ? "Product images" : module === "team" ? "Profile media assets" : "Media assets"} module="media" values={arr("mediaIds")} onChange={(value) => set("mediaIds", value)} reorderable={module === "products"} maxSelections={module === "products" ? 5 : 100} canManageMedia={canManageMedia} uploadOnly={module === "products"} uploadTarget={module === "products" ? "product" : undefined} onUploadDelta={onUploadDelta} /></section>}
     {module === "products" && <ProductModelPicker value={doc.model3d as ProductModel3d | undefined} onChange={(value) => set("model3d", value)} title={str("title")} />}
 
-    {module === "products" || module === "categories" || (module === "blog" && blogRichContent) ? <div id={module === "products" ? "product-description" : undefined}><ProductRichTextEditor
+    {module === "products" || module === "categories" || (module === "blog" && blogRichContent) ? <div id={module === "products" ? "product-description" : undefined}>{readOnly ? <ProductRichContentView content={module === "blog" ? blogRichContent! : doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(legacyBlocks)} /> : <ProductRichTextEditor
       key={richContentResetKey}
       kind={module === "blog" ? "article" : module === "categories" ? "category" : "product"}
       value={module === "blog" ? blogRichContent! : doc.richContent as ProductRichContent | undefined ?? legacyBlocksToRichContent(legacyBlocks)}
       onChange={(value) => setDocument((current) => ({ ...current, blocks: [], richContent: value } as AdminDocument))}
       onValidityChange={onRichContentValidityChange}
       onUploadDelta={onUploadDelta}
-    /></div> : <>{module === "blog" && <p className={styles.fieldHint}>This article contains legacy blocks that cannot be safely converted. Edit them below to preserve the content.</p>}<BlockEditor blocks={legacyBlocks} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog" || module === "faqs" || module === "solutions" || module === "learn"} contentLabel={module === "blog" ? "Article content" : module === "faqs" ? "Formatted answer" : module === "solutions" ? "Solution content" : module === "learn" ? "Resource content" : "Page content"} /></>}
+    />}</div> : <>{module === "blog" && <p className={styles.fieldHint}>This article contains legacy blocks that cannot be safely converted. Edit them below to preserve the content.</p>}<BlockEditor blocks={legacyBlocks} onChange={(value) => set("blocks", value)} reorderable={module === "pages" || module === "blog" || module === "faqs" || module === "solutions" || module === "learn"} contentLabel={module === "blog" ? "Article content" : module === "faqs" ? "Formatted answer" : module === "solutions" ? "Solution content" : module === "learn" ? "Resource content" : "Page content"} /></>}
     <section className={styles.panel} id={module === "products" ? "product-search" : undefined}><div className={styles.sectionHeading}><div><h2>Search preview</h2><p>Search metadata is optional. Keep it accurate to this record.</p></div></div><div className={styles.formGrid}><Field label="SEO title"><TextInput value={str("seoTitle")} onChange={(value) => set("seoTitle", value)} maxLength={160} /></Field><Field label="SEO description" className={styles.spanTwo}><TextArea value={str("seoDescription")} onChange={(value) => set("seoDescription", value)} rows={3} /></Field></div></section>
   </>;
 }
@@ -783,8 +790,13 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const isNew = id === "new";
   const meta = META[module];
   const capabilities = useAdminCapabilities();
-  const canEdit = capabilities.includes(ADMIN_MODULES[module].editCapability);
-  const canPublish = capabilities.includes("content.publish");
+  const hasAccess = capabilities.includes(ADMIN_MODULES[module].editCapability);
+  const canRead = hasAccess && canAdminPermission(capabilities, module, "read");
+  const canCreate = hasAccess && canAdminPermission(capabilities, module, "create");
+  const canUpdate = hasAccess && canAdminPermission(capabilities, module, "update");
+  const canEdit = isNew ? canCreate : canUpdate;
+  const canPublish = capabilities.includes("content.publish") && canAdminPermission(capabilities, module, "publish");
+  const canArchive = hasAccess && capabilities.includes("content.publish") && canAdminPermission(capabilities, module, "delete");
   const router = useRouter();
   const [record, setRecord] = useState<AdminRecord | null>(null);
   const [draft, setDraft] = useState<AdminDocument>(() => freshDocument(module));
@@ -810,7 +822,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   const [pendingUploads, setPendingUploads] = useState(0);
   const [pricingRefreshKey, setPricingRefreshKey] = useState(0);
   const [productPricing, setProductPricing] = useState<ProductPricingState>(() => ({ writes: [], dirty: false, errors: [], ready: module !== "products" || isNew }));
-  const canManageMedia = capabilities.includes("media.manage");
+  const canManageMedia = canEdit && capabilities.includes("media.manage") && canAdminPermission(capabilities, "media", "create");
   const onUploadDelta = useCallback((change: 1 | -1) => setPendingUploads((current) => Math.max(0, current + change)), []);
   const serialized = useMemo(() => JSON.stringify(draft), [draft]);
   const documentDirty = isNew ? serialized !== JSON.stringify(freshDocument(module)) : serialized !== baseline;
@@ -857,14 +869,14 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   }, [id, isNew, module]);
 
   useEffect(() => {
-    if (isNew) return;
+    if (isNew || !canRead) return;
     let active = true;
     void api<{ record: AdminRecord }>(`/api/admin/${module}/${encodeURIComponent(id)}`)
       .then((result) => { if (active) { setRecord(result.record); setDraft(result.record.document); setBaseline(JSON.stringify(result.record.document)); setSlugAuto(false); setRichContentValid(true); if (module === "products" || module === "categories" || module === "blog") setRichContentResetKey((value) => value + 1); setProductPricing({ writes: [], dirty: false, errors: [], ready: module !== "products" }); if (module === "products") setPricingRefreshKey((value) => value + 1); setConflict(false); } })
       .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Record could not be loaded."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [id, isNew, module]);
+  }, [canRead, id, isNew, module]);
 
   useEffect(() => {
     if (!dirty) return;
@@ -885,6 +897,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
 
   async function save(event?: FormEvent, navigate = true) {
     event?.preventDefault();
+    if (!canEdit) return null;
     setError("");
     setValidationIssues([]);
     setNotice("");
@@ -947,6 +960,7 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
   }
 
   async function transition(action: "publish" | "unpublish" | "archive" | "restore", revisionId?: string) {
+    if ((action === "publish" || action === "unpublish") ? !canPublish : action === "archive" ? !canArchive : !canUpdate) return;
     let current = record;
     if (dirty || isNew) current = await save(undefined, false);
     if (!current) return;
@@ -984,9 +998,9 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     }
   }
 
-  if (!canEdit) return <AdminAccessDeniedScreen title={meta.title} />;
+  if (!canRead || (isNew && !canCreate)) return <AdminAccessDeniedScreen title={meta.title} />;
   if (loading) return <div className={styles.screen}><p className={styles.loadingState} role="status">Loading {meta.singular}…</p></div>;
-  if (!isNew && !record && error) return <div className={styles.screen}><div id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} role="alert" tabIndex={-1}><p>{error}</p><button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setError(""); void load(); }}><RefreshCw size={15} aria-hidden="true" /> Try again</button></div></div>;
+  if (!isNew && !record && error) return <div className={styles.screen}><AdminNotice key={error} tone="error" id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} tabIndex={-1} actions={<button className={styles.secondaryButton} type="button" onClick={() => { setLoading(true); setError(""); void load(); }}><RefreshCw size={15} aria-hidden="true" /> Try again</button>}><p>{error}</p></AdminNotice></div>;
   const status = record?.archived ? "Archived" : record?.publishedRevisionId ? "Published" : "Draft";
 
   return <div className={styles.screen}>
@@ -1004,11 +1018,11 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
     {previewOpen && <div ref={previewRef}><DraftPreview document={draft} module={module} /></div>}
     {!canEdit && <div className={styles.errorBanner} role="status"><p>Your role allows you to view this record, but not edit it.</p></div>}
     {validationIssues.length > 0 && <div id="record-validation-summary" className={styles.errorBanner} role="alert" tabIndex={-1} ref={validationSummaryRef}><div><p>Review these fields before saving:</p><ul>{validationIssues.map((issue, index) => <li key={`${issue.field}-${index}`}>{validationFieldLabel(issue.field)}: {issue.message}</li>)}</ul></div></div>}
-    {error && <div id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} role="alert" tabIndex={-1}><p>{error}</p>{conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}</div>}
-    {notice && <p className={styles.successBanner} role="status"><Check size={16} aria-hidden="true" /> {notice}</p>}
+    {error && <AdminNotice key={error} tone="error" id="record-editor-error" className={styles.errorBanner} ref={editorErrorRef} tabIndex={-1} actions={conflict && <button className={styles.secondaryButton} type="button" onClick={() => { if (window.confirm("Discard your local edits and load the latest server version?")) void load(); }}>Reload server version</button>}><p>{error}</p></AdminNotice>}
+    {notice && <AdminNotice tone="success" onDismiss={() => setNotice("")} className={styles.successBanner}><Check size={16} aria-hidden="true" /> {notice}</AdminNotice>}
     <form className={styles.editorForm} onSubmit={save} aria-busy={busy} aria-describedby={validationIssues.length && error ? "record-validation-summary record-editor-error" : validationIssues.length ? "record-validation-summary" : error ? "record-editor-error" : undefined}>
       <fieldset className={styles.editorFieldset} disabled={!canEdit}>
-        <DocumentFields key={`${record?.id ?? "new"}:${pricingRefreshKey}`} module={module} document={draft} setDocument={setDraft} recordId={record?.id} slugAuto={slugAuto} setSlugAuto={setSlugAuto} onPricingChange={setProductPricing} pricingRefreshKey={pricingRefreshKey} canManageMedia={canManageMedia} onRichContentValidityChange={setRichContentValid} richContentResetKey={richContentResetKey} onUploadDelta={onUploadDelta} />
+        <DocumentFields key={`${record?.id ?? "new"}:${pricingRefreshKey}`} module={module} document={draft} setDocument={setDraft} recordId={record?.id} slugAuto={slugAuto} setSlugAuto={setSlugAuto} onPricingChange={setProductPricing} pricingRefreshKey={pricingRefreshKey} canManageMedia={canManageMedia} readOnly={!canEdit} onRichContentValidityChange={setRichContentValid} richContentResetKey={richContentResetKey} onUploadDelta={onUploadDelta} />
       </fieldset>
       <div className={styles.bottomActions}><span>{pendingUploads > 0 ? "Media is uploading…" : dirty ? "Remember to save your changes before leaving." : "All changes are saved."}</span><div className={styles.lifecycleActions}>{module === "blog" && <button className={styles.secondaryButton} type="button" onClick={() => { setPreviewOpen(true); requestAnimationFrame(() => previewRef.current?.scrollIntoView({ block: "start" })); }}>Preview article</button>}<button className={styles.primaryButton} type="submit" disabled={!canEdit || busy || pendingUploads > 0 || !pricingReady || !dirty}>{busy ? "Saving…" : "Save draft"}</button>{module === "blog" && <button className={styles.primaryButton} type="button" disabled={!canPublish || busy || pendingUploads > 0 || record?.archived} onClick={() => blogPublishDialog.current?.showModal()}>{record?.publishedRevisionId ? "Publish updates" : "Publish"}</button>}</div></div>
     </form>
@@ -1016,10 +1030,10 @@ export function RecordEditorScreen({ module, id }: { module: AdminModule; id: st
       <div className={styles.lifecycleActions}>
         <button className={styles.primaryButton} type="button" onClick={() => module === "blog" ? blogPublishDialog.current?.showModal() : void transition("publish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>{record.publishedRevisionId ? "Publish updates" : "Publish"}</button>
         {record.publishedRevisionId && <button className={styles.secondaryButton} type="button" onClick={() => void transition("unpublish")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady || record.archived}>Unpublish</button>}
-        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => module === "categories" ? setCategoryArchiveOpen(true) : window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canPublish || busy || pendingUploads > 0 || !pricingReady}>Archive</button>}
+        {!record.archived && <button className={styles.dangerButton} type="button" onClick={() => module === "categories" ? setCategoryArchiveOpen(true) : window.confirm("Archive this record? It will be removed from public visibility.") && void transition("archive")} disabled={!canArchive || busy || pendingUploads > 0 || !pricingReady}>Archive</button>}
       </div>
-      {!canPublish && <p className={styles.fieldHint}>Your role does not include publishing, unpublishing, or archiving.</p>}
-      {record.revisions && record.revisions.length > 0 && <div className={styles.revisionPicker}><label className={styles.field}><span className={styles.fieldLabel}>Restore a published revision as a draft</span><select className={styles.input} value={restoreId} onChange={(event) => setRestoreId(event.target.value)}><option value="">Select a revision</option>{record.revisions.map((revision) => <option value={revision.id} key={revision.id}>Revision {revision.revisionNumber} · {revision.title} · {formatDate(revision.publishedAt)}</option>)}</select></label><button className={styles.secondaryButton} type="button" disabled={!restoreId || !canEdit || busy} onClick={() => void transition("restore", restoreId)}>Restore draft</button></div>}
+      {!canPublish && <p className={styles.fieldHint}>Your role does not include publishing or unpublishing.</p>}
+      {record.revisions && record.revisions.length > 0 && <div className={styles.revisionPicker}><label className={styles.field}><span className={styles.fieldLabel}>Restore a published revision as a draft</span><select className={styles.input} value={restoreId} onChange={(event) => setRestoreId(event.target.value)}><option value="">Select a revision</option>{record.revisions.map((revision) => <option value={revision.id} key={revision.id}>Revision {revision.revisionNumber} · {revision.title} · {formatDate(revision.publishedAt)}</option>)}</select></label><button className={styles.secondaryButton} type="button" disabled={!restoreId || !canUpdate || busy} onClick={() => void transition("restore", restoreId)}>Restore draft</button></div>}
       {record.archived && (!record.revisions || record.revisions.length === 0) && <p className={styles.fieldHint}>No published revision is available to restore.</p>}
       {record.publishedRevisionId && <p className={styles.fieldHint}>Published record slug: <code>{record.slug}</code></p>}
     </section>}

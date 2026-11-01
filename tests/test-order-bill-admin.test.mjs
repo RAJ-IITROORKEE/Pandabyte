@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
 import { isOrderReference } from "../lib/checkout/validation.ts";
 import * as billContract from "../lib/orders/test-bill.ts";
+import { canAdminPermission } from "../lib/admin/access-contract.ts";
 import { orderFixture, reference } from "./test-order-bill-fixture.mjs";
 
 const require = createRequire(import.meta.url);
@@ -83,8 +84,10 @@ test("Admin order toolbar offers download only for paid test orders and the Admi
       if (name === "react") return { ...require("react"), useEffect() {}, useState: initial => [cursor++ === 0 ? order : initial, () => {}] };
       if (name === "@clerk/nextjs") return { useUser: () => ({ isLoaded: true, user: { id: "admin" } }) };
       if (name === "@/components/admin/admin-shell") return { useAdminCapabilities: () => ["staff.manage"] };
+      if (name === "@/lib/admin/access-contract") return { canAdminPermission };
       if (name === "@/components/admin/record-screens") return { AdminAccessDeniedScreen: () => null };
       if (name === "next/link") return { __esModule: true, default: ({ children, ...props }) => createElement("a", props, children) };
+      if (name === "./admin-notice") return { AdminNotice: ({ children, tone, actions }) => createElement("div", { role: tone === "error" ? "alert" : "status" }, children, actions) };
       if (name.endsWith(".module.css")) return { default: {} };
       return require(name);
     } });
@@ -92,4 +95,24 @@ test("Admin order toolbar offers download only for paid test orders and the Admi
     assert.equal(html.includes("Download test bill PDF"), expected);
     if (expected) assert.ok(html.includes(`/api/admin/orders/${reference}/document`));
   }
+});
+
+
+test("read-only custom order access shows the bill without update actions", () => {
+  const source = compile("components/admin/order-detail.tsx"), exports = {};
+  let cursor = 0;
+  runInNewContext(source, { exports, Intl, Date, URL, require(name) {
+    if (name === "react") return { ...require("react"), useEffect() {}, useState: initial => [cursor++ === 0 ? orderFixture() : initial, () => {}] };
+    if (name === "@clerk/nextjs") return { useUser: () => ({ isLoaded: true, user: { id: "staff" } }) };
+    if (name === "@/components/admin/admin-shell") return { useAdminCapabilities: () => ["staff.manage", "__custom_role__", "orders.read"] };
+    if (name === "@/lib/admin/access-contract") return { canAdminPermission };
+    if (name === "@/components/admin/record-screens") return { AdminAccessDeniedScreen: () => null };
+    if (name === "next/link") return { __esModule: true, default: ({ children, ...props }) => createElement("a", props, children) };
+    if (name === "./admin-notice") return { AdminNotice: ({ children, tone, actions }) => createElement("div", { role: tone === "error" ? "alert" : "status" }, children, actions) };
+      if (name.endsWith(".module.css")) return { default: {} };
+    return require(name);
+  } });
+  const tree = exports.AdminOrderDetail({ reference }), html = renderToStaticMarkup(createElement(tree.type, tree.props));
+  assert.match(html, /Download test bill PDF/);
+  assert.doesNotMatch(html, /Update status|Save changes/);
 });

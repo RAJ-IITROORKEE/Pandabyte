@@ -6,6 +6,7 @@ import test from "node:test";
 const sql = readFileSync(new URL("../migrations/20261028133002_razorpay-checkout-test.sql", import.meta.url), "utf8");
 const keyedSql = readFileSync(new URL("../migrations/20261028140002_razorpay-test-key-scope.sql", import.meta.url), "utf8");
 const route = readFileSync(new URL("../lib/checkout/razorpay-test.ts", import.meta.url), "utf8");
+const deploymentGuards = readFileSync(new URL("../lib/checkout/test-deployment.ts", import.meta.url), "utf8");
 const fixtureHarness = readFileSync(new URL("./razorpay-test-integration.mjs", import.meta.url), "utf8");
 test("fixture cleanup retains nonpaid attempts that could still settle", () => {
   const validation = fixtureHarness.indexOf('check(attempt.state === "paid", "unreconciled_nonpaid_attempt_must_be_preserved")');
@@ -31,9 +32,10 @@ test("retired connection attempts cannot settle from later trusted events", () =
 
 test("test checkout remains private, opt-in and separate from operational inventory", () => {
   assert.match(route, /^import "server-only";/);
-  assert.match(route, /NODE_ENV === "development"/);
-  assert.match(route, /PANDABYTE_RAZORPAY_TEST_ENABLED === "true"/);
-  assert.match(route, /\["localhost", "127\.0\.0\.1", "\[::1\]"\]\.includes/);
+  assert.match(route, /localRazorpayTestEnabled\(request, process\.env\)/);
+  assert.match(deploymentGuards, /NODE_ENV === "development"/);
+  assert.match(deploymentGuards, /PANDABYTE_RAZORPAY_TEST_ENABLED === "true"/);
+  assert.match(deploymentGuards, /\["localhost", "127\.0\.0\.1", "\[::1\]"\]\.includes/);
   assert.match(route, /checkoutOwnerError\(request\)/);
   assert.match(route, /readCheckoutBody\(request\)/);
   for (const table of ["actors", "stock", "attempts", "closed_requests", "settlements"]) {

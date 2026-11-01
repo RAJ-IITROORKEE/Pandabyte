@@ -20,6 +20,8 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { canAdminPermission } from "@/lib/admin/access-contract";
+import { AdminNotice } from "./admin-notice";
 import styles from "./dashboard.module.css";
 
 const countable = [
@@ -52,9 +54,11 @@ const accessLinks = [
 
 export function AdminDashboard() {
   const capabilities = useAdminCapabilities();
-  const visible = useMemo(() => countable.filter((item) => capabilities.includes(item.capability)), [capabilities]);
+  const visible = useMemo(() => countable.filter((item) => capabilities.includes(item.capability) && canAdminPermission(capabilities, item.module, "read")), [capabilities]);
   const summaries = summaryItems.filter((item) => visible.some((count) => count.module === item.module));
-  const links = accessLinks.filter((group) => capabilities.includes(group.capability));
+  const links = accessLinks.filter((group) => capabilities.includes(group.capability))
+    .map(group => ({ ...group, links: group.links.filter(link => canAdminPermission(capabilities, link.href.split("/").at(-1)!, "read")) }))
+    .filter(group => group.links.length);
   const [counts, setCounts] = useState<Record<string, CountValue> | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -100,7 +104,7 @@ export function AdminDashboard() {
         </button>
       </header>
 
-      {failed && <p className={styles.errorNotice}>Some counts could not be loaded. Refresh to try again.</p>}
+      {failed && <AdminNotice key={refreshKey} tone="error">Some counts could not be loaded. Refresh to try again.</AdminNotice>}
 
       <section aria-label="Current record counts" aria-busy={loading} className={styles.metrics}>
         {summaries.map(({ module, label, href, Icon }) => (

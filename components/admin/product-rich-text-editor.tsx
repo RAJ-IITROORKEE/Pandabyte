@@ -34,6 +34,7 @@ import {
   type ProductRichContent,
 } from "@/lib/admin/product-content";
 import { useAdminCapabilities } from "@/components/admin/admin-shell";
+import { canAdminPermission } from "@/lib/admin/access-contract";
 import styles from "./admin-ui.module.css";
 import editorStyles from "./product-rich-text-editor.module.css";
 
@@ -180,7 +181,7 @@ async function uploadProductImage(file: File, altText: string) {
 export function ProductRichTextEditor({ value, onChange, onValidityChange, onUploadDelta, kind = "product" }: { value: ProductRichContent; onChange: (next: ProductRichContent) => void; onValidityChange: (valid: boolean) => void; onUploadDelta: (change: 1 | -1) => void; kind?: "product" | "category" | "article" }) {
   const descriptionLabel = kind === "article" ? "Article content" : kind === "category" ? "Category description" : "Product description";
   const capabilities = useAdminCapabilities();
-  const canManageMedia = capabilities.includes("media.manage");
+  const canManageMedia = capabilities.includes("media.manage") && canAdminPermission(capabilities, "media", "create");
   const fileId = useId();
   const altId = useId();
   const imageFileRef = useRef<HTMLInputElement>(null);
