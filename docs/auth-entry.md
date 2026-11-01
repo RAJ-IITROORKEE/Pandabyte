@@ -1,6 +1,6 @@
 # Sign-in and account creation checkpoint
 
-1 November 2026. The owner requested a responsive, themed Chakra authentication entry and confirmed successful new-account signup and login in the browser. This checkpoint is source integration to `main`; it does not deploy, change provider login methods, grant roles or alter commerce configuration.
+1 November 2026. The owner requested a responsive, themed Chakra authentication entry and confirmed successful new-account signup and login in the browser. The source checkpoint was integrated to `main` as `da9b57b`. The owner subsequently authorized its hosted deployment; see [deployment and hosted checks](vercel-preview-deployment.md). No provider login method or role membership was changed by either checkpoint.
 
 ## Behavior
 

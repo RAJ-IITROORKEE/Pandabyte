@@ -1,5 +1,22 @@
 # Vercel hosted development preview
 
+## Authentication and Admin access release — 1 November 2026
+
+The owner authorized deployment of latest committed `main` for hosted signup, login and role testing, excluding ongoing Panda Agent changes. A clean Git archive of **`da9b57b1e43522140d50cf30988f374da333231b`** (1,115 tracked files) was uploaded with Vercel CLI to the verified existing `unfiltered-iit-ians/pandabyte-iot` project. No uncommitted/untracked files, local credentials, build output or private checkpoints were copied. Committed Agent baseline modules remain; the ongoing Agent integration is excluded.
+
+- Stable address: **https://pandabyte-iot.vercel.app**.
+- Ready deployment: **`dpl_14mAvvH2r1kaNXxxgRA12p7wMHvF`**, https://pandabyte-200dh3x8g-unfiltered-iit-ians.vercel.app.
+- The Production target continues to use the existing development Clerk/InsForge services. No identity method, role membership, database schema, secret or billing configuration was changed.
+- The clean build ran `npm ci`, compiled successfully, passed TypeScript and generated all 41 static pages. Its audit reported the same 16 moderate findings documented in the [auth checkpoint](auth-entry.md); it did not report a zero-vulnerability dependency tree.
+- Deployment-specific build/runtime overrides keep `PANDA_AGENT_HOSTED_GATEWAY_ENABLED`, `PANDA_AGENT_HOSTED_RAG_ENABLED` and `PANDA_AGENT_HOSTED_STREAMING_ENABLED` false. Simulation and inquiry email runtime flags remain false. The existing Razorpay **TEST** checkout settings were retained. Live payment processing and real invoice issuance remain disabled/absent.
+- Staged checks passed before promotion: themed sign-in/sign-up HTML, anonymous user-directory rejection and active-session completion guard. The same Ready build was then promoted; CLI inspection confirmed the stable address resolves to it. Prior deployment `dpl_DDuMychFWGSjXWgY38dddYtmfysb` was retained unchanged as a rollback option.
+
+Hosted verification: Home and both auth entries return 200 anonymously; Account and Admin redirect to their authentication entries; Users/Roles APIs reject anonymous access with 401; completion preserves the validated intended destination. General payment POST returns the fixed `503 payment_not_configured` response, simulation is false, and the separate capability endpoint reports only `razorpayTestAvailable: true` / `storefrontTest: true`. No payment/provider transaction was attempted.
+
+The built-in browser reused the owner's existing active session: visiting Sign in with an Account return loaded the account dashboard, and `/admin/users` loaded role/account statistics and the actual directory. No console errors were captured in those checked pages. No account was created/deleted, role assigned, order changed or Agent inference submitted. The owner will perform fresh hosted signup/login and role-change acceptance tests; those mutations are not claimed as verified by this deployment check. A bounded ten-minute error-log scan found only the deliberately exercised closed general-payment endpoint's expected 503 diagnostic, with no auth/Admin errors in that scan. This is not continuous monitoring or production-commerce certification.
+
+The auth-only release does not include the ongoing Agent UI/runtime handoff or authorize it. The Panda Agent chat received the deployment/source manifest; its separate execution and provider-admission gates remain in force.
+
 ## Frontend backgrounds — 30 October 2026
 
 ### Softer dark-background follow-up

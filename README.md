@@ -4,7 +4,9 @@ An India-first IoT hardware catalog and company website with an editable adminis
 
 **Status: hosted development preview, 29 October 2026.** [Open PandaByte](https://pandabyte-iot.vercel.app). The site uses the selected development Clerk/InsForge services. It is not a production-commerce launch; real payments and invoice issuance remain disabled/deferred. [Deployment and checks](docs/vercel-preview-deployment.md).
 
-**Local test-commerce, 30 October 2026:** localhost:3000 now supports explicitly configured Razorpay TEST checkout, owner-approved provisional tax/shipping totals, paid-test PDF bills and shared customer/Admin fulfillment tracking. Live payments, emails and real tax invoices remain off; the hosted preview was not payment-enabled. [Scope, setup boundaries and verification](docs/storefront-test-checkout.md).
+**Latest hosted checkpoint, 1 November 2026:** reviewed auth/Admin source `da9b57b` is deployed at the address above. Themed signup/login, active-session Account return and owner Admin directory reads passed hosted checks. Fresh signup and role changes are ready for owner testing. Ongoing Panda Agent integration remains excluded and its hosted execution disabled. [Deployment record](docs/vercel-preview-deployment.md).
+
+**Test-commerce:** localhost and the separately authorized hosted preview support explicitly configured Razorpay TEST checkout, owner-approved provisional tax/shipping totals, paid-test PDF bills and shared customer/Admin fulfillment tracking. Live payments, emails and real tax invoices remain off. [Scope, setup boundaries and verification](docs/storefront-test-checkout.md).
 
 ## Implemented
 
