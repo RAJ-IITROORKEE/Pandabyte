@@ -33,6 +33,8 @@ The development catalog has 42 imported SKU-bearing products; two source product
 
 Exact dependency versions and overrides are pinned in `package.json` and `package-lock.json`. InsForge is the single data authority; Clerk is the sole identity/session provider.
 
+> Admin Media checkpoint, 1 November 2026: the Media library now provides image previews, active-file statistics, search/type/visibility filters, a metadata and usage dialog, private drag-and-drop uploads, eligible public-URL copying and reference-aware archive warnings. Existing publication and storage guards remain in force. See [Media contract and verification](docs/admin-media-library.md). This checkpoint does not deploy the site or change commerce flags.
+
 ## Local setup
 
 Use Node.js **24.x** and the npm version recorded in `package.json`.

@@ -3,21 +3,33 @@ import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { isSameOriginRequest, readBoundedBody } from "@/lib/storage/http";
 import { logOperationalFailure } from "@/lib/observability/events";
 import { getStaffAccess } from "@/lib/authorization";
-import { editorialAccess, editorialError, editorialJson, editorialRpc, editorialDatabaseError } from "@/lib/editorial/http";
+import { editorialAccess, editorialError, editorialJson, editorialDatabaseError } from "@/lib/editorial/http";
+import { canAdminPermission } from "@/lib/admin/access-contract";
+import { parseMediaQuery, parseMediaWorkspace } from "@/lib/admin/media-contract";
 import { prepareEditorialFile } from "@/lib/editorial/media";
-import { boundedText, EDITORIAL_MEDIA_BUCKET, MAX_MEDIA_REQUEST_BYTES, parseListQuery } from "@/lib/editorial/validation";
+import { boundedText, EDITORIAL_MEDIA_BUCKET, MAX_MEDIA_REQUEST_BYTES } from "@/lib/editorial/validation";
 
 export async function GET(request: Request) {
   const access = await getStaffAccess();
   if (!access.allowed) return editorialError(access.status === 401 ? "unauthorized" : access.status === 403 ? "forbidden" : "backend_unavailable", access.status);
   if (!access.capabilities.some(cap => ["media.manage", "catalog.edit", "content.edit"].includes(cap))) return editorialError("forbidden", 403);
-  const query = parseListQuery(request.url);
-  return query && !query.status ? editorialRpc("admin_list_media", { p_query: query.query, p_limit: query.limit, p_offset: query.offset }) : editorialError("invalid_query", 400);
+  const query = parseMediaQuery(request.url);
+  if (!query) return editorialError("invalid_query", 400);
+  try {
+    const client = await createInsforgeServerClient();
+    const result = await client.database.schema("public").rpc("admin_media_workspace", { p_query: query.query, p_type: query.type, p_status: query.status, p_sort: query.sort, p_limit: query.limit, p_offset: query.offset });
+    if (result.error) return editorialDatabaseError(result.error);
+    const workspace = parseMediaWorkspace(result.data);
+    return workspace ? editorialJson(workspace) : editorialError("backend_unavailable", 503);
+  } catch { return editorialError("backend_unavailable", 503); }
 }
 
 export async function POST(request: Request) {
   const access = await editorialAccess("media.manage");
   if (access instanceof Response) return access;
+  const staff = await getStaffAccess();
+  if (!staff.allowed) return editorialError(staff.status === 401 ? "unauthorized" : staff.status === 403 ? "forbidden" : "backend_unavailable", staff.status);
+  if (!canAdminPermission(staff.capabilities, "media", "create")) return editorialError("forbidden", 403);
   if (!isSameOriginRequest(request)) return editorialError("same_origin_required", 403);
   const contentType = request.headers.get("content-type") ?? "";
   if (!/^multipart\/form-data\s*;/i.test(contentType)) return editorialError("multipart_required", 415);

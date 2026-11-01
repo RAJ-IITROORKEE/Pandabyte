@@ -125,7 +125,7 @@ All modules need list/search/filter, create/edit, validation, explicit save stat
 | `/admin/pricing` | Regular/sale prices per sellable SKU; optional start/end windows, audit history | Consistent card/PDP/cart display; final checkout recomputes authoritative price |
 | `/admin/discounts` | Baseline sale scheduling and eligibility; coupon/stacking/usage-limit policies only if explicitly selected | Correct server-derived savings and timing; no false sale badge or client-controlled amount |
 | `/admin/inventory` | Per-SKU stock adjustments with reason, reservation-aware availability | Availability updates without overwriting existing reservations |
-| `/admin/media` | Approved uploads, alt text, order and safe reuse; referenced-file checks | Optimized images/resources; private inquiry attachments stay separate |
+| `/admin/media` | Preview table with type/visibility/search filters and global active-file stats; metadata/usage dialog; private drag/drop uploads; eligible public URLs; dependency-aware archive warning | Optimized images/resources; publication and model eligibility rechecked; private inquiry attachments stay separate. See [Media contract](docs/admin-media-library.md) |
 | `/admin/blog` | Rich-text body, title, slug, excerpt, cover/alt, author, tags/categories, SEO; draft, preview, publish/unpublish, revision restore | Published article/listing/metadata updates without a code deployment |
 | `/admin/learn` | Approved video IDs/URLs, captions/titles, ordering/publication and product specs/resource links | Learn YouTube/resource pages with controlled embeds |
 | `/admin/faqs` | Questions/answers, topic, page placement/order, visibility | Homepage FAQ and Help Center share the same approved records |

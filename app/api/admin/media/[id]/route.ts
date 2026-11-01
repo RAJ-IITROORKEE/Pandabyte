@@ -1,5 +1,23 @@
-import { editorialAccess, editorialBody, editorialError, editorialRpc } from "@/lib/editorial/http";
+import { getStaffAccess } from "@/lib/authorization";
+import { createInsforgeServerClient } from "@/lib/insforge/server";
+import { parseMediaDetail } from "@/lib/admin/media-contract";
+import { editorialAccess, editorialBody, editorialError, editorialRpc, editorialJson, editorialDatabaseError } from "@/lib/editorial/http";
 import { parseMediaPatch, UUID_PATTERN } from "@/lib/editorial/validation";
+
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const access = await getStaffAccess();
+  if (!access.allowed) return editorialError(access.status === 401 ? "unauthorized" : access.status === 403 ? "forbidden" : "backend_unavailable", access.status);
+  if (!access.capabilities.some(cap => ["media.manage", "catalog.edit", "content.edit"].includes(cap))) return editorialError("forbidden", 403);
+  const { id } = await params;
+  if (!UUID_PATTERN.test(id)) return editorialError("not_found", 404);
+  try {
+    const client = await createInsforgeServerClient();
+    const result = await client.database.schema("public").rpc("admin_media_details", { p_id: id });
+    if (result.error) return editorialDatabaseError(result.error);
+    const detail = parseMediaDetail(result.data);
+    return detail ? editorialJson(detail) : editorialError("backend_unavailable", 503);
+  } catch { return editorialError("backend_unavailable", 503); }
+}
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const access = await editorialAccess("media.manage");

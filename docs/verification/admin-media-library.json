@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-01",
+  "environment": "Existing approved development Clerk/InsForge services; localhost:3012",
+  "migration": "20261101160000_admin-media-workspace.sql",
+  "baseline": { "activeAssets": 237, "images": 214, "models": 23, "documents": 0, "published": 224, "private": 13 },
+  "automated": {
+    "apiAndContractTests": { "passed": 4, "failed": 0 },
+    "originalByteDeliveryTests": { "passed": 10, "failed": 0 },
+    "existingUnitAndUploadSuitesPassed": true,
+    "eslintPassed": true,
+    "typeScriptPassed": true,
+    "optimizedBuildPassed": true,
+    "independentSecurityReview": "Sol 6.1 high: no blocking findings after metadata parser and early upload-permission fixes"
+  },
+  "developmentIntegration": {
+    "harness": "tests/admin-media-workspace-integration.mjs",
+    "passed": [
+      "Anonymous and normal-customer Admin access denied",
+      "Direct RPC customer denial and custom media.read access",
+      "Invalid filters, forged file content and cross-origin upload rejected",
+      "Private validated image upload, metadata save and stale-version rejection",
+      "Anonymous private file unavailable; existing published file readable",
+      "Custom read-only metadata access with upload/update/archive denied",
+      "Draft usage visible to authorized Admin and omitted from media-only usage counts",
+      "Referenced draft asset archive rejected"
+    ],
+    "disposableIdentitiesDraftsFilesRolesCleaned": true,
+    "noExistingAssetOrPublicationMutation": true
+  },
+  "builtInBrowser": {
+    "ownerSessionPreserved": true,
+    "passed": [
+      "Active library statistics, type/search filters and pagination rendered",
+      "Full contained image preview, metadata and attached-product link rendered",
+      "Published original endpoint copied to browser clipboard",
+      "Private uploaded fixture had no public-copy action",
+      "Keyboard file chooser, local preview, private upload and refreshed table row",
+      "Unsupported file and multiple-file validation; pending upload controls disabled",
+      "Archive warning named disposable file; cancel preserved it; confirmation removed it from active library",
+      "Referenced original asset archive control disabled",
+      "Escape closed dialog and returned focus to its View trigger",
+      "390px viewport: 358px dialog and contained table scrolling without page overflow",
+      "Supabase Admin light/dark styling and Outfit typography",
+      "Collapsed upload toggle retained unsaved form state",
+      "96px table thumbnails loaded through existing resized endpoint",
+      "3D renderer inactive until explicit preview; then rendered and stopped on Close 3D",
+      "3D preview constrained to its 358px-high panel instead of covering the dialog"
+    ],
+    "browserFixtureArchiveAndCleanupCompleted": true,
+    "localScreenshots": [".bootstrap/admin-media-library.jpg", ".bootstrap/admin-media-model-preview.jpg"],
+    "limits": [
+      "Native desktop drag/drop gesture was not automated; file selection exercised the shared upload pipeline",
+      "No actual screen-reader speech test",
+      "No live publication/withdrawal of existing content or media during tests"
+    ]
+  },
+  "scope": {
+    "deployment": false,
+    "paymentOrInvoiceConfigurationChanged": false,
+    "liveEmailChanged": false,
+    "pandaAgentChangesIncluded": false,
+    "storageHardDeleteFeatureAdded": false
+  }
+}
