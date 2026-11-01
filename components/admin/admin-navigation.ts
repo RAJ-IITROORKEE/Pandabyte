@@ -1,6 +1,5 @@
 import {
   IconBook2,
-  IconBriefcase2,
   IconBoxMultiple,
   IconFileText,
   IconHelpCircle,
@@ -9,7 +8,6 @@ import {
   IconPackage,
   IconPhoto,
   IconShoppingCart,
-  IconSparkles,
   IconTags,
   IconUsers,
   IconVideo,
@@ -36,11 +34,12 @@ export const dashboardItem: AdminNavItem = {
 
 export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
   {
+    label: "Access control",
+    items: [{ href: "/admin/users", label: "Users & roles", icon: IconUsers, capability: "staff.manage", group: "Access control" }],
+  },
+  {
     label: "Workspace",
     items: [
-      { href: "/admin/workspaces", label: "Workspaces", icon: IconBriefcase2, comingSoon: true, group: "Workspace" },
-      { href: "/admin/chat", label: "Chat", icon: IconMessage, comingSoon: true, group: "Workspace" },
-      { href: "/admin/ai-chat", label: "AI Chat", icon: IconSparkles, comingSoon: true, group: "Workspace" },
       { href: "/admin/rag-control-room", label: "RAG Control Room", icon: IconBook2, capability: "staff.manage", group: "Workspace" },
     ],
   },
@@ -76,10 +75,6 @@ export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
   {
     label: "Assets",
     items: [{ href: "/admin/media", permission: "media.read", label: "Media", icon: IconPhoto, capability: "media.manage", group: "Assets" }],
-  },
-  {
-    label: "Access control",
-    items: [{ href: "/admin/users", label: "Users & roles", icon: IconUsers, capability: "staff.manage", group: "Access control" }],
   },
 ];
 

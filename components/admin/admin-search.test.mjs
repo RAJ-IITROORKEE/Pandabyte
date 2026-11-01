@@ -6,9 +6,9 @@ test("admin page search uses the visible navigation capability set", () => {
   const capabilities = ["catalog.edit", "content.edit"];
   assert.deepEqual(searchAdminNavigation("pricing", capabilities).map(({ href }) => href), []);
   assert.deepEqual(searchAdminNavigation("users", capabilities), []);
-  assert.deepEqual(visibleNavigationGroups(capabilities).map(({ label }) => label), ["Workspace", "Products & catalog", "Site content"]);
+  assert.deepEqual(visibleNavigationGroups(capabilities).map(({ label }) => label), ["Products & catalog", "Site content"]);
   assert.deepEqual(searchAdminNavigation("coming soon", capabilities).map(({ label }) => label), []);
-  assert.deepEqual(searchAdminNavigation("chat", capabilities).map(({ href }) => href), ["/admin/chat", "/admin/ai-chat"]);
+  assert.deepEqual(searchAdminNavigation("chat", capabilities).map(({ href }) => href), []);
 });
 
 test("orders and inventory navigation follow their separate permissions", () => {
