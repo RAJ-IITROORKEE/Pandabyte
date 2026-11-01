@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "products": [
+    {
+      "slug": "esp32-x32-microcontroller-board-arduino-compatible",
+      "sku": "ESPX32",
+      "sourceUrl": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+      "rawSha256": "951935e745a2346e23cb8bba53a9ab849290d5812d84ab7d0c4ada57f09a0e9e",
+      "archiveFileSha256": "4c9cd5ee5b5767c7d6628506b785a98922cdc84b4ae2cea4d5fe84b8bd48d27d",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Espressif Arduino board configuration (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_x32",
+          "evidenceSourceUrl": "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+          "evidence": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification."
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC3M",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "rawSha256": "33426254683437e8de7f34bc43ca75b228adf66d74771b14fb7271d9a056e0f6",
+      "archiveFileSha256": "75eaf7718233dffc638d331396bad0328344442ffeb2bb7831cafbbc80d788cc",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Espressif Arduino board configuration (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xc3m",
+          "evidenceSourceUrl": "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+          "evidence": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification."
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC5",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "rawSha256": "a1484e5dd5c3b6079b54814e45490ea9124f7429283e5c246574688800c50ee2",
+      "archiveFileSha256": "f0eba56aec9a968bf258bbcf0115fc317445daa448c4409ae6e3ed595e063193",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Espressif Arduino board configuration (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xc5",
+          "evidenceSourceUrl": "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+          "evidence": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification."
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC6",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "rawSha256": "fea445e0e54124fcc981c5307189200db53e2ffdbac51b0ed66db82e78a21004",
+      "archiveFileSha256": "a6d2e6d3c3bf8ad9cf87a3f7c32e407dd69b2e06e7c6a673128f7e5a86913d3d",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Espressif Arduino board configuration (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xc6",
+          "evidenceSourceUrl": "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+          "evidence": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification."
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "sku": "ESPXS3",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "rawSha256": "a5210bf6fd5ff90d0cd3d33c5b8df4f2b81980f7bab2c2f71f8c9bbade517037",
+      "archiveFileSha256": "a54682f10bf79077d51c3146d3a826cd2961e72053be32732c44057e3dd95ac1",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Espressif Arduino board configuration (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xs3",
+          "evidenceSourceUrl": "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+          "evidence": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification."
+        },
+        {
+          "label": "xS3 and BMV080 tutorial on Instructables",
+          "url": "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+          "evidenceSourceUrl": "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+          "evidence": "Product-specific tutorial; attribution and external code are not independently verified."
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "sku": "XLORA",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "rawSha256": "ae262911bdd786075da9a35576c3e83f7dc135189474e634d27ba1c3ab3eb7d8",
+      "archiveFileSha256": "8adb9f01c410eaf8a3a3366c8ee85b4ef6267c884586d4ac6cb44485cc124be4",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Ai-Thinker RA-01H module documentation",
+          "url": "https://docs.ai-thinker.com/en/Ra-01H/index.html",
+          "evidenceSourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+          "evidence": "Module reference, not a PandaByte xLoRa board wiki; verify installed module and revisions before wiring."
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "sku": "PB-BMV080",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "rawSha256": "ffd6ccc99f73fa1038a576215071028e5f7e8a4604e434766793d96ea3dae350",
+      "archiveFileSha256": "d371424d7f2e7ef7152941620cbe65605443481718554ba2c5108c67494d09e5",
+      "excerpts": [],
+      "supplementalLinks": [
+        {
+          "label": "Bosch BMV080 sensor documentation",
+          "url": "https://www.bosch-sensortec.com/en/products/environmental-sensors/particulate-matter-sensor/bmv080",
+          "evidenceSourceUrl": "https://www.bosch-sensortec.com/en/products/environmental-sensors/particulate-matter-sensor/bmv080",
+          "evidence": "Manufacturer sensor reference, not PandaByte board documentation."
+        },
+        {
+          "label": "Bosch BMV080 previous SDK versions (license required)",
+          "url": "https://www.bosch-sensortec.com/en/software-tools/software/previous-sdk-bmv-080-versions",
+          "evidenceSourceUrl": "https://www.bosch-sensortec.com/en/software-tools/software/previous-sdk-bmv-080-versions",
+          "evidence": "SDK download requires accepting Bosch license and may require access; link is a version index, not the SDK itself."
+        },
+        {
+          "label": "BMV080 tutorial on Instructables",
+          "url": "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+          "evidenceSourceUrl": "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+          "evidence": "Product-specific tutorial; attribution and external code are not independently verified."
+        }
+      ]
+    }
+  ]
+}

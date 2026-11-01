@@ -1,0 +1,3788 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-01T00:05:49.238Z",
+  "scope": "review-only cross-corpus product source reconciliation",
+  "normalization": "Existing Agent product.md normalized hash is tied to listed parser SHA; archived Firecrawl JSON and live HTML hashes are different byte formats and must not be compared as equivalent.",
+  "resources": "Resource manifest captures are coverage-only, never an ingestion allowlist.",
+  "products": [
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/18650-battery-holder-with-switch",
+      "slug": "18650-battery-holder-with-switch",
+      "source_sku": "18650HOLDER",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/18650-battery-holder-with-switch",
+        "final_url": "https://www.pandabyte.in/product-page/18650-battery-holder-with-switch",
+        "captured_at": "2026-10-25T14:19:48.121Z",
+        "raw_sha256": "589df102dc734bbfdeaf49ac9f20b0797d794480f3aeb8d16f98bdc254079287",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\18650-battery-holder-with-switch.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/18650-battery-holder-with-switch",
+        "final_url": "https://www.pandabyte.in/product-page/18650-battery-holder-with-switch",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:16.661270+00:00",
+        "raw_sha256": "ae6cc3f290bc4152d8fd4d8f47b6d929f8cbc7c3c2ac08129fc6eeb77334c5c0",
+        "raw_format": "HTML response",
+        "byte_count": 1745882
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "c47ce6bb59a40c1453c6185b1c48ed4eab8da3a027ae28cbd96c203777db0645",
+        "normalized_text_sha256": "8192c07a24a10acc9b93e60e834ec8ef5bc80e7358c8f3cbcac8ef59bd20843d",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/18650-battery-holder-with-switch/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "589df102dc734bbfdeaf49ac9f20b0797d794480f3aeb8d16f98bdc254079287",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "Battery Size: 18650",
+            "corroboratingSourceFragments": [
+              "18650"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/2-4a-type-c-data-charging-usb-cable",
+      "slug": "2-4a-type-c-data-charging-usb-cable",
+      "source_sku": "USBTYPEC",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/2-4a-type-c-data-charging-usb-cable",
+        "final_url": "https://www.pandabyte.in/product-page/2-4a-type-c-data-charging-usb-cable",
+        "captured_at": "2026-10-25T14:19:59.112Z",
+        "raw_sha256": "07f749d2c00555224a0c6d9664f3564961d81480ceaf7a033fc8df80b1a387ab",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\2-4a-type-c-data-charging-usb-cable.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/2-4a-type-c-data-charging-usb-cable",
+        "final_url": "https://www.pandabyte.in/product-page/2-4a-type-c-data-charging-usb-cable",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:16.667597+00:00",
+        "raw_sha256": "e22678ab5090b685561d3c4690b01167a67d6b1e3fa39228acb35ad8e418a2dc",
+        "raw_format": "HTML response",
+        "byte_count": 1665050
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "45ceca4138b67ff17d92faf8466edb7b396548de00e6da3e8d960b03654a8ce0",
+        "normalized_text_sha256": "ca55806fef8445d6d50a281a4bf9e19e01e284582a273b46a2239de59d13ebd7",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/2-4a-type-c-data-charging-usb-cable/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 4
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "07f749d2c00555224a0c6d9664f3564961d81480ceaf7a033fc8df80b1a387ab",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "2.4A Type-C Data & Charging USB Cable",
+            "corroboratingSourceFragments": [
+              "2.4Amps",
+              "Type-C"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+      "slug": "female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+      "source_sku": "DUPONT",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+        "final_url": "https://www.pandabyte.in/product-page/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+        "captured_at": "2026-10-25T14:20:55.488Z",
+        "raw_sha256": "22750675e321b2f842736e213cbcfc7ca8f3d80238b374676242b8077bcd4ac0",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+        "final_url": "https://www.pandabyte.in/product-page/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:17.496121+00:00",
+        "raw_sha256": "2521c1e15ba5d61ec6409e2c4906550912a36210b1f01238c77a73a6308649cc",
+        "raw_format": "HTML response",
+        "byte_count": 1692256
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "294c44cbcde8ac21bc2e97924ceb09ee360972447350b2271724622f41c92962",
+        "normalized_text_sha256": "a9bb1e7e181fc80969a4935c366a02c96fe7821477f0352428fffdff3b828221",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "22750675e321b2f842736e213cbcfc7ca8f3d80238b374676242b8077bcd4ac0",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "10cm in length",
+            "corroboratingSourceFragments": [
+              "Length: 10 CM"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-90-degree-10-units",
+      "slug": "grove-female-header-smd-90-degree-10-units",
+      "source_sku": "GRSMD90D",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-90-degree-10-units",
+        "final_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-90-degree-10-units",
+        "captured_at": "2026-10-25T14:21:04.667Z",
+        "raw_sha256": "4aeca6c529d4b88ed2e72ef42e31102b1ee19f7b487c2c5f2674967d789fe8bc",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\grove-female-header-smd-90-degree-10-units.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-90-degree-10-units",
+        "final_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-90-degree-10-units",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:17.779943+00:00",
+        "raw_sha256": "0649f5a784c3e6cefca4cd19cc52ce3f5500d64d0ee79be0e10d13f61752d4da",
+        "raw_format": "HTML response",
+        "byte_count": 1680755
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "b50a90b522b1472feeb3523c577506126c627116976317bb9abaa9894c7e66a2",
+        "normalized_text_sha256": "1858447b99824667bea6a45b113928a7fc5273fbc0f24a6bafabfa20bc8ae892",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/grove-female-header-smd-90-degree-10-units/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 7
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 9
+          },
+          {
+            "field": "description",
+            "line": 10
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "4aeca6c529d4b88ed2e72ef42e31102b1ee19f7b487c2c5f2674967d789fe8bc",
+        "disposition": "requires_individual_review",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-regular-10-units",
+      "slug": "grove-female-header-smd-regular-10-units",
+      "source_sku": "GRSMDREG",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-regular-10-units",
+        "final_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-regular-10-units",
+        "captured_at": "2026-10-25T14:21:15.520Z",
+        "raw_sha256": "a82b737dba1edebc8c5fd624f266a8941d39a87fcbe2c8b649ddef421231a07b",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\grove-female-header-smd-regular-10-units.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-regular-10-units",
+        "final_url": "https://www.pandabyte.in/product-page/grove-female-header-smd-regular-10-units",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:18.566536+00:00",
+        "raw_sha256": "20d7721f56b6a277e660b2e29bac5ae3b0b4844d62d8b573bf7a359a97fb3a7c",
+        "raw_format": "HTML response",
+        "byte_count": 1685034
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "280955929a1cabfc71967583cf4bf3e43b8f336f43baacdc93db8fc90432f984",
+        "normalized_text_sha256": "85a1f80a0b81a543d9c62ad1d86638852493bb3f3622aa50fa0cbffc4ccf44b5",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/grove-female-header-smd-regular-10-units/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 7
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 9
+          },
+          {
+            "field": "description",
+            "line": 10
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "a82b737dba1edebc8c5fd624f266a8941d39a87fcbe2c8b649ddef421231a07b",
+        "disposition": "requires_individual_review",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+      "slug": "grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+      "source_sku": "WIREGROVE",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+        "final_url": "https://www.pandabyte.in/product-page/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+        "captured_at": "2026-10-25T14:21:24.054Z",
+        "raw_sha256": "b0745d962f42466e2fe8815eec61213a6de160c4cbacaafb4ee8c10487809d06",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+        "final_url": "https://www.pandabyte.in/product-page/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:19.881408+00:00",
+        "raw_sha256": "2bee6a1cb2aa6db39b42bf462872ff91c9ec7ca66b30436b11f2e64c56113b28",
+        "raw_format": "HTML response",
+        "byte_count": 1695682
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "c390e7e947c0fe95d77de708a3a53c1d6bf95c47858413a42fc751d6a92b5e67",
+        "normalized_text_sha256": "97afed0760cd41cfb809dd9e797af298af44f38ba069c21d7881cb9260365f87",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "b0745d962f42466e2fe8815eec61213a6de160c4cbacaafb4ee8c10487809d06",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "4-pin standardized connector",
+            "corroboratingSourceFragments": [
+              "Pins: 4"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/atoms3-lite-esp32s3-dev-kit",
+      "slug": "atoms3-lite-esp32s3-dev-kit",
+      "source_sku": null,
+      "match_status": "missing_sku_needs_review",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/atoms3-lite-esp32s3-dev-kit",
+        "final_url": "https://www.pandabyte.in/product-page/atoms3-lite-esp32s3-dev-kit",
+        "captured_at": "2026-10-25T14:20:26.260Z",
+        "raw_sha256": "560c3e0425a68731544152a1b041eee972f62c9286799758e535aaddd3cad51d",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\atoms3-lite-esp32s3-dev-kit.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/atoms3-lite-esp32s3-dev-kit",
+        "final_url": "https://www.pandabyte.in/product-page/atoms3-lite-esp32s3-dev-kit",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:20.572810+00:00",
+        "raw_sha256": "3c22999071c767e4aed76a35a24ea83da84c95dabad87d93162859125c582cc3",
+        "raw_format": "HTML response",
+        "byte_count": 1735064
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "6c492a0aca659f0b35e905a945b9e9edf90bca8fe753bd65c319b740be1191d2",
+        "normalized_text_sha256": "f69dea6178a54c9eb7c249cabde5cbda1b4105062725f7bd150732674a877c38",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/atoms3-lite-esp32s3-dev-kit/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": null,
+        "source_raw_sha256": "560c3e0425a68731544152a1b041eee972f62c9286799758e535aaddd3cad51d",
+        "disposition": "held_missing_sku",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "missing SKU"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+      "slug": "esp32-x32-microcontroller-board-arduino-compatible",
+      "source_sku": "ESPX32",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:20:46.607Z",
+        "raw_sha256": "951935e745a2346e23cb8bba53a9ab849290d5812d84ab7d0c4ada57f09a0e9e",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\esp32-x32-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:21.500834+00:00",
+        "raw_sha256": "73a7fad8ead11426237a9c83e5a77a3f9faa5a116304b5436808539c06e2a75d",
+        "raw_format": "HTML response",
+        "byte_count": 1756295
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "9b6e7de1fa544262157abcacbb242e8633d18025f522d156eb39bbb5741ae491",
+        "normalized_text_sha256": "66acece112f6a2ede3233e46fbd87fad47670209d70b929e4a127744a0535182",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/esp32-x32-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 9
+          },
+          {
+            "field": "description",
+            "line": 10
+          },
+          {
+            "field": "description",
+            "line": 11
+          },
+          {
+            "field": "description",
+            "line": 15
+          },
+          {
+            "field": "description",
+            "line": 16
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "951935e745a2346e23cb8bba53a9ab849290d5812d84ab7d0c4ada57f09a0e9e",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "integrated WiFi and Bluetooth",
+            "corroboratingSourceFragments": [
+              "802.11",
+              "Bluetooth"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-WROOM-32E Datasheet",
+          "url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "4c7a345d1c1bfec34c38665639e39a7f43b79a35a12f6adcc2c7c0f83850f8b8",
+              "bytes": 1230114,
+              "kind": "documentation",
+              "record_path": "resources/603fea9a2c75d2b8aff39f7a06bd6e28d3bca7a314de9e45b7e30750b46a2554/record.json",
+              "linked_products": [
+                "esp32-x32-microcontroller-board-arduino-compatible",
+                "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/603fea9a2c75d2b8aff39f7a06bd6e28d3bca7a314de9e45b7e30750b46a2554/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Espressif Arduino board variant (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_x32",
+          "kind": "new_primary_board_source",
+          "originalUrl": null,
+          "evidence": [
+            "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+            "https://api.github.com/repos/espressif/arduino-esp32/contents/variants/pandabyte_x32"
+          ],
+          "caveat": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+      "slug": "m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+      "source_sku": null,
+      "match_status": "missing_sku_needs_review",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+        "final_url": "https://www.pandabyte.in/product-page/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+        "captured_at": "2026-10-25T14:22:09.263Z",
+        "raw_sha256": "39d1ebf85c36b2ee23c1c16940bd07605fd08399eb12ca88c08c1eb3aac89c6d",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+        "final_url": "https://www.pandabyte.in/product-page/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:23.102532+00:00",
+        "raw_sha256": "a431d533feada13c405848d24d3795ace184ec00ccc711b6f25f67d90f910828",
+        "raw_format": "HTML response",
+        "byte_count": 1734317
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "38a89b1604ab768282008daf01505f8d24dff33dc08b6d823aded0f281d489bb",
+        "normalized_text_sha256": "4d4d07e2a6149f080d462ff59a3fd2036c8eb9f6c72ef82fab59301e217ab978",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": null,
+        "source_raw_sha256": "39d1ebf85c36b2ee23c1c16940bd07605fd08399eb12ca88c08c1eb3aac89c6d",
+        "disposition": "held_missing_sku",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "missing SKU"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+      "slug": "maker-uno-simplifying-arduino-for-education",
+      "source_sku": "MAKERUNO",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+        "final_url": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+        "captured_at": "2026-10-25T14:22:18.616Z",
+        "raw_sha256": "0b5ccdd2008bbe76a2e2cdc24e1df9ef25092746b3bd2cf70d1b59ecea40870e",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\maker-uno-simplifying-arduino-for-education.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+        "final_url": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:23.640250+00:00",
+        "raw_sha256": "f5dce8077eb20f7a6a0255f08c63d0d138589e821542528053cea2b4bc020321",
+        "raw_format": "HTML response",
+        "byte_count": 1719534
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "a6292dee79257c966232522d523834cd80f6a91773452c93389ae80968bf1fdd",
+        "normalized_text_sha256": "480a33776aabfaca571b9d8ba50c38a685bdfcbda8cd475d3f485f975dd054aa",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/maker-uno-simplifying-arduino-for-education/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "0b5ccdd2008bbe76a2e2cdc24e1df9ef25092746b3bd2cf70d1b59ecea40870e",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "12 LEDs, a buzzer, and a button",
+            "corroboratingSourceFragments": [
+              "12x LEDs",
+              "1x buzzer",
+              "1x button"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Product Wiki",
+          "url": "https://www.cytron.io/p-maker-uno-simplifying-arduino-for-education",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://www.cytron.io/p-maker-uno-simplifying-arduino-for-education",
+              "final_url": null,
+              "state": "error",
+              "sha256": null,
+              "bytes": null,
+              "kind": "documentation",
+              "record_path": "resources/6ae87ea50b4dad7194cd065f3caf4d81f50d2607c814e830c50d6394557a8a20/record.json",
+              "linked_products": [
+                "maker-uno-simplifying-arduino-for-education"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": null,
+              "path": null
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+      "slug": "pandabyte-x8266-wifi-development-board",
+      "source_sku": "ESPX8266",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+        "captured_at": "2026-10-25T14:24:36.241Z",
+        "raw_sha256": "8792caf4b7cc415b26c9a35a352832ade0ea4cb50e305c5028ba05c214a084c0",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-x8266-wifi-development-board.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:25.388487+00:00",
+        "raw_sha256": "3d647ac336fabc6c077e880b5ea68e8a4895ffaa72c7550936c114c37e56d9c7",
+        "raw_format": "HTML response",
+        "byte_count": 1728937
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "dd8797bf9f69b1021be92c6ce3045dcf770e961f35ff36563936af40f59dfaa5",
+        "normalized_text_sha256": "44acc9a5539880ec3e135f7b90db60ec23d8ac2d57dc6e59c99f8cbffb827952",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-x8266-wifi-development-board/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 7
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 9
+          },
+          {
+            "field": "description",
+            "line": 10
+          },
+          {
+            "field": "description",
+            "line": 11
+          },
+          {
+            "field": "description",
+            "line": 12
+          },
+          {
+            "field": "description",
+            "line": 13
+          },
+          {
+            "field": "description",
+            "line": 14
+          },
+          {
+            "field": "description",
+            "line": 15
+          },
+          {
+            "field": "description",
+            "line": 16
+          },
+          {
+            "field": "description",
+            "line": 17
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "8792caf4b7cc415b26c9a35a352832ade0ea4cb50e305c5028ba05c214a084c0",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "USB Type-C interface",
+            "corroboratingSourceFragments": [
+              "USB Interface: USB Type-C"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP8266 Datasheet",
+          "url": "https://www.espressif.com/en/products/socs/esp8266",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://www.espressif.com/en/products/socs/esp8266",
+              "final_url": "https://www.espressif.com/en/products/socs/esp8266",
+              "state": "captured",
+              "sha256": "2aa7836c0ad5da655367cfd0ef0675816f070a90e256d1b1ac752eaca50671b1",
+              "bytes": 72567,
+              "kind": "documentation",
+              "record_path": "resources/1ea73588979f3ccad2918e8620e2c67fe76cfff755af7c8695d394820170d900/record.json",
+              "linked_products": [
+                "pandabyte-x8266-wifi-development-board"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "text/html",
+              "path": "resources/1ea73588979f3ccad2918e8620e2c67fe76cfff755af7c8695d394820170d900/source.html"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "slug": "pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "source_sku": "ESPXC3",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:24:46.485Z",
+        "raw_sha256": "24bfb63a1b260a0f51a767f1df58fb4a8cd00ae9b2b0f973697e32972e016fc4",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:26.137279+00:00",
+        "raw_sha256": "debb1e816e47b1ddcabcd5b365fb8e53cdb976c74894c3e9616a2b8f3e2c91b0",
+        "raw_format": "HTML response",
+        "byte_count": 1683886
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "7ac7b7b334065807c6fb76562c0606cb1dc1c5db7db681e7a55a140f26f8aa27",
+        "normalized_text_sha256": "ccd304cb69cf670371dc9fddb95d9c78c71913187cdd6e0180951a3ecbbf8326",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 10
+          },
+          {
+            "field": "description",
+            "line": 12
+          },
+          {
+            "field": "description",
+            "line": 13
+          },
+          {
+            "field": "description",
+            "line": 17
+          },
+          {
+            "field": "description",
+            "line": 18
+          },
+          {
+            "field": "description",
+            "line": 19
+          },
+          {
+            "field": "description",
+            "line": 21
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "24bfb63a1b260a0f51a767f1df58fb4a8cd00ae9b2b0f973697e32972e016fc4",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "Equipped with 4 MB of flash memory",
+            "corroboratingSourceFragments": [
+              "4MB FLASH"
+            ]
+          },
+          {
+            "excerpt": "Wi-Fi and Bluetooth capabilities",
+            "corroboratingSourceFragments": [
+              "Wi­Fi",
+              "Bluetooth"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-C3-WROOM-2 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "2375b1be75ebbfcffa050e6a26c3ee7957bc7171b319066081a491d1b2e21161",
+              "bytes": 958836,
+              "kind": "documentation",
+              "record_path": "resources/cc602fcad5c792bc2aa65e41e9457835498f64bdbbbfd230359597341504a426/record.json",
+              "linked_products": [
+                "pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+                "pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/cc602fcad5c792bc2aa65e41e9457835498f64bdbbbfd230359597341504a426/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "slug": "pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "source_sku": "ESPXC3M",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:25:05.897Z",
+        "raw_sha256": "33426254683437e8de7f34bc43ca75b228adf66d74771b14fb7271d9a056e0f6",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:26.282520+00:00",
+        "raw_sha256": "580d3f5fdb3ef81107f03721721848a5e0c43f077d8a10fab2de310f45c8be8a",
+        "raw_format": "HTML response",
+        "byte_count": 1764786
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "0ae9dc30a7ed0c58f99845c2e760ada02744269e2fe1083b79990e8b1924ee17",
+        "normalized_text_sha256": "4070adb040e8301468adbd3073900a38ce60d3cd39d233dc9e9aa1db9f997a25",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 11
+          },
+          {
+            "field": "description",
+            "line": 14
+          },
+          {
+            "field": "description",
+            "line": 15
+          },
+          {
+            "field": "description",
+            "line": 20
+          },
+          {
+            "field": "description",
+            "line": 23
+          },
+          {
+            "field": "description",
+            "line": 24
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "33426254683437e8de7f34bc43ca75b228adf66d74771b14fb7271d9a056e0f6",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "Equipped with 4 MB of flash memory",
+            "corroboratingSourceFragments": [
+              "4MB FLASH"
+            ]
+          },
+          {
+            "excerpt": "Wi-Fi and Bluetooth capabilities",
+            "corroboratingSourceFragments": [
+              "Wi­Fi",
+              "Bluetooth"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-C3-WROOM-2 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "2375b1be75ebbfcffa050e6a26c3ee7957bc7171b319066081a491d1b2e21161",
+              "bytes": 958836,
+              "kind": "documentation",
+              "record_path": "resources/cc602fcad5c792bc2aa65e41e9457835498f64bdbbbfd230359597341504a426/record.json",
+              "linked_products": [
+                "pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+                "pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/cc602fcad5c792bc2aa65e41e9457835498f64bdbbbfd230359597341504a426/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Espressif Arduino board variant (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xc3m",
+          "kind": "new_primary_board_source",
+          "originalUrl": null,
+          "evidence": [
+            "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+            "https://api.github.com/repos/espressif/arduino-esp32/contents/variants/pandabyte_xc3m"
+          ],
+          "caveat": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "slug": "pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "source_sku": "ESPXC5",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:25:13.263Z",
+        "raw_sha256": "a1484e5dd5c3b6079b54814e45490ea9124f7429283e5c246574688800c50ee2",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:26.417101+00:00",
+        "raw_sha256": "0b9fa42d5af8a0bb8bb2f50c6e3d475222cc7445799352229ef913c79985529a",
+        "raw_format": "HTML response",
+        "byte_count": 1762622
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "93ec1e00c6a645023630072034defe2bad94f0f73c6025b7729bb160065a292d",
+        "normalized_text_sha256": "088ad7d517c3f5334d9a74b0cb0f41fe281da1988f0ca11f41256382464aca78",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 7
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 15
+          },
+          {
+            "field": "description",
+            "line": 16
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "a1484e5dd5c3b6079b54814e45490ea9124f7429283e5c246574688800c50ee2",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "Bluetooth 5 (LE) and IEEE 802.15.4 (supporting protocols like Zigbee / Thread)",
+            "corroboratingSourceFragments": [
+              "Bluetooth 5 LE",
+              "Zigbee",
+              "Thread (802.15.4)"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-C5-WROOM-1 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://documentation.espressif.com/esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "fa50f329237226d09c5b53460e65d8a2561c58fb5fb08945c12990a2c61f8e9e",
+              "bytes": 1600673,
+              "kind": "documentation",
+              "record_path": "resources/9e3f5239f40d1fcb63db3c13574dbcf50e318140b8063724c41e5161ed15a63a/record.json",
+              "linked_products": [
+                "pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/9e3f5239f40d1fcb63db3c13574dbcf50e318140b8063724c41e5161ed15a63a/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Espressif Arduino board variant (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xc5",
+          "kind": "new_primary_board_source",
+          "originalUrl": null,
+          "evidence": [
+            "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+            "https://api.github.com/repos/espressif/arduino-esp32/contents/variants/pandabyte_xc5"
+          ],
+          "caveat": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "slug": "pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "source_sku": "ESPXC6",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:25:22.066Z",
+        "raw_sha256": "fea445e0e54124fcc981c5307189200db53e2ffdbac51b0ed66db82e78a21004",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:28.498194+00:00",
+        "raw_sha256": "f7b03609c556f284f4c81fa5887c9bc2d311c36a0e8287726c73ae1b05159174",
+        "raw_format": "HTML response",
+        "byte_count": 1745208
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "3444417099f373d72552190aae91ea8eb3455aba858feccb5598fba34693f7a5",
+        "normalized_text_sha256": "477010938969ff932ee377bdee304fbd44fd15cdb2d0564f2f21e6ddbae5e1bf",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 10
+          },
+          {
+            "field": "description",
+            "line": 13
+          },
+          {
+            "field": "description",
+            "line": 16
+          },
+          {
+            "field": "description",
+            "line": 19
+          },
+          {
+            "field": "description",
+            "line": 20
+          },
+          {
+            "field": "description",
+            "line": 21
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "fea445e0e54124fcc981c5307189200db53e2ffdbac51b0ed66db82e78a21004",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "Equipped with 8 MB of flash memory",
+            "corroboratingSourceFragments": [
+              "FLASH: 8 MB"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-C6-WROOM-1 Datasheet",
+          "url": "https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "163020762fa6d499e0c611c5a13e78ad9d4720b421c6bc5e14e16fc748862b73",
+              "bytes": 938372,
+              "kind": "documentation",
+              "record_path": "resources/ed78eaeca660fefa5509e22367265e66d2a3a71cad3e57e3ed8bafe62cc72426/record.json",
+              "linked_products": [
+                "pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/ed78eaeca660fefa5509e22367265e66d2a3a71cad3e57e3ed8bafe62cc72426/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Espressif Arduino board variant (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xc6",
+          "kind": "new_primary_board_source",
+          "originalUrl": null,
+          "evidence": [
+            "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+            "https://api.github.com/repos/espressif/arduino-esp32/contents/variants/pandabyte_xc6"
+          ],
+          "caveat": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "slug": "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "source_sku": "XLORA",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:25:29.903Z",
+        "raw_sha256": "ae262911bdd786075da9a35576c3e83f7dc135189474e634d27ba1c3ab3eb7d8",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:28.762637+00:00",
+        "raw_sha256": "8e0a06d3a7e1430164219e35748dd1d1ade51efb961f5568bb04a03a0f53a89d",
+        "raw_format": "HTML response",
+        "byte_count": 1764372
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "2a6c9075a3c5c41c48ab5956b9afd755b73e4e0e267be348a667d039e6a35ca4",
+        "normalized_text_sha256": "1eed1fa37557078cb64f8f2816ad904aa2c9894c98560fad405e57b320d2e2ea",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 9
+          },
+          {
+            "field": "description",
+            "line": 10
+          },
+          {
+            "field": "description",
+            "line": 11
+          },
+          {
+            "field": "description",
+            "line": 15
+          },
+          {
+            "field": "description",
+            "line": 16
+          },
+          {
+            "field": "description",
+            "line": 17
+          },
+          {
+            "field": "description",
+            "line": 18
+          },
+          {
+            "field": "description",
+            "line": 19
+          },
+          {
+            "field": "description",
+            "line": 20
+          },
+          {
+            "field": "description",
+            "line": 21
+          },
+          {
+            "field": "description",
+            "line": 22
+          },
+          {
+            "field": "description",
+            "line": 23
+          },
+          {
+            "field": "description",
+            "line": 26
+          },
+          {
+            "field": "description",
+            "line": 27
+          },
+          {
+            "field": "description",
+            "line": 28
+          },
+          {
+            "field": "description",
+            "line": 29
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "ae262911bdd786075da9a35576c3e83f7dc135189474e634d27ba1c3ab3eb7d8",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "integrated Wi-Fi and Bluetooth",
+            "corroboratingSourceFragments": [
+              "802.11",
+              "Bluetooth"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-WROOM-32E Datasheet",
+          "url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "4c7a345d1c1bfec34c38665639e39a7f43b79a35a12f6adcc2c7c0f83850f8b8",
+              "bytes": 1230114,
+              "kind": "documentation",
+              "record_path": "resources/603fea9a2c75d2b8aff39f7a06bd6e28d3bca7a314de9e45b7e30750b46a2554/record.json",
+              "linked_products": [
+                "esp32-x32-microcontroller-board-arduino-compatible",
+                "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/603fea9a2c75d2b8aff39f7a06bd6e28d3bca7a314de9e45b7e30750b46a2554/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Official RA-01H Datasheet",
+          "url": "https://ai-thinker.eu/product/ai-thinker-sx1276-soc-chip-868mhz-ultra-long-distance-wireless-spread-spectrum-lora-module-ra-01h/",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://ai-thinker.eu/product/ai-thinker-sx1276-soc-chip-868mhz-ultra-long-distance-wireless-spread-spectrum-lora-module-ra-01h/",
+              "final_url": null,
+              "state": "error",
+              "sha256": null,
+              "bytes": null,
+              "kind": "documentation",
+              "record_path": "resources/4bdcfb0f8e34d5439e30279efc2fbb3796076acc8fb31ebc4fc13d22e4e0f780/record.json",
+              "linked_products": [
+                "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": null,
+              "path": null
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        },
+        {
+          "label": "Ai-Thinker RA-01H module documentation",
+          "url": "https://docs.ai-thinker.com/en/Ra-01H/index.html",
+          "kind": "manufacturer_substitute",
+          "originalUrl": "https://ai-thinker.eu/product/ai-thinker-sx1276-soc-chip-868mhz-ultra-long-distance-wireless-spread-spectrum-lora-module-ra-01h/",
+          "evidence": [
+            "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+            "https://docs.ai-thinker.com/en/Ra-01H/index.html"
+          ],
+          "caveat": "Module reference, not a PandaByte xLoRa board wiki; verify installed module and revisions before wiring.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review",
+          "original_source_url": "https://ai-thinker.eu/product/ai-thinker-sx1276-soc-chip-868mhz-ultra-long-distance-wireless-spread-spectrum-lora-module-ra-01h/"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "slug": "pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "source_sku": "ESPXS3",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+        "captured_at": "2026-10-25T14:25:47.749Z",
+        "raw_sha256": "a5210bf6fd5ff90d0cd3d33c5b8df4f2b81980f7bab2c2f71f8c9bbade517037",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:29.631076+00:00",
+        "raw_sha256": "32650b23a31c5cec01a77b2d972de46c8389c19e67dec59ad8572ac6bdad7ad1",
+        "raw_format": "HTML response",
+        "byte_count": 1766424
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "eeac85bfc81182208a21b578bb565bbd9fa857f66dc1d2fd80fa219d0c83b119",
+        "normalized_text_sha256": "fd31ea5b8a97d3596b43f26e1ca90ea6e755e1fee6a59f40fe7377dcc221e3f6",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 12
+          },
+          {
+            "field": "description",
+            "line": 17
+          },
+          {
+            "field": "description",
+            "line": 25
+          },
+          {
+            "field": "description",
+            "line": 26
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "a5210bf6fd5ff90d0cd3d33c5b8df4f2b81980f7bab2c2f71f8c9bbade517037",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "16 MB of flash memory",
+            "corroboratingSourceFragments": [
+              "16 MB FLASH"
+            ]
+          },
+          {
+            "excerpt": "8 MB of PSRAM",
+            "corroboratingSourceFragments": [
+              "8 MB PSRAM"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Official ESP32-S3-WROOM-1 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf",
+              "final_url": "https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf",
+              "state": "captured",
+              "sha256": "27d71971da07c280c6068d08c74720d1a25b8f20cf8494dc1765bdd28d40d435",
+              "bytes": 1280501,
+              "kind": "documentation",
+              "record_path": "resources/bcd526f54b8de686cec4db67219e36ea7ace50cddb0c92f3dfdac49cf99ffd2e/record.json",
+              "linked_products": [
+                "pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "application/pdf",
+              "path": "resources/bcd526f54b8de686cec4db67219e36ea7ace50cddb0c92f3dfdac49cf99ffd2e/source.pdf"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Espressif Arduino board variant (source code)",
+          "url": "https://github.com/espressif/arduino-esp32/tree/master/variants/pandabyte_xs3",
+          "kind": "new_primary_board_source",
+          "originalUrl": null,
+          "evidence": [
+            "https://github.com/espressif/arduino-esp32/blob/master/boards.txt",
+            "https://api.github.com/repos/espressif/arduino-esp32/contents/variants/pandabyte_xs3"
+          ],
+          "caveat": "Matching board name in official Arduino core; not a recovered PandaByte wiki or independent electrical verification.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        },
+        {
+          "label": "PandaByte xS3 and BMV080 project tutorial",
+          "url": "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+          "kind": "related_product_tutorial",
+          "originalUrl": null,
+          "evidence": [
+            "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+            "https://youtu.be/z9ygY5GQSpk"
+          ],
+          "caveat": "Product-specific tutorial; attribution and external code not independently verified.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-esp32c3-arduino-iot-kit",
+      "slug": "pandabyte-esp32c3-arduino-iot-kit",
+      "source_sku": "xC3KITV2",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-esp32c3-arduino-iot-kit",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-esp32c3-arduino-iot-kit",
+        "captured_at": "2026-10-25T14:23:04.367Z",
+        "raw_sha256": "a7e4f0d69da0977ef0dad3bdf4bfed6f13bdb8cbef5b0c93fed695f452607b7f",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-esp32c3-arduino-iot-kit.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-esp32c3-arduino-iot-kit",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-esp32c3-arduino-iot-kit",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:31.549282+00:00",
+        "raw_sha256": "25afda1158fd548b00899cd54f07d42b84ba1da4f268df8565bccd0c20d01934",
+        "raw_format": "HTML response",
+        "byte_count": 1748274
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "1edad80bf16443b4aa42d1a632b2491fc6042f4ff2823b684d1b0600dd4b27c0",
+        "normalized_text_sha256": "20980fb0a161fd038d7d622adc0794186950fb9b6030d7ddc6f6212b0d497907",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-esp32c3-arduino-iot-kit/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "a7e4f0d69da0977ef0dad3bdf4bfed6f13bdb8cbef5b0c93fed695f452607b7f",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "source-kit-count-reconciliation"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination",
+        "source-kit-count-reconciliation"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-lorawan-kit-868-mhz",
+      "slug": "pandabyte-lorawan-kit-868-mhz",
+      "source_sku": "LORAKIT",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-lorawan-kit-868-mhz",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-lorawan-kit-868-mhz",
+        "captured_at": "2026-10-25T14:23:20.298Z",
+        "raw_sha256": "cb45fb5a6cfe9d81df7b2a78675f871fbb5467160e458188cc23d9db940ce883",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-lorawan-kit-868-mhz.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-lorawan-kit-868-mhz",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-lorawan-kit-868-mhz",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:32.070990+00:00",
+        "raw_sha256": "471a409620fc4a959f53ec683b8e4bc3ae72a0c9c5984de1c21a88875b31dd04",
+        "raw_format": "HTML response",
+        "byte_count": 1682651
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "f851a91408b00746239839cb1f3bcb96e82c65c520aa4f74b468e95b455419e2",
+        "normalized_text_sha256": "42295de4e4b8822fbb808cb50976c099120b57421e1a7b0a4d797d21febb3bd2",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-lorawan-kit-868-mhz/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "cb45fb5a6cfe9d81df7b2a78675f871fbb5467160e458188cc23d9db940ce883",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "PandaByte xLoRa ESP32 Microcontroller Board (5 Units)",
+            "corroboratingSourceFragments": [
+              "five xLoRa ESP32 microcontroller boards"
+            ]
+          },
+          {
+            "excerpt": "PandaByte DHT11 Sensor (5 Units)",
+            "corroboratingSourceFragments": [
+              "five DHT11 sensors"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/accelerometer-adxl345-grove-compatible",
+      "slug": "accelerometer-adxl345-grove-compatible",
+      "source_sku": "PBADXL345",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/accelerometer-adxl345-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/accelerometer-adxl345-grove-compatible",
+        "captured_at": "2026-10-25T14:20:07.609Z",
+        "raw_sha256": "1aef758f387e30ba80b03a1daf3d5d05f8fdcd8c499f585e8dc64071f4eca919",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\accelerometer-adxl345-grove-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/accelerometer-adxl345-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/accelerometer-adxl345-grove-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:32.196846+00:00",
+        "raw_sha256": "859adfc6a79aa2edda60b34aac31a84d1879997765d79dd87b40282d683fe713",
+        "raw_format": "HTML response",
+        "byte_count": 1751670
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "7e24214b2bc6f0328ad3a0be9d4ff7aa698834e7e1dc04f66dc1216077af8608",
+        "normalized_text_sha256": "4b93a2522ec3cb811b67435d8c967401cef3659bf35f34c7db7d858d2dbe16ef",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/accelerometer-adxl345-grove-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 4
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "1aef758f387e30ba80b03a1daf3d5d05f8fdcd8c499f585e8dc64071f4eca919",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "supports both I2C and SPI interfaces",
+            "corroboratingSourceFragments": [
+              "SPI",
+              "I2C"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "Sensor IC supports I2C/SPI; breakout exposure not verified."
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/active-buzzer-sensor-module",
+      "slug": "active-buzzer-sensor-module",
+      "source_sku": "PBABUZZ",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/active-buzzer-sensor-module",
+        "final_url": "https://www.pandabyte.in/product-page/active-buzzer-sensor-module",
+        "captured_at": "2026-10-25T14:20:17.213Z",
+        "raw_sha256": "60aa8af0615dba3fe4dbc6cb409558dc27d125a5a3e964ad1698fea4d8951850",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\active-buzzer-sensor-module.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/active-buzzer-sensor-module",
+        "final_url": "https://www.pandabyte.in/product-page/active-buzzer-sensor-module",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:32.607745+00:00",
+        "raw_sha256": "e28206eeed9a8b19ca64d47e78d042502d1681d87dd53302607e504244aff9d8",
+        "raw_format": "HTML response",
+        "byte_count": 1675585
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "95987795d14a49ad475c2be4ae4d352d4b656452b2f31dde88ff46a15f5a944d",
+        "normalized_text_sha256": "1d01731fbefe8c4baa68a1c36040f3e4ef0aa23c518ce56535a8f29ee34e9d9e",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/active-buzzer-sensor-module/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "60aa8af0615dba3fe4dbc6cb409558dc27d125a5a3e964ad1698fea4d8951850",
+        "disposition": "requires_individual_review",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/barometric-pressure-sensor-bmp580-grove-compatible",
+      "slug": "barometric-pressure-sensor-bmp580-grove-compatible",
+      "source_sku": "PBBMP580",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/barometric-pressure-sensor-bmp580-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/barometric-pressure-sensor-bmp580-grove-compatible",
+        "captured_at": "2026-10-25T14:20:36.819Z",
+        "raw_sha256": "b40805d4fe9a1349d6ad1ea1ebf406f2425c9ecc1515bc4d19e2b06ba681a3b6",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\barometric-pressure-sensor-bmp580-grove-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/barometric-pressure-sensor-bmp580-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/barometric-pressure-sensor-bmp580-grove-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:35.376967+00:00",
+        "raw_sha256": "affc6ccc7418db13873b44669ab793810dad08cc3c907ba239602a941beca08e",
+        "raw_format": "HTML response",
+        "byte_count": 1750581
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "14d4503a53116addd2b77d903e322f21f3781d561c9911ed17a1bcffe64ce2c5",
+        "normalized_text_sha256": "7ef956f8c7cb223a9228e4b5948e95d2dccd1edf9ddd7927ae57331360d539e3",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/barometric-pressure-sensor-bmp580-grove-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 8
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "b40805d4fe9a1349d6ad1ea1ebf406f2425c9ecc1515bc4d19e2b06ba681a3b6",
+        "disposition": "requires_individual_review",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/led-switch-module",
+      "slug": "led-switch-module",
+      "source_sku": "PBLEDSW",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/led-switch-module",
+        "final_url": "https://www.pandabyte.in/product-page/led-switch-module",
+        "captured_at": "2026-10-25T14:21:32.088Z",
+        "raw_sha256": "b92f73eb3659628f9ec4b333c42ed08492c2b40301a87c63e25d34b1e28a1b4a",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\led-switch-module.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/led-switch-module",
+        "final_url": "https://www.pandabyte.in/product-page/led-switch-module",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:35.654274+00:00",
+        "raw_sha256": "d59fe714b9a3129b544da48c7b72c8534d45566da74d606f94442f1a74f4661e",
+        "raw_format": "HTML response",
+        "byte_count": 1743478
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "783c35282f93f827eb1d73ddc7ca563c3897eac454e5f6f73c72be03ba07f935",
+        "normalized_text_sha256": "b8e09a9c280eb390e25b238d77c79e65638d32b641076f1e674ec1a95af09e3b",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/led-switch-module/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 7
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 10
+          },
+          {
+            "field": "description",
+            "line": 11
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "b92f73eb3659628f9ec4b333c42ed08492c2b40301a87c63e25d34b1e28a1b4a",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "single-color LED with an integrated push button",
+            "corroboratingSourceFragments": [
+              "SWITCH",
+              "LED"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/light-sensor-temt6000-grove-compatible",
+      "slug": "light-sensor-temt6000-grove-compatible",
+      "source_sku": "TEMT6000",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/light-sensor-temt6000-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/light-sensor-temt6000-grove-compatible",
+        "captured_at": "2026-10-25T14:21:43.372Z",
+        "raw_sha256": "7eeb81751da4739c3070d3858c04ce4ae0796fbb2b8981318add29a24e4e0711",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\light-sensor-temt6000-grove-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/light-sensor-temt6000-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/light-sensor-temt6000-grove-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:36.314512+00:00",
+        "raw_sha256": "5c71f6c06b58e12abef59f42b799ac3b8c9da826001dd7753519f8773add9a7b",
+        "raw_format": "HTML response",
+        "byte_count": 1753006
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "421528a6de87635c00fcf05e60dc11d678d9c98e207a1eb74b0d818b07da36fb",
+        "normalized_text_sha256": "17c58938588ecf8c9dee0f176b8e062fb220f4b3451bc7e4212c4bd708700a93",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/light-sensor-temt6000-grove-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "7eeb81751da4739c3070d3858c04ce4ae0796fbb2b8981318add29a24e4e0711",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "source-unrelated-rgb-copy"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "source-unrelated-rgb-copy"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/m5stack-mini-scale-weighing-unit-hx711",
+      "slug": "m5stack-mini-scale-weighing-unit-hx711",
+      "source_sku": "SCALEHX711",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/m5stack-mini-scale-weighing-unit-hx711",
+        "final_url": "https://www.pandabyte.in/product-page/m5stack-mini-scale-weighing-unit-hx711",
+        "captured_at": "2026-10-25T14:22:00.768Z",
+        "raw_sha256": "37d8ffe803ed9a5c599ab265851bd5b67e0892a0b13d72e5094c501ec13f0356",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\m5stack-mini-scale-weighing-unit-hx711.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/m5stack-mini-scale-weighing-unit-hx711",
+        "final_url": "https://www.pandabyte.in/product-page/m5stack-mini-scale-weighing-unit-hx711",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:37.459768+00:00",
+        "raw_sha256": "d0f21a0e0ab062f402d88c8e93f0cb1b4015fcc4d9ba850d337824d1093d9213",
+        "raw_format": "HTML response",
+        "byte_count": 1726890
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "1f3d5e184d7ea11de925847cb796b2b275bfb10c8ac3a9cf6d00838c04b1e14b",
+        "normalized_text_sha256": "19fef6dbbc4a949bbbedf18e24755dead36bd52377f823b67d9d682de89a480d",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/m5stack-mini-scale-weighing-unit-hx711/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 7
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "37d8ffe803ed9a5c599ab265851bd5b67e0892a0b13d72e5094c501ec13f0356",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "additional-rgb-copy-review"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "additional-rgb-copy-review"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/neo-6m-gps-grove-compatible",
+      "slug": "neo-6m-gps-grove-compatible",
+      "source_sku": "PBNEO6M",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/neo-6m-gps-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/neo-6m-gps-grove-compatible",
+        "captured_at": "2026-10-25T14:22:28.251Z",
+        "raw_sha256": "8ee408340969f6b0abdb5600aa9e23d84c701e58959b809179c7594b1a7f118f",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\neo-6m-gps-grove-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/neo-6m-gps-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/neo-6m-gps-grove-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:38.615674+00:00",
+        "raw_sha256": "e093e1738cf056b46636e917e70753f12104852ba7a2194c5a83d9e18c2be504",
+        "raw_format": "HTML response",
+        "byte_count": 1748764
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "73db2cdca0bf61ddeec2a246609a53374ea927ab6bae82ed4ce3a41b535274f2",
+        "normalized_text_sha256": "005e41595856823a6bbf3394b7bfa64a02c36f857e9d15b576b2423a503854de",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/neo-6m-gps-grove-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 8
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "8ee408340969f6b0abdb5600aa9e23d84c701e58959b809179c7594b1a7f118f",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "ceramic antenna",
+            "corroboratingSourceFragments": [
+              "ceramic",
+              "antenna"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+      "slug": "pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+      "source_sku": "MPU6050",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+        "captured_at": "2026-10-25T14:22:46.155Z",
+        "raw_sha256": "9cdf3ddeced67738aff50f19da6f76134ebdad4168be4499d39123037a2f78af",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:39.452069+00:00",
+        "raw_sha256": "d305f37f4ff526383cf7e11ce1c109a5c478bd149cec15395605313d8eec665f",
+        "raw_format": "HTML response",
+        "byte_count": 1744708
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "3ecae27c1cb54e29dee4e5d83451da59a830ba4bea111af66d551dec5ef5d458",
+        "normalized_text_sha256": "c4e95e2d0659906aa76a72e0d76e00c4aa37ae2cf4af2993d132acbaab6402bb",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "9cdf3ddeced67738aff50f19da6f76134ebdad4168be4499d39123037a2f78af",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "6-axis accelerometer and gyroscope sensor",
+            "corroboratingSourceFragments": [
+              "6-axis",
+              "accelerometer",
+              "gyro"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "slug": "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "source_sku": "PB-BMV080",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+        "captured_at": "2026-10-25T14:22:53.069Z",
+        "raw_sha256": "ffd6ccc99f73fa1038a576215071028e5f7e8a4604e434766793d96ea3dae350",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:39.870354+00:00",
+        "raw_sha256": "1f2fa748b86b86baa4df59bc4f03b7ad3892fa8c3998ac76dfadd7ee07b2cda4",
+        "raw_format": "HTML response",
+        "byte_count": 1745311
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "720a5b1cccc7836f3322097e6277c168d9843ac086985cf4b6aa716f56442e95",
+        "normalized_text_sha256": "6a2512d95b4923cbeaec9b46d21f0cbf619975e940788e9a0404fee91c48f25d",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": null,
+        "source_raw_sha256": "ffd6ccc99f73fa1038a576215071028e5f7e8a4604e434766793d96ea3dae350",
+        "disposition": "no_product_info",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "source-bundle-offer-unverified"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [
+        {
+          "label": "Youtube Tutorial",
+          "url": "https://youtu.be/z9ygY5GQSpk",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        },
+        {
+          "label": "Arduino Library",
+          "url": "https://github.com/sparkfun/SparkFun_BMV080_Arduino_Library",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        },
+        {
+          "label": "Official Bosch BMV080 Specs",
+          "url": "https://www.bosch-sensortec.com/products/environmental-sensors/particulate-matter-sensor/bmv080/",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://www.bosch-sensortec.com/products/environmental-sensors/particulate-matter-sensor/bmv080/",
+              "final_url": "https://www.bosch-sensortec.com/en/products/environmental-sensors/particulate-matter-sensor/bmv080",
+              "state": "captured",
+              "sha256": "3d31d0cc53d5c77900cc806d0707710c527f9ff355e1e7fdaf9e5582e6baf54c",
+              "bytes": 253651,
+              "kind": "documentation",
+              "record_path": "resources/0a617460896b2299c441020252a953932080102ff3e443c21ab283fc66ca6601/record.json",
+              "linked_products": [
+                "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "text/html",
+              "path": "resources/0a617460896b2299c441020252a953932080102ff3e443c21ab283fc66ca6601/source.html"
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights"
+        },
+        {
+          "label": "Bosch SDK Download",
+          "url": "https://www.bosch-sensortec.com/software-tools/double-opt-in-forms/sdk-v11-2.html",
+          "kind": "archived_original",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://www.bosch-sensortec.com/software-tools/double-opt-in-forms/sdk-v11-2.html",
+              "final_url": null,
+              "state": "error",
+              "sha256": null,
+              "bytes": null,
+              "kind": "documentation",
+              "record_path": "resources/57f2279a40ee484447e7c87911f3215445a477c29d9e3261d8e8aa5e31af5214/record.json",
+              "linked_products": [
+                "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": null,
+              "path": null
+            }
+          ],
+          "recommended_action": "needs_review",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Captured original product resource link",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        },
+        {
+          "label": "Bosch BMV080 sensor documentation",
+          "url": "https://www.bosch-sensortec.com/en/products/environmental-sensors/particulate-matter-sensor/bmv080",
+          "kind": "manufacturer_substitute",
+          "originalUrl": "https://www.bosch-sensortec.com/products/environmental-sensors/particulate-matter-sensor/bmv080/",
+          "evidence": [
+            "https://www.bosch-sensortec.com/en/products/environmental-sensors/particulate-matter-sensor/bmv080"
+          ],
+          "caveat": "Manufacturer sensor reference, not PandaByte board documentation.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [
+            {
+              "requested_url": "https://www.bosch-sensortec.com/products/environmental-sensors/particulate-matter-sensor/bmv080/",
+              "final_url": "https://www.bosch-sensortec.com/en/products/environmental-sensors/particulate-matter-sensor/bmv080",
+              "state": "captured",
+              "sha256": "3d31d0cc53d5c77900cc806d0707710c527f9ff355e1e7fdaf9e5582e6baf54c",
+              "bytes": 253651,
+              "kind": "documentation",
+              "record_path": "resources/0a617460896b2299c441020252a953932080102ff3e443c21ab283fc66ca6601/record.json",
+              "linked_products": [
+                "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor"
+              ],
+              "ingestion_status": "not_indexed_not_in_listing_manifest",
+              "content_type": "text/html",
+              "path": "resources/0a617460896b2299c441020252a953932080102ff3e443c21ab283fc66ca6601/source.html"
+            }
+          ],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": true,
+          "access_status": "prior capture recorded; verify applicability and rights",
+          "original_source_url": "https://www.bosch-sensortec.com/products/environmental-sensors/particulate-matter-sensor/bmv080/"
+        },
+        {
+          "label": "Bosch BMV080 previous SDK versions (license required)",
+          "url": "https://www.bosch-sensortec.com/en/software-tools/software/previous-sdk-bmv-080-versions",
+          "kind": "manufacturer_substitute",
+          "originalUrl": "https://www.bosch-sensortec.com/software-tools/double-opt-in-forms/sdk-v11-2.html",
+          "evidence": [
+            "https://www.bosch-sensortec.com/en/software-tools/software/previous-sdk-bmv-080-versions"
+          ],
+          "caveat": "SDK download requires accepting Bosch license and may require access; link is a version index, not the SDK itself.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review",
+          "original_source_url": "https://www.bosch-sensortec.com/software-tools/double-opt-in-forms/sdk-v11-2.html"
+        },
+        {
+          "label": "PandaByte BMV080 project tutorial",
+          "url": "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+          "kind": "new_product_tutorial",
+          "originalUrl": null,
+          "evidence": [
+            "https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/",
+            "https://youtu.be/z9ygY5GQSpk"
+          ],
+          "caveat": "Product-specific tutorial; attribution and external code not independently verified.",
+          "href_exists": true,
+          "scope": "external_reference_applicability_unverified",
+          "physical_revision": null,
+          "rights_status": "not_reviewed",
+          "captured_evidence": [],
+          "recommended_action": "new_resource",
+          "ingestion_status": "not_indexed_pending_review",
+          "source_locator": "Independent resource research; see evidence URLs",
+          "href_fetched": false,
+          "access_status": "link researched; document capture not verified for this review"
+        }
+      ],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "source-bundle-offer-unverified"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-gp-02-gps-bds-gnss",
+      "slug": "pandabyte-gp-02-gps-bds-gnss",
+      "source_sku": "GPSGP02",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-gp-02-gps-bds-gnss",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-gp-02-gps-bds-gnss",
+        "captured_at": "2026-10-25T14:23:13.073Z",
+        "raw_sha256": "bdbe4fe4f0d46d163b98af2aaaa28dd67f4e55be54b5c21d71d6dba9807ad4a9",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-gp-02-gps-bds-gnss.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-gp-02-gps-bds-gnss",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-gp-02-gps-bds-gnss",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:40.025925+00:00",
+        "raw_sha256": "37fbf0fd50c17084e9c06c28b5211139a13c430df096f2b3a597632075e74cd9",
+        "raw_format": "HTML response",
+        "byte_count": 1746764
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "27f6edcd60a6f9cfcd008546cea7727b9de6c6c23cc87387b6d7cbe05ec37a2e",
+        "normalized_text_sha256": "8721f9ccaca9790cd1d1dd850673290e99f8609a9a4705dbf965bf60043302c6",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-gp-02-gps-bds-gnss/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "bdbe4fe4f0d46d163b98af2aaaa28dd67f4e55be54b5c21d71d6dba9807ad4a9",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "communicates via serial interface",
+            "corroboratingSourceFragments": [
+              "UART"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-max485-ttl-to-rs485-5v-12v",
+      "slug": "pandabyte-max485-ttl-to-rs485-5v-12v",
+      "source_sku": "PB-MAX485",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-max485-ttl-to-rs485-5v-12v",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-max485-ttl-to-rs485-5v-12v",
+        "captured_at": "2026-10-25T14:23:28.873Z",
+        "raw_sha256": "7ac354d22bdab3900f07ebe5a42a0ffb188cdaac58555c54bd2077fb2e8ec611",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-max485-ttl-to-rs485-5v-12v.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-max485-ttl-to-rs485-5v-12v",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-max485-ttl-to-rs485-5v-12v",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:40.583342+00:00",
+        "raw_sha256": "2fefd52b9baa8b20e1532dc9cc5553ab9b0184fb280c5d1e28e4ff9b42c86272",
+        "raw_format": "HTML response",
+        "byte_count": 1743247
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "6ba8b8e787cbbf0ad7b620767385762e4c5774a09cc16d92a9c13d09dc2ffe33",
+        "normalized_text_sha256": "ad6c34349ab2a94d3fca9d5bc13ed32037e326b029b6626d2b2264da0355db57",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-max485-ttl-to-rs485-5v-12v/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": null,
+        "source_raw_sha256": "7ac354d22bdab3900f07ebe5a42a0ffb188cdaac58555c54bd2077fb2e8ec611",
+        "disposition": "no_product_info",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-oled-screen-display-0-96-inch-grove",
+      "slug": "pandabyte-oled-screen-display-0-96-inch-grove",
+      "source_sku": "PB96OLED",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-oled-screen-display-0-96-inch-grove",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-oled-screen-display-0-96-inch-grove",
+        "captured_at": "2026-10-25T14:23:37.946Z",
+        "raw_sha256": "596dd5953ec4989a795ce746c24955fca78b0d683557e8dcd378c54c9a9731df",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-oled-screen-display-0-96-inch-grove.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-oled-screen-display-0-96-inch-grove",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-oled-screen-display-0-96-inch-grove",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:42.634425+00:00",
+        "raw_sha256": "fd268844f18ebd8fa06191c15eeddb8c917614ebbb496f5df241140b22b4cd54",
+        "raw_format": "HTML response",
+        "byte_count": 1741721
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "d9310b886272e8c98ec29d801d2624655e596678196ba7cdd347709139e074d6",
+        "normalized_text_sha256": "e76a8afaef2bd46fcab008756e2a674871fed7cde388348b835e74545e532407",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-oled-screen-display-0-96-inch-grove/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "596dd5953ec4989a795ce746c24955fca78b0d683557e8dcd378c54c9a9731df",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "dual color display",
+            "corroboratingSourceFragments": [
+              "Color: Dual Color"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-potentiometerv-10k-ohm",
+      "slug": "pandabyte-potentiometerv-10k-ohm",
+      "source_sku": "PB10KPOT",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-potentiometerv-10k-ohm",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-potentiometerv-10k-ohm",
+        "captured_at": "2026-10-25T14:23:48.337Z",
+        "raw_sha256": "cad3ee25e3da9958f7803e567d78d3073689967b810e2789040c972701178ee9",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-potentiometerv-10k-ohm.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-potentiometerv-10k-ohm",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-potentiometerv-10k-ohm",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:42.923163+00:00",
+        "raw_sha256": "e11cc07bcec1bce578863a4e806fd6023e7b78265df85d252cc42a3aae59ede8",
+        "raw_format": "HTML response",
+        "byte_count": 1747686
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "7516eed67792d9f19d87dabbceea5548ab8642f48625d24c7def3470a5d37cee",
+        "normalized_text_sha256": "c7c3a062792eaf2cd55a0e4fd4c775c6c23bc2e607538f542351b6758e47387d",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-potentiometerv-10k-ohm/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "cad3ee25e3da9958f7803e567d78d3073689967b810e2789040c972701178ee9",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "10k Ohm Potentiometer",
+            "corroboratingSourceFragments": [
+              "Resistance",
+              "10kΩ"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+      "slug": "pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+      "source_sku": "RGB10WS",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+        "captured_at": "2026-10-25T14:24:16.184Z",
+        "raw_sha256": "7a6d5df186f8bd18438ce6a6f332d27042be476fb38f8de81d8a7523fbd633d2",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:44.500493+00:00",
+        "raw_sha256": "e5600c7fb0dcb848396c08b82ec58105285e7dc981f3918c4cc4fc4c0a94727e",
+        "raw_format": "HTML response",
+        "byte_count": 1748883
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "e61c2d7329c3ebfc97fbce107cfbcfdd340407f2370a06a0beebdf3a5c524f1a",
+        "normalized_text_sha256": "21d37c80996816c112f366dd9140e9652fb4d4bb027799c449e754a18610b323",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "7a6d5df186f8bd18438ce6a6f332d27042be476fb38f8de81d8a7523fbd633d2",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "built-in push button (configured in INPUT_PULLUP mode)",
+            "corroboratingSourceFragments": [
+              "Switch: INPUT_PULLUP mode"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "INPUT_PULLUP is a software configuration; wiring/default firmware not independently verified."
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+      "slug": "pandabyte-rgb-rgb-lcd-backlight-grove-module",
+      "source_sku": "LCDBACKLIT",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+        "captured_at": "2026-10-25T14:24:24.995Z",
+        "raw_sha256": "7b70cf84a386b5af96608ec5ff5aab347a4f0c85bf7eb81e98c4abf8cfd93700",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-rgb-rgb-lcd-backlight-grove-module.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:45.337786+00:00",
+        "raw_sha256": "14a1cc16dda37f4662d3aaf99b40248be5f02dec1d24d800d285cbdbc5f72a4e",
+        "raw_format": "HTML response",
+        "byte_count": 1748458
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "f9e8aea251ea75b43ed98e081381579bd34128f656e5f398c4490478f368353f",
+        "normalized_text_sha256": "ed2183b2eef78d269c95c3ad985cb8283923a425554dc0f0968851235682cbb6",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-rgb-rgb-lcd-backlight-grove-module/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "7b70cf84a386b5af96608ec5ff5aab347a4f0c85bf7eb81e98c4abf8cfd93700",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "additional-color-wording-review"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "additional-color-wording-review"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+      "slug": "pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+      "source_sku": "xPBPM",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+        "captured_at": "2026-10-25T14:25:38.864Z",
+        "raw_sha256": "0ba8c2b3fc22319da73820a779f74080858f42afc416e987749372ffcc1b3f05",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:45.441585+00:00",
+        "raw_sha256": "f22983e4336bad4006a24c4afef6d93c38afc39eec9fa176c31aa67bac404a6c",
+        "raw_format": "HTML response",
+        "byte_count": 1745441
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "be7ffe850c951b3546829b5147578a46e4b7560da0018a8a5251f138f6dcade9",
+        "normalized_text_sha256": "e2e84500f8c86942607df4e612ad2f0c463406348ff1c9036c98a8a41ca2e0c7",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor/product.md",
+        "source_locators": []
+      },
+      "product_info_review": {
+        "source_section": null,
+        "source_raw_sha256": "0ba8c2b3fc22319da73820a779f74080858f42afc416e987749372ffcc1b3f05",
+        "disposition": "no_product_info",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/push-button-switch",
+      "slug": "push-button-switch",
+      "source_sku": "SWITCHGROVE",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/push-button-switch",
+        "final_url": "https://www.pandabyte.in/product-page/push-button-switch",
+        "captured_at": "2026-10-25T14:25:56.216Z",
+        "raw_sha256": "0d15e00e85bc98a266bc05acf944194c7a04ccb734f89f52a22000a0e9498063",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\push-button-switch.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/push-button-switch",
+        "final_url": "https://www.pandabyte.in/product-page/push-button-switch",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:46.259437+00:00",
+        "raw_sha256": "4f8955d3ac6448a484019639ead15727fb90975375fa2b8bb2e84e9bcc22af52",
+        "raw_format": "HTML response",
+        "byte_count": 1751152
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "5c297a5b102ac2b8d8987b958bc8717ac8e7219764687c538e676137b553ba27",
+        "normalized_text_sha256": "13197ee2330b156214519457b784de7ce723201f05980bb37b046ce8b037e403",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/push-button-switch/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 7
+          },
+          {
+            "field": "description",
+            "line": 8
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "0d15e00e85bc98a266bc05acf944194c7a04ccb734f89f52a22000a0e9498063",
+        "disposition": "requires_individual_review",
+        "candidate_fragments": [],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/rgb-led-circular-ws2812b-wemos-d1-mini",
+      "slug": "rgb-led-circular-ws2812b-wemos-d1-mini",
+      "source_sku": "RGBWEMOS",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/rgb-led-circular-ws2812b-wemos-d1-mini",
+        "final_url": "https://www.pandabyte.in/product-page/rgb-led-circular-ws2812b-wemos-d1-mini",
+        "captured_at": "2026-10-25T14:26:04.761Z",
+        "raw_sha256": "954ead29b758007a34ffed79e9f445e85593bc7e2c8ae13e45dbebb7cb335bc2",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\rgb-led-circular-ws2812b-wemos-d1-mini.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/rgb-led-circular-ws2812b-wemos-d1-mini",
+        "final_url": "https://www.pandabyte.in/product-page/rgb-led-circular-ws2812b-wemos-d1-mini",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:48.091804+00:00",
+        "raw_sha256": "a2ae2312d7d2054227bd3ae6e2ac8bb04694251d1d5e0836706360b6601b34fb",
+        "raw_format": "HTML response",
+        "byte_count": 1746584
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "954b771912ae2f98cdcaa32deb7385d23c736711f6a12de88644836e266b3a63",
+        "normalized_text_sha256": "2397a5fc74cb973ddb0e59c43c434b6b2e81d130edfa47b3d464e922e1077e60",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/rgb-led-circular-ws2812b-wemos-d1-mini/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "954ead29b758007a34ffed79e9f445e85593bc7e2c8ae13e45dbebb7cb335bc2",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "built-in push button (configured in INPUT_PULLUP mode)",
+            "corroboratingSourceFragments": [
+              "Switch: INPUT_PULLUP mode"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "INPUT_PULLUP is a software configuration; wiring/default firmware not independently verified."
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/rgb-led-grove-compatible",
+      "slug": "rgb-led-grove-compatible",
+      "source_sku": "RGB5050",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/rgb-led-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/rgb-led-grove-compatible",
+        "captured_at": "2026-10-25T14:26:14.150Z",
+        "raw_sha256": "c747dd2b4de19cc2a4cc69fc0465c04363a0aa2c6e4f5ed7cf262508792a33a0",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\rgb-led-grove-compatible.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/rgb-led-grove-compatible",
+        "final_url": "https://www.pandabyte.in/product-page/rgb-led-grove-compatible",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:50.242480+00:00",
+        "raw_sha256": "318898d86ef172cc7728c86f3f35a6c3262bd123c80548ebb0b55d48cde8b344",
+        "raw_format": "HTML response",
+        "byte_count": 1747655
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "a1d353574704e613ed54ba623580aaeef701c48d0295ccbec41efe4a2708a0c8",
+        "normalized_text_sha256": "b89faddcd85d36fa30b59a67a99da6ba73b28ce23dba9f7f2f288a13affb16fb",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/rgb-led-grove-compatible/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "c747dd2b4de19cc2a4cc69fc0465c04363a0aa2c6e4f5ed7cf262508792a33a0",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "source-voltage-claims"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "source-voltage-claims"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/rgb-led-matrix-ws2812b-xiao-footprint",
+      "slug": "rgb-led-matrix-ws2812b-xiao-footprint",
+      "source_sku": "RGB4X4",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/rgb-led-matrix-ws2812b-xiao-footprint",
+        "final_url": "https://www.pandabyte.in/product-page/rgb-led-matrix-ws2812b-xiao-footprint",
+        "captured_at": "2026-10-25T14:26:21.036Z",
+        "raw_sha256": "ca854a71f3feeb557db8d43b235138b371aff3e508b944cded17b7e15a8b1873",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\rgb-led-matrix-ws2812b-xiao-footprint.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/rgb-led-matrix-ws2812b-xiao-footprint",
+        "final_url": "https://www.pandabyte.in/product-page/rgb-led-matrix-ws2812b-xiao-footprint",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:50.634028+00:00",
+        "raw_sha256": "2df92e6772523065da441441747dfb71184de55eed97f98522cec1bdf9d972f6",
+        "raw_format": "HTML response",
+        "byte_count": 1736946
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "83c8f0e371e02f72040cccf489e424752c9e3ac3aa446efeb05ca7c81b391ad7",
+        "normalized_text_sha256": "9abbd7f5fb8ba6e5a86cc963f95e6c25aaad47b301849846d91302a70efb9541",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/rgb-led-matrix-ws2812b-xiao-footprint/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "ca854a71f3feeb557db8d43b235138b371aff3e508b944cded17b7e15a8b1873",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "built-in push button (configured in INPUT_PULLUP mode)",
+            "corroboratingSourceFragments": [
+              "Switch: INPUT_PULLUP mode"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [
+        "INPUT_PULLUP is a software configuration; wiring/default firmware not independently verified."
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/single-color-led-light-emitting-diode",
+      "slug": "single-color-led-light-emitting-diode",
+      "source_sku": "PBSLED",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/single-color-led-light-emitting-diode",
+        "final_url": "https://www.pandabyte.in/product-page/single-color-led-light-emitting-diode",
+        "captured_at": "2026-10-25T14:26:28.092Z",
+        "raw_sha256": "4e2506f1bae2f6c00d292cbc5ffa7dc3fd112d60f3caf17e363f8bde506fc882",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\single-color-led-light-emitting-diode.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/single-color-led-light-emitting-diode",
+        "final_url": "https://www.pandabyte.in/product-page/single-color-led-light-emitting-diode",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:51.050257+00:00",
+        "raw_sha256": "4ec87a2269bcba9a14a4750956e80a7512325ac9fb5c3a5d601121974dacc3ea",
+        "raw_format": "HTML response",
+        "byte_count": 1749059
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "cb793867393dcd9311c8e05f67a2282284fa873ec28fffa5667a4498c8774d4e",
+        "normalized_text_sha256": "599b797548c8f58d309038c5f24323c7afb06cf20aa99975e9fafae0126e7324",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/single-color-led-light-emitting-diode/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 4
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "4e2506f1bae2f6c00d292cbc5ffa7dc3fd112d60f3caf17e363f8bde506fc882",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "single-color LED",
+            "corroboratingSourceFragments": [
+              "Color:",
+              "Grove connector"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/temperature-humidity-dht11-sensor",
+      "slug": "temperature-humidity-dht11-sensor",
+      "source_sku": "PBDHT11",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/temperature-humidity-dht11-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/temperature-humidity-dht11-sensor",
+        "captured_at": "2026-10-25T14:15:20.085Z",
+        "raw_sha256": "57ca913a0c360cfb03862159d56f1c301bc8da29d42a6ab8021c9822d827b40e",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\temperature-humidity-dht11-sensor.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/temperature-humidity-dht11-sensor",
+        "final_url": "https://www.pandabyte.in/product-page/temperature-humidity-dht11-sensor",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:51.234063+00:00",
+        "raw_sha256": "feec3a9ec230486c8b614b43ce229352b3c732b351e7fe115b8ab2cca49da062",
+        "raw_format": "HTML response",
+        "byte_count": 1750092
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "f32603582f2047fc76ce86d629439e4d0a179a09854b490cdb4a17853e53eaf1",
+        "normalized_text_sha256": "6cdc36ae25c270252184fc7945234f5b775582e6aa223c3e3f222982d13763e3",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/temperature-humidity-dht11-sensor/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          },
+          {
+            "field": "description",
+            "line": 3
+          },
+          {
+            "field": "description",
+            "line": 5
+          },
+          {
+            "field": "description",
+            "line": 6
+          },
+          {
+            "field": "description",
+            "line": 8
+          },
+          {
+            "field": "description",
+            "line": 9
+          },
+          {
+            "field": "description",
+            "line": 11
+          },
+          {
+            "field": "description",
+            "line": 12
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "57ca913a0c360cfb03862159d56f1c301bc8da29d42a6ab8021c9822d827b40e",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "measuring temperature and humidity",
+            "corroboratingSourceFragments": [
+              "Temperature:",
+              "Humidity:"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": false,
+      "holds": [],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/nodemcu-grove-expansion-board-shield-hat",
+      "slug": "nodemcu-grove-expansion-board-shield-hat",
+      "source_sku": "NODEMCUHAT",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/nodemcu-grove-expansion-board-shield-hat",
+        "final_url": "https://www.pandabyte.in/product-page/nodemcu-grove-expansion-board-shield-hat",
+        "captured_at": "2026-10-25T14:22:37.433Z",
+        "raw_sha256": "7c6275c57ca5a75ec1ebd1375d18c19fcb18663437aa3bfa6270880a9d58b373",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\nodemcu-grove-expansion-board-shield-hat.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/nodemcu-grove-expansion-board-shield-hat",
+        "final_url": "https://www.pandabyte.in/product-page/nodemcu-grove-expansion-board-shield-hat",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:51.599895+00:00",
+        "raw_sha256": "b7e889632ece00dcd175f8102ea09d8622f47c1af3d49e01c4f586b601bb2eda",
+        "raw_format": "HTML response",
+        "byte_count": 1680026
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "674d09cd8f910bcb5991137507cd14e8fbba70af88a9b9a3f24f421f6781be26",
+        "normalized_text_sha256": "5e8f082b3dec5183965d13544a57ccc1b75c953e72be9135b2cfe8b9f467ec74",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/nodemcu-grove-expansion-board-shield-hat/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "7c6275c57ca5a75ec1ebd1375d18c19fcb18663437aa3bfa6270880a9d58b373",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "source-compatibility-conflict"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination",
+        "source-compatibility-conflict"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/x32-xlora-grove-expansion-board-shield-hat",
+      "slug": "x32-xlora-grove-expansion-board-shield-hat",
+      "source_sku": "X32SHIELD",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/x32-xlora-grove-expansion-board-shield-hat",
+        "final_url": "https://www.pandabyte.in/product-page/x32-xlora-grove-expansion-board-shield-hat",
+        "captured_at": "2026-10-25T14:26:38.847Z",
+        "raw_sha256": "67fc6f55c8dede4ad7294a07176625dc753457453384b64da9eec1c755d0803a",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\x32-xlora-grove-expansion-board-shield-hat.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/x32-xlora-grove-expansion-board-shield-hat",
+        "final_url": "https://www.pandabyte.in/product-page/x32-xlora-grove-expansion-board-shield-hat",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:53.419485+00:00",
+        "raw_sha256": "21ff5dce8f2d1ee75cf6f8851740247627a0c8a37f122ed9bab4e1be203e7fec",
+        "raw_format": "HTML response",
+        "byte_count": 1681190
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "3af62466b2bf0980f558e0eacf8e9ba14ef43e227e7714fa30d728a2585befa0",
+        "normalized_text_sha256": "48a8e7bcdb6361cf8eaecda22bb1c9a27b820450a8ac1971f4e1d89772547a4b",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/x32-xlora-grove-expansion-board-shield-hat/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "67fc6f55c8dede4ad7294a07176625dc753457453384b64da9eec1c755d0803a",
+        "disposition": "held_source_conflict",
+        "candidate_fragments": [],
+        "issue_codes": [
+          "source-compatibility-conflict"
+        ],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination",
+        "source-compatibility-conflict"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    },
+    {
+      "canonical_source_url": "https://www.pandabyte.in/product-page/xc3m-grove-expansion-board-shield-hat",
+      "slug": "xc3m-grove-expansion-board-shield-hat",
+      "source_sku": "XC3MHAT",
+      "match_status": "exact_slug_sku_source",
+      "scope": "product_listing",
+      "physical_revision": null,
+      "archived_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/xc3m-grove-expansion-board-shield-hat",
+        "final_url": "https://www.pandabyte.in/product-page/xc3m-grove-expansion-board-shield-hat",
+        "captured_at": "2026-10-25T14:26:46.928Z",
+        "raw_sha256": "2f87eaaca233918e87cd9389aa6f6352daef8edcc63c563ef5a8bf2e186ebadf",
+        "raw_format": "archived Firecrawl JSON",
+        "raw_reference": ".firecrawl\\product-archive\\2026-10-25\\pages\\xc3m-grove-expansion-board-shield-hat.json",
+        "byte_count": null
+      },
+      "live_observation": {
+        "requested_url": "https://www.pandabyte.in/product-page/xc3m-grove-expansion-board-shield-hat",
+        "final_url": "https://www.pandabyte.in/product-page/xc3m-grove-expansion-board-shield-hat",
+        "status": 200,
+        "captured_at": "2026-10-31T23:49:54.370323+00:00",
+        "raw_sha256": "b64332aa42c291580c8a68d077245ff46e8d39ea7cb698b72a2cb950c92f9703",
+        "raw_format": "HTML response",
+        "byte_count": 1691618
+      },
+      "agent_existing_listing": {
+        "raw_sha256": "00b53dc78bdf2697a8f7e0a8894edeb591887fe4278a5a3b3079a45bec8e4105",
+        "normalized_text_sha256": "fd03ab2b908490cc51aef41c39208eeadd9c6156237102c64748df816a30ab59",
+        "normalization_method": "Panda Agent listing parser; parser SHA-256 4e75c50b02bbdb75705bdca1781e35829517a91f8ac1a895456d12663f6e60de",
+        "normalized_path": "products/xc3m-grove-expansion-board-shield-hat/product.md",
+        "source_locators": [
+          {
+            "field": "description",
+            "line": 2
+          }
+        ]
+      },
+      "product_info_review": {
+        "source_section": "section-2",
+        "source_raw_sha256": "2f87eaaca233918e87cd9389aa6f6352daef8edcc63c563ef5a8bf2e186ebadf",
+        "disposition": "source_corroborated_excerpts",
+        "candidate_fragments": [
+          {
+            "excerpt": "allows you to toggle between 3.3V and 5V",
+            "corroboratingSourceFragments": [
+              "Selectable 3.3V / 5V"
+            ]
+          }
+        ],
+        "issue_codes": [],
+        "verification": "Compared fields from the same listing, not independent technical verification; fragments duplicate existing public information."
+      },
+      "resources": [],
+      "unlinked_wiki_label": true,
+      "holds": [
+        "Product Wiki has no captured destination"
+      ],
+      "rights_status": "listing owner supplied; third-party reuse not reviewed",
+      "recommended_action": "needs_review",
+      "ingestion_status": "review_only_no_index_change"
+    }
+  ]
+}
