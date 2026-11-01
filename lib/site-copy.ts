@@ -18,22 +18,25 @@ export function getSiteCopy(input?: SiteCopyInput | null) {
 }
 
 export function resolveSocialLinks(links: { label: string; url: string }[], email = "") {
+  const visibleLinks = links.filter((link) => {
+    if (/^(website|web site|whatsapp)$/i.test(link.label.trim())) return false;
+    try { return !/(^|\.)whatsapp\.com$/i.test(new URL(link.url).hostname); } catch { return true; }
+  });
   const platforms = [
-    { name: "Website", match: /^(website|web site)$/i, host: /$^/ },
     { name: "Instagram", match: /instagram/i, host: /(^|\.)instagram\.com$/i },
     { name: "Email", match: /^e-?mail$/i, host: /$^/ },
     { name: "X (Twitter)", match: /^(x|twitter|x \(twitter\))$/i, host: /(^|\.)(x|twitter)\.com$/i },
     { name: "LinkedIn", match: /linkedin/i, host: /(^|\.)linkedin\.com$/i },
   ];
   const used = new Set<number>();
-  const items = platforms.map(({ name, match, host }) => {
-    const index = links.findIndex((link, i) => {
+  const items = [{ name: "WhatsApp", url: "https://www.whatsapp.com/channel/0029VaIceRtInlqNQBoRTC0J" }, ...platforms.map(({ name, match, host }) => {
+    const index = visibleLinks.findIndex((link, i) => {
       if (used.has(i)) return false;
       if (match.test(link.label.trim())) return true;
       try { return host.test(new URL(link.url).hostname); } catch { return false; }
     });
     if (index >= 0) used.add(index);
-    return { name, url: index >= 0 ? links[index].url : name === "Email" && email ? `mailto:${email}` : "#" };
-  });
-  return { items, extra: links.filter((_, index) => !used.has(index)) };
+    return { name, url: index >= 0 ? visibleLinks[index].url : name === "Email" && email ? `mailto:${email}` : "#" };
+  })];
+  return { items, extra: visibleLinks.filter((_, index) => !used.has(index)) };
 }

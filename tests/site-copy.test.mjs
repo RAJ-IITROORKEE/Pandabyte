@@ -30,6 +30,22 @@ test("social links retain published destinations and identify placeholders", () 
   ], "hello@example.com");
   assert.equal(items.find((item) => item.name === "Instagram").url, "https://instagram.com/pandabyte");
   assert.equal(items.find((item) => item.name === "Email").url, "mailto:hello@example.com");
-  assert.equal(items.find((item) => item.name === "Website").url, "#");
+  assert.equal(items.find((item) => item.name === "WhatsApp").url, "https://www.whatsapp.com/channel/0029VaIceRtInlqNQBoRTC0J");
+  assert.equal(items.some((item) => item.name === "Website"), false);
   assert.deepEqual(extra, [{ label: "Community", url: "https://example.com/community" }]);
+});
+
+test("social links replace old website and WhatsApp entries with the approved channel", () => {
+  const { items, extra } = resolveSocialLinks([
+    { label: " Website ", url: "https://www.pandabyte.in" },
+    { label: "Web site", url: "https://example.com" },
+    { label: "WhatsApp", url: "javascript:alert(1)" },
+    { label: "Old channel", url: "https://www.whatsapp.com/channel/old" },
+    { label: "X", url: "https://x.com/pandabyte" },
+    { label: "Documentation", url: "https://docs.example.com" },
+  ]);
+  assert.deepEqual(items[0], { name: "WhatsApp", url: "https://www.whatsapp.com/channel/0029VaIceRtInlqNQBoRTC0J" });
+  assert.equal(items.filter((item) => item.name === "WhatsApp").length, 1);
+  assert.equal(items.find((item) => item.name === "X (Twitter)").url, "https://x.com/pandabyte");
+  assert.deepEqual(extra, [{ label: "Documentation", url: "https://docs.example.com" }]);
 });

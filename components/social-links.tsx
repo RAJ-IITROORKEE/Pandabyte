@@ -1,13 +1,13 @@
 "use client";
 
-import { Globe, Mail } from "lucide-react";
-import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from "@tabler/icons-react";
+import { Mail } from "lucide-react";
+import { IconBrandInstagram, IconBrandLinkedin, IconBrandWhatsapp, IconBrandX } from "@tabler/icons-react";
 import { resolveSocialLinks } from "@/lib/site-copy";
 import "./social-links.css";
 
 type SocialLink = { label: string; url: string };
 
-const icons = [Globe, IconBrandInstagram, Mail, IconBrandX, IconBrandLinkedin];
+const icons = [IconBrandWhatsapp, IconBrandInstagram, Mail, IconBrandX, IconBrandLinkedin];
 
 export function SocialLinks({ links = [], email = "" }: { links?: SocialLink[]; email?: string }) {
   const { items, extra } = resolveSocialLinks(links, email);
