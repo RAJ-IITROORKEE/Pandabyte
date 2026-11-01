@@ -16,11 +16,16 @@ type MenuSection = { title: string; links: SiteLink[]; comingSoon?: boolean };
 
 export function SiteHeader({ navigationLinks = [] }: { navigationLinks?: NavigationLink[] }) {
   const pathname = usePathname();
-  return <SiteHeaderContent key={pathname} navigationLinks={navigationLinks} onCartPage={pathname === "/cart"} />;
+  return <SiteHeaderContent pathname={pathname} navigationLinks={navigationLinks} onCartPage={pathname === "/cart"} />;
 }
 
-function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: NavigationLink[]; onCartPage: boolean }) {
+function SiteHeaderContent({ pathname, navigationLinks, onCartPage }: { pathname: string; navigationLinks: NavigationLink[]; onCartPage: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [previousPath, setPreviousPath] = useState(pathname);
+  if (previousPath !== pathname) {
+    setPreviousPath(pathname);
+    setMobileOpen(false);
+  }
   const headerRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const { header } = resolveSiteNavigation(navigationLinks);
@@ -88,7 +93,7 @@ function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: N
           <span className="pb-wordmark">PandaByte.in</span>
         </Link>
 
-        <NavigationMenu className="pb-desktop-nav" aria-label="Main navigation">
+        <NavigationMenu key={pathname} className="pb-desktop-nav" aria-label="Main navigation">
           <NavigationMenuList className="pb-nav-list">
             {menus.map((menu, index) => <Fragment key={menu.label}>
               {index === 2 && <NavigationMenuItem><NavigationMenuLink asChild><Link className="pb-nav-link" href="/shop">Shop</Link></NavigationMenuLink></NavigationMenuItem>}
@@ -102,7 +107,7 @@ function SiteHeaderContent({ navigationLinks, onCartPage }: { navigationLinks: N
 
         <div className="pb-header-actions">
           <Link className="pb-icon-button" href="/shop#catalog-query" aria-label="Search catalog" onClick={() => setMobileOpen(false)}><Search aria-hidden="true" /></Link>
-          <CartDrawer onCartPage={onCartPage} onOpen={() => setMobileOpen(false)} />
+          <CartDrawer key={pathname} onCartPage={onCartPage} onOpen={() => setMobileOpen(false)} />
           <AuthControls />
           <span className="pb-theme-action"><ThemeToggle /></span>
         </div>

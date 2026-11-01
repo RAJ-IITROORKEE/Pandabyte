@@ -117,6 +117,27 @@
   padding-block: 6px;
 }
 
+.accessNotice {
+  margin: 0;
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.accessNotice p { margin: 0; }
+.retry {
+  min-height: 44px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-ink);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.retry:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+
 .item,
 .logout {
   display: flex;
