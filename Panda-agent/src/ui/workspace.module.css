@@ -6,6 +6,8 @@
 .brand { display: flex; align-items: center; gap: 9px; color: var(--foreground); text-decoration: none; font-size: 14px; font-weight: 700; }
 .logoSmall, .logo { display: inline-flex; overflow: hidden; align-items: center; justify-content: center; background: white; border-radius: 5px; }
 .logoSmall img, .logo img { object-fit: contain; }
+.logoSmall img { width: 32px; height: auto; }
+.logo img { width: 48px; height: auto; }
 .closeSidebar, .menuButton { display: grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--foreground); cursor: pointer; }
 .closeSidebar:hover, .menuButton:hover { background: var(--status-soft); }
 .newChat { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--divider); border-radius: 9px; background: transparent; color: var(--muted); text-align: left; font: inherit; font-size: 14px; }
@@ -52,6 +54,13 @@
 .disclaimer { margin: 12px 0 0; color: var(--muted); text-align: center; font-size: 12px; }
 .backdrop { display: none; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.questionForm { display:grid; gap:12px; margin-top:20px; text-align:left; }
+.questionForm label { display:grid; gap:6px; font-size:13px; }
+.questionForm select,.questionForm textarea { width:100%; padding:10px; border:1px solid var(--divider); border-radius:8px; background:var(--surface); color:var(--foreground); font:inherit; }
+.questionForm textarea { min-height:72px; resize:vertical; }
+.questionForm button { padding:10px; border:1px solid var(--divider); border-radius:8px; background:var(--surface); color:var(--foreground); }
+.questionForm button:disabled { opacity:.55; cursor:not-allowed; }
+.questionForm p { font-size:13px; color:var(--muted); }
 @media (max-width: 700px) {
   .sidebarOpen { position: fixed; z-index: 21; inset: 0 auto 0 0; max-width: min(85vw, 360px); box-shadow: 0 0 24px #0003; }
   .backdrop { display: block; position: fixed; z-index: 20; inset: 0; border: 0; background: #0008; }
@@ -60,3 +69,162 @@
   .viewport { padding: 36px 20px; }
   .composerArea { width: calc(100% - 32px); }
 }
+.workspace { height: 100dvh; min-height: 0; overflow: hidden; }
+.sidebarTop { min-height: 0; display: flex; flex-direction: column; flex: 1; }
+.newChat { color: var(--foreground); cursor: pointer; }
+.newChat:hover, .history button:hover, .suggestions button:hover { background: var(--status-soft); }
+.newChat:disabled, .history button:disabled { cursor: not-allowed; opacity: .65; }
+.search { display: flex; align-items: center; gap: 8px; margin: 16px 4px 0; padding: 8px; color: var(--muted); }
+.search input { min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: var(--foreground); font: inherit; font-size: 13px; }
+.search:focus-within { outline: 2px solid var(--focus-ring); border-radius: 6px; }
+.sidebarLabel { margin-top: 18px; }
+.history { display: flex; flex-direction: column; overflow-y: auto; gap: 2px; padding: 8px 0; }
+.history button { display: flex; justify-content: space-between; gap: 5px; width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--foreground); text-align: left; font: inherit; cursor: pointer; overflow-wrap: anywhere; }
+.history button[aria-current] { background: var(--status-soft); font-weight: 600; }
+.history button span { flex: none; color: var(--muted); font-size: 11px; }
+.history p { padding: 0 12px; }
+.model span { color: var(--muted); font-size: 12px; font-weight: 400; }
+.viewport { display: block; overflow-y: auto; padding: 24px; }
+.intro { margin: max(60px, 12vh) auto 20px; }
+.suggestions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 30px; }
+.suggestions button { padding: 12px 14px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); color: var(--foreground); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.messageList { max-width: 768px; margin: 0 auto; }
+.userMessage { width: fit-content; max-width: 85%; margin: 20px 0 32px auto; padding: 13px 17px; border-radius: 18px; background: var(--status-soft); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.assistantMessage { margin: 24px 0 36px; line-height: 1.65; overflow-wrap: anywhere; }
+.messageLabel { margin-bottom: 10px; font-size: 13px; font-weight: 700; }
+.messageText { white-space: pre-wrap; }
+.sources { display: grid; gap: 8px; margin-top: 20px; font-size: 13px; }
+.sources blockquote { margin: 0; padding: 12px 14px; border: 1px solid var(--divider); border-radius: 10px; background: var(--surface); }
+.sources blockquote p { margin: 0 0 8px; }
+.sources a { color: var(--accent-ink); }
+.sources small { display: block; margin-top: 5px; color: var(--muted); }
+.copy { display: flex; align-items: center; gap: 5px; margin-top: 14px; padding: 6px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.messageActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.copy:disabled { cursor: not-allowed; opacity: .6; }
+.pending { color: var(--muted); font-size: 14px; }
+.composerArea { flex: none; }
+.composer textarea { color: var(--foreground); max-height: 200px; resize: vertical; }
+.composer textarea:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.composerActions { margin-top: 10px; color: var(--muted); font-size: 12px; }
+.composerActions > button { background: var(--accent-ink); color: var(--background); opacity: 1; cursor: pointer; }
+.composerActions > button:disabled { background: var(--divider); color: var(--muted); cursor: not-allowed; }
+.composerActions .webSearchToggle { display: flex; width: auto; min-height: 36px; gap: 7px; padding: 7px 10px; border: 1px solid var(--divider); background: transparent; color: var(--foreground); font: inherit; opacity: 1; }
+.composerActions .webSearchToggle[aria-pressed="true"] { border-color: var(--accent-ink); background: var(--status-soft); color: var(--accent-ink); }
+.composerActions .webSearchToggle:disabled { opacity: .6; cursor: not-allowed; }
+.searchNotice { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.sourceKind { display: block; margin-bottom: 6px; font-size: 12px; }
+.status { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; color: var(--muted); font-size: 13px; }
+.status button { padding: 6px 10px; border: 1px solid var(--divider); border-radius: 6px; background: var(--surface); color: var(--foreground); cursor: pointer; }
+@media (max-width: 700px) { .viewport { padding: 18px 16px; } .intro { margin-top: 50px; } .suggestions { flex-direction: column; } .composerActions span { font-size: 11px; } }
+.activity { margin: 20px 0 32px; color: var(--muted); font-size: 13px; }
+.activity p { margin: 0 0 8px; font-weight: 600; }
+.activity summary { width: fit-content; cursor: pointer; }
+.activity ol { margin: 8px 0 0; padding-left: 22px; line-height: 1.8; }
+@keyframes activity-shimmer { to { background-position: -220% 0; } }
+.sources dl { margin: 0 0 8px; }
+.sources dt { font-weight: 700; }
+.sources dd { margin: 3px 0 0; white-space: pre-wrap; }
+
+.historyHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+.historyHeading button { padding: 6px; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
+.historyHeading button:hover { color: var(--foreground); }
+.historyRow { display: flex; align-items: center; width: 100%; min-width: 0; }
+.history .historySelect { flex: 1; min-width: 0; }
+.history .historyAction { flex: none; width: 30px; padding: 7px; color: var(--muted); }
+
+/* Keep the empty conversation focused around the welcome and composer. */
+.thread:has(.intro) { justify-content: center; }
+.thread:has(.intro) .viewport { flex: 0 1 auto; overflow: visible; padding-bottom: 12px; }
+.thread:has(.intro) .intro { margin: 0 auto 12px; }
+.thread:has(.intro) .composerArea { padding-bottom: max(24px, 8vh); }
+.sidebarHeading { margin-bottom: 18px; }
+.newChat { background: color-mix(in srgb, var(--foreground) 8%, var(--surface)); border-color: transparent; }
+.composer { border-radius: 18px; box-shadow: 0 1px 3px #0002; }
+.intro .logo { vertical-align: middle; }
+.intro h1 { font-family: Georgia, serif; font-weight: 400; letter-spacing: -.025em; }
+@media (max-height: 700px), (max-width: 700px) {
+  .thread:has(.intro) { justify-content: flex-start; }
+  .thread:has(.intro) .viewport { flex: 1; overflow-y: auto; }
+  .thread:has(.intro) .intro { margin: 24px auto; }
+  .thread:has(.intro) .composerArea { padding-bottom: 18px; }
+}
+
+/* Source and activity disclosures use only information supplied by the server. */
+.sourceCard { border: 1px solid var(--divider); border-radius: 10px; background: var(--surface); }
+.sourceCard summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; cursor: pointer; list-style: none; }
+.sourceCard summary::-webkit-details-marker, .activityDetails summary::-webkit-details-marker { display: none; }
+.sourceSummary { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.sourceSummary strong { display: block; overflow-wrap: anywhere; }
+.sourceSummary small { margin-top: 2px; }
+.sourceId { flex: none; padding: 1px 6px; border: 1px solid var(--divider); border-radius: 5px; color: var(--accent-ink); font-size: 11px; font-weight: 700; }
+.sourceCard summary > svg, .activityDetails summary > svg { flex: none; transition: transform .18s ease; }
+.sourceCard[open] summary > svg, .activityDetails[open] summary > svg { transform: rotate(180deg); }
+.sourceContent { padding: 0 14px 14px; }
+.sources .sourceContent blockquote { margin: 0; padding: 10px 12px; border: 0; border-left: 2px solid var(--accent-ink); border-radius: 0; background: var(--status-soft); white-space: pre-wrap; }
+.sourceContent a { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; }
+.sourceCard summary:focus-visible, .activityDetails summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.activityStatus { display: flex; align-items: center; gap: 9px; color: var(--foreground); }
+.activityMark, .activityPulse { display: grid; flex: none; width: 20px; height: 20px; place-items: center; border: 1px solid var(--divider); border-radius: 50%; color: var(--accent-ink); }
+.activityPulse::after { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-ink); content: ""; animation: activity-pulse 1.5s ease-in-out infinite; }
+.activityDetails summary { display: inline-flex; align-items: center; gap: 4px; padding: 4px 0; list-style: none; }
+@keyframes activity-pulse { 50% { opacity: .4; } }
+@media (prefers-reduced-motion: reduce) { .activityPulse::after { animation: none; } .sourceCard summary > svg, .activityDetails summary > svg { transition: none; } }
+
+.activity .contextSummary { margin: 10px 0 0; font-weight: 400; line-height: 1.5; }
+.markdown { line-height: 1.7; overflow-wrap: anywhere; white-space: normal; }
+.markdown > :first-child { margin-top: 0; }
+.markdown > :last-child { margin-bottom: 0; }
+.markdown a { color: var(--accent-ink); }
+.markdown pre { overflow-x: auto; padding: 14px; border: 1px solid var(--divider); border-radius: 9px; background: var(--surface); white-space: pre; }
+.markdown :not(pre) > code { padding: 2px 5px; border-radius: 4px; background: var(--status-soft); }
+.markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.markdown th, .markdown td { padding: 6px 10px; border: 1px solid var(--divider); text-align: left; }
+.markdown blockquote { margin-left: 0; padding-left: 14px; border-left: 2px solid var(--divider); color: var(--muted); }
+
+/* Sidebar action disclosures */
+.history .historySelect { justify-content: flex-start; align-items: center; }
+.history .historyTitle { flex: 1; min-width: 0; overflow: hidden; color: inherit; font-size: inherit; text-overflow: ellipsis; white-space: nowrap; }
+.history .historyStatus { flex: none; }
+.chatMenu, .accountMenu { position: relative; }
+.menuTrigger, .accountTrigger { display: flex; align-items: center; justify-content: center; cursor: pointer; list-style: none; border-radius: 8px; }
+.menuTrigger::-webkit-details-marker, .accountTrigger::-webkit-details-marker { display: none; }
+.menuTrigger { width: 32px; height: 36px; color: var(--muted); }
+.menuTrigger:hover, .accountTrigger:hover, details[open] > .menuTrigger, details[open] > .accountTrigger { background: var(--status-soft); }
+.menuTrigger:focus-visible, .accountTrigger:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.menuPanel, .accountPanel { position: absolute; z-index: 3; padding: 5px; border: 1px solid var(--divider); border-radius: 10px; background: var(--surface); box-shadow: 0 8px 24px #0003; }
+.menuPanel { top: 100%; right: 0; min-width: 142px; }
+.history .menuPanel button { justify-content: flex-start; align-items: center; gap: 9px; white-space: nowrap; }
+.account { padding: 10px 12px; }
+.accountTrigger { justify-content: flex-start; gap: 10px; min-height: 44px; padding: 6px; }
+.accountTrigger > svg { flex: none; color: var(--muted); }
+.accountName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
+.accountPanel { right: 0; bottom: calc(100% + 6px); left: 0; }
+.accountPanel .identity { padding: 8px; }
+.identityText strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.accountLinks { flex-direction: column; }
+.accountLinks a, .accountPanel .logout { width: 100%; }
+
+/* Composer controls and locally staged files */
+.composer { padding: 14px 16px 12px; }
+.composer:focus-within { border-color: color-mix(in srgb, var(--accent-ink) 45%, var(--divider)); }
+.composerActions .actionGroup { display: flex; align-items: center; gap: 6px; }
+.composerActions .iconAction { display: grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--foreground); opacity: 1; cursor: pointer; }
+.composerActions .iconAction:hover, .composerActions .iconAction[aria-pressed="true"] { background: var(--status-soft); }
+.composerActions .iconAction:disabled { opacity: .5; cursor: not-allowed; }
+.composerActions .sendButton { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-ink); color: var(--background); opacity: 1; cursor: pointer; }
+.composerActions .sendButton:disabled { background: var(--divider); color: var(--muted); cursor: not-allowed; }
+.attachments { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.attachment { display: flex; align-items: center; gap: 7px; max-width: 100%; padding: 7px 8px; border: 1px solid var(--divider); border-radius: 9px; color: var(--foreground); font-size: 12px; }
+.attachment > span { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attachment button { display: grid; width: 24px; height: 24px; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.attachment button:hover { background: var(--status-soft); }
+.activitySkeleton { display: grid; gap: 7px; width: min(280px, 70%); margin: 14px 0; }
+.activitySkeleton span { height: 7px; border-radius: 5px; background: linear-gradient(90deg, var(--status-soft) 20%, var(--divider) 50%, var(--status-soft) 80%); background-size: 220% 100%; animation: activity-shimmer 2s linear infinite; }
+.activitySkeleton span:last-child { width: 65%; }
+@media (prefers-reduced-motion: reduce) { .activitySkeleton span { animation: none; background: var(--status-soft); } }
+.aiShimmer { display: inline-block; background-image: linear-gradient(90deg, transparent calc(50% - var(--spread)), var(--background), transparent calc(50% + var(--spread))), linear-gradient(var(--foreground), var(--foreground)); background-repeat: no-repeat; background-size: 250% 100%, auto; background-clip: text; color: transparent; }
+@media (prefers-reduced-motion: reduce) { .aiShimmer { background: none; color: var(--foreground); } }
+.draftLabel { margin-left: 8px; color: var(--muted); font-size: 12px; font-weight: 400; }
+.toolCards { display: grid; gap: 6px; padding: 0; margin: 12px 0; list-style: none; }
+.toolCards li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 1px solid var(--divider); border-radius: 8px; color: var(--foreground); }
+.toolCards strong { color: var(--muted); font-size: 12px; }

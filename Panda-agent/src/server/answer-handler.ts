@@ -61,7 +61,7 @@ async function readBody(request: Request): Promise<{
         reader.releaseLock();
     }
 }
-export function createAnswerHandler(authenticate: () => Promise<Actor>, adaptersForActor: (actor: AuthenticatedActor) => Promise<Adapters | null> = async () => null): (request: Request) => Promise<Response> {
+export function createAnswerHandler(authenticate: () => Promise<Actor>, adaptersForActor: (actor: AuthenticatedActor, request: Request) => Promise<Adapters | null> = async () => null): (request: Request) => Promise<Response> {
     return async (request) => {
         if (request.method !== 'POST')
             return respond('invalid', 405, [], true);
@@ -88,8 +88,10 @@ export function createAnswerHandler(authenticate: () => Promise<Actor>, adapters
             return respond('invalid', 413);
         if (body.kind !== 'ok' || !parseQuestion(body.value))
             return respond('invalid', 400);
+        if (request.signal.aborted)
+            return respond('unavailable', 503);
         try {
-            const adapters = await adaptersForActor(actor);
+            const adapters = await adaptersForActor(actor, request);
             if (!adapters)
                 return respond('unavailable', 503);
             const outcome = await answerQuestion(actor, body.value, adapters);

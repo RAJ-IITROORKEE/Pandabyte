@@ -7,5 +7,5 @@ export default async function PandaAgentPage() {
   if (!isAuthenticated || sessionStatus !== "active" || !userId) {
     redirect("/sign-in?redirect_url=%2Fpanda-agent");
   }
-  return <PandaAgentWorkspace />;
+  return <PandaAgentWorkspace previewReadOnly={process.env.NODE_ENV === "production"} />;
 }

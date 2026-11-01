@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { Actor, Adapters, CanonicalChunk, Outcome, Question, Scope } from './contracts.ts';
+import type { ContextSummary } from './context-summary.ts';
 const sha = (s: string) => createHash('sha256').update(s, 'utf8').digest('hex');
 const bounded = (s: unknown, max: number): s is string => typeof s === 'string' && s.trim().length > 0 && s.length <= max;
 const privatePointer = (s: string) => /(?:s3:\/\/|["']?(?:private[_ -]?(?:bucket|key)|bucket|object[_ -]?key|storage[_ -]?(?:path|key))["']?\s*[:=]|file:\/\/|\\\\)/i.test(s);
@@ -66,12 +67,14 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         return { kind: 'invalid' };
     if (!adapters)
         return { kind: 'unavailable' };
+    const activity = (stage: 'resolving_product' | 'reading_sources' | 'searching_sources' | 'checking_citations', summary?: ContextSummary) => { try { if (summary) adapters.activity?.(stage, summary); else adapters.activity?.(stage); } catch { /* Presentation cannot change admission or grounding. */ } };
     try {
         const policy = adapters.ranking ?? { mode: 'lexical' as const };
         if (!policy || !['lexical', 'dense', 'rrf'].includes(policy.mode))
             return { kind: 'unavailable' };
         if (policy.mode === 'rrf' && (!['engineering_experiment', 'validated_evaluation'].includes(policy.admission) || !/^[0-9a-f]{64}$/.test(policy.evidenceSha256)))
             return { kind: 'unavailable' };
+        activity('resolving_product');
         const identity = await adapters.resolveIdentity(actor, input);
         if (identity.kind !== 'resolved')
             return { kind: identity.kind === 'conflict' ? 'conflict' : 'clarification' };
@@ -81,6 +84,7 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
             return { kind: 'clarification' };
         if (needsUnavailableProof(input.question))
             return { kind: 'insufficient' };
+        activity('reading_sources');
         const scope = await adapters.currentScope(actor, identity.product, input.physicalRevision);
         if (!validScope(scope))
             return { kind: 'unavailable' };
@@ -91,6 +95,7 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         const handles = [...byHandle.keys()].sort();
         if (!handles.length)
             return { kind: 'insufficient' };
+        activity('searching_sources');
         const lexical = policy.mode === 'dense' ? [] : await adapters.lexical(input.question, handles);
         if (!Array.isArray(lexical) || lexical.length > 100 || lexical.some(h => !byHandle.has(h)))
             return { kind: 'unavailable' };
@@ -105,12 +110,16 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         if (!ranked.length)
             return { kind: 'insufficient' };
         let remaining = 20000;
+        let duplicatesRemoved = 0;
+        const bodies = new Set<string>();
         const fragments: Array<{
             handle: string;
             text: string;
         }> = [];
         for (const handle of ranked) {
             const text = lexical.includes(handle) ? byHandle.get(handle)!.text : dense.find(hit => hit.handle === handle)!.text;
+            if (bodies.has(text)) { duplicatesRemoved++; continue; }
+            bodies.add(text);
             if (text.length <= remaining) {
                 fragments.push({ handle, text });
                 remaining -= text.length;
@@ -128,8 +137,9 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         };
         if (!await scopeUnchanged(fragments.map(fragment => fragment.handle)))
             return { kind: 'unavailable' };
-        const result = await adapters.select(input.question, fragments);
-        if (!result || Object.keys(result).some(k => k !== 'selections') || !Array.isArray(result.selections) || result.selections.length < 1 || result.selections.length > 4)
+        activity('searching_sources', { fragments: fragments.length, characters: 20000 - remaining, duplicatesRemoved, limitCharacters: 20000 });
+        const result = await adapters.select(input.question, fragments, { revalidate: () => scopeUnchanged(fragments.map(fragment => fragment.handle)) });
+        if (!result || Object.keys(result).some(k => k !== 'selections') || !Array.isArray(result.selections) || result.selections.length > 4)
             return { kind: 'unavailable' };
         const seen = new Set<string>();
         for (const s of result.selections) {
@@ -137,8 +147,11 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
                 return { kind: 'unavailable' };
             seen.add(s.handle);
         }
+        activity('checking_citations');
         if (!await scopeUnchanged(result.selections.map(selection => selection.handle)))
             return { kind: 'unavailable' };
+        if (!result.selections.length)
+            return { kind: 'insufficient' };
         return { kind: 'evidence', citations: result.selections.map((s, i) => { const c = byHandle.get(s.handle)!; return { id: `S${i + 1}`, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: s.quote, sectionPath: [...c.sectionPath] }; }) };
     }
     catch {

@@ -145,3 +145,48 @@ test('canonical citation paths and private provenance JSON are rejected before s
         assert.ok(!x.calls.includes('model'));
     }
 });
+
+test('deduplicates ranked whole bodies before applying the budget without refilling', async () => {
+    const x = make(), handles = Array.from({length: 9}, (_, i) => chunk().handle.replace('000000000001:', `${String(i + 1).padStart(12, '0')}:`));
+    const texts = ['x'.repeat(6000) + ' 4 pins', 'x'.repeat(6000) + ' 4 pins', ...Array.from({length: 7}, (_, i) => `unique ${i}` + 'z'.repeat(1900))];
+    x.scope.chunks = handles.map((h, i) => chunk(h, {text: texts[i], textHash: hash(texts[i])}));
+    x.adapters.ranking = {mode: 'lexical'}; x.adapters.lexical = async () => handles;
+    const activity = []; x.adapters.activity = (...args) => activity.push(args);
+    let supplied; x.adapters.select = async (_q, fragments) => { supplied = fragments; return {selections: [{handle: handles[0], quote: '4 pins'}]}; };
+    assert.equal((await ask(x.adapters)).kind, 'evidence');
+    assert.deepEqual(supplied.map(f => f.handle), [handles[0], ...handles.slice(2, 8)]);
+    assert.deepEqual(activity.find(row => row[1])?.[1], {fragments: 7, characters: texts[0].length + texts.slice(2, 8).reduce((n, s) => n + s.length, 0), duplicatesRemoved: 1, limitCharacters: 20000});
+});
+test('empty selector result is insufficient only after a successful current scope recheck', async () => {
+    const x = make({select: async () => ({selections: []})});
+    assert.deepEqual(await ask(x.adapters), {kind: 'insufficient'});
+    assert.equal(x.calls.filter(c => c === 'scope').length, 3);
+    let count = 0; x.adapters.currentScope = async () => ++count <= 2 ? structuredClone(x.scope) : null;
+    assert.deepEqual(await ask(x.adapters), {kind: 'unavailable'});
+});
+test('context is not emitted on a stale scope and callback errors do not alter answers', async () => {
+    const events = [], x = make({activity: (...args) => events.push(args)}); let count = 0;
+    x.adapters.currentScope = async () => ++count === 1 ? structuredClone(x.scope) : null;
+    assert.equal((await ask(x.adapters)).kind, 'unavailable');
+    assert.ok(events.every(row => row.length === 1));
+    const y = make({activity: () => {throw Error('presentation');}});
+    assert.equal((await ask(y.adapters)).kind, 'evidence');
+});
+
+test('empty selection does not weaken selector shape limits', async () => {
+    for (const result of [{selections: [], extra: true}, {selections: Array(5).fill({handle: chunk().handle, quote: '4 pins'})}]) {
+        const x = make({select: async () => result});
+        assert.equal((await ask(x.adapters)).kind, 'unavailable');
+    }
+});
+
+test('trusted selector can recheck all retrieved fragments before release', async () => {
+    const x = make();
+    x.adapters.select = async (_question, fragments, context) => {
+        assert.equal(await context.revalidate(), true);
+        x.scope.chunks = [];
+        assert.equal(await context.revalidate(), false);
+        return { selections: [{ handle: fragments[0].handle, quote: '4 pins' }] };
+    };
+    assert.equal((await ask(x.adapters)).kind, 'unavailable');
+});

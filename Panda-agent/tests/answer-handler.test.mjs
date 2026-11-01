@@ -24,6 +24,17 @@ function fixture() {
     return { calls, adapters, handle };
 }
 const assertNoStore = response => assert.match(response.headers.get('cache-control'), /no-store/);
+
+test('an already aborted request never constructs runtime adapters', async () => {
+    let calls = 0;
+    const handler = createAnswerHandler(async () => ({ subject: 'actor' }), async () => { calls++; return null; });
+    const controller = new AbortController();
+    controller.abort();
+    const original = request();
+    const response = await handler(new Request(original, { signal: controller.signal }));
+    assert.equal(response.status, 503);
+    assert.equal(calls, 0);
+});
 test('signed out and bad method avoid runtime and set no-store', async () => {
     let called = 0;
     const handler = createAnswerHandler(async () => null, async () => { called++; return null; });

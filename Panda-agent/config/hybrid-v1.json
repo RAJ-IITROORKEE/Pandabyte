@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "model": "perplexity/pplx-embed-v1-0.6b",
+  "dimensions": 1024,
+  "inputPolicy": "exact-canonical-body-v1-no-prefix",
+  "distance": "cosine-exact",
+  "manifestHash": "0ebfec3480bffa6c53304bb0f3d6333b2b81eb466e8cadb488a869cf3aff6ffa",
+  "eligibleCount": 282,
+  "blockedLogicalIds": [
+    "21638b9445898f6a03aa24d24a7e60cc344c6bbb2bccd33959537178c2bd4fb4",
+    "3ea5b9267d4102142b48cf8e5393e1f9a42fe0c3ff283c13cff04b5bdf3864ac"
+  ],
+  "evaluationProtocolSha256": "16d9c667b4c81ab7c4c64d471cf1c1a9928f4dec3d4202313ae90ea991450c5d",
+  "rrfConstant": 60,
+  "topK": 8,
+  "contextCharacters": 20000,
+  "classification": "engineering_experiment"
+}

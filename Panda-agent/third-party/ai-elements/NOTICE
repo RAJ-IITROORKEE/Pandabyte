@@ -1,0 +1,8 @@
+AI Elements Shimmer
+
+Copyright 2023 Vercel, Inc.
+Licensed under the Apache License, Version 2.0. See LICENSE.upstream and LICENSE-2.0.txt.
+Source: https://github.com/vercel/ai-elements/blob/ca8be600bfd01b3131f9bf6134b51602a71f4374/packages/elements/src/shimmer.tsx
+Revision: ca8be600bfd01b3131f9bf6134b51602a71f4374
+
+The upstream repository at this revision has no NOTICE file. The local copy adapts the class utility and Tailwind styles to PandaAgent CSS modules and uses a static span for this usage, and adds a reduced-motion fallback. The existing motion 14.6.0 dependency provides motion/react.

@@ -1,3 +1,4 @@
+import type { ContextSummary } from './context-summary.ts';
 // Internal server context derived from the active Clerk session, never request JSON.
 export type Actor = {
     subject: string;
@@ -74,6 +75,8 @@ export type Outcome = {
     kind: 'clarification' | 'insufficient' | 'conflict' | 'unavailable' | 'unauthorized' | 'invalid';
 };
 export type Adapters = {
+    // Best-effort observed operations only; never model reasoning or native identifiers.
+    activity?: (stage: 'resolving_product' | 'reading_sources' | 'searching_sources' | 'checking_citations', summary?: ContextSummary) => void;
     // Trusted server selection only. RRF evidence binds a frozen experiment protocol or validated report.
     ranking?: RankingPolicy;
     // Resolve exact SKU or explicitly verified aliases, including contradictory question identities.
@@ -89,7 +92,7 @@ export type Adapters = {
     select(question: string, fragments: Array<{
         handle: string;
         text: string;
-    }>): Promise<{
+    }>, context?: { revalidate(): Promise<boolean> }): Promise<{
         selections: Selection[];
     }>;
 };
