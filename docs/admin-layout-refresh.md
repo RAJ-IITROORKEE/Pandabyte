@@ -21,3 +21,7 @@ Built-in-browser checks on localhost:3000 verified descending order-count sortin
 Footer keyboard/pointer opening, outside dismissal and Escape were checked. At the 800px development rail, Next.js's floating dev-tools indicator overlaps the footer trigger's center; a DOM hit-test identified that development overlay. The footer opens by keyboard and its flyout is not clipped; desktop/mobile pointer checks passed. No production pointer-coverage claim is made from that overlapped local coordinate. The viewport and original dark preference were restored.
 
 No account/role/order mutations, publication, Agent inference, payment, invoice or deployment operations were performed by these UI checks. Existing ADMIN-only role administration, protected/self-account guards, typed deletion confirmation, version conflicts and server permissions remain unchanged. The independent final source review found no blockers; it is separate from browser/test evidence.
+
+## Hosted follow-up
+
+The owner subsequently authorized a coordinated deployment preserving the Panda Agent integration. The combined release is now live, with the Admin/menu source through `cde6262`. Live browser checks repeated sorting, filters, CSV download, all four card pages, footer/storefront navigation, the persistent Admin shortcut and mobile keyboard/layout behavior. No role/account/order mutations or model requests were made by this verification. See the [combined manifest, deployment and limits](vercel-preview-deployment.md).

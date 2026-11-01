@@ -1,5 +1,27 @@
 # Vercel hosted development preview
 
+## Combined Admin and Agent-preserving release — 1 November 2026
+
+The owner authorized deployment of the Admin updates once coordinated with the Panda Agent release, explicitly preserving that integration and keeping live payments/real invoice issuance disabled. The Agent chat first owned the pilot deployment and its acceptance work, then explicitly handed over promotion of the independently reviewed combined candidate. This release does not claim that the complete Agent acceptance matrix passed.
+
+- Stable address: **https://pandabyte-iot.vercel.app**.
+- Ready deployment: **`dpl_8zKzTSHGexrGVKDBMbHAivEy7Co8`**, https://pandabyte-3f0wj6ceo-unfiltered-iit-ians.vercel.app.
+- Main application delta: **`cde62622cd9671d12f64d2f32579541e633e8c1a`**, including `a2c775f` menu stability and `cde6262` Admin layouts.
+- Approved Agent source manifest SHA-256: `1a615bccfaa895490c7812def0a2002b8644a75a549af398bacd6f48ff02ce06` (565 files).
+- Combined source manifest SHA-256: `f235e148bd865db0de4ae43063ba06ab83b350ab7e1026c110c19d54215b59ab` (579 files).
+
+Preparation copied only the 565 approved source-manifest paths, then applied the exact 26-path `da9b57b..cde6262` delta. Eleven overlapping files were checked against the original main baseline before replacement. All Agent modules and the lockfile retained their approved bytes. Only the main `test:unit` script was merged into the combined package; the existing AWS signer/OIDC and Chakra dependencies were preserved. Independent inventory/hash/import review found no extra/private/env/build/operator paths or missing imports. Ten focused UI regressions also passed against the combined source.
+
+The clean Vercel build compiled, passed TypeScript and generated all 41 static pages. It was staged with `--skip-domain`; five anonymous auth/Admin/Agent access checks passed before promotion. Vercel metadata confirms the main/Agent/combined manifest references and presence of the five intended pilot build/runtime setting names. The verified owner binding was supplied privately through process environment, never source, command-line values or an uploaded file. `PANDA_AGENT_PILOT_OWNER_SHA256`, the three hosted gateway/RAG/streaming flags and `PANDA_AGENT_HOSTED_TIMEOUT_PROFILE=agent-150` remain **deployment-only** settings. Existing gateway/service credentials and project environment variables were not read back or changed.
+
+After the explicit alias handoff, the same Ready candidate was promoted without rebuilding. CLI inspection verified the stable alias resolves to it. Prior pilot `dpl_5tJrwPDTfFqt6YniaHT5zgQEbpVR`, auth `dpl_14mAvvH2r1kaNXxxgRA12p7wMHvF` and paused rollback `dpl_DDuMychFWGSjXWgY38dddYtmfysb` were retained.
+
+Live verification in the built-in browser passed for signed-in Users, Dashboard, Products and Categories cards; descending order-count sorting; role/verification filters; empty-result export disablement; an actual filtered CSV download; footer storefront navigation and Escape focus return; and the Admin shortcut across Home → Shop. The downloaded CSV's displayed columns/row count were checked without publishing customer data. Light/dark and 390px mobile layout had no document overflow, and mobile Escape closed the footer before the navigation drawer. Original theme and viewport settings were restored. No browser errors were captured in the checked pages.
+
+Anonymous hosted Home/auth pages returned 200, Admin redirected to its login entry, and Users/Roles/Agent-chat APIs returned 401. Simulation remained false. The general payment endpoint returned the fixed `503 payment_not_configured`; separate Razorpay **TEST** capability remained available. Real payments and real invoice issuance remain disabled. No account, role, order, invoice or provider transaction was changed by these checks. A bounded error scan found no Admin errors; its only error was the intentionally exercised closed payment endpoint's expected 503.
+
+The Agent chat retains responsibility for its remaining diagnostics and provider admissions. This chat made **zero model requests** and changed no caller, budget, AWS or provider state. The Agent source and owner-only pilot restrictions were preserved; remaining Agent acceptance/redesign work is separate. Future releases must use a newly reviewed combined snapshot and preserve the deployment-only pilot contract, rather than redeploying `main` alone while the Agent source remains uncommitted. The documentation-only follow-up commit does not change this deployed source manifest.
+
 ## Authentication and Admin access release — 1 November 2026
 
 The owner authorized deployment of latest committed `main` for hosted signup, login and role testing, excluding ongoing Panda Agent changes. A clean Git archive of **`da9b57b1e43522140d50cf30988f374da333231b`** (1,115 tracked files) was uploaded with Vercel CLI to the verified existing `unfiltered-iit-ians/pandabyte-iot` project. No uncommitted/untracked files, local credentials, build output or private checkpoints were copied. Committed Agent baseline modules remain; the ongoing Agent integration is excluded.
