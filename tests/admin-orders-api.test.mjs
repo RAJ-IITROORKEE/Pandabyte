@@ -18,7 +18,7 @@ function harness({ access = { allowed: true }, result = null, throws = false, rp
     if (name.endsWith("orders-contract.ts")) return contract;
     if (name.endsWith("order-activity-contract.ts")) return activityContract;
     if (name === "@/lib/checkout/validation") return { isOrderReference };
-    if (name === "@/lib/authorization") return { requireCapability: async capability => { assert.equal(capability, "staff.manage"); return access; } };
+    if (name === "@/lib/authorization") return { requireOrderPermission: async action => { assert.equal(action, "read"); return access; } };
     if (name === "@/lib/observability/events") return { operationalJson: (body, status, headers) => Response.json(body, { status, headers }) };
     if (name === "@/lib/insforge/server") return { createInsforgeServerClient: async () => ({ database: { schema(schema) {
       assert.equal(schema, "public");

@@ -1,14 +1,14 @@
-import { requireCapability } from "@/lib/authorization";
+import { requireOrderPermission } from "@/lib/authorization";
 import { cartError, orderRpc, readCheckoutBody } from "@/lib/checkout/http";
 import { isOrderReference, parseAdminOrderUpdate } from "@/lib/checkout/validation";
 type Context = { params: Promise<{ reference: string }> };
-async function access() { const result = await requireCapability("staff.manage"); return result.allowed ? null : cartError(result.status === 401 ? "unauthorized" : result.status === 403 ? "forbidden" : "backend_unavailable", result.status); }
+async function access(action: "read" | "update") { const result = await requireOrderPermission(action); return result.allowed ? null : cartError(result.status === 401 ? "unauthorized" : result.status === 403 ? "forbidden" : "backend_unavailable", result.status); }
 export async function GET(_request: Request, { params }: Context) {
-  try { const denied = await access(); if (denied) return denied; const { reference } = await params; return isOrderReference(reference) ? orderRpc("admin_get_checkout_order", { p_reference: reference }) : cartError("not_found", 404); } catch { return cartError("backend_unavailable", 503); }
+  try { const denied = await access("read"); if (denied) return denied; const { reference } = await params; return isOrderReference(reference) ? orderRpc("admin_get_checkout_order", { p_reference: reference }) : cartError("not_found", 404); } catch { return cartError("backend_unavailable", 503); }
 }
 export async function PATCH(request: Request, { params }: Context) {
   try {
-    const denied = await access(); if (denied) return denied;
+    const denied = await access("update"); if (denied) return denied;
     const { reference } = await params; if (!isOrderReference(reference)) return cartError("not_found", 404);
     const body = await readCheckoutBody(request); if (body instanceof Response) return body;
     const input = parseAdminOrderUpdate(body.value);

@@ -1,4 +1,4 @@
-import { requireCapability } from "@/lib/authorization";
+import { requireOrderPermission } from "@/lib/authorization";
 import { cartError, orderRpc } from "@/lib/checkout/http";
 import { isOrderReference } from "@/lib/checkout/validation";
 import { hasPaidTestBill, parseTestBill } from "@/lib/orders/test-bill";
@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ reference: string }> }) {
   try {
-    const access = await requireCapability("staff.manage");
+    const access = await requireOrderPermission("read");
     if (!access.allowed) return cartError(access.status === 401 ? "unauthorized" : access.status === 403 ? "forbidden" : "backend_unavailable", access.status);
     const { reference } = await params;
     if (!isOrderReference(reference)) return cartError("not_found", 404);

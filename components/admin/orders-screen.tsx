@@ -31,7 +31,7 @@ const groups = [
 
 export function AdminOrdersScreen() {
   const capabilities = useAdminCapabilities();
-  const canRead = capabilities.includes("staff.manage") && canAdminPermission(capabilities, "orders", "read");
+  const canRead = (capabilities.includes("staff.manage") || (capabilities.includes("__custom_role__") && capabilities.includes("orders.read"))) && canAdminPermission(capabilities, "orders", "read");
   const router = useRouter(), pathname = usePathname(), params = useSearchParams();
   const raw = params.toString();
   const parsed = parseAdminOrderListQuery(new URLSearchParams(raw));

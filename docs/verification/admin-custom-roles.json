@@ -7,7 +7,8 @@
     "20261101143500",
     "20261101144000",
     "20261101150000",
-    "20261101151000"
+    "20261101151000",
+    "20261101152000"
   ],
   "independentReview": {
     "model": "Sol 6.1 high",
@@ -20,7 +21,8 @@
       "restrict custom media cleanup to uploader",
       "make mutation controls action-aware",
       "serialize pending-removal freeze after advisory lock",
-      "verify Clerk even for completed removal receipts"
+      "verify Clerk even for completed removal receipts",
+      "remove custom order staff.manage grant; isolate order authorization from unrelated Admin services"
     ]
   },
   "integrationPassed": [
@@ -39,7 +41,8 @@
     "self role change denied and protected owner membership unchanged",
     "disposable identities, grants, role definitions, drafts, media and fixture audits cleaned",
     "real disposable Clerk removal, idempotent retry and unchanged order snapshots",
-    "self/protected/stale/anonymous/non-Admin deletion denied"
+    "self/protected/stale/anonymous/non-Admin deletion denied",
+    "order-only role has staff.manage=false and dedicated read=true/update=false; order reads and access-management denials pass"
   ],
   "browserPassed": [
     "owner session and protected account preserved",
@@ -63,7 +66,7 @@
   "checks": {
     "unitPassed": 469,
     "mediaPassed": 10,
-    "additionalFocusedPassed": 8,
+    "additionalFocusedPassed": 9,
     "existingSkipped": 3,
     "lint": "passed",
     "productionBuild": "passed"

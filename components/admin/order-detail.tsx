@@ -39,7 +39,7 @@ export function AdminOrderDetail({ reference, returnTo }: { reference: string; r
 }
 function OrderDetailSession({ reference, returnTo }: { reference: string; returnTo?: string }) {
   const capabilities = useAdminCapabilities();
-  const canManage = capabilities.includes("staff.manage") && canAdminPermission(capabilities, "orders", "read");
+  const canManage = (capabilities.includes("staff.manage") || (capabilities.includes("__custom_role__") && capabilities.includes("orders.read"))) && canAdminPermission(capabilities, "orders", "read");
   const canUpdate = canManage && canAdminPermission(capabilities, "orders", "update");
   const [order, setOrder] = useState<Order | null>(null);
   const [status, setStatus] = useState<AdminOrderStatus>("pending");

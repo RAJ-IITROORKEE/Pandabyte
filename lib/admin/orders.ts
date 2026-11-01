@@ -1,5 +1,5 @@
 import { operationalJson } from "@/lib/observability/events";
-import { requireCapability } from "@/lib/authorization";
+import { requireOrderPermission } from "@/lib/authorization";
 import { createInsforgeServerClient } from "@/lib/insforge/server";
 import { parseAdminOrderListQuery, parseAdminOrderListRpcResult } from "./orders-contract.ts";
 import { parseAdminOrderActivity } from "./order-activity-contract.ts";
@@ -43,7 +43,7 @@ function rpcErrorResponse(error: RpcError | null): Response {
 }
 
 export async function adminOrderActivity(reference: string): Promise<Response> {
-  const access = await requireCapability("staff.manage");
+  const access = await requireOrderPermission("read");
   if (!access.allowed) return errorResponse(access.status === 401 ? "unauthorized" : access.status === 403 ? "forbidden" : "backend_unavailable", access.status);
   if (!isOrderReference(reference)) return errorResponse("not_found", 404);
   try {
@@ -57,7 +57,7 @@ export async function adminOrderActivity(reference: string): Promise<Response> {
 }
 
 export async function adminListOrders(request: Request): Promise<Response> {
-  const access = await requireCapability("staff.manage");
+  const access = await requireOrderPermission("read");
   if (!access.allowed) return errorResponse(access.status === 401 ? "unauthorized" : access.status === 403 ? "forbidden" : "backend_unavailable", access.status);
 
   const query = parseAdminOrderListQuery(new URL(request.url).searchParams);

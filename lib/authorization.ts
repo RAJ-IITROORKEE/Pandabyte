@@ -62,3 +62,14 @@ export async function requireCapability(capability: StaffCapability): Promise<Ca
     return { allowed: false, status: 503 };
   }
 }
+
+export async function requireOrderPermission(action: "read" | "update"): Promise<CapabilityResult> {
+  const { isAuthenticated, sessionStatus, userId } = await auth();
+  if (!isAuthenticated || sessionStatus !== "active" || !userId) return { allowed: false, status: 401 };
+  try {
+    const client = await createInsforgeServerClient();
+    const { data, error } = await client.database.schema("public").rpc("staff_order_access", { p_action: action });
+    if (error || typeof data !== "boolean") return { allowed: false, status: 503 };
+    return data ? { allowed: true, userId } : { allowed: false, status: 403 };
+  } catch { return { allowed: false, status: 503 }; }
+}

@@ -106,7 +106,9 @@ if (process.argv.includes("--cleanup")) {
     let updated = (await api("/api/admin/role-definitions", "staff", secondInput)).role;
     await api("/api/admin/role-definitions", "staff", secondInput, 409);
     await denied(targetDb, "admin_list_records", { p_kind: "blog", p_query: "", p_limit: 10, p_offset: 0 });
-    assert.equal((await rpc(targetDb, "has_capability", { capability_name: "staff.manage" })).data, true);
+    assert.equal((await rpc(targetDb, "has_capability", { capability_name: "staff.manage" })).data, false);
+    assert.equal((await rpc(targetDb, "staff_order_access", { p_action: "read" })).data, true);
+    assert.equal((await rpc(targetDb, "staff_order_access", { p_action: "update" })).data, false);
     assert.equal((await rpc(targetDb, "staff_can_manage_roles")).data, false);
     await api("/api/admin/users", "customer", undefined, 403);
     await api("/api/admin/roles", "customer", { ...assign, role: "ADMIN" }, 403);

@@ -18,7 +18,7 @@ function harness({ access = { allowed: true }, order = orderFixture(), status = 
   const exports = {}, calls = [], rendered = [], capabilities = [];
   const error = (code, status) => Response.json({ error: { code } }, { status, headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
   runInNewContext(compiled, { exports, Response, Uint8Array, require(name) {
-    if (name === "@/lib/authorization") return { requireCapability: async capability => { capabilities.push(capability); return access; } };
+    if (name === "@/lib/authorization") return { requireOrderPermission: async action => { capabilities.push(action); return access; } };
     if (name === "@/lib/checkout/http") return { cartError: error, orderRpc: async (name, args) => { calls.push({ name, args }); if (backendThrows) throw Error("private backend detail"); return status === 200 ? Response.json(order) : error("not_found", status); } };
     if (name === "@/lib/checkout/validation") return { isOrderReference };
     if (name === "@/lib/orders/test-bill") return billContract;
@@ -32,7 +32,7 @@ test("Admin bill denies signed-out and non-capable callers before querying or re
   for (const [status, code] of [[401, "unauthorized"], [403, "forbidden"], [503, "backend_unavailable"]]) {
     const h = harness({ access: { allowed: false, status } }), response = await h.get();
     assert.equal(response.status, status); assert.equal((await response.json()).error.code, code);
-    assert.deepEqual(h.capabilities, ["staff.manage"]); assert.equal(h.calls.length, 0); assert.equal(h.rendered.length, 0);
+    assert.deepEqual(h.capabilities, ["read"]); assert.equal(h.calls.length, 0); assert.equal(h.rendered.length, 0);
     assert.match(response.headers.get("cache-control"), /private, no-store/);
   }
 });
@@ -58,7 +58,7 @@ test("Admin bill rejects non-test, unpaid and malformed returned snapshots", asy
 
 test("Admin bill renders the authorized stored snapshot and returns private attachment headers", async () => {
   const order = orderFixture(), h = harness({ order }), response = await h.get();
-  assert.equal(response.status, 200); assert.deepEqual(h.capabilities, ["staff.manage"]);
+  assert.equal(response.status, 200); assert.deepEqual(h.capabilities, ["read"]);
   assert.deepEqual(h.rendered, [billContract.parseTestBill(order, reference)]);
   assert.equal(h.calls[0].name, "admin_get_checkout_order");
   assert.equal(response.headers.get("content-type"), "application/pdf");
@@ -104,7 +104,7 @@ test("read-only custom order access shows the bill without update actions", () =
   runInNewContext(source, { exports, Intl, Date, URL, require(name) {
     if (name === "react") return { ...require("react"), useEffect() {}, useState: initial => [cursor++ === 0 ? orderFixture() : initial, () => {}] };
     if (name === "@clerk/nextjs") return { useUser: () => ({ isLoaded: true, user: { id: "staff" } }) };
-    if (name === "@/components/admin/admin-shell") return { useAdminCapabilities: () => ["staff.manage", "__custom_role__", "orders.read"] };
+    if (name === "@/components/admin/admin-shell") return { useAdminCapabilities: () => ["__custom_role__", "orders.read"] };
     if (name === "@/lib/admin/access-contract") return { canAdminPermission };
     if (name === "@/components/admin/record-screens") return { AdminAccessDeniedScreen: () => null };
     if (name === "next/link") return { __esModule: true, default: ({ children, ...props }) => createElement("a", props, children) };

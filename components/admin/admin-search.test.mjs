@@ -22,7 +22,7 @@ test("orders and inventory navigation follow their separate permissions", () => 
 });
 
 test("custom roles only expose their readable sections", () => {
-  const capabilities = ["__custom_role__", "products.read", "orders.read", "staff.manage"];
+  const capabilities = ["__custom_role__", "products.read", "orders.read"];
   const urls = visibleNavigationGroups(capabilities).flatMap(({ items }) => items.map(({ href }) => href));
   assert.deepEqual(urls, ["/admin/products", "/admin/orders"]);
 });
