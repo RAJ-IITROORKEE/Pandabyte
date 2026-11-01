@@ -8,6 +8,7 @@ import { EmptyState, PublicPage } from "@/components/storefront/page-frame";
 import { listPublishedRecords } from "@/lib/editorial/published";
 import { publicMetadata } from "@/lib/editorial/seo";
 import { LearningNavigation } from "../learning-navigation";
+import { ProductSpecsPage } from "@/components/catalog/product-specs-page";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ const collections = {
 type Collection = keyof typeof collections;
 type Props = {
   params: Promise<{ collection: string }>;
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 const PAGE_SIZE = 24;
 const MAX_PAGE = Math.floor(10_000 / PAGE_SIZE) + 1;
@@ -40,6 +41,7 @@ export default async function LearnCollection({ params, searchParams }: Props) {
   const [{ collection }, search] = await Promise.all([params, searchParams]);
   if (!Object.hasOwn(collections, collection)) notFound();
   const selected = collection as Collection;
+  if (selected === "product-specs") return <ProductSpecsPage searchParams={Promise.resolve(search)} />;
   const requestedPage = editorialPageNumber(Array.isArray(search.page) ? "" : search.page, PAGE_SIZE);
   const firstResult = await listPublishedRecords("learn", { collection: selected, limit: PAGE_SIZE, offset: (requestedPage - 1) * PAGE_SIZE });
   const pageCount = Math.min(MAX_PAGE, Math.max(1, Math.ceil(firstResult.total / PAGE_SIZE)));
