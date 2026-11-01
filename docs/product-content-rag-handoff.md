@@ -41,6 +41,12 @@ The separate Panda Agent chat owns its runtime and ingestion. This review handof
 
 The storefront now displays ten reviewed resource associations across seven published products. These links are supplied as review leads only; they do not authorize ingestion of the linked documents.
 
+### ESP32 setup follow-up — 1 November 2026
+
+The official [Arduino ESP32 installation guide](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html) is a general software setup reference for x32, xC3, xC3m, xC5, xC6, xLoRa and xS3; it is not a recovered PandaByte product wiki or proof that a particular board selection exists. The upstream repository contains named variant configurations for x32, xC3m, xC5, xC6 and xS3. The [evidence record](verification/product-esp32-source-evidence.json) identifies a specific upstream commit, variant-file URLs and byte hashes, and the observed installation-guide hash. These are review leads, not ingestion authorization or proof of physical board wiring, electrical safety or fitted hardware revision. Do not apply xC3m pin aliases to xC3.
+
+The [BMV080 tutorial](https://www.instructables.com/Ultra-Compact-Air-Quality-Monitor-Using-PandaByte-/) mentions the BMV080 and xS3; its code and wiring have not been independently tested. Searches did not establish equivalent board-specific tutorials for the other products. The 13 missing wiki destinations remain unresolved; general setup links do not replace them. Preserve the earlier source versions and holds.
+
 The root products/ archive and the Agent corpus are distinct captures. Join them by canonical URL and SKU, preserve both capture hashes and timestamps, and resolve changed/conflicting claims before recommending a new version. The two missing-SKU listings remain unmapped, and the missing wiki hrefs plus failed/restricted resource requests remain holds unless independently verified.
 
 The accompanying [review JSON](verification/product-rag-source-reconciliation.json) joins the 44 archive references, live observations, existing listing-manifest hashes, known resource captures, newly researched links and review holds. It is a review artifact, not an ingestion manifest. The [reviewed storefront resource candidates](verification/product-content-approved.json) are links only; their presence does not establish permission to ingest the destination content.

@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-11-01T00:25:14.591Z",
+  "guide": {
+    "requestedUrl": "https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html",
+    "finalUrl": "https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html",
+    "status": 200,
+    "sha256": "f80ccc50ac16507b4e915255c2369f24b631868fa17861b060b59a9a6a0b1567",
+    "bytes": 36699,
+    "scope": "General Arduino ESP32 installation guide, not product-specific wiki"
+  },
+  "arduinoCore": {
+    "repository": "https://github.com/espressif/arduino-esp32",
+    "commit": "11209e27593d3d72200f6af0dd84a3e3f60fa592",
+    "files": [
+      {
+        "board": "pandabyte_x32",
+        "scope": "Arduino software pin aliases only; physical board revision not verified",
+        "sourceUrl": "https://raw.githubusercontent.com/espressif/arduino-esp32/11209e27593d3d72200f6af0dd84a3e3f60fa592/variants/pandabyte_x32/pins_arduino.h",
+        "sha256": "af9652d44c0b48f6e8ef35b9e91fd30d5083c7496a98aac8314e5b60b070bd78",
+        "bytes": 1313
+      },
+      {
+        "board": "pandabyte_xc3m",
+        "scope": "Arduino software pin aliases only; physical board revision not verified",
+        "sourceUrl": "https://raw.githubusercontent.com/espressif/arduino-esp32/11209e27593d3d72200f6af0dd84a3e3f60fa592/variants/pandabyte_xc3m/pins_arduino.h",
+        "sha256": "2adc0fe3a08112c41cdf06b0f663d29318ff5a766a70fb697ebfcaaa524838ff",
+        "bytes": 988
+      },
+      {
+        "board": "pandabyte_xc5",
+        "scope": "Arduino software pin aliases only; physical board revision not verified",
+        "sourceUrl": "https://raw.githubusercontent.com/espressif/arduino-esp32/11209e27593d3d72200f6af0dd84a3e3f60fa592/variants/pandabyte_xc5/pins_arduino.h",
+        "sha256": "abb425628cb44c046947d4bedb5acda04cae182d0b9bfd0382f6739bef9e3563",
+        "bytes": 1011
+      },
+      {
+        "board": "pandabyte_xc6",
+        "scope": "Arduino software pin aliases only; physical board revision not verified",
+        "sourceUrl": "https://raw.githubusercontent.com/espressif/arduino-esp32/11209e27593d3d72200f6af0dd84a3e3f60fa592/variants/pandabyte_xc6/pins_arduino.h",
+        "sha256": "4540dbf5df8b53c35d9b8844e1c853614be03662455d7773543f65a1d4af8e1c",
+        "bytes": 822
+      },
+      {
+        "board": "pandabyte_xs3",
+        "scope": "Arduino software pin aliases only; physical board revision not verified",
+        "sourceUrl": "https://raw.githubusercontent.com/espressif/arduino-esp32/11209e27593d3d72200f6af0dd84a3e3f60fa592/variants/pandabyte_xs3/pins_arduino.h",
+        "sha256": "65f3a05aba0f8c52344f741c8163625a2d43ccf8ffd2d760b1439d4a073a4dae",
+        "bytes": 1509
+      }
+    ]
+  },
+  "ingestion": "review only; no ingestion or rights approval"
+}
