@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "products": [
+    {
+      "slug": "esp32-x32-microcontroller-board-arduino-compatible",
+      "sku": "ESPX32",
+      "sourceUrl": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-WROOM-32E Datasheet",
+          "url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+          "displayLabel": "ESP32-WROOM-32E datasheet (module variant unverified)"
+        }
+      ]
+    },
+    {
+      "slug": "maker-uno-simplifying-arduino-for-education",
+      "sku": "MAKERUNO",
+      "sourceUrl": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+      "resources": [
+        {
+          "label": "Product Wiki",
+          "url": "https://www.cytron.io/p-maker-uno-simplifying-arduino-for-education"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-x8266-wifi-development-board",
+      "sku": "ESPX8266",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+      "resources": [
+        {
+          "label": "Official ESP8266 Datasheet",
+          "url": "https://www.espressif.com/en/products/socs/esp8266",
+          "displayLabel": "Official ESP8266 product page"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC3",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-C3-WROOM-2 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC3M",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-C3-WROOM-2 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC5",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-C5-WROOM-1 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "sku": "ESPXC6",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-C6-WROOM-1 Datasheet",
+          "url": "https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "sku": "XLORA",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-WROOM-32E Datasheet",
+          "url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+          "displayLabel": "ESP32-WROOM-32E datasheet (module variant unverified)"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "sku": "ESPXS3",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "resources": [
+        {
+          "label": "Official ESP32-S3-WROOM-1 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf"
+        }
+      ]
+    },
+    {
+      "slug": "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "sku": "PB-BMV080",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "resources": [
+        {
+          "label": "Youtube Tutorial",
+          "url": "https://youtu.be/z9ygY5GQSpk"
+        },
+        {
+          "label": "Arduino Library",
+          "url": "https://github.com/sparkfun/SparkFun_BMV080_Arduino_Library"
+        }
+      ]
+    }
+  ]
+}

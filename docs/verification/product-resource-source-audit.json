@@ -1,0 +1,646 @@
+{
+  "checkedAt": "2026-10-31T23:49:55.953317+00:00",
+  "scope": "44 original PandaByte product pages; links in product information sections only",
+  "method": "Two concurrent standard HTTPS GET requests to exact catalog sourceUrl; HTMLParser extracts all anchors under info-section-description plus rendered data-hook=web-link anchors, records ancestor hooks; excludes recommendation links. Raw HTML is hashed, archive bytes unchanged.",
+  "results": [
+    {
+      "title": "18650 Battery Holder with Switch",
+      "sku": "18650HOLDER",
+      "slug": "18650-battery-holder-with-switch",
+      "sourceUrl": "https://www.pandabyte.in/product-page/18650-battery-holder-with-switch",
+      "sourceCaptureSha256": "589df102dc734bbfdeaf49ac9f20b0797d794480f3aeb8d16f98bdc254079287",
+      "livePageSha256": "ae6cc3f290bc4152d8fd4d8f47b6d929f8cbc7c3c2ac08129fc6eeb77334c5c0",
+      "archiveFolder": "accessories/18650-battery-holder-with-switch",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "2.4A Type-C Data & Charging USB Cable",
+      "sku": "USBTYPEC",
+      "slug": "2-4a-type-c-data-charging-usb-cable",
+      "sourceUrl": "https://www.pandabyte.in/product-page/2-4a-type-c-data-charging-usb-cable",
+      "sourceCaptureSha256": "07f749d2c00555224a0c6d9664f3564961d81480ceaf7a033fc8df80b1a387ab",
+      "livePageSha256": "e22678ab5090b685561d3c4690b01167a67d6b1e3fa39228acb35ad8e418a2dc",
+      "archiveFolder": "accessories/2-4a-type-c-data-charging-usb-cable",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "Female to Female Breadboard Jumper Dupont 2.54mm Cable 40 Pcs (10CM)",
+      "sku": "DUPONT",
+      "slug": "female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+      "sourceUrl": "https://www.pandabyte.in/product-page/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+      "sourceCaptureSha256": "22750675e321b2f842736e213cbcfc7ca8f3d80238b374676242b8077bcd4ac0",
+      "livePageSha256": "2521c1e15ba5d61ec6409e2c4906550912a36210b1f01238c77a73a6308649cc",
+      "archiveFolder": "accessories/female-to-female-breadboard-jumper-dupont-2-54mm-cable-40-pcs-10cm",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "Grove Female Header SMD 90 Degree (10 units)",
+      "sku": "GRSMD90D",
+      "slug": "grove-female-header-smd-90-degree-10-units",
+      "sourceUrl": "https://www.pandabyte.in/product-page/grove-female-header-smd-90-degree-10-units",
+      "sourceCaptureSha256": "4aeca6c529d4b88ed2e72ef42e31102b1ee19f7b487c2c5f2674967d789fe8bc",
+      "livePageSha256": "0649f5a784c3e6cefca4cd19cc52ce3f5500d64d0ee79be0e10d13f61752d4da",
+      "archiveFolder": "accessories/grove-female-header-smd-90-degree-10-units",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "Grove Female Header SMD Regular (10 units)",
+      "sku": "GRSMDREG",
+      "slug": "grove-female-header-smd-regular-10-units",
+      "sourceUrl": "https://www.pandabyte.in/product-page/grove-female-header-smd-regular-10-units",
+      "sourceCaptureSha256": "a82b737dba1edebc8c5fd624f266a8941d39a87fcbe2c8b649ddef421231a07b",
+      "livePageSha256": "20d7721f56b6a277e660b2e29bac5ae3b0b4844d62d8b573bf7a359a97fb3a7c",
+      "archiveFolder": "accessories/grove-female-header-smd-regular-10-units",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "Grove Universal 4 Pin 20cm Unbuckled Cable (5 PCs Pack)",
+      "sku": "WIREGROVE",
+      "slug": "grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+      "sourceUrl": "https://www.pandabyte.in/product-page/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+      "sourceCaptureSha256": "b0745d962f42466e2fe8815eec61213a6de160c4cbacaafb4ee8c10487809d06",
+      "livePageSha256": "2bee6a1cb2aa6db39b42bf462872ff91c9ec7ca66b30436b11f2e64c56113b28",
+      "archiveFolder": "accessories/grove-universal-4-pin-20cm-unbuckled-cable-5-pcs-pack",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "M5Stack AtomS3 Lite ESP32S3 Dev Kit",
+      "sku": null,
+      "slug": "atoms3-lite-esp32s3-dev-kit",
+      "sourceUrl": "https://www.pandabyte.in/product-page/atoms3-lite-esp32s3-dev-kit",
+      "sourceCaptureSha256": "560c3e0425a68731544152a1b041eee972f62c9286799758e535aaddd3cad51d",
+      "livePageSha256": "3c22999071c767e4aed76a35a24ea83da84c95dabad87d93162859125c582cc3",
+      "archiveFolder": "development-boards/atoms3-lite-esp32s3-dev-kit",
+      "productInfoPresent": false,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": true
+    },
+    {
+      "title": "PandaByte x32 ESP32 Development Board",
+      "sku": "ESPX32",
+      "slug": "esp32-x32-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/esp32-x32-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "951935e745a2346e23cb8bba53a9ab849290d5812d84ab7d0c4ada57f09a0e9e",
+      "livePageSha256": "73a7fad8ead11426237a9c83e5a77a3f9faa5a116304b5436808539c06e2a75d",
+      "archiveFolder": "development-boards/esp32-x32-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-WROOM-32E Datasheet",
+          "url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "M5Stack Single Live Wire Wi-Fi Smart Switch (ESP32-C6)",
+      "sku": null,
+      "slug": "m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+      "sourceUrl": "https://www.pandabyte.in/product-page/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+      "sourceCaptureSha256": "39d1ebf85c36b2ee23c1c16940bd07605fd08399eb12ca88c08c1eb3aac89c6d",
+      "livePageSha256": "a431d533feada13c405848d24d3795ace184ec00ccc711b6f25f67d90f910828",
+      "archiveFolder": "development-boards/m5stack-single-live-wire-wi-fi-smart-switch-esp32-c6",
+      "productInfoPresent": false,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": true
+    },
+    {
+      "title": "Maker UNO: Simplifying Arduino for Education",
+      "sku": "MAKERUNO",
+      "slug": "maker-uno-simplifying-arduino-for-education",
+      "sourceUrl": "https://www.pandabyte.in/product-page/maker-uno-simplifying-arduino-for-education",
+      "sourceCaptureSha256": "0b5ccdd2008bbe76a2e2cdc24e1df9ef25092746b3bd2cf70d1b59ecea40870e",
+      "livePageSha256": "f5dce8077eb20f7a6a0255f08c63d0d138589e821542528053cea2b4bc020321",
+      "archiveFolder": "development-boards/maker-uno-simplifying-arduino-for-education",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Product Wiki",
+          "url": "https://www.cytron.io/p-maker-uno-simplifying-arduino-for-education"
+        }
+      ],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte NodeMCU x8266 WiFi Development Board",
+      "sku": "ESPX8266",
+      "slug": "pandabyte-x8266-wifi-development-board",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board",
+      "sourceCaptureSha256": "8792caf4b7cc415b26c9a35a352832ade0ea4cb50e305c5028ba05c214a084c0",
+      "livePageSha256": "3d647ac336fabc6c077e880b5ea68e8a4895ffaa72c7550936c114c37e56d9c7",
+      "archiveFolder": "development-boards/pandabyte-x8266-wifi-development-board",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP8266 Datasheet",
+          "url": "https://www.espressif.com/en/products/socs/esp8266"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xC3 ESP32-C3 Development Board",
+      "sku": "ESPXC3",
+      "slug": "pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "24bfb63a1b260a0f51a767f1df58fb4a8cd00ae9b2b0f973697e32972e016fc4",
+      "livePageSha256": "debb1e816e47b1ddcabcd5b365fb8e53cdb976c74894c3e9616a2b8f3e2c91b0",
+      "archiveFolder": "development-boards/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-C3-WROOM-2 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xC3m ESP32-C3 Development Board",
+      "sku": "ESPXC3M",
+      "slug": "pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "33426254683437e8de7f34bc43ca75b228adf66d74771b14fb7271d9a056e0f6",
+      "livePageSha256": "580d3f5fdb3ef81107f03721721848a5e0c43f077d8a10fab2de310f45c8be8a",
+      "archiveFolder": "development-boards/pandabyte-xc3m-esp32-c3-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-C3-WROOM-2 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xC5 ESP32-C5 Development Board",
+      "sku": "ESPXC5",
+      "slug": "pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "a1484e5dd5c3b6079b54814e45490ea9124f7429283e5c246574688800c50ee2",
+      "livePageSha256": "0b9fa42d5af8a0bb8bb2f50c6e3d475222cc7445799352229ef913c79985529a",
+      "archiveFolder": "development-boards/pandabyte-xc5-esp32c5-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-C5-WROOM-1 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xC6 ESP32-C6 Development Board",
+      "sku": "ESPXC6",
+      "slug": "pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "fea445e0e54124fcc981c5307189200db53e2ffdbac51b0ed66db82e78a21004",
+      "livePageSha256": "f7b03609c556f284f4c81fa5887c9bc2d311c36a0e8287726c73ae1b05159174",
+      "archiveFolder": "development-boards/pandabyte-xc6-esp32-c6-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-C6-WROOM-1 Datasheet",
+          "url": "https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xLoRa ESP32 LoRaWAN Development Board with Battery and Solar",
+      "sku": "XLORA",
+      "slug": "pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "ae262911bdd786075da9a35576c3e83f7dc135189474e634d27ba1c3ab3eb7d8",
+      "livePageSha256": "8e0a06d3a7e1430164219e35748dd1d1ade51efb961f5568bb04a03a0f53a89d",
+      "archiveFolder": "development-boards/pandabyte-xlora-esp32-lora-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-WROOM-32E Datasheet",
+          "url": "https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf"
+        },
+        {
+          "label": "Official RA-01H Datasheet",
+          "url": "https://ai-thinker.eu/product/ai-thinker-sx1276-soc-chip-868mhz-ultra-long-distance-wireless-spread-spectrum-lora-module-ra-01h/"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xS3 ESP32-S3 Development Board",
+      "sku": "ESPXS3",
+      "slug": "pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "sourceCaptureSha256": "a5210bf6fd5ff90d0cd3d33c5b8df4f2b81980f7bab2c2f71f8c9bbade517037",
+      "livePageSha256": "32650b23a31c5cec01a77b2d972de46c8389c19e67dec59ad8572ac6bdad7ad1",
+      "archiveFolder": "development-boards/pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible",
+      "productInfoPresent": true,
+      "originalResources": [
+        {
+          "label": "Official ESP32-S3-WROOM-1 Datasheet",
+          "url": "https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf"
+        }
+      ],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaPulse ESP32 IoT Kit",
+      "sku": "xC3KITV2",
+      "slug": "pandabyte-esp32c3-arduino-iot-kit",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-esp32c3-arduino-iot-kit",
+      "sourceCaptureSha256": "a7e4f0d69da0977ef0dad3bdf4bfed6f13bdb8cbef5b0c93fed695f452607b7f",
+      "livePageSha256": "25afda1158fd548b00899cd54f07d42b84ba1da4f268df8565bccd0c20d01934",
+      "archiveFolder": "iot-kits/pandabyte-esp32c3-arduino-iot-kit",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte LoRaWAN Kit 868 MHz",
+      "sku": "LORAKIT",
+      "slug": "pandabyte-lorawan-kit-868-mhz",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-lorawan-kit-868-mhz",
+      "sourceCaptureSha256": "cb45fb5a6cfe9d81df7b2a78675f871fbb5467160e458188cc23d9db940ce883",
+      "livePageSha256": "471a409620fc4a959f53ec683b8e4bc3ae72a0c9c5984de1c21a88875b31dd04",
+      "archiveFolder": "iot-kits/pandabyte-lorawan-kit-868-mhz",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Accelerometer ADXL345 Grove Sensor",
+      "sku": "PBADXL345",
+      "slug": "accelerometer-adxl345-grove-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/accelerometer-adxl345-grove-compatible",
+      "sourceCaptureSha256": "1aef758f387e30ba80b03a1daf3d5d05f8fdcd8c499f585e8dc64071f4eca919",
+      "livePageSha256": "859adfc6a79aa2edda60b34aac31a84d1879997765d79dd87b40282d683fe713",
+      "archiveFolder": "sensors/accelerometer-adxl345-grove-compatible",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Active Buzzer Sensor Grove Module",
+      "sku": "PBABUZZ",
+      "slug": "active-buzzer-sensor-module",
+      "sourceUrl": "https://www.pandabyte.in/product-page/active-buzzer-sensor-module",
+      "sourceCaptureSha256": "60aa8af0615dba3fe4dbc6cb409558dc27d125a5a3e964ad1698fea4d8951850",
+      "livePageSha256": "e28206eeed9a8b19ca64d47e78d042502d1681d87dd53302607e504244aff9d8",
+      "archiveFolder": "sensors/active-buzzer-sensor-module",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Barometric Pressure BMP580 Grove Sensor",
+      "sku": "PBBMP580",
+      "slug": "barometric-pressure-sensor-bmp580-grove-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/barometric-pressure-sensor-bmp580-grove-compatible",
+      "sourceCaptureSha256": "b40805d4fe9a1349d6ad1ea1ebf406f2425c9ecc1515bc4d19e2b06ba681a3b6",
+      "livePageSha256": "affc6ccc7418db13873b44669ab793810dad08cc3c907ba239602a941beca08e",
+      "archiveFolder": "sensors/barometric-pressure-sensor-bmp580-grove-compatible",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Grove LED and Switch Module",
+      "sku": "PBLEDSW",
+      "slug": "led-switch-module",
+      "sourceUrl": "https://www.pandabyte.in/product-page/led-switch-module",
+      "sourceCaptureSha256": "b92f73eb3659628f9ec4b333c42ed08492c2b40301a87c63e25d34b1e28a1b4a",
+      "livePageSha256": "d59fe714b9a3129b544da48c7b72c8534d45566da74d606f94442f1a74f4661e",
+      "archiveFolder": "sensors/led-switch-module",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Light TEMT6000 Grove Sensor",
+      "sku": "TEMT6000",
+      "slug": "light-sensor-temt6000-grove-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/light-sensor-temt6000-grove-compatible",
+      "sourceCaptureSha256": "7eeb81751da4739c3070d3858c04ce4ae0796fbb2b8981318add29a24e4e0711",
+      "livePageSha256": "5c71f6c06b58e12abef59f42b799ac3b8c9da826001dd7753519f8773add9a7b",
+      "archiveFolder": "sensors/light-sensor-temt6000-grove-compatible",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "M5Stack Mini Scale Weighing Unit (HX711)",
+      "sku": "SCALEHX711",
+      "slug": "m5stack-mini-scale-weighing-unit-hx711",
+      "sourceUrl": "https://www.pandabyte.in/product-page/m5stack-mini-scale-weighing-unit-hx711",
+      "sourceCaptureSha256": "37d8ffe803ed9a5c599ab265851bd5b67e0892a0b13d72e5094c501ec13f0356",
+      "livePageSha256": "d0f21a0e0ab062f402d88c8e93f0cb1b4015fcc4d9ba850d337824d1093d9213",
+      "archiveFolder": "sensors/m5stack-mini-scale-weighing-unit-hx711",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte NEO-6M GPS Grove Sensor",
+      "sku": "PBNEO6M",
+      "slug": "neo-6m-gps-grove-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/neo-6m-gps-grove-compatible",
+      "sourceCaptureSha256": "8ee408340969f6b0abdb5600aa9e23d84c701e58959b809179c7594b1a7f118f",
+      "livePageSha256": "e093e1738cf056b46636e917e70753f12104852ba7a2194c5a83d9e18c2be504",
+      "archiveFolder": "sensors/neo-6m-gps-grove-compatible",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Accelerometer Gyroscope MPU6050 Grove Sensor",
+      "sku": "MPU6050",
+      "slug": "pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+      "sourceCaptureSha256": "9cdf3ddeced67738aff50f19da6f76134ebdad4168be4499d39123037a2f78af",
+      "livePageSha256": "d305f37f4ff526383cf7e11ce1c109a5c478bd149cec15395605313d8eec665f",
+      "archiveFolder": "sensors/pandabyte-accelerometer-gyroscope-mpu6050-grove-sensor",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Bosch BMV080 Air Quality PM1/PM2.5/PM10 Sensor",
+      "sku": "PB-BMV080",
+      "slug": "pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "sourceCaptureSha256": "ffd6ccc99f73fa1038a576215071028e5f7e8a4604e434766793d96ea3dae350",
+      "livePageSha256": "1f2fa748b86b86baa4df59bc4f03b7ad3892fa8c3998ac76dfadd7ee07b2cda4",
+      "archiveFolder": "sensors/pandabyte-bmv080-air-quality-pm1-pm2-5-pm10-sensor",
+      "productInfoPresent": false,
+      "originalResources": [
+        {
+          "label": "Youtube Tutorial",
+          "url": "https://youtu.be/z9ygY5GQSpk"
+        },
+        {
+          "label": "Arduino Library",
+          "url": "https://github.com/sparkfun/SparkFun_BMV080_Arduino_Library"
+        },
+        {
+          "label": "Official Bosch BMV080 Specs",
+          "url": "https://www.bosch-sensortec.com/products/environmental-sensors/particulate-matter-sensor/bmv080/"
+        },
+        {
+          "label": "Bosch SDK Download",
+          "url": "https://www.bosch-sensortec.com/software-tools/double-opt-in-forms/sdk-v11-2.html"
+        }
+      ],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte GP-02 GPS BDS GNSS Grove Sensor",
+      "sku": "GPSGP02",
+      "slug": "pandabyte-gp-02-gps-bds-gnss",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-gp-02-gps-bds-gnss",
+      "sourceCaptureSha256": "bdbe4fe4f0d46d163b98af2aaaa28dd67f4e55be54b5c21d71d6dba9807ad4a9",
+      "livePageSha256": "37fbf0fd50c17084e9c06c28b5211139a13c430df096f2b3a597632075e74cd9",
+      "archiveFolder": "sensors/pandabyte-gp-02-gps-bds-gnss",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte MAX485 TTL To RS485 5V 12V",
+      "sku": "PB-MAX485",
+      "slug": "pandabyte-max485-ttl-to-rs485-5v-12v",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-max485-ttl-to-rs485-5v-12v",
+      "sourceCaptureSha256": "7ac354d22bdab3900f07ebe5a42a0ffb188cdaac58555c54bd2077fb2e8ec611",
+      "livePageSha256": "2fefd52b9baa8b20e1532dc9cc5553ab9b0184fb280c5d1e28e4ff9b42c86272",
+      "archiveFolder": "sensors/pandabyte-max485-ttl-to-rs485-5v-12v",
+      "productInfoPresent": false,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte OLED Screen Display 0.96 Inch Grove",
+      "sku": "PB96OLED",
+      "slug": "pandabyte-oled-screen-display-0-96-inch-grove",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-oled-screen-display-0-96-inch-grove",
+      "sourceCaptureSha256": "596dd5953ec4989a795ce746c24955fca78b0d683557e8dcd378c54c9a9731df",
+      "livePageSha256": "fd268844f18ebd8fa06191c15eeddb8c917614ebbb496f5df241140b22b4cd54",
+      "archiveFolder": "sensors/pandabyte-oled-screen-display-0-96-inch-grove",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Potentiometer 10K ohm Grove Sensor",
+      "sku": "PB10KPOT",
+      "slug": "pandabyte-potentiometerv-10k-ohm",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-potentiometerv-10k-ohm",
+      "sourceCaptureSha256": "cad3ee25e3da9958f7803e567d78d3073689967b810e2789040c972701178ee9",
+      "livePageSha256": "e11cc07bcec1bce578863a4e806fd6023e7b78265df85d252cc42a3aae59ede8",
+      "archiveFolder": "sensors/pandabyte-potentiometerv-10k-ohm",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte RGB LED Strip WS2812B XIAO Footprint with Switch",
+      "sku": "RGB10WS",
+      "slug": "pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+      "sourceCaptureSha256": "7a6d5df186f8bd18438ce6a6f332d27042be476fb38f8de81d8a7523fbd633d2",
+      "livePageSha256": "e5600c7fb0dcb848396c08b82ec58105285e7dc981f3918c4cc4fc4c0a94727e",
+      "archiveFolder": "sensors/pandabyte-rgb-led-strip-ws2812b-xiao-footprint-with-switch",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte RGB LCD Backlight Grove Module",
+      "sku": "LCDBACKLIT",
+      "slug": "pandabyte-rgb-rgb-lcd-backlight-grove-module",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+      "sourceCaptureSha256": "7b70cf84a386b5af96608ec5ff5aab347a4f0c85bf7eb81e98c4abf8cfd93700",
+      "livePageSha256": "14a1cc16dda37f4662d3aaf99b40248be5f02dec1d24d800d285cbdbc5f72a4e",
+      "archiveFolder": "sensors/pandabyte-rgb-rgb-lcd-backlight-grove-module",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte xPM Particulate Matter PM1/PM2.5/PM10 Sensor",
+      "sku": "xPBPM",
+      "slug": "pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+      "sourceUrl": "https://www.pandabyte.in/product-page/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+      "sourceCaptureSha256": "0ba8c2b3fc22319da73820a779f74080858f42afc416e987749372ffcc1b3f05",
+      "livePageSha256": "f22983e4336bad4006a24c4afef6d93c38afc39eec9fa176c31aa67bac404a6c",
+      "archiveFolder": "sensors/pandabyte-xpm-particulate-matter-pm1-pm2-5-pm10-sensor",
+      "productInfoPresent": false,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Push Button Switch Grove Sensor",
+      "sku": "SWITCHGROVE",
+      "slug": "push-button-switch",
+      "sourceUrl": "https://www.pandabyte.in/product-page/push-button-switch",
+      "sourceCaptureSha256": "0d15e00e85bc98a266bc05acf944194c7a04ccb734f89f52a22000a0e9498063",
+      "livePageSha256": "4f8955d3ac6448a484019639ead15727fb90975375fa2b8bb2e84e9bcc22af52",
+      "archiveFolder": "sensors/push-button-switch",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "RGB LED Circular WS2812B WeMoS D1 Mini",
+      "sku": "RGBWEMOS",
+      "slug": "rgb-led-circular-ws2812b-wemos-d1-mini",
+      "sourceUrl": "https://www.pandabyte.in/product-page/rgb-led-circular-ws2812b-wemos-d1-mini",
+      "sourceCaptureSha256": "954ead29b758007a34ffed79e9f445e85593bc7e2c8ae13e45dbebb7cb335bc2",
+      "livePageSha256": "a2ae2312d7d2054227bd3ae6e2ac8bb04694251d1d5e0836706360b6601b34fb",
+      "archiveFolder": "sensors/rgb-led-circular-ws2812b-wemos-d1-mini",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte RGB LED Grove Module",
+      "sku": "RGB5050",
+      "slug": "rgb-led-grove-compatible",
+      "sourceUrl": "https://www.pandabyte.in/product-page/rgb-led-grove-compatible",
+      "sourceCaptureSha256": "c747dd2b4de19cc2a4cc69fc0465c04363a0aa2c6e4f5ed7cf262508792a33a0",
+      "livePageSha256": "318898d86ef172cc7728c86f3f35a6c3262bd123c80548ebb0b55d48cde8b344",
+      "archiveFolder": "sensors/rgb-led-grove-compatible",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte RGB LED Matrix WS2812B XIAO Footprint",
+      "sku": "RGB4X4",
+      "slug": "rgb-led-matrix-ws2812b-xiao-footprint",
+      "sourceUrl": "https://www.pandabyte.in/product-page/rgb-led-matrix-ws2812b-xiao-footprint",
+      "sourceCaptureSha256": "ca854a71f3feeb557db8d43b235138b371aff3e508b944cded17b7e15a8b1873",
+      "livePageSha256": "2df92e6772523065da441441747dfb71184de55eed97f98522cec1bdf9d972f6",
+      "archiveFolder": "sensors/rgb-led-matrix-ws2812b-xiao-footprint",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Single Color Grove LED Light Emitting Diode",
+      "sku": "PBSLED",
+      "slug": "single-color-led-light-emitting-diode",
+      "sourceUrl": "https://www.pandabyte.in/product-page/single-color-led-light-emitting-diode",
+      "sourceCaptureSha256": "4e2506f1bae2f6c00d292cbc5ffa7dc3fd112d60f3caf17e363f8bde506fc882",
+      "livePageSha256": "4ec87a2269bcba9a14a4750956e80a7512325ac9fb5c3a5d601121974dacc3ea",
+      "archiveFolder": "sensors/single-color-led-light-emitting-diode",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "PandaByte Temperature Humidity DHT11 Grove Sensor",
+      "sku": "PBDHT11",
+      "slug": "temperature-humidity-dht11-sensor",
+      "sourceUrl": "https://www.pandabyte.in/product-page/temperature-humidity-dht11-sensor",
+      "sourceCaptureSha256": "57ca913a0c360cfb03862159d56f1c301bc8da29d42a6ab8021c9822d827b40e",
+      "livePageSha256": "feec3a9ec230486c8b614b43ce229352b3c732b351e7fe115b8ab2cca49da062",
+      "archiveFolder": "sensors/temperature-humidity-dht11-sensor",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": false,
+      "heldMissingSku": false
+    },
+    {
+      "title": "NodeMCU Grove Expansion Board Shield HAT",
+      "sku": "NODEMCUHAT",
+      "slug": "nodemcu-grove-expansion-board-shield-hat",
+      "sourceUrl": "https://www.pandabyte.in/product-page/nodemcu-grove-expansion-board-shield-hat",
+      "sourceCaptureSha256": "7c6275c57ca5a75ec1ebd1375d18c19fcb18663437aa3bfa6270880a9d58b373",
+      "livePageSha256": "b7e889632ece00dcd175f8102ea09d8622f47c1af3d49e01c4f586b601bb2eda",
+      "archiveFolder": "shields/nodemcu-grove-expansion-board-shield-hat",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "x32 xLoRa Grove Expansion Board Shield HAT",
+      "sku": "X32SHIELD",
+      "slug": "x32-xlora-grove-expansion-board-shield-hat",
+      "sourceUrl": "https://www.pandabyte.in/product-page/x32-xlora-grove-expansion-board-shield-hat",
+      "sourceCaptureSha256": "67fc6f55c8dede4ad7294a07176625dc753457453384b64da9eec1c755d0803a",
+      "livePageSha256": "21ff5dce8f2d1ee75cf6f8851740247627a0c8a37f122ed9bab4e1be203e7fec",
+      "archiveFolder": "shields/x32-xlora-grove-expansion-board-shield-hat",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    },
+    {
+      "title": "xC3m Grove Expansion Board Shield HAT",
+      "sku": "XC3MHAT",
+      "slug": "xc3m-grove-expansion-board-shield-hat",
+      "sourceUrl": "https://www.pandabyte.in/product-page/xc3m-grove-expansion-board-shield-hat",
+      "sourceCaptureSha256": "2f87eaaca233918e87cd9389aa6f6352daef8edcc63c563ef5a8bf2e186ebadf",
+      "livePageSha256": "b64332aa42c291580c8a68d077245ff46e8d39ea7cb698b72a2cb950c92f9703",
+      "archiveFolder": "shields/xc3m-grove-expansion-board-shield-hat",
+      "productInfoPresent": true,
+      "originalResources": [],
+      "unlinkedWikiLabel": true,
+      "heldMissingSku": false
+    }
+  ],
+  "caveat": "Hashes identify observed captures, not engineering accuracy or future document ingestion permission. Archive remains local; no source bytes were modified."
+}
