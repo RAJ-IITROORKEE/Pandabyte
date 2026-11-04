@@ -17,6 +17,7 @@ const eslintConfig = defineConfig([
     ".agents/**",
     ".superdesign/**",
     ".firecrawl/**",
+    "Panda-agent/**/artifacts/**",
     // Independently maintained source archives and CAD experiments are not app source.
     "products/**",
     "experiments/**",

@@ -38,7 +38,7 @@ The user had offered to complete sign-in. A later observation in that profile wa
 
 Ignored evidence: `Panda-agent/infra/lightweight/artifacts/baseline-chat-failure.jpg`, `baseline-agent-tests.log`. No session tokens, cookies, original uploads or network archives were saved.
 
-## Production build and payload proxy
+## Attempt 1 production build and server payload proxy (historical)
 
 The same unchanged application passed lint, typecheck and production build. The build used `.next-lightweight-baseline`; Next's automatic additions of that directory to `tsconfig.json` were removed after the build, restoring the original file exactly. Observed build: compilation **62 s**, TypeScript **105 s**, **41/41** static pages generated, exit **0**. These are one local build's observations, not constrained-container or statistical latency measurements.
 
@@ -55,12 +55,37 @@ An authorized local equivalent was completed: inventory deduplicated same-origin
 | `/panda-agent` | 20 | 1,835,227 | 567,142 | 19/20 |
 | `/` | 21 | 1,197,130 | 375,324 | 20/21 |
 
-This is a **server payload inventory proxy**, not actual cold-browser transfer, initial-only request attribution, mobile behavior, timing or a feature delta. It excludes third-party scripts and scripts absent from the observed DOM. Dynamic imports/prefetch/cache effects are not resolved. The corresponding browser cold-JavaScript gate remains **BLOCKED**. The developer reviewer independently agreed this proxy must not silently pass that gate.
+This is a **server payload inventory proxy**, not actual cold-browser transfer, initial-only request attribution, mobile behavior, timing or a feature delta. It excludes third-party scripts and scripts absent from the observed DOM. Dynamic imports/prefetch/cache effects are not resolved. At that attempt the corresponding browser cold-JavaScript gate was recorded **BLOCKED**. The developer reviewer agreed this proxy must not silently pass that gate; the actual browser measurement below supersedes that missing measurement, not the historical result.
 
 Ignored reproducible inventories and calculation: `assistant-script-inventory.json`, `storefront-script-inventory.json`, `measure-script-inventory.py`, `baseline-script-payloads.json`, under the same artifacts directory. They contain public static paths and aggregate sizes, not private network archives.
 
-## Unblock and resume
+## Attempt 2: actual browser ResourceTiming
 
-Provide a working browser network-capture surface for the branch production build (or restore native DevTools control in a task-owned window). Preserve the existing user session. Collect actual cold JavaScript requests/encoded transfer bytes for `/panda-agent` and `/` using the same account, confirmed mobile viewport, network profile and controlled cold-cache procedure. Record the profile, build SHA and sanitized aggregate report; never export cookies or a raw authenticated HAR. Rerun affected baseline checks, then close Phase 1 and start Phase 2 automatically.
+Interpretation correction: Phase 1 explicitly requires cold initial JavaScript on both routes; it does not specify a mobile viewport or throttling profile. Matched mobile/network comparison and mobile long-thread behavior belong to Phase 7. The earlier failed mobile override remains a failed observation, but was incorrectly promoted to a Phase 1 requirement. This correction preserves the actual cold-JavaScript gate.
+
+Measured 5 November 2026 using ordinary CUA navigation, existing authorized development account, Chrome 156 on Windows, actual viewport **1280 × 720**, ordinary unthrottled local network. Source revision at attempt start `a038fe3cd9e5356800011f08366fc33fabe17b6b`; application runtime paths still match base `a3a4756` exactly. Production build ID `V-qR-zG6OxeRKhaaXxngB` from `.next-lightweight-baseline`.
+
+The local diagnostic server `Panda-agent/scripts/browser-baseline-proxy.mjs` forwards port 3001 to the owned loopback production upstream on 3012 using raw HTTP. It preserves static JS body bytes/compression, removes conditional validators and applies `no-store` for disclosed cold-network testing. It injects an early inline ResourceTiming sensor into test HTML; this is test instrumentation, not an unchanged HTML claim or application-runtime modification. An initial probe lacked the application's strict Clerk nonce and did not execute; that attempt passed no capture. The final probe reuses the server-issued nonce only in memory, leaves CSP unchanged, publishes aggregate/public-resource metrics to visible DOM, and logs/persists neither nonce nor cookies. No alternate CDP/browser driver was used.
+
+The sensor observes a buffered resource timeline, records a 3-second quiet window after load with a 15-second maximum after load, and separately reports incomplete/error/overflow evidence. Full browser resource-entry multisets were independently reconciled against proxy full-response counts and encoded body bytes for **each** route, including repeated/shared paths. All corresponding asset responses were 200/nonzero; started=completed=entry count, in-flight=failures=0, measurement/buffer/asset/counter overflows absent. Every decoded proxy hash equals its build-file hash, independently recomputed by Sol. No second-route cache assumption was used.
+
+| Route | Browser JS entries / unique paths | Encoded body bytes | Browser-reported transferSize | Decoded body bytes | Load event end (ms) | Capture cutoff (ms) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `/panda-agent` | 19 / 19 | 527,515 | 533,215 | 1,722,633 | 3,922.2 | 7,632.2 |
+| `/` | 20 / 20 | 335,697 | 341,697 | 1,084,536 | 3,629.7 | 10,434.0 |
+
+These are **worker-mediated, fully network-fetched first-party initial-JavaScript measurements**, one navigation per route under the declared capture window. All 19/20 entries have positive `workerStart`; do not claim direct/worker-free navigation or globally empty cache. The collector's raw `positiveTransfer` / `cacheMissEvidence` flags remain **false** because their extra criterion requires `workerStart===0`. Service-worker participation alone is not cache delivery. Sol accepts the independent full-network response/byte/hash reconciliation as evidence for the Phase 1 first-party network payload despite that extra operator criterion; the raw flags are not silently changed.
+
+Each capture added **4,115 inline HTML bytes** for the probe, excluded from external-JavaScript totals. `transferSize` is the browser API's reported metric, not an exact packet/header-wire byte count. The encoded-byte column is the compressed/body metric for later like-for-like comparison. Local proxy overhead means these timings are not hosted latency benchmarks.
+
+Both routes separately reported nine third-party script entries: visible encoded size 240,179 bytes, visible decoded size 809,251 bytes, transferSize 0 for all; one entry had encoded size 0. Their opaque-timing versus cache status is unresolved. Do not interpret zero as no requests or no cost, or claim whole-page/third-party cold totals. No mobile, statistical latency, feature delta, provider/runtime capacity or model-result claim is made.
+
+Ignored source reports: `cold-agent-browser.json`, `cold-agent-server.json`, `cold-home-browser.json`, `cold-home-server.json`, `phase1-browser-reconciliation.json` in `Panda-agent/infra/lightweight/artifacts/`. Durable sanitized aggregate evidence and input-file SHA-256 values: [verification summary](verification/lightweight-phase1-20261105.json). Sol's independent Python assertion checked exact `(path, encodedBodySize)` / `(path, rawBytes)` counters, counts/statuses/overflow, real build-file hashes and every aggregate against the root reconciliation; exit 0 for both routes. Final full regression passed 152/152, no failures/skips; full lint passed after a disclosed generated-artifact ignore fix, with typecheck/build already passed for unchanged application source. Sol signed off Phase 1 PASS in [the handoff](lightweight-harness-handoff.md); this accepts baseline evidence, not a working replacement assistant.
+
+References: [MDN transferSize](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/transferSize), [MDN encodedBodySize](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/encodedBodySize), [MDN PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver), [W3C Resource Timing](https://www.w3.org/TR/resource-timing/).
+
+## Resume and later gates
+
+Preserve the raw reports and this control build; repeat the same instrumentation/scope when comparing the replacement. Phase 7 still needs its matched mobile/network-profile measurements. The old server-payload proxy is retained only as historical evidence. No cookies or raw authenticated HAR should be exported.
 
 Docker is separately unavailable on this host; its build/resource gate remains pending for later phases. No image/container measurement, provider pricing/quota verification, new FastAPI runtime, guided project example or grounded saved-answer result is claimed here.

@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-05",
+  "phase": 1,
+  "phaseStatus": "PASS",
+  "lastPassingPhase": 1,
+  "phase2Status": "PENDING; prepare checkpoint and separate replacement branch before recording start",
+  "pendingSignoff": [],
+  "baseSha": "a3a4756fa514af780ae6a1e138d7aeddd36c77bc",
+  "testedHead": "a038fe3cd9e5356800011f08366fc33fabe17b6b",
+  "applicationRuntimeDiffFromBase": false,
+  "productionBuildId": "V-qR-zG6OxeRKhaaXxngB",
+  "mode": "real local browser and production Web; no provider inference",
+  "profile": {"browser": "Chrome 156 on Windows", "width": 1280, "height": 720, "network": "ordinary unthrottled loopback", "mobileClaim": false},
+  "method": {
+    "browserControl": "ordinary CUA navigation and visible DOM report",
+    "proxy": "loopback 3001 to owned production upstream 3012; raw HTTP assets",
+    "scope": "first-party /_next/static/*.js resource entries in declared initial navigation window",
+    "cacheProcedure": "no-store and conditional-validator removal; independently reconciled full 200 network responses on each route",
+    "quietWindowMs": 3000,
+    "maximumAfterLoadMs": 15000,
+    "probeInlineHtmlBytesPerNavigation": 4115,
+    "csp": "unchanged; server-issued nonce reused only in memory",
+    "serviceWorkerParticipation": true,
+    "rawCollectorWorkerFreeColdFlags": false,
+    "acceptedInterpretation": "worker-mediated fully network-fetched first-party initial JS; not worker-free or globally empty cache",
+    "wholePageColdClaim": false
+  },
+  "routes": [
+    {"route": "/panda-agent", "entries": 19, "uniquePaths": 19, "encodedBodyBytes": 527515, "browserTransferSize": 533215, "decodedBodyBytes": 1722633, "loadEventEndMs": 3922.2, "captureCutoffMs": 7632.2, "workerEntries": 19, "proxyStarted": 19, "proxyCompleted": 19, "proxyInFlight": 0, "proxyFailed": 0},
+    {"route": "/", "entries": 20, "uniquePaths": 20, "encodedBodyBytes": 335697, "browserTransferSize": 341697, "decodedBodyBytes": 1084536, "loadEventEndMs": 3629.7, "captureCutoffMs": 10434, "workerEntries": 20, "proxyStarted": 20, "proxyCompleted": 20, "proxyInFlight": 0, "proxyFailed": 0}
+  ],
+  "independentAssertions": {
+    "commandMode": "offline Python assertions over ignored browser/proxy reports and actual build files",
+    "exitCode": 0,
+    "exactPathEncodedByteMultisetsMatch": true,
+    "allProxyAssetsStatus200AndNonzero": true,
+    "allBrowserEncodedAndTransferValuesPositive": true,
+    "allDecodedHashesMatchRecomputedBuildFiles": true,
+    "noPendingFailuresOrBufferAssetCounterOverflows": true,
+    "rootAggregateReconciliationMatches": true
+  },
+  "thirdPartyPerRoute": {"scriptEntries": 9, "visibleEncodedBodyBytes": 240179, "visibleDecodedBodyBytes": 809251, "visibleTransferSize": 0, "zeroEncodedEntries": 1, "status": "opaque timing versus cache ambiguity unresolved; excluded from first-party cold total"},
+  "helperTests": {"command": "node --test Panda-agent/tests/browser-baseline-proxy.test.mjs", "independentExitCode": 0, "passed": 3, "failed": 0, "skipped": 0},
+  "finalRegressionTests": {"command": "node --test Panda-agent/tests/*.test.mjs", "reportedBy": "Root", "exitCode": 0, "passed": 152, "failed": 0, "skipped": 0, "durationSeconds": 33.1, "ignoredLog": "phase1-final-tests.log"},
+  "lint": {"focusedHelpersExitCode": 0, "initialFullRun": "failed on Git-ignored generated launcher no-require-imports", "toolingFix": "eslint global ignore Panda-agent/**/artifacts/**; application runtime unchanged", "fullRerunExitCode": 0},
+  "cleanup": {"userDevelopment3000": "left running", "diagnostic3001": "stopped; IPv6-loopback closed", "productionUpstream3012": "stopped; IPv6-loopback closed", "accountSessionsChanged": false},
+  "helperSha256": {
+    "Panda-agent/scripts/browser-baseline-proxy.mjs": "b9eccc0f7a406ecaa7a03179e6a7b7e9359632df3104b4fd7b0f79a6b0722e0d",
+    "Panda-agent/tests/browser-baseline-proxy.test.mjs": "7949d1e6575a8c20ef144c57d628559e35ec2fa7e034e231a40c7c93fb9c321e"
+  },
+  "ignoredArtifactSha256": {
+    "cold-agent-browser.json": "afdf95b4416336d178c33df7375846c661f91a3f5c85ffd24f62400217e21771",
+    "cold-agent-server.json": "c54a750d11419613477ec1c97be35712c01857e1e4756deef0c93170b8bfff33",
+    "cold-home-browser.json": "d266098719d59842a3979b2af0eca5f0daf208fe0dd71d20bb8d8aa55f4da876",
+    "cold-home-server.json": "3f57e66ecaac49289b8076cb11115b2b991c55ba74939f8595df5b2bf679a0af",
+    "phase1-browser-reconciliation.json": "bcbe39648a90b9179fe15c8cd416ab81d9d5dca5285ea2b7a43c15ed41c436a0"
+  },
+  "limits": ["one observed navigation per route", "no mobile claim", "third-party cold bytes unresolved", "not exact packet/header-wire counts", "no grounded answer or durable-save acceptance", "no provider, Docker runtime or resource acceptance"]
+}
