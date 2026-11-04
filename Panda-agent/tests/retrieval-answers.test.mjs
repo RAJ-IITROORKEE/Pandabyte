@@ -190,3 +190,24 @@ test('trusted selector can recheck all retrieved fragments before release', asyn
     };
     assert.equal((await ask(x.adapters)).kind, 'unavailable');
 });
+
+test('redundant exact source label is removed only after literal validation and citations renumber',async()=>{
+ const h1='panda:00000000-0000-0000-0000-000000000001:'+ 'a'.repeat(64)+':'+ 'a'.repeat(64),h2='panda:00000000-0000-0000-0000-000000000002:'+ 'b'.repeat(64)+':'+ 'b'.repeat(64),url='https://pandabyte.in/product-page/a',meta=`Source: ${url}`;
+ const x=make({lexical:async(_q,h)=>h,dense:async()=>[],select:async()=>({selections:[{handle:h1,quote:meta},{handle:h2,quote:'4 pins'}]})});x.scope.chunks=[chunk(h1,{text:meta,textHash:hash(meta)}),chunk(h2)];
+ const answer=await ask(x.adapters);assert.equal(answer.kind,'evidence');assert.deepEqual(answer.citations.map(c=>({id:c.id,quote:c.quote,sourceUrl:c.sourceUrl})),[{id:'S1',quote:'4 pins',sourceUrl:url}]);
+ x.scope.chunks[0]={...x.scope.chunks[0],text:'A different listing',textHash:hash('A different listing')};assert.equal((await ask(x.adapters)).kind,'unavailable');
+});
+test('metadata-only selection is insufficient and labels from other sources are removed',async()=>{
+ const h1='panda:00000000-0000-0000-0000-000000000001:'+ 'a'.repeat(64)+':'+ 'a'.repeat(64),h2='panda:00000000-0000-0000-0000-000000000002:'+ 'b'.repeat(64)+':'+ 'b'.repeat(64),url='https://pandabyte.in/product-page/b',meta=`Source: ${url}`;
+ let picks=[{handle:h1,quote:meta}];const x=make({lexical:async(_q,h)=>h,dense:async()=>[],select:async()=>({selections:picks})});x.scope.chunks=[chunk(h1,{text:meta,textHash:hash(meta),sourceUrl:url}),chunk(h2)];
+ let answer=await ask(x.adapters);assert.equal(answer.kind,'insufficient');picks=[{handle:h1,quote:meta},{handle:h2,quote:'4 pins'}];answer=await ask(x.adapters);assert.equal(answer.kind,'evidence');assert.deepEqual(answer.citations.map(c=>[c.id,c.quote,c.sourceUrl]),[['S1','4 pins','https://pandabyte.in/product-page/a']]);
+});
+test('source-like but nonexact literal quote is never removed',async()=>{
+ const h1='panda:00000000-0000-0000-0000-000000000001:'+ 'a'.repeat(64)+':'+ 'a'.repeat(64),h2='panda:00000000-0000-0000-0000-000000000002:'+ 'b'.repeat(64)+':'+ 'b'.repeat(64),meta='Source: https://pandabyte.in/product-page/a (captured)';const x=make({lexical:async(_q,h)=>h,dense:async()=>[],select:async()=>({selections:[{handle:h1,quote:meta},{handle:h2,quote:'4 pins'}]})});x.scope.chunks=[chunk(h1,{text:meta,textHash:hash(meta)}),chunk(h2)];const answer=await ask(x.adapters);assert.equal(answer.kind,'evidence');assert.deepEqual(answer.citations.map(c=>c.quote),[meta,'4 pins']);
+});
+
+test('withdrawal of a droppable metadata handle after selection still rejects the answer',async()=>{
+ const h1='panda:00000000-0000-0000-0000-000000000001:'+'a'.repeat(64)+':'+'a'.repeat(64),h2='panda:00000000-0000-0000-0000-000000000002:'+'b'.repeat(64)+':'+'b'.repeat(64),meta='Source: https://pandabyte.in/product-page/a';let x;
+ x=make({lexical:async(_q,h)=>h,dense:async()=>[],select:async()=>{x.scope.chunks[0]={...x.scope.chunks[0],blocked:true};return {selections:[{handle:h1,quote:meta},{handle:h2,quote:'4 pins'}]};}});x.scope.chunks=[chunk(h1,{text:meta,textHash:hash(meta)}),chunk(h2)];
+ const answer=await ask(x.adapters);assert.equal(answer.kind,'unavailable');assert.equal(x.scope.fingerprint,'g1');assert.equal(x.calls.filter(v=>v==='scope').length,3);
+});

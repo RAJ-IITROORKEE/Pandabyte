@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "classification": "source-visible engineering checks; not held-out quality or deployment approval",
+  "checkedAt": "2026-11-04",
+  "newAuthenticatedBrowserChecks": {
+    "status": "completed",
+    "surface": "localhost:3000 signed-in UI, parent session",
+    "execution": "retrieval only; model not requested for all ten",
+    "providerCalls": 0,
+    "cases": [
+      {
+        "supportingRanks": [
+          2,
+          4
+        ],
+        "elapsedMs": 6176,
+        "passages": 4,
+        "outcome": "retrieved",
+        "query": "x8266 flash"
+      },
+      {
+        "supportingRanks": [
+          3,
+          4
+        ],
+        "elapsedMs": 5384,
+        "passages": 4,
+        "outcome": "retrieved",
+        "query": "DHT11 measurement range"
+      },
+      {
+        "supportingRanks": [
+          1
+        ],
+        "elapsedMs": 7148,
+        "passages": 2,
+        "outcome": "retrieved",
+        "query": "BMP580 interfaces"
+      },
+      {
+        "supportingRanks": [
+          1,
+          2,
+          4
+        ],
+        "elapsedMs": 7268,
+        "passages": 5,
+        "outcome": "retrieved",
+        "query": "xC3 Bluetooth"
+      },
+      {
+        "supportingRanks": [],
+        "elapsedMs": 3697,
+        "passages": 0,
+        "outcome": "clarification",
+        "query": "unspecified ESP32"
+      },
+      {
+        "query": "x8266 warranty",
+        "observation": "No warranty term in retrieved context.",
+        "outcome": "retrieved",
+        "elapsedMs": 6207,
+        "passages": 4,
+        "supportingRanks": []
+      },
+      {
+        "query": "xC6 flash",
+        "outcome": "retrieved",
+        "passages": 5,
+        "supportingRanks": [
+          1
+        ],
+        "elapsedMs": 7759
+      },
+      {
+        "query": "xS3 processor",
+        "outcome": "retrieved",
+        "passages": 3,
+        "supportingRanks": [
+          1
+        ],
+        "elapsedMs": 6351
+      },
+      {
+        "query": "ADXL345 temperature",
+        "outcome": "retrieved",
+        "passages": 4,
+        "supportingRanks": [
+          1
+        ],
+        "elapsedMs": 6504
+      },
+      {
+        "query": "verified x8266 physical revision",
+        "outcome": "insufficient",
+        "passages": 0,
+        "supportingRanks": [],
+        "elapsedMs": 6530
+      }
+    ],
+    "note": "Scoped sources were correct. Elapsed values are UI-observed timings; retrieval does not establish generated-answer quality, hardware correctness, or absence of warranty elsewhere."
+  },
+  "offlineRetrieval": {
+    "command": "node Panda-agent/evaluation/playground/diverse-cases-probe.mjs",
+    "cases": 15,
+    "passed": 15,
+    "providerCalls": 0,
+    "limitations": "Pinned source-visible in-memory projection; term/exclusion/guard checks are not semantic answer or current access validation."
+  },
+  "offlineIdentity": {
+    "command": "node Panda-agent/evaluation/playground/diverse-cases-identity.mjs",
+    "dht11AndBmp580ReachedSelector": true,
+    "genericEsp32": "clarification",
+    "xc3": "resolved to its own product",
+    "xc3m": "clarification",
+    "providerCalls": 0
+  },
+  "priorBrowserCaptures": {
+    "count": 10,
+    "modelStatus": "not_requested",
+    "note": "Previously captured responses, not a new run in this check. Five were manually reviewed for support and limitations in the preceding review; no new authenticated browser access is claimed."
+  }
+}

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { normalizeLexicalTerm, matchesLexicalTerm } from './lexical-terms.ts';
 import type { Adapters, CanonicalChunk, Product, Question } from './contracts.ts';
 import { BLOCKED_LOGICAL_IDS, ENGINEERING_CONFIG, ENGINEERING_MANIFEST, PRODUCT_MEMBERSHIP } from './engineering-proof.ts';
 
@@ -19,34 +20,34 @@ async function rpc(client: Client, name: string, params?: Record<string, unknown
     if (error || !data) throw new Error('Runtime projection unavailable');
     return data;
 }
-async function products(client: Client): Promise<ProductRow[]> {
+export async function readRuntimeCatalog(client: Client): Promise<ProductRow[]> {
     const data = await rpc(client, 'panda_agent_runtime_products') as { items?: ProductRow[] };
     if (!Array.isArray(data.items) || data.items.length > 42 || data.items.some(p => !productValid(p)) || new Set(data.items.map(p => p.id)).size !== data.items.length || new Set(data.items.map(p => p.sku.toLowerCase())).size !== data.items.length) throw new Error('Invalid product projection');
     return data.items;
 }
 export async function listRuntimeProducts(client: Client): Promise<RuntimeProduct[]> {
-    return (await products(client)).map(({ sku, title }) => ({ sku, title })).sort((a, b) => a.title.localeCompare(b.title, 'en'));
+    return (await readRuntimeCatalog(client)).map(({ sku, title }) => ({ sku, title })).sort((a, b) => a.title.localeCompare(b.title, 'en'));
 }
-function identity(rows: ProductRow[], input: Question) {
+export function resolveRuntimeIdentity(rows: ProductRow[], input: Question) {
     const selected = input.productSku ? rows.find(p => p.sku.toLowerCase() === input.productSku!.toLowerCase()) : undefined;
     if (input.productSku && !selected) return { kind: 'clarification' as const };
     const q = input.question.toLowerCase();
-    const contains = (s: string) => {
+    const contains = (s: string, modelToken = false) => {
         const needle = s.toLowerCase();
         let at = q.indexOf(needle);
         while (at >= 0) {
-            if ((at === 0 || !/[a-z0-9]/.test(q[at - 1])) && (at + needle.length === q.length || !/[a-z0-9]/.test(q[at + needle.length]))) return true;
+            if ((at === 0 || !(modelToken ? /[a-z0-9-]/ : /[a-z0-9]/).test(q[at - 1])) && (at + needle.length === q.length || !(modelToken ? /[a-z0-9-]/ : /[a-z0-9]/).test(q[at + needle.length]))) return true;
             at = q.indexOf(needle, at + 1);
         }
         return false;
     };
-    // Short model aliases come only from unambiguous title tokens in the current projection.
+    // Model aliases come only from unambiguous title tokens in the current projection.
     const aliases = new Map<string, ProductRow[]>();
-    for (const p of rows) for (const token of new Set(p.title.match(/\bx[a-z0-9]{2,}\b/gi) ?? [])) {
+    for (const p of rows) for (const token of new Set(p.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi) ?? [])) {
         const key = token.toLowerCase();
         aliases.set(key, [...(aliases.get(key) ?? []), p]);
     }
-    const named = rows.filter(p => contains(p.sku) || contains(p.title) || [...aliases].some(([alias, owners]) => owners.length === 1 && owners[0].id === p.id && contains(alias)));
+    const named = rows.filter(p => contains(p.sku) || contains(p.title) || [...aliases].some(([alias, owners]) => owners.length === 1 && owners[0].id === p.id && contains(alias, !/^x[a-z0-9]{2,}$/i.test(alias))));
     if (named.length > 1 || (selected && named.some(p => p.id !== selected.id))) return { kind: 'conflict' as const };
     const resolved = selected ?? named[0];
     return resolved ? { kind: 'resolved' as const, product: { id: resolved.id, sku: resolved.sku } } : { kind: 'clarification' as const };
@@ -71,7 +72,7 @@ export function createInsforgeAdapters(client: Client, select: Adapters['select'
     let current = new Map<string, CanonicalChunk>();
     return {
         ranking: { mode: 'lexical' },
-        resolveIdentity: async (_actor, input) => identity(await products(client), input),
+        resolveIdentity: async (_actor, input) => resolveRuntimeIdentity(await readRuntimeCatalog(client), input),
         currentScope: async (_actor, product, revision) => {
             const data = await rpc(client, 'panda_agent_runtime_scope', { p_product: product.id }) as ScopeRow;
             const chunks = validateScope(data, product);
@@ -81,11 +82,11 @@ export function createInsforgeAdapters(client: Client, select: Adapters['select'
             return { fingerprint, candidate: true, sealed: true, engineeringVerified: true, manifestVerified: true, configVerified: true, generationCurrent: true, chunks };
         },
         lexical: async (question, eligible) => {
-            const terms = tokens(question);
+            const terms = [...new Set(tokens(question).map(normalizeLexicalTerm))];
             return eligible.map(handle => {
                 const chunk = current.get(handle);
                 const text = chunk?.text.toLowerCase() ?? '';
-                return { handle, score: terms.filter(t => new RegExp(`\\b${t}\\b`).test(text)).length };
+                return { handle, score: terms.filter(t => matchesLexicalTerm(t, text)).length };
             }).filter(x => x.score > 0).sort((a, b) => b.score - a.score || a.handle.localeCompare(b.handle, 'en')).slice(0, 100).map(x => x.handle);
         },
         dense: async () => { throw new Error('Native scoped search unavailable'); },
@@ -95,7 +96,7 @@ export function createInsforgeAdapters(client: Client, select: Adapters['select'
 
 // Safe local engineering status: never return internal handles or source-storage metadata.
 export async function inspectRuntimeScope(client: Client, sku: string): Promise<{ sku: string; title: string; eligibleChunks: number } | null> {
-    const product = (await products(client)).find(p => p.sku.toLowerCase() === sku.toLowerCase());
+    const product = (await readRuntimeCatalog(client)).find(p => p.sku.toLowerCase() === sku.toLowerCase());
     if (!product) return null;
     const data = await rpc(client, 'panda_agent_runtime_scope', { p_product: product.id }) as ScopeRow;
     const chunks = validateScope(data, product);
@@ -105,7 +106,7 @@ export async function inspectRuntimeScope(client: Client, sku: string): Promise<
 
 // This projection is intended only for a separately authorized admin inspection route.
 export async function getRuntimeProductEvidence(client: Client, sku: string): Promise<{ sku: string; title: string; sourceUrl: string; retrievalMethod: 'lexical'; candidateState: 'sealed_inactive'; eligibleChunks: number; excludedChunks: number; chunks: Array<{ sectionPath: string[]; text: string; physicalRevision: string | null; capturedAt: string }> } | null> {
-    const product = (await products(client)).find(p => p.sku.toLowerCase() === sku.toLowerCase());
+    const product = (await readRuntimeCatalog(client)).find(p => p.sku.toLowerCase() === sku.toLowerCase());
     if (!product) return null;
     const data = await rpc(client, 'panda_agent_runtime_scope', { p_product: product.id }) as ScopeRow;
     const all = validateScope(data, product);
@@ -115,3 +116,6 @@ export async function getRuntimeProductEvidence(client: Client, sku: string): Pr
     const chunks = all.filter(c => !c.blocked).map(({ sectionPath, text, physicalRevision, capturedAt }) => ({ sectionPath, text, physicalRevision, capturedAt }));
     return { sku: product.sku, title: product.title, sourceUrl: product.sourceUrl, retrievalMethod: 'lexical', candidateState: 'sealed_inactive', eligibleChunks: chunks.length, excludedChunks: all.length - chunks.length, chunks };
 }
+
+
+

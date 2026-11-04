@@ -72,7 +72,11 @@
     "saxes": "6.0.0",
     "sharp": "0.35.5",
     "sonner": "2.0.7",
-    "three": "0.186.1"
+    "three": "0.186.1",
+    "@aws-crypto/sha256-js": "5.2.0",
+    "@smithy/protocol-http": "5.6.2",
+    "@smithy/signature-v4": "5.7.5",
+    "@vercel/oidc-aws-credentials-provider": "3.3.17"
   },
   "devDependencies": {
     "@gltf-transform/core": "4.5.1",
@@ -96,6 +100,9 @@
   },
   "overrides": {
     "@insforge/shared-schemas": {
+      "zod": "4.6.7"
+    },
+    "@vercel/cli-config": {
       "zod": "4.6.7"
     }
   },

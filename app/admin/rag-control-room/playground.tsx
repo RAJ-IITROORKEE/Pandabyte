@@ -1,0 +1,132 @@
+"use client";
+
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import styles from "./playground.module.css";
+
+type Passage = { rank: number; title: string; sourceUrl: string; capturedAt: string; sectionPath: string[]; text: string; lexicalOverlap: { matched: number; total: number } };
+type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null }; model: { status: "not_requested" | "guard_unavailable" | "not_run" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
+type Capability = { model: "openai/gpt-4o-mini"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | null; approvedQuestions: string[] };
+const outcomeKey = "panda-playground-unknown-outcome";
+
+export function Playground() {
+  const [question, setQuestion] = useState("");
+  const [evaluate, setEvaluate] = useState(true);
+  const [unknownOutcome, setUnknownOutcome] = useState(false);
+  const [guardReady, setGuardReady] = useState(false);
+  const [capability, setCapability] = useState<Capability | null>(null);
+  const [capabilityError, setCapabilityError] = useState(false);
+  const [capabilityAttempt, setCapabilityAttempt] = useState(0);
+  const [result, setResult] = useState<Result | null>(null);
+  const [completedAt, setCompletedAt] = useState("");
+  const [copyStatus, setCopyStatus] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  const capabilityRequest = useRef<AbortController | null>(null);
+  const evaluationId = useRef<string | null>(null);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      try { if (sessionStorage.getItem(outcomeKey) !== null) { setUnknownOutcome(true); setEvaluate(false); } }
+      catch { setUnknownOutcome(true); setEvaluate(false); }
+      setGuardReady(true);
+    });
+  }, []);
+
+  useEffect(() => () => request.current?.abort(), []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    capabilityRequest.current = controller;
+    fetch("/api/admin/panda-agent/playground", { cache: "no-store", signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw Error();
+        const value = await response.json();
+        if (value?.model !== "openai/gpt-4o-mini" || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
+        if (!controller.signal.aborted) setCapability(value);
+      })
+      .catch(() => { if (!controller.signal.aborted) setCapabilityError(true); });
+    return () => { controller.abort(); if (capabilityRequest.current === controller) capabilityRequest.current = null; };
+  }, [capabilityAttempt]);
+
+  const modelAvailable = capability?.connection === "configured_unverified" && capability.profile === "mini-two-case-v1" && capability.transport !== "unconfigured";
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || (evaluate && (!guardReady || unknownOutcome || !modelAvailable))) return;
+    if (evaluate) {
+      try {
+        evaluationId.current ??= crypto.randomUUID();
+        sessionStorage.setItem(outcomeKey, "1");
+      } catch { setUnknownOutcome(true); setEvaluate(false); return; }
+    }
+    const lock = () => { setUnknownOutcome(true); setEvaluate(false); };
+    const clearGuard = () => {
+      try { sessionStorage.removeItem(outcomeKey); return true; }
+      catch { lock(); return false; }
+    };
+    setResult(null); setCompletedAt(""); setCopyStatus(""); setError(""); setBusy(true);
+    const controller = new AbortController();
+    request.current = controller;
+    try {
+      const response = await fetch("/api/admin/panda-agent/playground", {
+        method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
+        body: JSON.stringify({ question: question.trim(), ...(evaluate ? { evaluate: true, requestId: evaluationId.current } : {}) }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        if (!controller.signal.aborted && evaluate) { if (["quota", "not_admitted"].includes(data?.error?.code)) clearGuard(); else lock(); }
+        if (!controller.signal.aborted) setError(data?.error?.code === "not_admitted" ? "No model request was admitted. Use an approved validation question or inspect retrieval." : data?.error?.code === "quota" ? "Model quota is unavailable or exhausted. No automatic retry was made." : data?.error?.code === "outcome_unknown" ? "The model call outcome is unknown. Check its status before submitting again; no automatic retry was made." : evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
+        return;
+      }
+      const data = await response.json();
+      if (!controller.signal.aborted) {
+        if (!data?.model || !["not_requested", "guard_unavailable", "not_run", "evaluated"].includes(data.model.status)) {
+          if (evaluate) lock();
+          setError("The response could not be understood. Check its status before submitting again.");
+        } else {
+          if (evaluate && clearGuard() && data.model.status === "evaluated") evaluationId.current = null;
+          setCompletedAt(new Date().toLocaleTimeString());
+          setResult(data);
+        }
+      }
+    } catch {
+      if (!controller.signal.aborted) {
+        if (evaluate) lock();
+        setError(evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
+      }
+    } finally { if (!controller.signal.aborted) { request.current = null; setBusy(false); } }
+  }
+
+  const metric = (value: number | null | undefined, suffix = "") => typeof value === "number" && Number.isFinite(value) && value >= 0 ? `${value.toLocaleString()}${suffix}` : "Unavailable";
+  const metrics = result?.metrics;
+  return <section className={styles.playground} id="playground">
+    <div className={styles.heading}><div><h2>Retrieval playground</h2><p>Inspect retrieved context before reviewing a model answer.</p></div><span className={styles.tag}>Lexical retrieval</span></div>
+    <div className={styles.workbench}>
+      <form className={styles.form} onSubmit={submit}>
+        <label>Your query<textarea name="question" autoComplete="off" placeholder="Ask about a product specification…" aria-describedby="query-help" value={question} onChange={event => { if (!unknownOutcome) evaluationId.current = null; setQuestion(event.target.value); setResult(null); setError(""); }} maxLength={2000} required disabled={busy} /></label>
+        <p id="query-help">Include the product name, model or SKU in your query.</p>
+        <div className={styles.evaluation}><label className={styles.checkOption}><input name="evaluate" type="checkbox" checked={evaluate} onChange={event => { setEvaluate(event.target.checked); setResult(null); setError(""); }} disabled={busy || !guardReady || unknownOutcome} aria-describedby={unknownOutcome ? "model-outcome-guard" : "evaluation-help"} /> <span>Also evaluate with GPT-4o-mini</span></label><p id="evaluation-help">Approved cases only. Model evaluation may incur usage charges.</p></div>
+        {unknownOutcome && <p id="model-outcome-guard" role="status">Model evaluation is disabled because a request may have an unknown outcome or session storage is unavailable. Reconcile the server-side status before requesting another evaluation. Retrieval remains available.</p>}
+        {!unknownOutcome && <p role="status">{capabilityError ? "Model connection status could not be checked. Uncheck evaluation to inspect retrieval." : !capability ? "Checking model configuration…" : modelAvailable ? result?.model.status === "evaluated" ? "Model response received. Further evaluations remain subject to the approved allowance." : "Guarded profile configured; the live connection is not yet verified." : "Model evaluation is not connected. Uncheck evaluation to inspect retrieval."}</p>}
+        <div className={styles.presets}><button type="button" disabled={busy} onClick={() => { capabilityRequest.current?.abort(); setCapability(null); setCapabilityError(false); setCapabilityAttempt(value => value + 1); }}>Refresh connection</button></div>
+        {capability?.profile === "mini-two-case-v1" && capability.approvedQuestions.length > 0 && <div className={styles.presets}><p>Approved evaluation questions. For other queries, uncheck evaluation to inspect retrieval.</p>{capability.approvedQuestions.map(preset => <button key={preset} type="button" disabled={busy} onClick={() => { if (!unknownOutcome) evaluationId.current = null; setQuestion(preset); setResult(null); setError(""); }}>{preset}</button>)}</div>}
+        <button type="submit" disabled={busy || !question.trim() || (evaluate && (!guardReady || !modelAvailable))}>{busy ? "Running…" : evaluate ? "Inspect and evaluate" : "Inspect retrieval"}</button>
+      </form>
+      <div className={styles.output} aria-live="polite" aria-busy={busy}>
+        <div className={styles.outputHeading}><h3>Output &amp; evidence</h3>{completedAt && result && <span>Completed at {completedAt} (local time)</span>}</div>
+        <dl className={styles.metrics}>
+          <div><dt>Elapsed</dt><dd>{metric(metrics?.elapsedMs, " ms")}</dd></div><div><dt>Context passages</dt><dd>{metric(metrics?.contextPassages)}</dd></div><div><dt>Context characters</dt><dd>{metric(metrics?.contextCharacters)}</dd></div><div><dt>Input tokens</dt><dd>{metric(metrics?.inputTokens)}</dd></div><div><dt>Output tokens</dt><dd>{metric(metrics?.outputTokens)}</dd></div><div><dt>Usage cost</dt><dd>{typeof metrics?.costUsd === "number" && Number.isFinite(metrics.costUsd) && metrics.costUsd >= 0 ? `$${metrics.costUsd.toLocaleString(undefined, { maximumFractionDigits: 9 })}` : "Unavailable"}</dd></div>
+        </dl>
+        {busy ? <p role="status">{evaluate ? "Retrieving passages and evaluating…" : "Retrieving passages…"}</p> : error ? <p role="alert">{error}</p> : !result ? <div className={styles.empty}><h4>Ready for a query</h4><p>Results, source citations and measured usage appear here after a run.</p></div> : <div className={styles.results}>
+          <p><strong>Outcome:</strong> {result.outcome.replaceAll("_", " ")} · <strong>Relevance:</strong> {result.relevance}</p>
+          {result.outcome === "clarification" && <p>Include the product name, model or SKU in your question.</p>}
+          <h4>GPT-4o-mini answer</h4>
+          {result.model.status === "not_requested" ? <p>No model answer yet. This was a retrieval-only request.</p> : result.model.status === "guard_unavailable" ? <p>Model output unavailable: the model execution guard is unavailable. No model was called.</p> : result.model.status === "not_run" ? <p>Model evaluation did not run because retrieval did not provide suitable context.</p> : result.model.status === "evaluated" ? <div><p className={styles.passage}>{result.model.answer || "No supported answer was found in the retrieved context."}</p><h4>Selected evidence</h4>{result.model.evidence.length === 0 ? <p>No evidence selected by the model.</p> : <ul className={styles.evidence}>{result.model.evidence.map(item => { const source = result.passages.find(passage => passage.rank === item.rank); return <li key={item.rank}><strong>Passage {item.rank}</strong><blockquote>{item.quote}</blockquote><p>Model relevance explanation: {item.reason}</p>{source && <a href={source.sourceUrl} target="_blank" rel="noreferrer">Open source</a>}</li>; })}</ul>}</div> : <p>Unknown model status. Check the request before submitting again.</p>}
+          <details className={styles.context}><summary>Retrieved context ({result.passages.length})</summary>{result.passages.length === 0 ? <p>No passages returned.</p> : <ol>{result.passages.map((passage, index) => <li key={`${passage.rank}-${index}`}><strong>Rank {passage.rank}: {passage.title}</strong><p>{passage.sectionPath.join(" / ") || "Listing"} · captured {passage.capturedAt}</p><p>Query term overlap: {passage.lexicalOverlap.matched} of {passage.lexicalOverlap.total}. This heuristic does not establish relevance or correctness.</p><blockquote>{passage.text}</blockquote><a href={passage.sourceUrl} target="_blank" rel="noreferrer">Open source</a></li>)}</ol>}</details>
+          <details className={styles.context}><summary>Structured JSON</summary><p>Parsed playground response, including passages and available metrics.</p><pre className={styles.json}>{JSON.stringify(result, null, 2)}</pre><button className={styles.copy} type="button" onClick={async () => { try { await navigator.clipboard.writeText(JSON.stringify(result, null, 2)); setCopyStatus("Copied JSON."); } catch { setCopyStatus("Could not copy JSON. Select the text to copy it."); } }}>Copy JSON</button><span className={styles.copyStatus} role="status" aria-live="polite">{copyStatus}</span></details>
+        </div>}
+      </div>
+    </div>
+  </section>;
+}
