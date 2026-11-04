@@ -1,0 +1,124 @@
+{
+  "sourceCommit": "8b71868d0b39f0c22f8552c61ddc59c696788a30",
+  "baselineManifest": "e14483a34e7c23a0525094380cbeae62987431f00190bc8bec5f0f2e92133c23",
+  "stageManifest": "a92bfc3464adc56b5aada4bdecd86eb7a468be02dd88a1c995dacaf51a3f6655",
+  "deploymentId": "dpl_27TnpbBjxXj5SGQMaD8F32NV428R",
+  "scope": "Apply these overlays to the existing 641-file hosted baseline. The two adjacent templates replace the same-named Control Room modules for the hosted build. Other overlays use the release checkout.",
+  "files": [
+    {
+      "path": "Panda-agent/src/control-room/model-catalog.ts",
+      "bytes": 4030,
+      "sha256": "9e629a2f93f3ce2407d16587db2054f5f43e80b87f9f1131fe589fee8805497f"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-capabilities-clerk.ts",
+      "bytes": 485,
+      "sha256": "08ebf5712495e14e08f7da91009c2de6378ca9af9c48ca131751ff5ac812e48f"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-capabilities.ts",
+      "bytes": 2411,
+      "sha256": "d5ed834e2998112289032a99063e7f0675fcc1fe20547e0cabc39f38088876e2"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-clerk.ts",
+      "bytes": 3659,
+      "sha256": "32ca1ff177a7cc4eb8f039bc246afb183ba6ecff9a48238481eeeaf95911b1e9"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-evaluation.ts",
+      "bytes": 2403,
+      "sha256": "733f48e36b9087286583ec20136066056b3b3e58e616ebe19af186a86f95d14a"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-gateway.ts",
+      "bytes": 5886,
+      "sha256": "ef356265d8fc9baa441a902f77e735c9e57fa8ec460f3dd42091380c2fd3bf71"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-handler.ts",
+      "bytes": 7508,
+      "sha256": "3090f1533f6bebc61023f929b75a4362ff3a0dc78bade6868450464943d78816"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-intent.ts",
+      "bytes": 1710,
+      "sha256": "a9e90a29d89afd15937a1b506bcac17aa64a8d702c081e2db209c308d964dc92"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-model.ts",
+      "bytes": 3695,
+      "sha256": "8d007d5e3e6a1e6f3d4c76a6c78998dc2ccef92bdce55b9606dcc66c93ffffde"
+    },
+    {
+      "path": "Panda-agent/src/retrieval/answers.ts",
+      "bytes": 11084,
+      "sha256": "68c4ea12241bf924616d5d382cf443d28d770c9c3527eba62825f772721cbc5e"
+    },
+    {
+      "path": "Panda-agent/src/retrieval/insforge-adapters.ts",
+      "bytes": 10616,
+      "sha256": "b9d2d7cd839ef404e6dfeea08ff9aa55920e3c0138760da4aaab8c99a2dfdacf"
+    },
+    {
+      "path": "Panda-agent/src/retrieval/lexical-terms.ts",
+      "bytes": 355,
+      "sha256": "238ce98efb619b887386dd1b60391a0756c7b6f46280d7b909a4680ed3e84c2e"
+    },
+    {
+      "path": "app/admin/rag-control-room/control-room.tsx",
+      "bytes": 14970,
+      "sha256": "1ac9766119dba0957a51c8a1ae8267aad401efdd38f6c21e2b1c03720e403a5a"
+    },
+    {
+      "path": "app/admin/rag-control-room/corpus-inspector.tsx",
+      "bytes": 5154,
+      "sha256": "8eb50f530e4d3de8a70e0b7a74fbdcdecb3fa8fcd6a92cead666cb83023479ce"
+    },
+    {
+      "path": "app/admin/rag-control-room/document-inspector.module.css",
+      "bytes": 2305,
+      "sha256": "167d66d4283635739101f69f825f455d4e31629d76fc74237a2ae94477066a09"
+    },
+    {
+      "path": "app/admin/rag-control-room/intake-state.ts",
+      "bytes": 1058,
+      "sha256": "e1ac5f8d659ace4db7fb2663b3c98ae90dea84dbcf0310e12dbf810f51058fa1"
+    },
+    {
+      "path": "app/admin/rag-control-room/model-evaluation.module.css",
+      "bytes": 2341,
+      "sha256": "83070edcddf017af3ead15be3879a97b147359ad3ea08b7550401c544162f0bb"
+    },
+    {
+      "path": "app/admin/rag-control-room/model-evaluation.tsx",
+      "bytes": 4784,
+      "sha256": "87a1c9fcf9b7ee1dfdae02c9ac6d14b5d8f83d5602299a3c2023ee1978d64b35"
+    },
+    {
+      "path": "app/admin/rag-control-room/playground.module.css",
+      "bytes": 4665,
+      "sha256": "ad0ed3843e04e9019922fb1ef505f72370dff784278b27031df672c59e44ead6"
+    },
+    {
+      "path": "app/admin/rag-control-room/playground.tsx",
+      "bytes": 13819,
+      "sha256": "01deb7204a5241a57ad998747a4cc3f6665e2dc0a275f9dd9686594b22257621"
+    },
+    {
+      "path": "app/admin/rag-control-room/rag-control-room.module.css",
+      "bytes": 3487,
+      "sha256": "8ca6f582a36d66c7a174164a9cb91f0a49c244b53818a022b9f982624384e6e9"
+    },
+    {
+      "path": "app/api/admin/panda-agent/models/route.ts",
+      "bytes": 314,
+      "sha256": "d4de13267393e835db3d5eaaddb7520c490cf4038f7c4e25a6b2e0beeaadf941"
+    },
+    {
+      "path": "app/api/admin/panda-agent/playground/route.ts",
+      "bytes": 277,
+      "sha256": "c2e04b1e26f9f3381a9b1215e5514f6c43aa9f6b287180bece6b02f3742122ac"
+    }
+  ]
+}

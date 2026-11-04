@@ -119,5 +119,195 @@
     "count": 10,
     "modelStatus": "not_requested",
     "note": "Previously captured responses, not a new run in this check. Five were manually reviewed for support and limitations in the preceding review; no new authenticated browser access is claimed."
-  }
+  },
+  "livePrimary": {
+    "url": "https://pandabyte-iot.vercel.app",
+    "deploymentId": "dpl_27TnpbBjxXj5SGQMaD8F32NV428R",
+    "checkedAs": "Signed-in staff owner through the Control Room UI",
+    "retrievalMode": "lexical",
+    "execution": "model not requested",
+    "prompts": [
+      {
+        "case": "x8266 flash capacity",
+        "question": "What is the flash memory on the PandaByte x8266?"
+      },
+      {
+        "case": "DHT11 measurement",
+        "question": "What temperature range can the DHT11 sensor measure?"
+      },
+      {
+        "case": "BMP580 interface",
+        "question": "Which interfaces does the BMP580 sensor support?"
+      },
+      {
+        "case": "xC3 radio",
+        "question": "What does the xC3 listing specify about Bluetooth?"
+      },
+      {
+        "case": "unspecified ESP32",
+        "question": "How much flash memory does the ESP32 board have?"
+      },
+      {
+        "case": "warranty absence",
+        "question": "How long is the x8266 flash memory warranty?"
+      },
+      {
+        "case": "xC6 flash",
+        "question": "What flash memory is listed for the xC6?"
+      },
+      {
+        "case": "xS3 processor",
+        "question": "Which processor is specified for the xS3?"
+      },
+      {
+        "case": "ADXL345 temperature",
+        "question": "What temperature range is specified for the ADXL345?"
+      },
+      {
+        "case": "physical revision",
+        "question": "What is the verified physical board revision of the x8266?"
+      }
+    ],
+    "results": [
+      {
+        "case": "DHT11 measurement",
+        "outcome": "retrieved",
+        "count": 4,
+        "allExpectedSource": true,
+        "termRanks": [
+          3,
+          4
+        ],
+        "model": "not_requested",
+        "elapsed": 530
+      },
+      {
+        "case": "BMP580 interface",
+        "outcome": "retrieved",
+        "count": 2,
+        "allExpectedSource": true,
+        "termRanks": [
+          1
+        ],
+        "model": "not_requested",
+        "elapsed": 448
+      },
+      {
+        "case": "xC3 radio",
+        "outcome": "retrieved",
+        "count": 5,
+        "allExpectedSource": true,
+        "termRanks": [
+          1,
+          2,
+          4
+        ],
+        "model": "not_requested",
+        "elapsed": 458
+      },
+      {
+        "case": "unspecified ESP32",
+        "outcome": "clarification",
+        "count": 0,
+        "allExpectedSource": true,
+        "termRanks": [],
+        "model": "not_requested",
+        "elapsed": 297
+      },
+      {
+        "case": "warranty absence",
+        "outcome": "retrieved",
+        "count": 4,
+        "allExpectedSource": true,
+        "termRanks": [],
+        "model": "not_requested",
+        "elapsed": 471
+      },
+      {
+        "case": "xC6 flash",
+        "outcome": "retrieved",
+        "count": 5,
+        "allExpectedSource": true,
+        "termRanks": [
+          1
+        ],
+        "model": "not_requested",
+        "elapsed": 430
+      },
+      {
+        "case": "xS3 processor",
+        "outcome": "retrieved",
+        "count": 3,
+        "allExpectedSource": true,
+        "termRanks": [
+          1
+        ],
+        "model": "not_requested",
+        "elapsed": 460
+      },
+      {
+        "case": "ADXL345 temperature",
+        "outcome": "retrieved",
+        "count": 4,
+        "allExpectedSource": true,
+        "termRanks": [
+          1
+        ],
+        "model": "not_requested",
+        "elapsed": 422
+      },
+      {
+        "case": "physical revision",
+        "outcome": "insufficient",
+        "count": 0,
+        "allExpectedSource": true,
+        "termRanks": [],
+        "model": "not_requested",
+        "elapsed": 264
+      },
+      {
+        "case": "x8266 flash capacity",
+        "outcome": "retrieved",
+        "count": 4,
+        "allExpectedSource": true,
+        "termRanks": [
+          2,
+          4
+        ],
+        "model": "not_requested",
+        "elapsed": 411
+      }
+    ],
+    "matchedLocalOutcomeCountProductAndSupportingRanks": 10,
+    "anonymousHttpStatuses": {
+      "overview": 401,
+      "corpus": 401,
+      "models": 401,
+      "playground": 401
+    },
+    "menus": {
+      "evaluation": "Model selection worked. Comparison execution disabled.",
+      "ingestion": "44 sources, 44 versions, 292 chunks, one sealed inactive candidate.",
+      "sources": "Metadata form available. Private upload disabled.",
+      "documents": "x8266 search returned one of 42 products. Eight eligible passages, zero excluded, with source link.",
+      "intake": "Retained review rows loaded."
+    },
+    "costOfNewModelCallsUsd": 0
+  },
+  "vectorStore": {
+    "readOnlyAggregate": "passed",
+    "eligible": 284,
+    "blocked": 2,
+    "allowed": 282,
+    "vectors": 282,
+    "distinctInputs": 190,
+    "missing": 0,
+    "invalid": 0,
+    "inconsistent": 0
+  },
+  "coverageLimits": [
+    "The published playground was verified through retrieval only. The earlier two guarded localhost GPT-4o-mini cases consumed their model allowance.",
+    "The vector check measures integrity. The playground uses lexical retrieval. The earlier critical benchmark results were 7/10 lexical, 6/10 dense and 5/10 RRF.",
+    "Source intake writes, automatic ingestion, model comparison execution and native OpenCode are outside these live browser checks."
+  ]
 }

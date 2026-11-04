@@ -1,0 +1,6 @@
+import 'server-only';
+import { controlRoomAdminAccess } from './clerk';
+import { hostedStatusConfig } from '../server/hosted-bff-config';
+import { createPlaygroundCapabilitiesHandler, hostedPlaygroundEnabled, playgroundCapabilities } from './playground-capabilities';
+
+export const playgroundCapabilitiesGET = createPlaygroundCapabilitiesHandler(controlRoomAdminAccess, () => playgroundCapabilities(process.env, hostedPlaygroundEnabled(process.env) && hostedStatusConfig() !== null));
