@@ -4,16 +4,16 @@ import { hostedPlaygroundEnabled, localPlaygroundEnabled } from './playground-ca
 import { readLocalPlaygroundConfig, localPlaygroundConfigCurrent, type LocalPlaygroundConfig } from './playground-local-config.ts';
 import { createHash } from 'node:crypto';
 
-export type PlaygroundConfiguration = { transport:'hosted'; config:NonNullable<ReturnType<typeof hostedStatusConfig>> } | { transport:'local'; config:LocalPlaygroundConfig };
+export type PlaygroundConfiguration = { transport:'hosted'; profile:'mini-two-case-v1' | 'product-playground-v1'; config:NonNullable<ReturnType<typeof hostedStatusConfig>> } | { transport:'local'; profile:'mini-two-case-v1' | 'product-playground-v1'; config:LocalPlaygroundConfig };
 
 export async function resolvePlaygroundConfiguration(env:NodeJS.ProcessEnv = process.env, readLocal = readLocalPlaygroundConfig):Promise<PlaygroundConfiguration | null> {
   if (hostedPlaygroundEnabled(env)) {
     const config = hostedStatusConfig(env);
-    return config ? { transport:'hosted', config } : null;
+    return config ? { transport:'hosted', profile:env.PANDA_AGENT_PLAYGROUND_PROFILE as 'mini-two-case-v1' | 'product-playground-v1', config } : null;
   }
   if (!localPlaygroundEnabled(env)) return null;
   const config = await readLocal(env);
-  return config && localPlaygroundConfigCurrent(config) ? { transport:'local', config } : null;
+  return config && localPlaygroundConfigCurrent(config) ? { transport:'local', profile:env.PANDA_AGENT_PLAYGROUND_PROFILE as 'mini-two-case-v1' | 'product-playground-v1', config } : null;
 }
 
 export function localPlaygroundOwner(config:LocalPlaygroundConfig, subject:string):boolean {

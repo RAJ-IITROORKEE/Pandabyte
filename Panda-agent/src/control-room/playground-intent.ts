@@ -25,3 +25,13 @@ export function parsePlaygroundIntent(value: unknown): { requestId: string; case
   return { requestId: input.requestId.toLowerCase(), caseId, question: input.question, productSku: input.productSku };
 }
 
+
+// This parser validates the new intent only; the receiver owns durable admission and replay protection.
+export function parseProductPlaygroundIntent(value: unknown): { requestId:string; question:string; productSku:string } | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const input = value as Record<string, unknown>;
+  if (Object.keys(input).sort().join(',') !== 'productSku,question,requestId' || !uuid(input.requestId)) return null;
+  const valid = (v:unknown, max:number): v is string => typeof v === 'string' && v.isWellFormed() && v === v.trim() && v.length > 0 && v.length <= max;
+  if (!valid(input.question, 2000) || !valid(input.productSku, 128)) return null;
+  return { requestId:input.requestId.toLowerCase(), question:input.question, productSku:input.productSku };
+}

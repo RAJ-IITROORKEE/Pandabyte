@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/account/orders/*/document": ["./public/fonts/noto-sans/*.ttf"],
     "/api/admin/orders/*/document": ["./public/fonts/noto-sans/*.ttf"],
+    "/api/admin/panda-agent/documents": [
+      "./Panda-agent/src/documents/pdf-text-worker.mjs",
+      "./node_modules/pdfjs-dist/package.json",
+      "./node_modules/pdfjs-dist/legacy/build/pdf.mjs",
+      "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
+      "./node_modules/pdfjs-dist/standard_fonts/**/*",
+    ],
   },
   async headers() {
     return [{ source: "/:path*", headers: [

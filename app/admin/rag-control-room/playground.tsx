@@ -5,7 +5,7 @@ import styles from "./playground.module.css";
 
 type Passage = { rank: number; title: string; sourceUrl: string; capturedAt: string; sectionPath: string[]; text: string; lexicalOverlap: { matched: number; total: number } };
 type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null }; model: { status: "not_requested" | "guard_unavailable" | "not_run" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
-type Capability = { model: "openai/gpt-4o-mini"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | null; approvedQuestions: string[] };
+type Capability = { model: "openai/gpt-4o-mini"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | null; approvedQuestions: string[] };
 const outcomeKey = "panda-playground-unknown-outcome";
 
 export function Playground() {
@@ -42,14 +42,14 @@ export function Playground() {
       .then(async response => {
         if (!response.ok) throw Error();
         const value = await response.json();
-        if (value?.model !== "openai/gpt-4o-mini" || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
+        if (value?.model !== "openai/gpt-4o-mini" || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1", "product-playground-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
         if (!controller.signal.aborted) setCapability(value);
       })
       .catch(() => { if (!controller.signal.aborted) setCapabilityError(true); });
     return () => { controller.abort(); if (capabilityRequest.current === controller) capabilityRequest.current = null; };
   }, [capabilityAttempt]);
 
-  const modelAvailable = capability?.connection === "configured_unverified" && capability.profile === "mini-two-case-v1" && capability.transport !== "unconfigured";
+  const modelAvailable = capability?.connection === "configured_unverified" && (capability.profile === "mini-two-case-v1" || capability.profile === "product-playground-v1") && capability.transport !== "unconfigured";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,7 +76,7 @@ export function Playground() {
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         if (!controller.signal.aborted && evaluate) { if (["quota", "not_admitted"].includes(data?.error?.code)) clearGuard(); else lock(); }
-        if (!controller.signal.aborted) setError(data?.error?.code === "not_admitted" ? "No model request was admitted. Use an approved validation question or inspect retrieval." : data?.error?.code === "quota" ? "Model quota is unavailable or exhausted. No automatic retry was made." : data?.error?.code === "outcome_unknown" ? "The model call outcome is unknown. Check its status before submitting again; no automatic retry was made." : evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
+        if (!controller.signal.aborted) setError(data?.error?.code === "not_admitted" ? capability?.profile === "mini-two-case-v1" ? "No model request was admitted. Use an approved validation question or inspect retrieval." : "No model request was admitted. Check the profile and allowance, or inspect retrieval." : data?.error?.code === "quota" ? "Model quota is unavailable or exhausted. No automatic retry was made." : data?.error?.code === "outcome_unknown" ? "The model call outcome is unknown. Check its status before submitting again; no automatic retry was made." : evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
         return;
       }
       const data = await response.json();
@@ -106,7 +106,7 @@ export function Playground() {
       <form className={styles.form} onSubmit={submit}>
         <label>Your query<textarea name="question" autoComplete="off" placeholder="Ask about a product specification…" aria-describedby="query-help" value={question} onChange={event => { if (!unknownOutcome) evaluationId.current = null; setQuestion(event.target.value); setResult(null); setError(""); }} maxLength={2000} required disabled={busy} /></label>
         <p id="query-help">Include the product name, model or SKU in your query.</p>
-        <div className={styles.evaluation}><label className={styles.checkOption}><input name="evaluate" type="checkbox" checked={evaluate} onChange={event => { setEvaluate(event.target.checked); setResult(null); setError(""); }} disabled={busy || !guardReady || unknownOutcome} aria-describedby={unknownOutcome ? "model-outcome-guard" : "evaluation-help"} /> <span>Also evaluate with GPT-4o-mini</span></label><p id="evaluation-help">Approved cases only. Model evaluation may incur usage charges.</p></div>
+        <div className={styles.evaluation}><label className={styles.checkOption}><input name="evaluate" type="checkbox" checked={evaluate} onChange={event => { setEvaluate(event.target.checked); setResult(null); setError(""); }} disabled={busy || !guardReady || unknownOutcome} aria-describedby={unknownOutcome ? "model-outcome-guard" : "evaluation-help"} /> <span>Also evaluate with GPT-4o-mini</span></label><p id="evaluation-help">{capability?.profile === "product-playground-v1" && modelAvailable ? "Product questions are allowed within the configured profile allowance." : capability?.profile === "mini-two-case-v1" ? "Only the approved questions below are available for evaluation." : "Evaluation depends on the configured guard and allowance."} Model evaluation may incur usage charges.</p></div>
         {unknownOutcome && <p id="model-outcome-guard" role="status">Model evaluation is disabled because a request may have an unknown outcome or session storage is unavailable. Reconcile the server-side status before requesting another evaluation. Retrieval remains available.</p>}
         {!unknownOutcome && <p role="status">{capabilityError ? "Model connection status could not be checked. Uncheck evaluation to inspect retrieval." : !capability ? "Checking model configuration…" : modelAvailable ? result?.model.status === "evaluated" ? "Model response received. Further evaluations remain subject to the approved allowance." : "Guarded profile configured; the live connection is not yet verified." : "Model evaluation is not connected. Uncheck evaluation to inspect retrieval."}</p>}
         <div className={styles.presets}><button type="button" disabled={busy} onClick={() => { capabilityRequest.current?.abort(); setCapability(null); setCapabilityError(false); setCapabilityAttempt(value => value + 1); }}>Refresh connection</button></div>

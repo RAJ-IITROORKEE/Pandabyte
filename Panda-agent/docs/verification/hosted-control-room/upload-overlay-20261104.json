@@ -1,0 +1,161 @@
+{
+  "date": "2026-11-04",
+  "baselineDeployment": "dpl_27TnpbBjxXj5SGQMaD8F32NV428R",
+  "deployment": "dpl_4MnbKTDQAcSLNuovVN2i4EZogLRQ",
+  "baselineManifest": "a92bfc3464adc56b5aada4bdecd86eb7a468be02dd88a1c995dacaf51a3f6655",
+  "stageManifest": "76fbbdbd27e7d94e8b7f37334d91baf415da8a440f250528d21aeed92211127e",
+  "files": [
+    {
+      "path": "next.config.ts",
+      "bytes": 1646,
+      "sha256": "9a93243ff4502c5375097e5ccbb5806ab5d91b2e2d530e0aee4ae2e82355d2be"
+    },
+    {
+      "path": "Panda-agent/src/control-room/documents.ts",
+      "bytes": 20315,
+      "sha256": "47ce30a4268e45482f0cd073ca8917e1706e86228bc71da530ac49fd7d1cf311"
+    },
+    {
+      "path": "Panda-agent/src/control-room/documents-clerk.ts",
+      "bytes": 1597,
+      "sha256": "27c4c95fba3e7443bc83f4fb472a97b61faa7755745100e1df8512ee3b41812d"
+    },
+    {
+      "path": "Panda-agent/src/ingestion/uploaded-document.ts",
+      "bytes": 1979,
+      "sha256": "915be5f233388d55414bd6631c3d21bf991e459d845f637ed7dcc004c71200c6"
+    },
+    {
+      "path": "Panda-agent/src/documents/parse-document.mjs",
+      "bytes": 4989,
+      "sha256": "b736802317bdf464f9b2e996737c02afba8fc90bba468d4babaa5cd067c61244"
+    },
+    {
+      "path": "Panda-agent/src/documents/pdf-text-worker.mjs",
+      "bytes": 1490,
+      "sha256": "b67435361ce8f08f83e18a70ac37c8d35e661f7acc1ad5863d343e6dc5917263"
+    },
+    {
+      "path": "app/api/admin/panda-agent/documents/route.ts",
+      "bytes": 183,
+      "sha256": "344f969b0690c92dffdfcabb6cfaea915a0478a66140b8d792af139ffca9e1ce"
+    },
+    {
+      "path": "app/api/admin/panda-agent/documents/[reference]/route.ts",
+      "bytes": 159,
+      "sha256": "19ec1e64bd0e48d1978ffae0aee25e8be407d3398e1ed748d3f612a1136543a0"
+    },
+    {
+      "path": "app/api/admin/panda-agent/documents/[reference]/status/route.ts",
+      "bytes": 165,
+      "sha256": "aadd9ce08eca610d1a229c967ff182add3c23ca32172e309f5103bff853451be"
+    },
+    {
+      "path": "app/api/admin/panda-agent/documents/[reference]/withdraw/route.ts",
+      "bytes": 169,
+      "sha256": "b776819852d1aac8829c243f77b01c0d6bc09f3542a762208acef3e4f5064e29"
+    },
+    {
+      "path": "app/api/admin/panda-agent/documents/[reference]/search/route.ts",
+      "bytes": 167,
+      "sha256": "8204fc72a842ecc2ebd5c1f22a7b806350bae3a7c23d2aa9a1a90e81d1265aa0"
+    },
+    {
+      "path": "app/admin/rag-control-room/control-room.tsx",
+      "bytes": 21540,
+      "sha256": "ee408b6edb4a8c15731625c0f54274a1675eba0cb1b0f15f35c0bf60baa5d589"
+    },
+    {
+      "path": "app/admin/rag-control-room/corpus-inspector.tsx",
+      "bytes": 4004,
+      "sha256": "7578389db5edb0b700b934038ad7c585cad5e7e6ca766b1842cd935676fa5a71"
+    },
+    {
+      "path": "app/admin/rag-control-room/document-inspector.module.css",
+      "bytes": 3713,
+      "sha256": "7953e756167442a6f0250909165193fd678d5171c6a89d6149fca28631038764"
+    },
+    {
+      "path": "app/admin/rag-control-room/rag-control-room.module.css",
+      "bytes": 4129,
+      "sha256": "c096ffda6aaf5a0d419b4d76474015a9cf118688b3abd2cc3d7887bc63edf7d3"
+    },
+    {
+      "path": "app/admin/rag-control-room/document-library.tsx",
+      "bytes": 14401,
+      "sha256": "118553ee087a587a92ccce02f9f8c1ef25b302336307677fa44faf0350560473"
+    },
+    {
+      "path": "app/admin/rag-control-room/document-library-state.ts",
+      "bytes": 1699,
+      "sha256": "e828f9fa8fcb7603e5e4707cf4a6dcf815ba8fa0bd21e0de4f7719e8165ef3f0"
+    },
+    {
+      "path": "app/admin/rag-control-room/intake-state.ts",
+      "bytes": 3604,
+      "sha256": "61fe4b485a89344d633271640d9418283c7670a1b36fb321dc0b9c52baf4ac6f"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-capabilities-clerk.ts",
+      "bytes": 547,
+      "sha256": "fc66317e3c418bcc4cf94231792eb2c454ba9bf954b25e7f4a13ffdd6a014c78"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-capabilities.ts",
+      "bytes": 2684,
+      "sha256": "be5377e6811aa951b39c1f29468684121c7ed43f0e8fc5a6c50f6197210e1ed7"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-clerk.ts",
+      "bytes": 3893,
+      "sha256": "ded0763c7cd695a4ae8795d20b0ce5cdee69643e124de7990e9330a5d1ce3aec"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-gateway.ts",
+      "bytes": 6362,
+      "sha256": "d0dda593b088b060ae0ac07897293cb2cc54c995365572df1351b4b5eb37b25b"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-hosted-profile.ts",
+      "bytes": 623,
+      "sha256": "59567cdf1af80612a6d6af088ae32e4a8c7646bcc0a82482e1313c7aa4f07372"
+    },
+    {
+      "path": "Panda-agent/src/control-room/playground-intent.ts",
+      "bytes": 2571,
+      "sha256": "6daf298b0a5e5f8725d4df1d4b4078c7f16b2115b0f791c45ed0579784f3de04"
+    },
+    {
+      "path": "app/admin/rag-control-room/playground.tsx",
+      "bytes": 14354,
+      "sha256": "30746f90af648b9753b8ea7b56f1ed2803aca4eaa87e1d73d3ce9ea62e0ea08f"
+    }
+  ],
+  "hostedTemplates": [
+    {
+      "destination": "Panda-agent/src/control-room/playground-capabilities-clerk.ts",
+      "template": "playground-capabilities-clerk.ts.template"
+    },
+    {
+      "destination": "Panda-agent/src/control-room/playground-capabilities.ts",
+      "template": "playground-capabilities.ts.template"
+    },
+    {
+      "destination": "Panda-agent/src/control-room/playground-clerk.ts",
+      "template": "playground-clerk.ts.template"
+    },
+    {
+      "destination": "Panda-agent/src/control-room/playground-gateway.ts",
+      "template": "playground-gateway.ts.template"
+    },
+    {
+      "destination": "Panda-agent/src/control-room/playground-hosted-profile.ts",
+      "template": "playground-hosted-profile.ts.template"
+    },
+    {
+      "destination": "Panda-agent/src/control-room/playground-intent.ts",
+      "template": "playground-intent.ts.template"
+    }
+  ],
+  "note": "Apply only to the reviewed 659-file hosted baseline. Other application source in the release checkout retains local transport support; templates define this hosted closure. All paid/native readiness gates remain off."
+}

@@ -24,3 +24,11 @@ test('the configured lease belongs to the active opaque owner and changes revoke
  assert.equal(playgroundCapabilities(flags,false,false).transport,'unconfigured');
  assert.doesNotMatch(JSON.stringify(capability),/fixture-public|ownerSubject|serviceToken/);
 });
+
+test('product profile is explicit and still requires the current owner lease',async()=>{
+ const value=config(), next={...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1'};
+ const resolved=await resolvePlaygroundConfiguration(next,async()=>value);
+ assert.equal(resolved.profile,'product-playground-v1');assert.equal(localPlaygroundOwner(resolved.config,'owner'),true);assert.equal(localPlaygroundOwner(resolved.config,'other'),false);
+ assert.equal((await resolvePlaygroundConfiguration(next,async()=>null)),null);
+ assert.equal(playgroundCapabilities(next,false,true).profile,'product-playground-v1');
+});

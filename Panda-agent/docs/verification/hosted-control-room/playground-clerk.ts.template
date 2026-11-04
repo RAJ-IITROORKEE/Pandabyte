@@ -8,15 +8,14 @@ import { createPlaygroundModelEvaluator } from './playground-model';
 import { createPlaygroundGatewayClient } from './playground-gateway';
 import { hostedStatusConfig } from '../server/hosted-bff-config';
 import { createAwsGatewaySigner } from '../server/aws-gateway-signer';
-import { matchApprovedPlaygroundCase } from './playground-intent';
+import { matchApprovedPlaygroundCase, parseProductPlaygroundIntent } from './playground-intent';
+import { hostedPlaygroundProfile } from './playground-hosted-profile';
 
 export async function playgroundPOST(request: Request) {
  let resolvedSku: string | undefined;
  let subject: string | undefined;
- const config = process.env.PANDA_AGENT_PLAYGROUND_GATEWAY_ENABLED === 'true'
-    && process.env.PANDA_AGENT_PLAYGROUND_GATEWAY_PROTOCOL === 'v3-context-digest'
-    && process.env.PANDA_AGENT_PLAYGROUND_PROFILE === 'mini-two-case-v1'
-    ? hostedStatusConfig() : null;
+ const profile = hostedPlaygroundProfile(process.env);
+ const config = profile ? hostedStatusConfig() : null;
  // Enable only with the matching reviewed host receiver and shared admission profile.
  const evaluator = config ? createPlaygroundModelEvaluator(async (modelRequest, signal, intent) => {
     const session = await auth();
@@ -24,12 +23,12 @@ export async function playgroundPOST(request: Request) {
     const userToken = await session.getToken();
     if (!userToken) throw Error('Playground unavailable');
     const input = JSON.parse(modelRequest.messages[1].content) as { question: string; passages: Array<{ rank: number; text: string }> };
-    if (!intent || !matchApprovedPlaygroundCase({ question: input.question, productSku: resolvedSku })) throw Object.assign(Error('Playground case unavailable'), { code: 'not_admitted' });
+    if (!intent || (profile === 'mini-two-case-v1' ? !matchApprovedPlaygroundCase({ question: input.question, productSku: resolvedSku }) : !parseProductPlaygroundIntent({ requestId:intent.requestId, question:input.question, productSku:resolvedSku }))) throw Object.assign(Error('Playground case unavailable'), { code: 'not_admitted' });
     const client = await createInsforgeServerClient();
     const { data, error } = await client.database.from('staff_role_memberships').select('role').eq('user_id', session.userId).limit(1);
     if (signal?.aborted || error || !Array.isArray(data) || data.length !== 1 || data[0]?.role !== 'ADMIN') throw Error('Playground access unavailable');
     return createPlaygroundGatewayClient({ enabled: true, endpoint: config.endpoint, serviceToken: config.serviceToken, signer: createAwsGatewaySigner({ roleArn: config.roleArn }) })({
-        question: input.question, productSku: resolvedSku, userToken, requestId: intent.requestId,
+        ...(profile === 'product-playground-v1' ? {profile:'product-playground-v1' as const} : {}), question: input.question, productSku: resolvedSku, userToken, requestId: intent.requestId,
         contextDigest: createHash('sha256').update(JSON.stringify(input.passages)).digest('hex'), signal,
     });
  }) : undefined;

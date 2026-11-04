@@ -5,6 +5,9 @@
 .eyebrow { text-transform:uppercase; letter-spacing:.08em; font-size:11px!important; font-weight:700; }
 .badge { border:1px solid var(--divider); padding:7px 10px; font-size:12px; white-space:nowrap; }
 .notice { border:1px solid var(--divider); background:var(--surface); padding:16px; line-height:1.6; font-size:14px; }
+.notice .actions button { min-height:40px; border:1px solid var(--border); background:var(--surface); color:var(--foreground); padding:8px 12px; font:inherit; cursor:pointer; }
+.notice .actions button:disabled { opacity:.65; cursor:not-allowed; }
+.notice .actions button:focus-visible { outline:2px solid var(--focus-ring); outline-offset:3px; }
 .sections { display:flex; gap:22px; overflow-x:auto; padding:2px 2px 0; border-bottom:1px solid var(--divider); }
 .sections a { flex:none; color:var(--muted); border-bottom:2px solid transparent; padding:12px 2px; text-decoration:none; font-size:14px; }
 .sections a[aria-current="page"] { color:var(--foreground); border-bottom-color:var(--primary,var(--foreground)); font-weight:600; }
@@ -32,6 +35,9 @@
 .form .checkOption { display:flex; align-items:flex-start; gap:8px; }
 .form .checkOption input { width:auto; margin:2px 0 0; }
 .form textarea { min-height:70px; resize:vertical; }
+.dropZone { display:grid; gap:10px; border:1px dashed var(--border); border-radius:8px; padding:18px; background:var(--background); }
+.dropZone input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:3px; }
+.dropZone [role="alert"] { color:var(--foreground); font-weight:600; }
 .form button,.panelHead button,.list button,.panel > button { width:max-content; cursor:pointer; }
 .form button:disabled,.mode button:disabled,.list button:disabled { cursor:not-allowed; opacity:.6; }
 .list { list-style:none; padding:0; margin:20px 0; }

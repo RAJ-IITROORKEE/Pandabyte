@@ -1,19 +1,19 @@
 import 'server-only';
 import https from 'node:https';
-import { parsePlaygroundIntent } from './playground-intent.ts';
+import { parsePlaygroundIntent, parseProductPlaygroundIntent } from './playground-intent.ts';
 import { PlaygroundGatewayError } from './playground-gateway.ts';
 import { localPlaygroundConfigCurrent, type LocalPlaygroundConfig } from './playground-local-config.ts';
 
-type Turn = { question:string; productSku:string; userToken:string; requestId:string; contextDigest:string; signal?:AbortSignal };
+type Turn = { profile?:'product-playground-v1'; question:string; productSku:string; userToken:string; requestId:string; contextDigest:string; signal?:AbortSignal };
 const unknown = () => new PlaygroundGatewayError('outcome_unknown');
 const exact = (value: object, keys: string[]) => Object.keys(value).sort().join(',') === [...keys].sort().join(',');
 export function createLocalPlaygroundClient(config: LocalPlaygroundConfig, options: {reauthorize:()=>Promise<boolean>; request?:typeof https.request; now?:()=>number}) {
   const request = options?.request ?? https.request, now = options?.now ?? Date.now;
   return async (turn: Turn): Promise<string> => {
-    if (typeof options?.reauthorize !== 'function') throw new PlaygroundGatewayError('not_admitted');
-    const intent = parsePlaygroundIntent({requestId:turn?.requestId, question:turn?.question, productSku:turn?.productSku});
+    if ((turn?.profile !== undefined && turn.profile !== 'product-playground-v1') || typeof options?.reauthorize !== 'function') throw new PlaygroundGatewayError('not_admitted');
+    const intent = (turn?.profile === 'product-playground-v1' ? parseProductPlaygroundIntent : parsePlaygroundIntent)({requestId:turn?.requestId, question:turn?.question, productSku:turn?.productSku});
     if (!intent || intent.requestId !== turn.requestId || !/^[a-z0-9._~-]{16,8192}$/i.test(turn.userToken ?? '') || !/^[a-f0-9]{64}$/.test(turn.contextDigest ?? '') || !/^[a-f0-9]{64}$/.test(config?.serviceToken ?? '') || typeof config?.caCertificate !== 'string' || !localPlaygroundConfigCurrent(config,now()) || turn.signal?.aborted) throw unknown();
-    const body = JSON.stringify({version:3,mode:'playground',requestId:turn.requestId,question:turn.question,productSku:turn.productSku,contextDigest:turn.contextDigest});
+    const body = JSON.stringify({version:3,mode:'playground',...(turn.profile === 'product-playground-v1' ? {profile:turn.profile} : {}),requestId:turn.requestId,question:turn.question,productSku:turn.productSku,contextDigest:turn.contextDigest});
     if (Buffer.byteLength(body) > 16384) throw unknown();
     return new Promise<string>((resolve,reject) => {
       let done = false, req: ReturnType<typeof https.request> | undefined;

@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, writeFile, rm, chmod, link, symlink } from 'node:fs/promises';
+import { mkdtemp, writeFile, rm, chmod, link, symlink } from 'node:fs/promises';
 import path from 'node:path';
 import { EventEmitter } from 'node:events';
 import { readLocalPlaygroundConfig as readProfile, readPrivateLocalLeaseConfig, localPlaygroundConfigCurrent } from '../src/control-room/playground-local-config.ts';
 import { createLocalPlaygroundClient } from '../src/control-room/playground-local.ts';
 const now = Date.parse('2026-11-04T10:00:00Z');
-await mkdir(path.resolve('Panda-agent/artifacts'), { recursive: true });
 const config = {version:1,expiresAt:'2026-11-04T11:00:00Z',ownerSubjectSha256:'a'.repeat(64),serviceToken:'b'.repeat(64),caCertificate:'-----BEGIN CERTIFICATE-----\nQUJDRA==\n-----END CERTIFICATE-----\n'};
 const turn = {question:'According to the x8266 listing, what is its flash memory?',productSku:'ESPX8266',requestId:'11111111-1111-4111-8111-111111111111',contextDigest:'c'.repeat(64),userToken:'d'.repeat(32)};
 const env = file => ({NODE_ENV:'development',PANDA_AGENT_PLAYGROUND_GATEWAY_ENABLED:'true',PANDA_AGENT_PLAYGROUND_GATEWAY_PROTOCOL:'v3-context-digest',PANDA_AGENT_PLAYGROUND_PROFILE:'mini-two-case-v1',PANDA_AGENT_PLAYGROUND_TRANSPORT:'local-ssm-v3',PANDA_AGENT_PLAYGROUND_LOCAL_CONFIG:file});
@@ -84,4 +83,12 @@ test('lease expiry while authorization is pending prevents body write',async()=>
 test('missing authorization callback rejects before connection',async()=>{
  let calls=0;const request=()=>{calls++;throw Error('unexpected');};
  await rejects(createLocalPlaygroundClient(config,{request,now:()=>now})(turn),'not_admitted');assert.equal(calls,0);
+});
+
+test('new product profile sends explicit marker and reauthorizes before write',async()=>{
+ let authorized=false;const product={...turn,profile:'product-playground-v1',question:'What is the sensor range?',productSku:'SENSOR-1'};
+ const transport=mock(complete(),(_options,body)=>{assert.equal(authorized,true);const sent=JSON.parse(body);assert.equal(sent.profile,'product-playground-v1');assert.equal(sent.question,product.question);assert.equal(sent.productSku,product.productSku);assert.equal(sent.contextDigest,product.contextDigest);});
+ const run=createLocalPlaygroundClient(config,{request:transport.request,now:()=>now,reauthorize:async()=>{authorized=true;return true;}});
+ assert.equal(await run(product),complete().rawModel);
+ await rejects(run({...product,question:'x'.repeat(2001)}));
 });

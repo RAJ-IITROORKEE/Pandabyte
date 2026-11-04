@@ -1,5 +1,7 @@
 # PandaByte.in
 
+**Private document ingestion, 4 November 2026:** the Control Room adds PDF/MD/TXT drop/picker intake, reviewed private preparation, document/chunk totals and version-bound uploaded-passage search. Paid multi-product GPT-4o-mini activation remains gated by research-host compatibility and the separate admission allocation. [Scope and verification](Panda-agent/docs/control-room/upload-ingestion-20261104.md).
+
 An India-first IoT hardware catalog and company website with an editable administration backend.
 
 **Status: hosted development preview, 29 October 2026.** [Open PandaByte](https://pandabyte-iot.vercel.app). The site uses the selected development Clerk/InsForge services. It is not a production-commerce launch; real payments and invoice issuance remain disabled/deferred. [Deployment and checks](docs/vercel-preview-deployment.md).

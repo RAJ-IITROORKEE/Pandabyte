@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-04",
+  "primary": "https://pandabyte-iot.vercel.app/admin/rag-control-room",
+  "deployment": "dpl_4MnbKTDQAcSLNuovVN2i4EZogLRQ",
+  "rollback": "dpl_27TnpbBjxXj5SGQMaD8F32NV428R",
+  "secondaryPreserved": "dpl_3n6wnFmsg3h4B8r2VJ3kR3YmoHg9",
+  "source": {
+    "baselineManifest": "a92bfc3464adc56b5aada4bdecd86eb7a468be02dd88a1c995dacaf51a3f6655",
+    "manifest": "76fbbdbd27e7d94e8b7f37334d91baf415da8a440f250528d21aeed92211127e",
+    "files": 672,
+    "overlays": 25
+  },
+  "schema": {
+    "migration": "20261104170000_panda-agent-external-documents.sql",
+    "sha256": "f78a608b304aabe8f47debbe15970d84d89d0d53ae61793f755089a8b21b4019",
+    "applied": true,
+    "privateTables": 5,
+    "rls": true,
+    "directAnonAuthenticatedSelect": false
+  },
+  "browser": {
+    "localProductionPdfPipeline": "passed",
+    "hostedProductionPdfPipeline": "passed",
+    "fileBytes": 1505,
+    "sourceReview": "accepted_for_preparation/permitted, version 3",
+    "preparedVersion": 1,
+    "storedChunksPerFile": 1,
+    "matchingDocumentSearch": "Rank1, correct title/version1/Page1/passage1, actual fictional 17 days evidence",
+    "unmatchedDocumentSearch": "No matching passages (localhost production build)",
+    "liveCounts": {
+      "productDocuments": 42,
+      "productChunks": 282,
+      "uploadedDocuments": 2,
+      "uploadedChunks": 2
+    },
+    "tableScroll": {
+      "clientHeight": 478,
+      "scrollHeight": 3005,
+      "overflow": "auto"
+    },
+    "liveAnonymousApi": {
+      "documents": 401,
+      "overview": 401,
+      "playground": 401
+    },
+    "gptDefaultChecked": true
+  },
+  "retrievalSmoke": [
+    {
+      "question": "What temperature range can the DHT11 sensor measure?",
+      "outcome": "retrieved",
+      "sources": [
+        "PandaByte Temperature Humidity DHT11 Grove Sensor"
+      ],
+      "passages": 4,
+      "elapsedMs": 568,
+      "model": "not_requested"
+    },
+    {
+      "question": "How much PSRAM does the PandaByte xS3 have?",
+      "outcome": "retrieved",
+      "sources": [
+        "PandaByte xS3 ESP32-S3 Development Board"
+      ],
+      "passages": 3,
+      "elapsedMs": 576,
+      "model": "not_requested"
+    },
+    {
+      "question": "What pressure range is specified for the BMP580 sensor?",
+      "outcome": "retrieved",
+      "sources": [
+        "PandaByte Barometric Pressure BMP580 Grove Sensor"
+      ],
+      "passages": 4,
+      "elapsedMs": 496,
+      "model": "not_requested"
+    },
+    {
+      "question": "What flash memory is listed for the PandaByte xC3?",
+      "outcome": "retrieved",
+      "sources": [
+        "PandaByte xC3 ESP32-C3 Development Board"
+      ],
+      "passages": 4,
+      "elapsedMs": 448,
+      "model": "not_requested"
+    }
+  ],
+  "checks": {
+    "focusedDistinctTestsPassed": 58,
+    "typecheck": "passed",
+    "eslint": "passed",
+    "isolatedProductionBuild": "passed",
+    "pdfTrace": {
+      "worker": true,
+      "parserAndWorkerModules": true,
+      "packageMetadata": true,
+      "standardFonts": 16,
+      "privateCredentialTrace": false
+    },
+    "independentTerraHighReview": "No concrete P1 blocker"
+  },
+  "configuration": {
+    "original28EnvironmentRecordsPreserved": true,
+    "addedIngestionRecords": 3,
+    "firstCandidate": "dpl_AC6r1azGkUhx7zhiMKhaqCZAkp8Z remained upload-closed due trailing newline; corrected only the three new values, unchanged source rebuilt before promotion",
+    "nativeAndPaidGatewayExecution": false,
+    "productHostReadiness": false
+  },
+  "limits": [
+    "No new paid model calls; product-profile host/Lambda/controller compatibility, new owner window and eight-call admission allocation remain pending.",
+    "Prepared uploads are privately searchable in their version-bound viewer; they are not added to the paid product-model context contract or sealed product candidate.",
+    "Model comparison execution remains unconfigured.",
+    "Native drag gesture and real customer/non-ADMIN role matrix were not exercised. Shared picker/drop validation has offline checks.",
+    "SQL role-simulation smoke test rejected by provider session-setting policy, without bypass.",
+    "PDF worker has resource/time/output limits; it is not an OS sandbox.",
+    "Two labeled synthetic private QA documents retained; original files, source bytes, existing releases and commerce records preserved."
+  ]
+}

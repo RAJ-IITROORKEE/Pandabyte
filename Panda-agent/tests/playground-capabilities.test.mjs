@@ -20,3 +20,9 @@ test('auth and capability exceptions fail closed without exposing details',async
  const badAuth=createPlaygroundCapabilitiesHandler(async()=>{throw Error('secret');},()=>{throw Error('unexpected');});const a=await badAuth();assert.equal(a.status,503);assert.doesNotMatch(await a.text(),/secret/);
  const badConfig=createPlaygroundCapabilitiesHandler(async()=>({allowed:true}),()=>{throw Error('secret');});const b=await badConfig();assert.equal(b.status,503);assert.doesNotMatch(await b.text(),/secret/);
 });
+
+test('new profile must be explicitly configured and does not offer consumed cases',()=>{
+ const result=playgroundCapabilities({...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1'},true);
+ assert.equal(result.profile,'product-playground-v1');assert.equal(result.connection,'configured_unverified');assert.deepEqual(result.approvedQuestions,[]);
+ assert.equal(playgroundCapabilities({...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1'},false).profile,null);
+});

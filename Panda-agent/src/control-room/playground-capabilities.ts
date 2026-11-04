@@ -6,7 +6,7 @@ export type PlaygroundCapabilities = {
   model: 'openai/gpt-4o-mini';
   connection: 'not_configured' | 'configured_unverified';
   transport: 'unconfigured' | 'hosted' | 'local';
-  profile: 'mini-two-case-v1' | null;
+  profile: 'mini-two-case-v1' | 'product-playground-v1' | null;
   approvedQuestions: string[];
 };
 
@@ -15,7 +15,7 @@ export function hostedPlaygroundEnabled(flags: Flags): boolean {
 }
 
 export function playgroundFlagsEnabled(flags: Flags): boolean {
-  return flags.PANDA_AGENT_PLAYGROUND_GATEWAY_ENABLED === 'true' && flags.PANDA_AGENT_PLAYGROUND_GATEWAY_PROTOCOL === 'v3-context-digest' && flags.PANDA_AGENT_PLAYGROUND_PROFILE === 'mini-two-case-v1';
+  return flags.PANDA_AGENT_PLAYGROUND_GATEWAY_ENABLED === 'true' && flags.PANDA_AGENT_PLAYGROUND_GATEWAY_PROTOCOL === 'v3-context-digest' && (flags.PANDA_AGENT_PLAYGROUND_PROFILE === 'mini-two-case-v1' || flags.PANDA_AGENT_PLAYGROUND_PROFILE === 'product-playground-v1');
 }
 
 export function localPlaygroundEnabled(flags: Flags): boolean {
@@ -25,7 +25,7 @@ export function localPlaygroundEnabled(flags: Flags): boolean {
 export function playgroundCapabilities(flags: Flags, hostedConfigValid: boolean, localConfigValid = false): PlaygroundCapabilities {
   const transport = hostedPlaygroundEnabled(flags) && hostedConfigValid === true ? 'hosted' : localPlaygroundEnabled(flags) && localConfigValid === true ? 'local' : 'unconfigured';
   const configured = transport !== 'unconfigured';
-  return { model:'openai/gpt-4o-mini', connection:configured ? 'configured_unverified' : 'not_configured', transport, profile:configured ? 'mini-two-case-v1' : null, approvedQuestions:approvedPlaygroundQuestions() };
+  return { model:'openai/gpt-4o-mini', connection:configured ? 'configured_unverified' : 'not_configured', transport, profile:configured ? flags.PANDA_AGENT_PLAYGROUND_PROFILE as 'mini-two-case-v1' | 'product-playground-v1' : null, approvedQuestions:flags.PANDA_AGENT_PLAYGROUND_PROFILE === 'product-playground-v1' ? [] : approvedPlaygroundQuestions() };
 }
 
 export function createPlaygroundCapabilitiesHandler(authorize: () => Promise<Admission>, getCapabilities: () => PlaygroundCapabilities | Promise<PlaygroundCapabilities>) {

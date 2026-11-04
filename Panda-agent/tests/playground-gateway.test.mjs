@@ -51,3 +51,12 @@ test('cancellation and oversized responses are ambiguous without retry', async (
   assert.equal(calls, 1);
   await rejects(make(async () => response({ ...complete(), rawModel: 'x'.repeat(33000) }))(turn), 'outcome_unknown');
 });
+
+test('product profile is an explicit correlated v3 extension',async()=>{
+ const product={...turn,requestId:'11111111-1111-4111-8111-111111111111',profile:'product-playground-v1'};
+ const run=make(async (_url,init)=>{const body=JSON.parse(init.body);assert.equal(body.profile,'product-playground-v1');assert.equal(body.question,turn.question);assert.equal(body.productSku,turn.productSku);assert.equal(body.contextDigest,turn.contextDigest);return response({...complete(),requestId:product.requestId});});
+ assert.equal(await run(product),'\u007b"answer":"test"}');
+ await rejects(run({...turn,profile:'invalid'}),'outcome_unknown');
+ await rejects(run({...product,productSku:undefined}),'outcome_unknown');
+ await rejects(run({...product,question:'x'.repeat(2001)}),'outcome_unknown');
+});

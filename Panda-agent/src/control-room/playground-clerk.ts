@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { createPlaygroundModelEvaluator } from './playground-model';
 import { createPlaygroundGatewayClient } from './playground-gateway';
 import { createAwsGatewaySigner } from '../server/aws-gateway-signer';
-import { matchApprovedPlaygroundCase } from './playground-intent';
+import { matchApprovedPlaygroundCase, parseProductPlaygroundIntent } from './playground-intent';
 import { localPlaygroundOwner, resolvePlaygroundConfiguration, sameLocalPlaygroundConfiguration } from './playground-configuration';
 import { readLocalPlaygroundConfig } from './playground-local-config';
 import { createLocalPlaygroundClient } from './playground-local';
@@ -47,13 +47,13 @@ export async function playgroundPOST(request: Request) {
     const userToken = await session.getToken();
     if (!userToken) throw Error('Playground unavailable');
     const input = JSON.parse(modelRequest.messages[1].content) as { question: string; passages: Array<{ rank: number; text: string }> };
-    if (!intent || !matchApprovedPlaygroundCase({ question: input.question, productSku: resolvedSku })) throw Object.assign(Error('Playground case unavailable'), { code: 'not_admitted' });
+    if (!intent || (connection.profile === 'mini-two-case-v1' ? !matchApprovedPlaygroundCase({ question: input.question, productSku: resolvedSku }) : !parseProductPlaygroundIntent({ requestId:intent.requestId, question:input.question, productSku:resolvedSku }))) throw Object.assign(Error('Playground case unavailable'), { code: 'not_admitted' });
     if (connection.transport === 'local' && (!localPlaygroundOwner(connection.config, session.userId) || new URL(request.url).origin !== 'http://localhost:3000')) throw Object.assign(Error('Local playground unavailable'), { code:'not_admitted' });
     const client = await createInsforgeServerClient();
     const { data, error } = await client.database.from('staff_role_memberships').select('role').eq('user_id', session.userId).limit(1);
     if (signal?.aborted || error || !Array.isArray(data) || data.length !== 1 || data[0]?.role !== 'ADMIN') throw Error('Playground access unavailable');
     const turn = {
-        question: input.question, productSku: resolvedSku, userToken, requestId: intent.requestId,
+        ...(connection.profile === 'product-playground-v1' ? { profile:'product-playground-v1' as const } : {}), question: input.question, productSku: resolvedSku, userToken, requestId: intent.requestId,
         contextDigest: createHash('sha256').update(JSON.stringify(input.passages)).digest('hex'), signal,
     };
     if (connection.transport === 'local') return createLocalPlaygroundClient(connection.config, { reauthorize:async () => {
