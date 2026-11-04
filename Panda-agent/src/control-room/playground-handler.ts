@@ -1,7 +1,7 @@
 import { answerQuestion, parseQuestion } from '../retrieval/answers.ts';
 import type { Actor, Adapters, CanonicalChunk, Product } from '../retrieval/contracts.ts';
 import { lexicalOverlap, validatePlaygroundEvaluation, type PlaygroundEvaluator } from './playground-evaluation.ts';
-import { uuid } from '../server/chat-contracts.ts';
+import { uuid } from './validation.ts';
 import { createHash } from 'node:crypto';
 import { isPlaygroundUsage, type PlaygroundUsage } from './playground-usage.ts';
 import {playgroundContextProof} from './playground-context-proof.ts';
@@ -47,7 +47,7 @@ export function createPlaygroundHandler(authenticate: () => Promise<Admission>, 
         const { evaluate, requestId, ...questionInput } = body.value as Record<string, unknown>;
         if ((evaluate !== undefined && typeof evaluate !== 'boolean') || !parseQuestion(questionInput)) return error(400, 'invalid_request');
         const runModel = evaluate === true;
-        if (runModel ? !uuid(requestId) || requestId !== requestId.toLowerCase() : requestId !== undefined) return error(400, 'invalid_request');
+        if (runModel ? typeof requestId !== 'string' || !uuid(requestId) || requestId !== requestId.toLowerCase() : requestId !== undefined) return error(400, 'invalid_request');
         if (request.signal.aborted) return error(503, 'unavailable');
         let scopeChunks: CanonicalChunk[] = [];
         let product:Product|undefined, fingerprint='';

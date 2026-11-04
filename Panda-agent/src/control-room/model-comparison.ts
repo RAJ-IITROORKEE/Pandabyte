@@ -1,10 +1,9 @@
 import { createHash } from 'node:crypto';
 import { answerQuestion } from '../retrieval/answers.ts';
 import type { Adapters, CanonicalChunk, Product } from '../retrieval/contracts.ts';
-import { uuid } from '../server/chat-contracts.ts';
 import { validatePlaygroundEvaluation } from './playground-evaluation.ts';
 import {playgroundContextProof} from './playground-context-proof.ts';
-import {publicUrl} from './validation.ts';
+import {publicUrl,uuid} from './validation.ts';
 import {isPlaygroundUsage,type PlaygroundUsage} from './playground-usage.ts';
 
 type Admin = { kind:'admin'; subject:string; adapters:Adapters };

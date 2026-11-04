@@ -1,6 +1,6 @@
 import 'server-only';
 import { isPlaygroundUsage, observePlaygroundUsage, type PlaygroundUsage } from './playground-usage.ts';
-import { uuid } from '../server/chat-contracts.ts';
+import { uuid } from './validation.ts';
 import { parseProductPlaygroundIntent } from './playground-intent.ts';
 
 // Unmounted protocol candidate; never mount until a matching receiver and admission ledger are reviewed.

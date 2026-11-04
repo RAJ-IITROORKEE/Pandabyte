@@ -29,6 +29,11 @@ test('duplicate UUIDs/models, uppercase UUIDs, arbitrary scope and oversized str
 test('wrong-origin and denied callers never prepare or call a model',async()=>{
  const f=fixture();assert.equal((await f.handlers.POST(request(undefined,{origin:'https://wrong.example'}))).status,403);f.deps.authorize=async()=>({kind:'unauthorized'});assert.equal((await f.handlers.POST(request())).status,401);assert.equal(f.calls.length,0);
 });
+
+test('invalid UUID version and variant bits never prepare comparison context',async()=>{
+ const f=fixture();for(const requestId of ['00000000-0000-0000-0000-000000000000','aaaaaaaa-aaaa-faaa-8aaa-aaaaaaaaaaaa','aaaaaaaa-aaaa-4aaa-0aaa-aaaaaaaaaaaa'])assert.equal((await f.handlers.POST(request({question:'Q',operations:[{...operations[0],requestId}]}))).status,400);
+ assert.equal(f.prepareCalls(),0);assert.equal(f.calls.length,0);
+});
 test('unknown outcome or quota stops further dispatch and marks remaining operations skipped',async()=>{
  for(const mode of['unknown','quota','invalid']){const f=fixture();f.mode(mode);const r=await f.handlers.POST(request()),v=await r.json();assert.equal(r.status,200);assert.deepEqual(v.results.map(x=>x.status),[mode==='quota'?'quota':'outcome_unknown','skipped']);assert.equal(f.calls.length,1);assert.equal(v.results[0].answer,undefined);}
 });

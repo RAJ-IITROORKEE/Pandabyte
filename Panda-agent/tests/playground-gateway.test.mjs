@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPlaygroundGatewayClient } from '../src/control-room/playground-gateway.ts';
 
-const turn = { question: 'What is this?', productSku: 'SKU-1', userToken: 'a'.repeat(32), requestId: '12345678-1234-1234-1234-123456789abc', contextDigest: 'b'.repeat(64) };
+const turn = { question: 'What is this?', productSku: 'SKU-1', userToken: 'a'.repeat(32), requestId: '12345678-1234-1234-8234-123456789abc', contextDigest: 'b'.repeat(64) };
 const signer = async ({ headers }) => ({ ...headers, host: 'abc123def4.execute-api.ap-south-1.amazonaws.com', Authorization: 'AWS4-HMAC-SHA256 test' });
 const endpoint = 'https://abc123def4.execute-api.ap-south-1.amazonaws.com/agent/v1/turns';
 const response = value => Response.json(value);
@@ -12,7 +12,7 @@ const rejects = (promise, code) => assert.rejects(promise, error => error.code =
 
 test('noncanonical UUIDs fail before signing or network dispatch',async()=>{
  let calls=0;const run=createPlaygroundGatewayClient({enabled:true,endpoint,serviceToken:'c'.repeat(64),signer:async()=>{calls++;throw Error('must not sign');},fetcher:async()=>{calls++;throw Error('must not send');}});
- await rejects(run({...turn,requestId:'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA'}),'outcome_unknown');assert.equal(calls,0);
+ for(const requestId of ['AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA','00000000-0000-0000-0000-000000000000','aaaaaaaa-aaaa-faaa-8aaa-aaaaaaaaaaaa','aaaaaaaa-aaaa-4aaa-0aaa-aaaaaaaaaaaa'])await rejects(run({...turn,requestId}),'outcome_unknown');assert.equal(calls,0);
 });
 
 test('sends the bounded v3 request once and returns the correlated output', async () => {

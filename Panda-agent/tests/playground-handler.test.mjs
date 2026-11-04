@@ -13,8 +13,10 @@ const admin = a => createPlaygroundHandler(async()=>({kind:'admin',actor:{subjec
 
 test('noncanonical evaluation UUIDs are rejected before retrieval or evaluation',async()=>{
  let calls=0;const h=createPlaygroundHandler(async()=>({kind:'admin',actor:{subject:'test'},adapters:adapters({resolveIdentity:async()=>{calls++;throw Error('must not retrieve');}})}),async()=>{calls++;throw Error('must not evaluate');});
- const r=await h(request({question:'Which processor?',evaluate:true,requestId:'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA'}));
- assert.equal(r.status,400);assert.equal(calls,0);
+ for(const requestId of ['AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA','00000000-0000-0000-0000-000000000000','aaaaaaaa-aaaa-faaa-8aaa-aaaaaaaaaaaa','aaaaaaaa-aaaa-4aaa-0aaa-aaaaaaaaaaaa']){
+  const r=await h(request({question:'Which processor?',evaluate:true,requestId}));assert.equal(r.status,400);
+ }
+ assert.equal(calls,0);
 });
 
 test('trusted comparison snapshot mismatch rejects before evaluator admission',async()=>{

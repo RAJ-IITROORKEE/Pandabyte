@@ -16,7 +16,9 @@ The product-only receiver rejects the local acceptance marker, so the applicatio
 
 ## Verification
 
-The combined offline application, transport, authority, context and comparison suite passed 108 tests with no skips. The separate host/receiver regression suite passed 69 tests. These include synthetic injected evaluators, not real provider responses. The separate 15-query source-visible lexical probe passed all 15 cases without model calls; it is neither held-out nor a measure of semantic answer accuracy. The curated application checkout passed all 53 focused tests. TypeScript and scoped ESLint passed.
+The combined offline application, transport, authority, context and comparison suite passed 109 tests with no skips. The separate host/receiver regression suite passed 69 tests, and 17 relay tests passed. These include synthetic injected evaluators, not real provider responses. The separate 15-query source-visible lexical probe passed all 15 cases without model calls; it is neither held-out nor a measure of semantic answer accuracy. The curated application checkout passed all 54 focused tests. TypeScript and scoped ESLint passed.
+
+Independent review also caught a preflight mismatch: the shared chat UUID helper allowed invalid version/variant bits that the receiver rejected later. Playground and comparison boundaries now reuse the stricter Control Room validator and require lowercase IDs. Regressions prove malformed IDs cannot reach retrieval, comparison preparation or signing. The shared native chat validator is unchanged.
 
 A clean application snapshot with the reviewed overlays completed the normal Turbopack production build, including TypeScript, page collection and all 42 static pages. A build-local absolute dependency root allowed the existing external node_modules junction; that machine-specific setting is not part of the source checkpoint. The first worktree build could not resolve that junction, and a Webpack diagnostic fallback rejected three existing print CSS selectors. No unrelated print styles were changed. The successful isolated Turbopack build supersedes those local build attempts.
 
