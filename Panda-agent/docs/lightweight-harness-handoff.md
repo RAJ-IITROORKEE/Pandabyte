@@ -4,6 +4,8 @@
 - Base SHA: `a3a4756fa514af780ae6a1e138d7aeddd36c77bc` (fetched `origin/main`, 5 November 2026)
 - Current phase: 1 — BLOCKED
 - Last passing phase: none
+- Active URL: `http://localhost:3000/panda-agent` (existing development owner session; Agent tab 6 kept open).
+- Process status: task-owned development server running in exec session `84360`, deliberately left running at the user's request. Do not start a duplicate or stop unrelated processes; prior 3011/3012 cleanup below is historical.
 - Next action: restore a supported browser network-capture surface with a confirmed mobile viewport and controlled cold cache; measure actual initial JavaScript for `/panda-agent` and `/` on this branch production build. Rerun affected baseline checks, close Phase 1 only when this gate passes, then start Phase 2 automatically.
 - Environment: Windows, Node 24.18.0, npm; isolated managed worktree `C:/Users/rajra/.codex/worktrees/panda-agent-lightweight-rag/Pandabyte`. Docker absent from PATH. No hosted runtime/configuration changes authorized by this checkpoint.
 - Overall: BLOCKED at the required Phase 1 cold-browser JavaScript gate. All later phases remain PENDING; no runtime implementation, completed feature or production-readiness claim.
@@ -65,9 +67,9 @@ Use server-owned `PANDA_AGENT_LIGHTWEIGHT_ENABLED=true`, default off. False pres
 
 Root: managed worktree/branch, Git, baseline server/browser, shared configuration and integration. Sol high: service contracts, independent review, `lightweight-baseline-review.md`, and final ownership/update/signoff of this tracker. Root authored the browser measurement record. Terra high `terra_baseline_preflight`: only `Panda-agent/scripts/lightweight-preflight.mjs` and its focused test. Sol independently reran that focused test and the actual preflight; no actionable defect was found within the script's declared local-SQL-reference scope. This is baseline tooling, not Phase 2 runtime implementation.
 
-The only intended checkpoint files are the preflight script, its test and these three documents: this handoff, `lightweight-baseline-review.md`, and `lightweight-browser-baseline.md`. Root will stage/commit those five files only, without push or deployment. App/components/lib, root manifests/lockfiles and application runtime source remain unchanged. Next temporarily added alternate build-directory includes to `tsconfig.json`; Root restored its original bytes after the build.
+The baseline checkpoint `bc23f67` contains only the preflight script, its test and these three documents: this handoff, `lightweight-baseline-review.md`, and `lightweight-browser-baseline.md`. The port-3000 follow-up changes only this handoff for a further local commit; no push or deployment. App/components/lib, root manifests/lockfiles and application runtime source remain unchanged. Next temporarily added alternate build-directory includes to `tsconfig.json`; Root restored its original bytes after the build.
 
-Tested commit: `a3a4756fa514af780ae6a1e138d7aeddd36c77bc` plus the two-file baseline-tooling diff. Staged code-diff SHA-256: `62c8761c055a665bdd01e83979107adfba16ae3e94a1525df21400a944c35f8d`. Individual script/test raw SHA-256 values are respectively `c5a37bc25704cb2858eedfd3eff4b0a741346cb61ace97e2ed5bddc7d8f18777` and `dea10b8ff9a2401e85060b8ff34309bf0e42455cb320f8cfed35ececf54a7ccf`. Documentation edits are not included in this code fingerprint. The checkpoint commit SHA is available from `git rev-parse HEAD` after Root commits; this report does not invent a future SHA.
+Initial tested commit: `a3a4756fa514af780ae6a1e138d7aeddd36c77bc` plus the two-file baseline-tooling diff, subsequently committed in checkpoint `bc23f67`. Staged code-diff SHA-256: `62c8761c055a665bdd01e83979107adfba16ae3e94a1525df21400a944c35f8d`. Individual script/test raw SHA-256 values are respectively `c5a37bc25704cb2858eedfd3eff4b0a741346cb61ace97e2ed5bddc7d8f18777` and `dea10b8ff9a2401e85060b8ff34309bf0e42455cb320f8cfed35ececf54a7ccf`. Documentation edits are not included in this code fingerprint. The port-3000 browser follow-up tested `bc23f67` with clean status before server startup and no application-source changes.
 
 ### Completed independent checks
 
@@ -113,9 +115,25 @@ Unblock with a supported network-capture surface or controlled native DevTools w
 
 Docker's absence is a separate future container gate; pricing/free-provider compatibility, actual provider quota/cost, durable authenticated answer/reload, source fencing, project guide, image flow and resource targets are unverified. No provider/cloud/DB-schema/configuration write or runtime implementation occurred.
 
-Root reported verified cleanup before commit: Ctrl-C stopped both task-owned development/production server sessions; IPv6-loopback connection checks confirmed ports 3011 and 3012 closed (exit 0). Bound task-owned application tabs were closed, the viewport override was cleared, and existing owner sessions were preserved. Temporary connection-error tabs were left to automatic cleanup. Root inspected the final sidebar-hidden screenshot and confirmed no account details were visible. This cleanup does not change the blocked measurement result.
+Prior-attempt cleanup before baseline checkpoint `bc23f67`: Root reported Ctrl-C stopped both task-owned development/production server sessions; IPv6-loopback connection checks confirmed ports 3011 and 3012 closed (exit 0). Bound task-owned application tabs were closed, the viewport override was cleared, and existing owner sessions were preserved. Temporary connection-error tabs were left to automatic cleanup. Root inspected the final sidebar-hidden screenshot and confirmed no account details were visible. The later port-3000 server below is intentionally running; this earlier cleanup is not its current process status.
 
 Sol high contract/review signoff: the baseline evidence supports **BLOCKED**, not PASS or feature acceptance. Final checkpoint may be committed locally as authorized; no push/deploy is part of this stop.
+
+## Port-3000 follow-up — 5 November 2026 (Asia/Kolkata)
+
+The user explicitly requested inspection of existing localhost ports and hosting/testing on 3000 or 3001. Root started the same feature checkout at checkpoint `bc23f67`, clean before startup. Initial `netstat` queries were inconclusive, returning no matching listeners even after the server was known working. Direct socket-connect checks established port 3000 IPv4=false / IPv6=true and port 3001 IPv4=false / IPv6=false. Next reported ready in 9.0 seconds; task-owned exec session `84360` remains **running deliberately for the user**. Do not stop other processes. Agent IAB tab 6 is marked to keep open; comparison Home tab 7 was closed.
+
+Observed real local development flow, existing owner session: `/panda-agent` returned 200; history GET remained 503. Sending `Which MCU does the x8266 listing name?` once produced chat-create POST 503 in 3.1 seconds. The exact visible failure assertion passed: `Could not create a chat. Refresh the page before trying again.` No messages POST, legacy selection or model work occurred. Sidebar-hidden screenshot: ignored `Panda-agent/infra/lightweight/artifacts/port-3000-chat-check.jpg`.
+
+Root's independent HTTP checks: `/` returned 200; anonymous `/panda-agent` returned 307 to sign-in, then 200; anonymous `/api/panda-agent/chats` returned 401 with `private, no-store`. The connected browser rendered the actual Home heading/content and its heading-visible assertion passed. All three legacy/search/native flags remain false through the existing launcher. No runtime, dependency, credential, schema, cloud or commerce changes were made. Moving the port does not resolve the existing 503 or the required cold-JavaScript/mobile/cache gate: **Phase 1 remains BLOCKED; Phases 2–8 remain PENDING**.
+
+Exact restart command, from this feature-worktree root, using the existing ignored launcher and locally provided original environment file (do not print/copy its contents):
+
+```powershell
+node Panda-agent/infra/lightweight/artifacts/launch-baseline.cjs 'E:\Web development\PROJECTS-FULL STACK\Pandabyte\.env.local' dev --hostname localhost --port 3000
+```
+
+The server is already running; use the active URL above before considering a restart. Root owns process/Git operations and will locally commit only this handoff update, without push or deployment.
 
 ## Resume
 
