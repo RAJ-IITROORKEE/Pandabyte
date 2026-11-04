@@ -1,7 +1,10 @@
 import { answerQuestion, parseQuestion } from '../retrieval/answers.ts';
-import type { Actor, Adapters, CanonicalChunk } from '../retrieval/contracts.ts';
+import type { Actor, Adapters, CanonicalChunk, Product } from '../retrieval/contracts.ts';
 import { lexicalOverlap, validatePlaygroundEvaluation, type PlaygroundEvaluator } from './playground-evaluation.ts';
 import { uuid } from '../server/chat-contracts.ts';
+import { createHash } from 'node:crypto';
+import { isPlaygroundUsage, type PlaygroundUsage } from './playground-usage.ts';
+import {playgroundContextProof} from './playground-context-proof.ts';
 
 export type Admission = { kind: 'admin'; actor: Exclude<Actor, null>; adapters: Adapters } | { kind: 'unauthorized' | 'forbidden' | 'unavailable' };
 const response = (status: number, value: unknown) => Response.json(value, { status, headers: { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } });
@@ -30,7 +33,7 @@ async function readJson(request: Request): Promise<{ value: unknown } | { status
 
 // Reuse the answer pipeline's canonical scope validation, ranking and revalidation. The
 // selector captures only vetted fragments; an evaluator requires a trusted injected guard.
-export function createPlaygroundHandler(authenticate: () => Promise<Admission>, evaluator?: PlaygroundEvaluator) {
+export function createPlaygroundHandler(authenticate: () => Promise<Admission>, evaluator?: PlaygroundEvaluator, expectedContextDigest?: string, getUsage?:()=>PlaygroundUsage|null, expectedProvenanceDigest?:string) {
     return async (request: Request): Promise<Response> => {
         const startedAt = performance.now();
         if (request.method !== 'POST') return error(405, 'method_not_allowed');
@@ -44,9 +47,10 @@ export function createPlaygroundHandler(authenticate: () => Promise<Admission>, 
         const { evaluate, requestId, ...questionInput } = body.value as Record<string, unknown>;
         if ((evaluate !== undefined && typeof evaluate !== 'boolean') || !parseQuestion(questionInput)) return error(400, 'invalid_request');
         const runModel = evaluate === true;
-        if (runModel ? !uuid(requestId) : requestId !== undefined) return error(400, 'invalid_request');
+        if (runModel ? !uuid(requestId) || requestId !== requestId.toLowerCase() : requestId !== undefined) return error(400, 'invalid_request');
         if (request.signal.aborted) return error(503, 'unavailable');
         let scopeChunks: CanonicalChunk[] = [];
+        let product:Product|undefined, fingerprint='';
         let fragments: Array<{ handle: string; text: string }> = [];
         let evaluation: ReturnType<typeof validatePlaygroundEvaluation> = null;
         let modelError: 'quota' | 'not_admitted' | 'outcome_unknown' | null = null;
@@ -54,14 +58,22 @@ export function createPlaygroundHandler(authenticate: () => Promise<Admission>, 
         const adapters: Adapters = {
             ...base,
             ranking: { mode: 'lexical' },
+            resolveIdentity:async(...args)=>{const identity=await base.resolveIdentity(...args);if(identity.kind==='resolved')product=identity.product;return identity;},
             currentScope: async (...args) => {
                 const scope = await base.currentScope(...args);
-                if (scope) scopeChunks = scope.chunks;
+                if (scope) {scopeChunks = scope.chunks;fingerprint=scope.fingerprint;}
                 return scope;
             },
             select: async (question, selected, context) => {
                 fragments = selected;
                 if (!runModel || !evaluator) return { selections: [] };
+                if (expectedContextDigest !== undefined && createHash('sha256').update(JSON.stringify(selected.map((f,i)=>({rank:i+1,text:f.text})))).digest('hex') !== expectedContextDigest) {
+                    modelError = 'not_admitted';
+                    throw Error('Comparison context changed');
+                }
+                if(expectedProvenanceDigest!==undefined&&(!product||playgroundContextProof(product,fingerprint,selected,scopeChunks)!==expectedProvenanceDigest)){
+                    modelError='not_admitted';throw Error('Comparison source changed');
+                }
                 if (!context || !await context.revalidate()) throw Error('Scope changed');
                 const current = await authenticate();
                 if (current.kind !== 'admin' || current.actor.subject !== admission.actor.subject) throw Error('Access changed');
@@ -91,7 +103,9 @@ export function createPlaygroundHandler(authenticate: () => Promise<Admission>, 
         try { finalAdmission = await authenticate(); } catch { return error(503, 'unavailable'); }
         if (request.signal.aborted || finalAdmission.kind !== 'admin' || finalAdmission.actor.subject !== admission.actor.subject) return error(503, 'unavailable');
         const model = checked ? { status: 'evaluated', answer: checked.answer, evidence: checked.evidence } : { status: !runModel ? 'not_requested' : !fragments.length ? 'not_run' : 'guard_unavailable' };
-        const metrics = { elapsedMs: Math.round(performance.now() - startedAt), contextPassages: passages.length, contextCharacters: passages.reduce((total, passage) => total + [...passage.text].length, 0), inputTokens: null, outputTokens: null, costUsd: null };
+        let usage:PlaygroundUsage|null=null;
+        try { const value=checked ? getUsage?.() : null; if (isPlaygroundUsage(value)) usage=value; } catch { /* Metrics are observational. */ }
+        const metrics = { elapsedMs: Math.round(performance.now() - startedAt), contextPassages: passages.length, contextCharacters: passages.reduce((total, passage) => total + [...passage.text].length, 0), inputTokens: usage?.inputTokens ?? null, outputTokens: usage?.outputTokens ?? null, costUsd: usage ? usage.costNanoUsd / 1_000_000_000 : null };
         return response(200, { outcome: checked && !checked.evidence.length ? 'insufficient' : passages.length ? 'retrieved' : outcome.kind, passages, retrieval: 'lexical', relevance: 'unverified', model, metrics });
     };
 }

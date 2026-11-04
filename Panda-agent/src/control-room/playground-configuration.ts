@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 export type PlaygroundConfiguration = { transport:'hosted'; profile:'mini-two-case-v1' | 'product-playground-v1'; config:NonNullable<ReturnType<typeof hostedStatusConfig>> } | { transport:'local'; profile:'mini-two-case-v1' | 'product-playground-v1'; config:LocalPlaygroundConfig };
 
 export async function resolvePlaygroundConfiguration(env:NodeJS.ProcessEnv = process.env, readLocal = readLocalPlaygroundConfig):Promise<PlaygroundConfiguration | null> {
+  if (env.PANDA_AGENT_PLAYGROUND_PROFILE === 'product-playground-v1' && env.PANDA_AGENT_PRODUCT_PLAYGROUND_HOST_READY !== 'true') return null;
   if (hostedPlaygroundEnabled(env)) {
     const config = hostedStatusConfig(env);
     return config ? { transport:'hosted', profile:env.PANDA_AGENT_PLAYGROUND_PROFILE as 'mini-two-case-v1' | 'product-playground-v1', config } : null;

@@ -11,11 +11,18 @@ import { matchApprovedPlaygroundCase, parseProductPlaygroundIntent } from './pla
 import { localPlaygroundOwner, resolvePlaygroundConfiguration, sameLocalPlaygroundConfiguration } from './playground-configuration';
 import { readLocalPlaygroundConfig } from './playground-local-config';
 import { createLocalPlaygroundClient } from './playground-local';
+import type { PlaygroundUsage } from './playground-usage';
 import { controlRoomAdminAccess } from './clerk';
 
 export async function playgroundPOST(request: Request) {
+ return runPlaygroundPOST(request);
+}
+
+// Trusted server callers may bind a comparison snapshot; this is never read from browser JSON.
+export async function runPlaygroundPOST(request: Request, expectedContextDigest?:string, expectedProvenanceDigest?:string) {
  const access = await controlRoomAdminAccess();
  if (!access.allowed) return Response.json({error:{code:access.status === 401 ? 'unauthorized' : access.status === 403 ? 'forbidden' : 'unavailable'}}, {status:access.status, headers:{'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
+ let usage:PlaygroundUsage|null=null;
  let resolvedSku: string | undefined;
  let subject: string | undefined;
  const connection = await resolvePlaygroundConfiguration();
@@ -60,9 +67,9 @@ export async function playgroundPOST(request: Request) {
         if (signal?.aborted) return false;
         const current = await authenticate();
         return current.kind === 'admin' && current.actor.subject === subject && !signal?.aborted;
-    } })(turn);
+    }, onUsage:value=>{usage=value;} })(turn);
     const config = connection.config;
-    return createPlaygroundGatewayClient({ enabled: true, endpoint: config.endpoint, serviceToken: config.serviceToken, signer: createAwsGatewaySigner({ roleArn: config.roleArn }) })(turn);
+    return createPlaygroundGatewayClient({ enabled: true, endpoint: config.endpoint, serviceToken: config.serviceToken, signer: createAwsGatewaySigner({ roleArn: config.roleArn }), onUsage:value=>{usage=value;} })(turn);
  }) : undefined;
- return createPlaygroundHandler(authenticate, evaluator)(request);
+ return createPlaygroundHandler(authenticate, evaluator, expectedContextDigest, ()=>usage,expectedProvenanceDigest)(request);
 }

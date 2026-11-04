@@ -1,4 +1,5 @@
 import 'server-only';
+import { isPlaygroundUsage, observePlaygroundUsage, type PlaygroundUsage } from './playground-usage.ts';
 import https from 'node:https';
 import { parsePlaygroundIntent, parseProductPlaygroundIntent } from './playground-intent.ts';
 import { PlaygroundGatewayError } from './playground-gateway.ts';
@@ -7,7 +8,7 @@ import { localPlaygroundConfigCurrent, type LocalPlaygroundConfig } from './play
 type Turn = { profile?:'product-playground-v1'; question:string; productSku:string; userToken:string; requestId:string; contextDigest:string; signal?:AbortSignal };
 const unknown = () => new PlaygroundGatewayError('outcome_unknown');
 const exact = (value: object, keys: string[]) => Object.keys(value).sort().join(',') === [...keys].sort().join(',');
-export function createLocalPlaygroundClient(config: LocalPlaygroundConfig, options: {reauthorize:()=>Promise<boolean>; request?:typeof https.request; now?:()=>number}) {
+export function createLocalPlaygroundClient(config: LocalPlaygroundConfig, options: {reauthorize:()=>Promise<boolean>; request?:typeof https.request; now?:()=>number; onUsage?:(usage:PlaygroundUsage)=>void|Promise<void>}) {
   const request = options?.request ?? https.request, now = options?.now ?? Date.now;
   return async (turn: Turn): Promise<string> => {
     if ((turn?.profile !== undefined && turn.profile !== 'product-playground-v1') || typeof options?.reauthorize !== 'function') throw new PlaygroundGatewayError('not_admitted');
@@ -37,7 +38,8 @@ export function createLocalPlaygroundClient(config: LocalPlaygroundConfig, optio
               if (!value || typeof value !== 'object' || Array.isArray(value)) throw unknown();
               const result=value as Record<string,unknown>;
               if (exact(result,['version','requestId','status']) && result.version===3 && result.requestId===turn.requestId && (result.status==='quota' || result.status==='not_admitted')) { finish(new PlaygroundGatewayError(result.status)); return; }
-              if (!exact(result,['version','requestId','status','contextDigest','rawModel']) || result.version!==3 || result.requestId!==turn.requestId || result.status!=='complete' || result.contextDigest!==turn.contextDigest || typeof result.rawModel!=='string' || !result.rawModel.isWellFormed() || result.rawModel.length>10000) throw unknown();
+              if (!(exact(result,['version','requestId','status','contextDigest','rawModel']) || (turn.profile==='product-playground-v1' && exact(result,['version','requestId','status','contextDigest','rawModel','usage']) && isPlaygroundUsage(result.usage))) || result.version!==3 || result.requestId!==turn.requestId || result.status!=='complete' || result.contextDigest!==turn.contextDigest || typeof result.rawModel!=='string' || !result.rawModel.isWellFormed() || result.rawModel.length>10000) throw unknown();
+              if ('usage' in result && isPlaygroundUsage(result.usage)) observePlaygroundUsage(options.onUsage,result.usage);
               finish(undefined,result.rawModel);
             } catch { finish(unknown()); }
           });

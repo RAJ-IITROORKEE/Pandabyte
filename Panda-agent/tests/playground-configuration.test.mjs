@@ -25,10 +25,12 @@ test('the configured lease belongs to the active opaque owner and changes revoke
  assert.doesNotMatch(JSON.stringify(capability),/fixture-public|ownerSubject|serviceToken/);
 });
 
-test('product profile is explicit and still requires the current owner lease',async()=>{
- const value=config(), next={...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1'};
- const resolved=await resolvePlaygroundConfiguration(next,async()=>value);
- assert.equal(resolved.profile,'product-playground-v1');assert.equal(localPlaygroundOwner(resolved.config,'owner'),true);assert.equal(localPlaygroundOwner(resolved.config,'other'),false);
- assert.equal((await resolvePlaygroundConfiguration(next,async()=>null)),null);
- assert.equal(playgroundCapabilities(next,false,true).profile,'product-playground-v1');
+test('product profile requires readiness and cannot advertise an unsupported local receiver',async()=>{
+ const value=config(), next={...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1',PANDA_AGENT_PRODUCT_PLAYGROUND_HOST_READY:'true'};
+ assert.equal(await resolvePlaygroundConfiguration({...next,PANDA_AGENT_PRODUCT_PLAYGROUND_HOST_READY:undefined},async()=>value),null);
+ assert.equal(await resolvePlaygroundConfiguration({...next,PANDA_AGENT_PRODUCT_PLAYGROUND_HOST_READY:'TRUE'},async()=>value),null);
+ let reads=0;assert.equal(await resolvePlaygroundConfiguration(next,async()=>{reads++;return value;}),null);
+ assert.equal(reads,0);assert.equal(playgroundCapabilities(next,false,true).profile,null);
+ const hosted={...next,VERCEL:'1',PANDA_AGENT_PLAYGROUND_TRANSPORT:'hosted',PANDA_AGENT_HOSTED_TIMEOUT_PROFILE:'agent-150',PANDA_AGENT_HOSTED_GATEWAY_URL:'https://abcdefghij.execute-api.ap-south-1.amazonaws.com/agent/v1/turns',PANDA_AGENT_HOSTED_GATEWAY_ROLE_ARN:'arn:aws:iam::123456789012:role/example',PANDA_AGENT_HOSTED_GATEWAY_TOKEN:'a'.repeat(64)};
+ assert.equal((await resolvePlaygroundConfiguration(hosted)).profile,'product-playground-v1');
 });

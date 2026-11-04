@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createPlaygroundHandler } from '../src/control-room/playground-handler.ts';
+import {playgroundContextProof} from '../src/control-room/playground-context-proof.ts';
 const text = 'The listing describes an ESP8266 processor.';
 const handle = `panda:00000000-0000-0000-0000-000000000001:${'a'.repeat(64)}:${'b'.repeat(64)}`;
 const chunk = { handle, productId:'p1', text, textHash:createHash('sha256').update(text).digest('hex'), header:'header', physicalRevision:null, blocked:false, title:'Board', sourceUrl:'https://pandabyte.in/product-page/board', capturedAt:'2026-10-30T00:00:00Z', sectionPath:['Details'] };
@@ -9,6 +10,28 @@ const scope = { fingerprint:'proof', candidate:true, sealed:true, engineeringVer
 const adapters = (overrides={}) => ({ resolveIdentity:async()=>({kind:'resolved',product:{id:'p1',sku:'SKU'}}), currentScope:async()=>scope, lexical:async()=>[handle], dense:async()=>{throw Error('not used')}, select:async()=>{throw Error('model must not run')}, ...overrides });
 const request = (body={question:'Which processor?',productSku:'SKU'}, headers={}) => new Request('http://localhost/api', {method:'POST',headers:{origin:'http://localhost','content-type':'application/json',...headers},body:JSON.stringify(body)});
 const admin = a => createPlaygroundHandler(async()=>({kind:'admin',actor:{subject:'clerk-user'},adapters:a}));
+
+test('noncanonical evaluation UUIDs are rejected before retrieval or evaluation',async()=>{
+ let calls=0;const h=createPlaygroundHandler(async()=>({kind:'admin',actor:{subject:'test'},adapters:adapters({resolveIdentity:async()=>{calls++;throw Error('must not retrieve');}})}),async()=>{calls++;throw Error('must not evaluate');});
+ const r=await h(request({question:'Which processor?',evaluate:true,requestId:'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA'}));
+ assert.equal(r.status,400);assert.equal(calls,0);
+});
+
+test('trusted comparison snapshot mismatch rejects before evaluator admission',async()=>{
+ let calls=0;const handler=createPlaygroundHandler(async()=>({kind:'admin',actor:{subject:'test'},adapters:adapters()}),async()=>{calls++;return {answer:'',evidence:[]};},'f'.repeat(64));
+ const r=await handler(request({question:'Which processor?',evaluate:true,requestId:'00000000-0000-4000-8000-000000000001'}));
+ assert.equal(r.status,503);assert.equal((await r.json()).error.code,'not_admitted');assert.equal(calls,0);
+});
+
+test('identical text from a different product or source cannot pass comparison provenance',async()=>{
+ const expected=playgroundContextProof({id:'p1',sku:'SKU'},scope.fingerprint,[{handle,text}],[chunk]);
+ for(const wrongProduct of [false,true]){
+  const other={...chunk,...(wrongProduct?{productId:'p2'}:{sourceUrl:'https://pandabyte.in/product-page/other'})};
+  const a=adapters({resolveIdentity:async()=>({kind:'resolved',product:{id:wrongProduct?'p2':'p1',sku:'SKU'}}),currentScope:async()=>({...scope,chunks:[other]})});
+  let calls=0;const h=createPlaygroundHandler(async()=>({kind:'admin',actor:{subject:'test'},adapters:a}),async()=>{calls++;return {answer:'',evidence:[]};},undefined,undefined,expected);
+  const r=await h(request({question:'Which processor?',evaluate:true,requestId:'00000000-0000-4000-8000-000000000001'}));assert.equal(r.status,503);assert.equal((await r.json()).error.code,'not_admitted');assert.equal(calls,0);
+ }
+});
 test('returns bounded ranked passages without invoking the selector or exposing internal handles',async()=>{
  const res=await admin(adapters())(request()); const data=await res.json();
  assert.equal(res.status,200); assert.equal(res.headers.get('cache-control'),'private, no-store');
@@ -82,4 +105,10 @@ test('mixed source-label metadata cannot reappear as model answer evidence', asy
  const a=adapters({currentScope:async()=>({...scope,chunks:[chunk,metadata]}),lexical:async()=>[handle,metadata.handle]});
  const handler=createPlaygroundHandler(async()=>({kind:'admin',actor:{subject:'test'},adapters:a}),async()=>({answer:'ESP8266',evidence:[{rank:1,quote:'ESP8266',reason:'Processor'},{rank:2,quote:label,reason:'Source label'}]}));
  assert.equal((await handler(request({question:'processor',evaluate:true,requestId:'00000000-0000-4000-8000-000000000001'}))).status,503);
+});
+test('verified metrics appear only after evaluated result and final authorization',async()=>{
+ const usage={inputTokens:100,outputTokens:10,costNanoUsd:21000},body={question:'Which processor?',productSku:'SKU',evaluate:true,requestId:'00000000-0000-4000-8000-000000000001'},auth=async()=>({kind:'admin',actor:{subject:'test'},adapters:adapters()}),evalModel=async()=>({answer:'ESP8266',evidence:[{rank:1,quote:'ESP8266',reason:'Direct'}]});
+ const run=getter=>createPlaygroundHandler(auth,evalModel,undefined,getter)(request(body));let r=await run(()=>usage),m=(await r.json()).metrics;assert.equal(m.inputTokens,100);assert.equal(m.outputTokens,10);assert.equal(m.costUsd,0.000021);
+ for(const invalid of [{...usage,costNanoUsd:1},{...usage,extra:true},null]){r=await run(()=>invalid);m=(await r.json()).metrics;assert.equal(m.inputTokens,null);assert.equal(m.costUsd,null);}
+ let n=0,reads=0;const denied=createPlaygroundHandler(async()=>++n<3?auth():{kind:'forbidden'},evalModel,undefined,()=>{reads++;return usage;});assert.equal((await denied(request(body))).status,503);assert.equal(reads,0);
 });

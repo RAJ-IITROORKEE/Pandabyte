@@ -10,6 +10,11 @@ const complete = () => ({ version: 3, requestId: turn.requestId, status: 'comple
 const make = fetcher => createPlaygroundGatewayClient({ enabled: true, endpoint, serviceToken: 'c'.repeat(64), signer, fetcher });
 const rejects = (promise, code) => assert.rejects(promise, error => error.code === code);
 
+test('noncanonical UUIDs fail before signing or network dispatch',async()=>{
+ let calls=0;const run=createPlaygroundGatewayClient({enabled:true,endpoint,serviceToken:'c'.repeat(64),signer:async()=>{calls++;throw Error('must not sign');},fetcher:async()=>{calls++;throw Error('must not send');}});
+ await rejects(run({...turn,requestId:'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA'}),'outcome_unknown');assert.equal(calls,0);
+});
+
 test('sends the bounded v3 request once and returns the correlated output', async () => {
   let calls = 0;
   const run = make(async (url, init) => {
@@ -59,4 +64,11 @@ test('product profile is an explicit correlated v3 extension',async()=>{
  await rejects(run({...turn,profile:'invalid'}),'outcome_unknown');
  await rejects(run({...product,productSku:undefined}),'outcome_unknown');
  await rejects(run({...product,question:'x'.repeat(2001)}),'outcome_unknown');
+});
+test('product usage is observed only after exact correlation; mini and invalid usage fail closed',async()=>{
+ const product={...turn,requestId:'11111111-1111-4111-8111-111111111111',profile:'product-playground-v1'},usage={inputTokens:100,outputTokens:10,costNanoUsd:21000},seen=[];
+ const runFor=value=>createPlaygroundGatewayClient({enabled:true,endpoint,serviceToken:'c'.repeat(64),signer,fetcher:async()=>response(value),onUsage:x=>seen.push(x)});
+ const good={...complete(),requestId:product.requestId,usage};assert.equal(await runFor(good)(product),complete().rawModel);assert.deepEqual(seen,[usage]);
+ for(const bad of [{...good,requestId:turn.requestId},{...good,contextDigest:'d'.repeat(64)},{...good,usage:{...usage,costNanoUsd:0}},{...good,usage:{...usage,extra:1}}])await rejects(runFor(bad)(product),'outcome_unknown');
+ await rejects(runFor({...complete(),usage})(turn),'outcome_unknown');assert.equal(seen.length,1);
 });

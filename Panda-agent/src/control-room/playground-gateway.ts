@@ -1,10 +1,11 @@
 import 'server-only';
+import { isPlaygroundUsage, observePlaygroundUsage, type PlaygroundUsage } from './playground-usage.ts';
 import { uuid } from '../server/chat-contracts.ts';
 import { parseProductPlaygroundIntent } from './playground-intent.ts';
 
 // Unmounted protocol candidate; never mount until a matching receiver and admission ledger are reviewed.
 type SignedRequest = Readonly<{ url: string; method: 'POST'; headers: Record<string, string>; body: string }>;
-type Config = { enabled: boolean; endpoint: string; serviceToken: string; signer: (request: SignedRequest) => Promise<Record<string, string>>; fetcher?: typeof fetch };
+type Config = { enabled: boolean; endpoint: string; serviceToken: string; signer: (request: SignedRequest) => Promise<Record<string, string>>; fetcher?: typeof fetch; onUsage?: (usage:PlaygroundUsage)=>void|Promise<void> };
 type Turn = { profile?: 'product-playground-v1'; question: string; productSku?: string; userToken: string; requestId: string; contextDigest: string; signal?: AbortSignal };
 export class PlaygroundGatewayError extends Error {
   readonly code: 'not_admitted' | 'quota' | 'outcome_unknown';
@@ -25,7 +26,7 @@ function withAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
 
 export function createPlaygroundGatewayClient(config?: Config) {
   return async (turn: Turn): Promise<string> => {
-    if ((turn?.profile !== undefined && turn.profile !== 'product-playground-v1') || (turn?.profile === 'product-playground-v1' && !parseProductPlaygroundIntent({requestId:turn.requestId,question:turn.question,productSku:turn.productSku})) || !config || config.enabled !== true || !/^[a-f0-9]{64}$/.test(config.serviceToken) || typeof config.signer !== 'function' || !/^[A-Za-z0-9._~-]{16,8192}$/.test(turn?.userToken ?? '') || !uuid(turn?.requestId) || !/^[a-f0-9]{64}$/.test(turn?.contextDigest ?? '') || !bounded(turn?.question, 2000) || (turn.productSku !== undefined && !bounded(turn.productSku, 128)) || turn.signal?.aborted) throw unknown();
+    if ((turn?.profile !== undefined && turn.profile !== 'product-playground-v1') || (turn?.profile === 'product-playground-v1' && !parseProductPlaygroundIntent({requestId:turn.requestId,question:turn.question,productSku:turn.productSku})) || !config || config.enabled !== true || !/^[a-f0-9]{64}$/.test(config.serviceToken) || typeof config.signer !== 'function' || !/^[A-Za-z0-9._~-]{16,8192}$/.test(turn?.userToken ?? '') || !uuid(turn?.requestId) || turn.requestId !== turn.requestId.toLowerCase() || !/^[a-f0-9]{64}$/.test(turn?.contextDigest ?? '') || !bounded(turn?.question, 2000) || (turn.productSku !== undefined && !bounded(turn.productSku, 128)) || turn.signal?.aborted) throw unknown();
     let endpoint: URL;
     try { endpoint = new URL(config.endpoint); } catch { throw unknown(); }
     if (endpoint.protocol !== 'https:' || !/^[a-z0-9]{10}\.execute-api\.ap-south-1\.amazonaws\.com$/.test(endpoint.hostname) || endpoint.pathname !== '/agent/v1/turns' || endpoint.port || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw unknown();
@@ -49,7 +50,8 @@ export function createPlaygroundGatewayClient(config?: Config) {
       const result = value as Record<string, unknown>;
       if (exact(result, ['version', 'requestId', 'status']) && result.version === 3 && result.requestId === turn.requestId && result.status === 'not_admitted') throw new PlaygroundGatewayError('not_admitted');
       if (exact(result, ['version', 'requestId', 'status']) && result.version === 3 && result.requestId === turn.requestId && result.status === 'quota') throw new PlaygroundGatewayError('quota');
-      if (!exact(result, ['version', 'requestId', 'status', 'contextDigest', 'rawModel']) || result.version !== 3 || result.requestId !== turn.requestId || result.status !== 'complete' || result.contextDigest !== turn.contextDigest || typeof result.rawModel !== 'string' || !result.rawModel.isWellFormed() || result.rawModel.length > 10000) throw unknown();
+      if (!(exact(result, ['version', 'requestId', 'status', 'contextDigest', 'rawModel']) || (turn.profile === 'product-playground-v1' && exact(result, ['version', 'requestId', 'status', 'contextDigest', 'rawModel', 'usage']) && isPlaygroundUsage(result.usage))) || result.version !== 3 || result.requestId !== turn.requestId || result.status !== 'complete' || result.contextDigest !== turn.contextDigest || typeof result.rawModel !== 'string' || !result.rawModel.isWellFormed() || result.rawModel.length > 10000) throw unknown();
+      if ('usage' in result && isPlaygroundUsage(result.usage)) observePlaygroundUsage(config.onUsage,result.usage);
       return result.rawModel;
     } catch (error) { if (error instanceof PlaygroundGatewayError && (error.code === 'not_admitted' || error.code === 'quota')) throw error; throw unknown(); }
   };

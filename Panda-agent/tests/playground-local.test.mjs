@@ -92,3 +92,10 @@ test('new product profile sends explicit marker and reauthorizes before write',a
  assert.equal(await run(product),complete().rawModel);
  await rejects(run({...product,question:'x'.repeat(2001)}));
 });
+test('local product usage requires correlated valid envelope and legacy rejects it',async()=>{
+ const usage={inputTokens:100,outputTokens:10,costNanoUsd:21000},product={...turn,profile:'product-playground-v1'},seen=[];
+ const run=value=>createLocalPlaygroundClient(config,{request:mock(value).request,now:()=>now,reauthorize:async()=>true,onUsage:x=>seen.push(x)});
+ assert.equal(await run({...complete(),usage})(product),complete().rawModel);assert.deepEqual(seen,[usage]);
+ for(const bad of [{...complete(),usage,requestId:'22222222-2222-4222-8222-222222222222'},{...complete(),usage,contextDigest:'e'.repeat(64)},{...complete(),usage:{...usage,costNanoUsd:1}}])await rejects(run(bad)(product));
+ await rejects(run({...complete(),usage})(turn));assert.equal(seen.length,1);
+});

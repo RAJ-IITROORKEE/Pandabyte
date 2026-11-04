@@ -19,7 +19,8 @@ export function playgroundFlagsEnabled(flags: Flags): boolean {
 }
 
 export function localPlaygroundEnabled(flags: Flags): boolean {
-  return flags.NODE_ENV === 'development' && !flags.VERCEL && flags.PANDA_AGENT_PLAYGROUND_TRANSPORT === 'local-ssm-v3' && playgroundFlagsEnabled(flags);
+  // The product-only receiver does not admit the local acceptance marker.
+  return flags.NODE_ENV === 'development' && !flags.VERCEL && flags.PANDA_AGENT_PLAYGROUND_TRANSPORT === 'local-ssm-v3' && flags.PANDA_AGENT_PLAYGROUND_PROFILE === 'mini-two-case-v1' && playgroundFlagsEnabled(flags);
 }
 
 export function playgroundCapabilities(flags: Flags, hostedConfigValid: boolean, localConfigValid = false): PlaygroundCapabilities {
