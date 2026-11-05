@@ -2,7 +2,8 @@ FROM python:3.12-slim@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da52
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && useradd --create-home --uid 10001 panda && mkdir /data && chown panda:panda /data
+RUN pip install --require-hashes --no-cache-dir -r requirements.txt && useradd --create-home --uid 10001 panda && mkdir /data && chown panda:panda /data
+COPY THIRD_PARTY_NOTICES.md ./THIRD_PARTY_NOTICES.md
 COPY lightweight ./lightweight
 USER 10001:10001
 EXPOSE 8080

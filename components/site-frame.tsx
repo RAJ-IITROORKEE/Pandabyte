@@ -15,7 +15,7 @@ export function SiteFrame({ children, header, footer }: {
 
   if (staffWorkspace) return children;
 
-  if (pathname === "/panda-agent") return <><a className="skip-link" href="#main">Skip to main content</a>{children}</>;
+  if (pathname === "/panda-agent" || pathname.startsWith("/panda-agent/")) return <><a className="skip-link" href="#main">Skip to main content</a>{children}</>;
 
   return (
     <div className="pb-site-frame">

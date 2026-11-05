@@ -153,7 +153,7 @@ class JournalTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = str(Path(tmp) / 'journal.sqlite')
             journal = Journal(path)
-            journal.db.execute('INSERT INTO turns VALUES (?,?,?,?,?,NULL)', (ACTOR, TURN, 'x8266', 'd' * 64, 'dispatch'))
+            journal.db.execute('INSERT INTO turns(actor,turn_id,sku,digest,state,result) VALUES (?,?,?,?,?,NULL)', (ACTOR, TURN, 'x8266', 'd' * 64, 'dispatch'))
             with self.assertRaises(RuntimeError): Journal(path)
             journal.close()
             reopened = Journal(path)

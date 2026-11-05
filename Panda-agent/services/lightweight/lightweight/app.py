@@ -77,7 +77,8 @@ def authentication(header, action, secret, now):
     if not hmac.compare_digest(decode(signature), hmac.new(secret, segment.encode('ascii'), hashlib.sha256).digest()): raise ValueError('auth')
     claim = parse(decode(segment))
     if not isinstance(claim, dict) or set(claim) != CLAIMS: raise ValueError('auth')
-    if type(claim['v']) is not int or claim['v'] != 1 or claim['aud'] != 'panda-lightweight-evidence-v1' or claim['action'] != action: raise ValueError('auth')
+    audience = 'panda-lightweight-guide-v1' if action in ('runguide','readguide','cancelguide') else 'panda-lightweight-evidence-v1'
+    if type(claim['v']) is not int or claim['v'] != 1 or claim['aud'] != audience or claim['action'] != action: raise ValueError('auth')
     if not all(isinstance(claim[k], str) and HEX.fullmatch(claim[k]) for k in ('sub', 'sid', 'bodySha256')): raise ValueError('auth')
     if not valid_uuid(claim['turnId']) or not valid_uuid(claim['nonce']) or not valid_text(claim['sku'], 128): raise ValueError('auth')
     if type(claim['iat']) is not int or type(claim['exp']) is not int or not 1 <= claim['exp'] - claim['iat'] <= 60 or claim['iat'] > now + 5 or claim['exp'] <= now: raise ValueError('auth')
@@ -142,6 +143,9 @@ class Journal:
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('CREATE TABLE IF NOT EXISTS nonces (nonce TEXT PRIMARY KEY)')
         self.db.execute('CREATE TABLE IF NOT EXISTS turns (actor TEXT, turn_id TEXT, sku TEXT, digest TEXT, state TEXT, result TEXT, PRIMARY KEY(actor, turn_id))')
+        columns={row[1] for row in self.db.execute('PRAGMA table_info(turns)')}
+        if 'kind' not in columns:self.db.execute("ALTER TABLE turns ADD COLUMN kind TEXT NOT NULL DEFAULT 'evidence'")
+        if 'thread_id' not in columns:self.db.execute('ALTER TABLE turns ADD COLUMN thread_id TEXT')
         self.db.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
         self.db.execute("UPDATE turns SET state='unknown' WHERE state IN ('pending', 'dispatch')")
 
@@ -154,12 +158,13 @@ class Journal:
         except sqlite3.IntegrityError: return 'capability_replayed'
 
     def turn(self, actor, turn):
-        return self.db.execute('SELECT sku,digest,state,result FROM turns WHERE actor=? AND turn_id=?', (actor, turn)).fetchone()
+        return self.db.execute('SELECT sku,digest,state,result,kind,thread_id FROM turns WHERE actor=? AND turn_id=?', (actor, turn)).fetchone()
 
     def state(self, actor, turn, state, value=None):
         self.db.execute('UPDATE turns SET state=?,result=? WHERE actor=? AND turn_id=?', (state, json.dumps(value, separators=(',', ':')) if value else None, actor, turn))
 
-def create_app(*, secret, journal_path, provider=None, selector_mode='model', clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
+def create_app(*, secret, journal_path, provider=None, selector_mode='model', guide_enabled=False, clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
+    if type(guide_enabled) is not bool:raise ValueError('invalid guide flag')
     if selector_mode not in ('model', 'deterministic-mcu-v1') or (selector_mode != 'model' and provider is not None): raise ValueError('invalid selector mode')
     if type(ingress_limit) is not int or not 1 <= ingress_limit <= 32 or type(body_timeout) not in (int, float) or not 0 < body_timeout <= 30:
         raise ValueError('invalid ingress limits')
@@ -179,14 +184,17 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
                 if not row or row[2] != 'pending':
                     continue
                 remaining = deadline - time.monotonic()
-                if policy_stopped:
+                if policy_stopped and row[4]=='evidence':
                     journal.state(*key, 'rejected', result('disabled'))
                 elif remaining <= 0:
                     journal.state(*key, 'rejected', result('provider_unavailable'))
                 else:
                     journal.state(*key, 'dispatch')
                     try:
-                        if selector_mode == 'deterministic-mcu-v1':
+                        if row[4]=='guide':
+                            from .guide import run_guide
+                            value = await asyncio.wait_for(run_guide(payload), remaining)
+                        elif selector_mode == 'deterministic-mcu-v1':
                             from .deterministic_mcu import select_mcu
                             value = {'selections': select_mcu(payload['question'], payload['fragments']), 'usage': {'modelCalls': 0, 'inputTokens': 0, 'outputTokens': 0, 'costNanoUsd': 0}}
                         else:
@@ -194,7 +202,11 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
                         if time.monotonic() >= deadline:
                             journal.state(*key, 'unknown')
                             continue
-                        try: final = validate_output(value, payload['fragments'], deterministic=selector_mode == 'deterministic-mcu-v1')
+                        try:
+                            if row[4]=='guide':
+                                from .guide import validate_result
+                                final=validate_result(value,payload['fragments'])
+                            else:final = validate_output(value, payload['fragments'], deterministic=selector_mode == 'deterministic-mcu-v1')
                         except ValueError as exc:
                             if str(exc) == 'usage':
                                 policy_stopped = True
@@ -256,6 +268,9 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
         return result('pending', 'pending'), 202
 
     async def endpoint(request, action):
+        is_guide=action in ('runguide','readguide','cancelguide')
+        is_cancel=action in ('cancelturn','cancelguide')
+        is_read=action in ('readturn','readguide')
         if request.headers.get('content-type', '').split(';', 1)[0].strip().lower() != 'application/json': return respond(result('invalid'), 400)
         try: claim = authentication(request.headers.get('authorization'), action, secret, int(clock()))
         except (ValueError, TypeError, UnicodeError, KeyError, RecursionError): return respond(result('unauthorized'), 401)
@@ -278,14 +293,23 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
         if issue: return respond(result(issue), 409 if issue == 'capability_replayed' else 429, claim)
         try:
             value = parse(raw)
-            payload = select_input(value, claim, selector_mode) if action == 'select' else status_input(value, claim)
+            if action=='runguide':
+                from .guide import validate_input
+                payload=validate_input(value,claim)
+            elif is_guide:
+                if not isinstance(value,dict) or set(value)!={'version','threadId','turnId','requestBodySha256'} or not valid_uuid(value['threadId']):raise ValueError('input')
+                payload=status_input({k:v for k,v in value.items() if k!='threadId'},claim);payload['threadId']=value['threadId']
+            else:payload = select_input(value, claim, selector_mode) if action == 'select' else status_input(value, claim)
         except OverflowError: return respond(result('budget_exceeded'), 422, claim)
         except (ValueError, TypeError, UnicodeError, KeyError, RecursionError): return respond(result('invalid'), 400, claim)
         row = journal.turn(claim['sub'], claim['turnId'])
-        if action == 'cancelturn':
+        expected_kind='guide' if is_guide else 'evidence'
+        if row and (row[4]!=expected_kind or (is_guide and row[5]!=payload['threadId'])):
+            return respond(result('turn_conflict' if is_cancel or not is_read else 'not_found'),409 if is_cancel or not is_read else 404,claim)
+        if is_cancel:
             if not row:
                 if journal.db.execute('SELECT count(*) FROM turns').fetchone()[0] >= 100000: return respond(result('busy'), 429, claim)
-                journal.db.execute('INSERT INTO turns VALUES (?,?,?,?,?,?)', (claim['sub'], claim['turnId'], claim['sku'], payload['requestBodySha256'], 'rejected', json.dumps(result('cancelled'), separators=(',', ':'))))
+                journal.db.execute('INSERT INTO turns(actor,turn_id,sku,digest,state,result,kind,thread_id) VALUES (?,?,?,?,?,?,?,?)', (claim['sub'], claim['turnId'], claim['sku'], payload['requestBodySha256'], 'rejected', json.dumps(result('cancelled'), separators=(',', ':')),expected_kind,payload.get('threadId')))
                 return respond(result('cancelled'), 409, claim)
             if row[0] != claim['sku'] or row[1] != payload['requestBodySha256']: return respond(result('turn_conflict'), 409, claim)
             if row[2] == 'pending':
@@ -295,18 +319,18 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
                 if waiter and not waiter.done(): waiter.set_result(row)
             if row[2] in ('dispatch', 'unknown'): return respond(result('outcome_unknown', 'unknown'), 409, claim)
             answer, status = read_turn(row); return respond(answer, status, claim)
-        if action == 'readturn':
+        if is_read:
             if not row: return respond(result('not_found'), 404, claim)
             if row[0] != claim['sku'] or row[1] != payload['requestBodySha256']: return respond(result('not_found'), 404, claim)
             answer, status = read_turn(row); return respond(answer, status, claim)
         if row:
             if row[0] != claim['sku'] or row[1] != claim['bodySha256']: return respond(result('turn_conflict'), 409, claim)
             answer, status = read_turn(row); return respond(answer, status, claim)
-        if (not provider and selector_mode == 'model') or policy_stopped: return respond(result('disabled'), 503, claim)
+        if (is_guide and not guide_enabled) or (not is_guide and ((not provider and selector_mode == 'model') or policy_stopped)): return respond(result('disabled'), 503, claim)
         count = journal.db.execute("SELECT count(*) FROM turns WHERE state IN ('pending','dispatch')").fetchone()[0]
         actor_pending = journal.db.execute("SELECT count(*) FROM turns WHERE actor=? AND state IN ('pending','dispatch')", (claim['sub'],)).fetchone()[0]
         if count >= 5 or queue.full() or actor_pending or journal.db.execute('SELECT count(*) FROM turns').fetchone()[0] >= 100000: return respond(result('busy'), 429, claim)
-        journal.db.execute('INSERT INTO turns VALUES (?,?,?,?,?,NULL)', (claim['sub'], claim['turnId'], claim['sku'], claim['bodySha256'], 'pending'))
+        journal.db.execute('INSERT INTO turns(actor,turn_id,sku,digest,state,result,kind,thread_id) VALUES (?,?,?,?,?,NULL,?,?)', (claim['sub'], claim['turnId'], claim['sku'], claim['bodySha256'], 'pending',expected_kind,payload.get('threadId')))
         key = (claim['sub'], claim['turnId']); waiter = asyncio.get_running_loop().create_future(); waiters[key] = waiter
         def cancel_queued():
             if shutting_down: return
@@ -340,4 +364,10 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
     async def status(request: Request): return await endpoint(request, 'readturn')
     @app.post('/v1/evidence/cancel')
     async def cancel(request: Request): return await endpoint(request, 'cancelturn')
+    @app.post('/v1/guides/run')
+    async def guide_run(request: Request): return await endpoint(request, 'runguide')
+    @app.post('/v1/guides/status')
+    async def guide_status(request: Request): return await endpoint(request, 'readguide')
+    @app.post('/v1/guides/cancel')
+    async def guide_cancel(request: Request): return await endpoint(request, 'cancelguide')
     return app

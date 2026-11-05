@@ -18,11 +18,13 @@ import { Shimmer } from "./ai-elements/shimmer";
 import { createReadAloud } from "./read-aloud";
 import { clearActiveChat, readActiveChat, writeActiveChat } from "./active-chat";
 import { completedAttempt, createAttemptGuard } from "./cancel-attempt";
+import { GuideForm, type ProjectMemory } from "./guide-form";
+import { guideDisabled, messagePayload, type MessageInput } from "./guide-input";
 
 type Citation = { id: string; title: string; sourceUrl: string; quote: string; sectionPath: string[]; capturedAt: string };
 type ChatMessage = { id: string; role: "user" | "assistant"; text: string; createdAt: string; citations: Citation[] };
 type Chat = { id: string; title: string; updatedAt: string; status: "idle" | "pending" | "blocked" };
-type Detail = { thread: Chat; messages: ChatMessage[] };
+type Detail = { thread: Chat; messages: ChatMessage[]; projectMemory?: ProjectMemory | null };
 const activityLabels: Record<Stage, string> = { routing_question: "Understanding your question", resolving_product: "Resolving product", reading_sources: "Reading sources", searching_sources: "Searching sources", searching_web: "Searching the web with Tavily", selecting_evidence: "Selecting evidence", checking_citations: "Checking citations", saving_answer: "Saving answer" };
 async function readJson(response: Response): Promise<unknown> {
   if (!response.body) throw new Error("Missing response");
@@ -44,13 +46,13 @@ const isMobile = () => window.matchMedia("(max-width: 700px)").matches;
 const suggestions = ["What is the Cytron Maker UNO?", "Tell me about the xC5 board", "What does the WS2812B ring listing say?"];
 function tabStorage(): Storage | null { try { return window.sessionStorage; } catch { return null; } }
 
-export function PandaAgentWorkspace({ previewReadOnly = false }: { previewReadOnly?: boolean }) {
+export function PandaAgentWorkspace({ previewReadOnly = false, guidesEnabled = false, canManageSkills = false }: { previewReadOnly?: boolean; guidesEnabled?: boolean; canManageSkills?: boolean }) {
   const { user, isLoaded } = useUser();
   if (!isLoaded || !user) return <p className={styles.loading}>Loading account…</p>;
-  return <Workspace key={user.id} user={user} previewReadOnly={previewReadOnly} />;
+  return <Workspace key={user.id} user={user} previewReadOnly={previewReadOnly} guidesEnabled={guidesEnabled} canManageSkills={canManageSkills} />;
 }
 
-function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typeof useUser>["user"]>; previewReadOnly: boolean }) {
+function Workspace({ user, previewReadOnly, guidesEnabled, canManageSkills }: { user: NonNullable<ReturnType<typeof useUser>["user"]>; previewReadOnly: boolean; guidesEnabled: boolean; canManageSkills: boolean }) {
   const { signOut } = useClerk();
   const mobile = useSyncExternalStore(subscribeMobile, isMobile, () => true);
   const [sidebarOverride, setSidebarOpen] = useState<boolean | null>(null);
@@ -65,6 +67,8 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
   const [historyError, setHistoryError] = useState("");
   const [selected, setSelected] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [projectMemory, setProjectMemory] = useState<ProjectMemory | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [activity, setActivity] = useState<Stage[]>([]);
   const [restoreDraft, setRestoreDraft] = useState<{ text: string; id: number } | null>(null);
   const requestController = useRef<AbortController | null>(null);
@@ -73,6 +77,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
   const cancelBusy = useRef(false);
   const chatLoading = useRef(false);
   const attemptQuestion = useRef("");
+  const attemptIsGuide = useRef(false);
   const statusButton = useRef<HTMLButtonElement>(null);
   const [context, setContext] = useState<ContextSummary | null>(null);
   const [activityComplete, setActivityComplete] = useState(false);
@@ -126,7 +131,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
   async function loadChat(id: string) {
     if (busyRef.current || cancelBusy.current || chatLoading.current) return;
     chatLoading.current = true;
-    if (selected?.id !== id) { setRestoreDraft(null); currentAttempt.current = null; }
+    if (selected?.id !== id) { setRestoreDraft(null); currentAttempt.current = null; setGuideOpen(false); setProjectMemory(null); }
     const queried = currentAttempt.current?.threadId === id ? currentAttempt.current : null;
     speech?.stop();
     dictation.cancel();
@@ -141,6 +146,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
       if (!active.current || ticket !== generation.current) return;
       if (queried && completedAttempt(currentAttempt.current, queried, data.attemptStatus)) currentAttempt.current = null;
       writeActiveChat(tabStorage(), user.id, data.thread.id);
+      setProjectMemory(data.projectMemory ?? null);
       setComposerEpoch(previous => previous + 1); setSelected(data.thread); setSelectedArchived(archived); setMessages(data.messages); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(Boolean(currentAttempt.current)); setWebSearch(false);
       setThreads(previous => previous.map(thread => thread.id === id ? data.thread : thread));
     } catch { if (active.current && ticket === generation.current) setError("Could not load this chat. Please try again."); }
@@ -149,14 +155,20 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
 
   async function onNew(message: AppendMessage) {
     const question = message.content.filter(part => part.type === "text").map(part => part.text).join("\n").trim();
+    await sendMessage({ question, webSearch });
+  }
+  async function sendMessage(input: MessageInput) {
+    if ("guide" in input && !guidesEnabled) return;
+    const question = "guide" in input ? `Project guide: ${input.guide.goal}` : input.question;
     if (!question || previewReadOnly || busyRef.current || loading || mutating || selectedArchived || uncertain || (selected && selected.status !== "idle")) return;
     if (question.length > 2000) { setError("Messages must be 2,000 characters or fewer. Shorten your message and try again."); return; }
-    if (webSearch && question.length > 400) { setError("Web search accepts up to 400 characters. Shorten your public question or turn Web search off."); return; }
+    if (!("guide" in input) && input.webSearch && question.length > 400) { setError("Web search accepts up to 400 characters. Shorten your public question or turn Web search off."); return; }
     const optimisticId = crypto.randomUUID();
     busyRef.current = true; setBusy(true); setMessages(previous => [...previous, { id: optimisticId, role: "user", text: question, createdAt: new Date().toISOString(), citations: [] }]); setActivity([]); setContext(null); setActivityComplete(false); setError("");
     const controller = new AbortController(); requestController.current = controller;
     const requestId = crypto.randomUUID();
     attemptQuestion.current = question;
+    attemptIsGuide.current = "guide" in input;
     let thread = selected;
     let attempt: ReturnType<ReturnType<typeof createAttemptGuard>["begin"]> | null = null;
     let completed = false;
@@ -171,8 +183,16 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
       }
       if (controller.signal.aborted) throw new Error("Cancelled");
       attempt = attempts.current.begin(thread.id, requestId); currentAttempt.current = attempt;
-      const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(thread.id)}/messages`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "text/event-stream" }, body: JSON.stringify({ requestId, question, ...(webSearch ? { webSearch: true } : {}) }), cache: "no-store", signal: controller.signal });
-      if (!response.ok) throw new Error("message");
+      const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(thread.id)}/messages`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "text/event-stream" }, body: JSON.stringify(messagePayload(requestId, input)), cache: "no-store", signal: controller.signal });
+      if (!response.ok) {
+        if ("guide" in input && response.status === 409 && guideDisabled(response.status, await readJson(response))) {
+          if (!active.current || !attempts.current.current(attempt)) return;
+          completed = true; setUncertain(false); setMessages(previous => previous.filter(message => message.id !== optimisticId));
+          setError("Project guides are disabled. You can continue with ordinary product chat.");
+          return;
+        }
+        throw new Error("message");
+      }
       let data: Detail;
       if (response.headers.get("content-type")?.toLowerCase().startsWith("text/event-stream")) {
         if (!response.body) throw new Error("Missing stream");
@@ -183,11 +203,12 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
       if (!data?.thread || !Array.isArray(data.messages)) throw new Error("Invalid response");
       if (!active.current || !attempt || !attempts.current.current(attempt)) return;
       completed = true;
+      if ("projectMemory" in data) setProjectMemory(data.projectMemory ?? null);
       setRestoreDraft(null); setSelected(data.thread); setMessages(data.messages); setActivityComplete(true); setThreads(previous => [data.thread, ...previous.filter(item => item.id !== data.thread.id)]);
     } catch {
       if (active.current && (!attempt || attempts.current.current(attempt))) {
         if (!thread) setMessages(previous => previous.filter(message => message.id !== optimisticId));
-        setRestoreDraft({ text: question, id: Date.now() }); setContext(null);
+        if (!("guide" in input)) setRestoreDraft({ text: question, id: Date.now() }); setContext(null);
         setError(thread ? "The request could not be confirmed. Check the saved chat before sending again." : "Could not create a chat. Your message is ready to try again.");
         setUncertain(Boolean(thread));
       }
@@ -201,7 +222,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
     if (!threadId) return;
     cancelBusy.current = true; setMutating(true);
     let confirmed = false;
-    if (attempt) { attempts.current.invalidate(); requestController.current?.abort(); setRestoreDraft({ text: attemptQuestion.current, id: Date.now() }); }
+    if (attempt) { attempts.current.invalidate(); requestController.current?.abort(); if (!attemptIsGuide.current) setRestoreDraft({ text: attemptQuestion.current, id: Date.now() }); }
     try {
       const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(threadId)}/cancel`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(attempt ? { requestId: attempt.requestId } : {}), cache: "no-store" });
       if (!response.ok) throw new Error("Unconfirmed");
@@ -209,6 +230,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
       if (data?.thread?.id !== threadId || !Array.isArray(data.messages)) throw new Error("Invalid response");
       if (!active.current) return;
       confirmed = true;
+      if ("projectMemory" in data) setProjectMemory(data.projectMemory ?? null);
       setSelected(data.thread); setMessages(data.messages); setThreads(previous => [data.thread, ...previous.filter(item => item.id !== threadId)]);
       setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(data.thread.status !== "idle");
     } catch {
@@ -220,7 +242,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
     }
   }
   const composerDisabled = previewReadOnly || loading || mutating || selectedArchived || uncertain || selected?.status === "pending" || selected?.status === "blocked";
-  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: composerDisabled, adapters: { dictation: dictation.adapter } });
+  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: composerDisabled || guideOpen, adapters: { dictation: dictation.adapter } });
 
   useEffect(() => {
     if (!sidebarOpen && restoreFocus.current) { restoreFocus.current = false; toggleRef.current?.focus(); }
@@ -246,7 +268,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
   }
   function resizeWithPointer(event: PointerEvent<HTMLDivElement>) { if (event.buttons === 1) { event.currentTarget.setPointerCapture(event.pointerId); setWidth(clampWidth(event.clientX)); } }
   async function handleSignOut() { setSigningOut(true); setSignOutError(""); try { await signOut({ redirectUrl: "/" }); } catch { setSigningOut(false); setSignOutError("Could not sign you out. Please try again."); } }
-  function newChat() { if (busyRef.current || loading || mutating) return; resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
+  function newChat() { if (busyRef.current || loading || mutating) return; resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setProjectMemory(null); setGuideOpen(false); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
   async function changeChat(thread: Chat, action: "archive" | "restore" | "delete") {
     if (busyRef.current || loading || mutating || thread.status !== "idle") return;
     if (action === "delete" && !window.confirm(`Permanently delete "${thread.title || "New chat"}"? This cannot be undone.`)) return;
@@ -261,7 +283,7 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
       if (selected?.id === thread.id) {
         clearActiveChat(tabStorage(), user.id);
         speech?.stop();
-        dictation.cancel(); generation.current++; setComposerEpoch(previous => previous + 1); setSelected(null); setSelectedArchived(false); setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(false); setWebSearch(false);
+        dictation.cancel(); generation.current++; setComposerEpoch(previous => previous + 1); setSelected(null); setProjectMemory(null); setGuideOpen(false); setSelectedArchived(false); setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(false); setWebSearch(false);
       }
     } catch { if (active.current) setHistoryError(`Could not ${action} this chat. Please try again.`); }
     finally { if (active.current) setMutating(false); }
@@ -282,14 +304,14 @@ function Workspace({ user, previewReadOnly }: { user: NonNullable<ReturnType<typ
             <button type="button" aria-label={archived ? "Restore chat" : "Archive chat"} disabled={busy || loading || mutating || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, archived ? "restore" : "archive"); }}>{archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}{archived ? "Restore" : "Archive"}</button>
             <button type="button" aria-label="Delete chat" disabled={busy || loading || mutating || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, "delete"); }}><Trash2 size={16} />Delete</button>
           </div></details></div>)}{!loading && !historyError && !threads.length && <p>{archived ? "No archived chats." : "No saved chats yet."}</p>}{!loading && threads.length > 0 && !threads.some(thread => thread.title.toLowerCase().includes(query.toLowerCase())) && <p>No chats match your search.</p>}</nav>
-      </div><div className={styles.account}><details className={styles.accountMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.accountTrigger} aria-label="Account menu"><span className={styles.avatar} aria-hidden="true"><UserAvatar rounded /></span><span className={styles.accountName}>{displayName}</span><MoreHorizontal size={18} /></summary><div className={styles.accountPanel}><div className={styles.identity}><span className={styles.identityText}><strong>{displayName}</strong><span>{user.primaryEmailAddress?.emailAddress ?? "Signed in"}</span></span></div><nav className={styles.accountLinks} aria-label="Account"><Link href="/account"><UserRound size={16} /> Account</Link><Link href="/account/settings"><Settings size={16} /> Settings</Link></nav>{signOutError && <p className={styles.error} role="alert">{signOutError}</p>}<button className={styles.logout} type="button" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut size={16} />{signingOut ? "Signing out…" : "Logout"}</button></div></details></div>
+      </div><div className={styles.account}><details className={styles.accountMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.accountTrigger} aria-label="Account menu"><span className={styles.avatar} aria-hidden="true"><UserAvatar rounded /></span><span className={styles.accountName}>{displayName}</span><MoreHorizontal size={18} /></summary><div className={styles.accountPanel}><div className={styles.identity}><span className={styles.identityText}><strong>{displayName}</strong><span>{user.primaryEmailAddress?.emailAddress ?? "Signed in"}</span></span></div><nav className={styles.accountLinks} aria-label="Account"><Link href="/account"><UserRound size={16} /> Account</Link><Link href="/account/settings"><Settings size={16} /> Settings</Link>{canManageSkills && <Link href="/panda-agent/skills"><Settings size={16} /> Manage agent skills</Link>}</nav>{signOutError && <p className={styles.error} role="alert">{signOutError}</p>}<button className={styles.logout} type="button" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut size={16} />{signingOut ? "Signing out…" : "Logout"}</button></div></details></div>
     </aside>
     {sidebarOpen && <div className={styles.resizer} role="separator" aria-label="Resize conversation sidebar" aria-controls="agent-sidebar" aria-orientation="vertical" aria-valuemin={MIN_WIDTH} aria-valuemax={MAX_WIDTH} aria-valuenow={width} tabIndex={0} onKeyDown={resizeWithKeyboard} onPointerDown={resizeWithPointer} onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) setWidth(clampWidth(event.clientX)); }} onPointerUp={event => event.currentTarget.releasePointerCapture(event.pointerId)} />}
     <main id="main" tabIndex={-1} className={styles.main} inert={mobile && sidebarOpen}><header className={styles.header}><div className={styles.headerStart}><button ref={toggleRef} className={styles.menuButton} type="button" aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen} aria-controls="agent-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><div className={styles.model}><strong>Panda Agent</strong></div><span className={styles.badge}>Preview</span></div><ThemeToggle /></header>
       <ThreadPrimitive.Root className={styles.thread}><ThreadPrimitive.Viewport className={styles.viewport}>
-        {!messages.length && !busy && <Welcome disabled={Boolean(composerDisabled)} />}
+        {!messages.length && !busy && <Welcome disabled={Boolean(composerDisabled || guideOpen)} />}
         <div className={styles.messageList}><ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage: () => <AssistantMessage messages={messages} speech={speech} speaking={speaking} /> }} />{(busy || activity.length > 0) && <Activity stages={activity} context={context} busy={busy} complete={activityComplete} />}</div>
-      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <div className={styles.status} role="status"><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result."}</span><button ref={statusButton} type="button" disabled={busy || mutating} onClick={() => void loadChat(selected.id)}>Check status</button>{(uncertain || selected.status === "pending") && <button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button>}</div>}{busy && <button type="button" disabled={loading || mutating} onClick={() => void cancelRequest()}>Cancel request</button>}<ChatComposer key={composerEpoch} restoreDraft={restoreDraft} webSearch={webSearch} disabled={busy || composerDisabled} cancelDictation={dictation.cancel} /><p className={styles.disclaimer}>Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
+      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <div className={styles.status} role="status"><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result."}</span><button ref={statusButton} type="button" disabled={busy || mutating} onClick={() => void loadChat(selected.id)}>Check status</button>{(uncertain || selected.status === "pending") && <button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button>}</div>}{busy && <button type="button" disabled={loading || mutating} onClick={() => void cancelRequest()}>Cancel request</button>}{guidesEnabled && <button type="button" aria-expanded={guideOpen} disabled={busy || composerDisabled} onClick={() => setGuideOpen(!guideOpen)}>{guideOpen ? "Hide project guide" : "Project guide"}</button>}{guideOpen && <GuideForm memory={projectMemory} disabled={Boolean(busy || composerDisabled)} onClose={() => setGuideOpen(false)} onSubmit={guide => void sendMessage({ guide })} />}<ChatComposer key={composerEpoch} restoreDraft={restoreDraft} webSearch={webSearch} disabled={busy || composerDisabled || guideOpen} cancelDictation={dictation.cancel} /><p className={styles.disclaimer}>Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
     </main></div></AssistantRuntimeProvider>;
 }
 

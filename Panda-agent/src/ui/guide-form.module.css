@@ -1,0 +1,10 @@
+.form { display: grid; gap: 0.75rem; padding: 1rem; border: 1px solid var(--divider); border-radius: 0.75rem; background: var(--surface); }
+.form label { display: grid; gap: 0.35rem; font-size: 0.875rem; }
+.form input, .form textarea { width: 100%; padding: 0.55rem 0.7rem; border: 1px solid var(--divider); border-radius: 0.5rem; color: inherit; background: transparent; font: inherit; }
+.form textarea { min-height: 4rem; resize: vertical; }
+.form button { justify-self: start; padding: 0.5rem 0.75rem; border: 1px solid var(--divider); border-radius: 0.5rem; color: inherit; background: transparent; font: inherit; }
+.form button:disabled { opacity: 0.55; }
+.form p { margin: 0; font-size: 0.875rem; }
+.heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+.heading h2 { margin: 0 0 0.3rem; font-size: 1rem; }
+.heading p { max-width: 45rem; }

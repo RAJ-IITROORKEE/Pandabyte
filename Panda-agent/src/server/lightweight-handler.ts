@@ -5,8 +5,12 @@ import { ChatStoreError } from './chat-store.ts';
 import type { createLightweightStore, Execution } from './lightweight-store.ts';
 import { strictJson } from '../lightweight/client.ts';
 import type { WireResult } from '../lightweight/client.ts';
+import {parseGuideInput,guideQuestion} from '../guide/contracts.ts';
+import type {createGuideStore,GuideExecution} from './guide-store.ts';
+import {GuideDisabledError} from './guide-store.ts';
+import type {GuideWire} from '../guide/client.ts';
 
-type Store = ReturnType<typeof createLightweightStore>;
+type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>};
 type Dependencies = {
   enabled():boolean;
   authenticate():Promise<ChatActor|null>;
@@ -15,11 +19,15 @@ type Dependencies = {
   products(actor:ChatActor):Promise<readonly {sku:string;title:string}[]>;
   answer(actor:ChatActor,input:{thread:string;requestId:string;question:string;productSku:string;store:Store;reconcileOnly?:boolean;execution?:Execution},request:Request,progress:ActivityReporter):Promise<ChatAnswer>;
   cancel(actor:ChatActor,turnId:string,execution:Extract<Execution,{prepared:true}>,signal:AbortSignal):Promise<WireResult>;
+  guideEnabled?():boolean;
+  guideDeadlineMs?:number;
+  guideAnswer?(actor:ChatActor,thread:string,requestId:string,execution:GuideExecution,store:ReturnType<typeof createGuideStore>,request:Request,progress:ActivityReporter,reconcile?:boolean):Promise<ChatAnswer & {guideSucceeded?:boolean}>;
+  guideCancel?(actor:ChatActor,thread:string,requestId:string,execution:GuideExecution,signal:AbortSignal):Promise<GuideWire>;
 };
 const json = (value:unknown,status=200) => new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store'}});
 const status = (e:unknown) => e instanceof ChatStoreError ? ({not_found:404,conflict:409,invalid:400,unauthenticated:401,quota:429,unavailable:503})[e.code] : typeof e==='number' ? e : 503;
 const error = (s:number) => s===401?'unauthenticated':s===404?'not_found':s===409?'conflict':s===429?'quota':s===503?'unavailable':'invalid';
-const publicRead = ({thread,messages}:ChatRead) => ({thread,messages});
+const publicRead = ({thread,messages,projectMemory}:ChatRead) => ({thread,messages,...(projectMemory===undefined?{}:{projectMemory})});
 const object = (v:unknown):v is Record<string,unknown> => !!v && typeof v==='object' && !Array.isArray(v);
 const text = (v:unknown,max:number):v is string => typeof v==='string' && !!v.trim() && v.length<=max && !/\p{Surrogate}/u.test(v);
 async function body(request:Request) {
@@ -32,6 +40,8 @@ async function body(request:Request) {
 }
 
 export function createLightweightHandler(deps:Dependencies) {
+  const guideDeadlineMs=deps.guideDeadlineMs??30000;
+  if(!Number.isInteger(guideDeadlineMs)||guideDeadlineMs<1||guideDeadlineMs>30000)throw Error('Invalid guide deadline');
   async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'cancel',id?:string):Promise<Response> {
     try {
       if (request.method!==method) return new Response(null,{status:405,headers:{allow:method,'cache-control':'private, no-store'}});
@@ -48,7 +58,10 @@ export function createLightweightHandler(deps:Dependencies) {
       if(action==='create' && (Object.keys(input).some(k=>k!=='title') || (input.title!==undefined && !text(input.title,100))))throw 400;
       if(action==='archive' && (Object.keys(input).length!==1 || typeof input.archived!=='boolean'))throw 400;
       if(action==='cancel' && (Object.keys(input).some(k=>k!=='requestId') || (input.requestId!==undefined && (!uuid(input.requestId) || input.requestId!==input.requestId.toLowerCase()))))throw 400;
-      if(action==='message' && (Object.keys(input).some(k=>!['requestId','question','webSearch'].includes(k)) || !uuid(input.requestId) || !text(input.question,2000) || (input.webSearch!==undefined && input.webSearch!==false)))throw 400;
+      const guideInput=action==='message'&&Object.hasOwn(input,'guide')?parseGuideInput(input.guide):undefined;
+      if(action==='message' && (guideInput!==undefined
+        ? !guideInput || Object.keys(input).some(k=>!['requestId','guide'].includes(k)) || !uuid(input.requestId)
+        : Object.keys(input).some(k=>!['requestId','question','webSearch'].includes(k)) || !uuid(input.requestId) || !text(input.question,2000) || (input.webSearch!==undefined && input.webSearch!==false)))throw 400;
       if(method==='DELETE' && request.body) {const reader=request.body.getReader();try{while(true){const p=await reader.read();if(p.done)break;if(p.value.byteLength){await reader.cancel();throw 400;}}}finally{reader.releaseLock();}}
       const store=deps.store(actor);
       if(action==='list')return json(await store.list(url.search==='?archived=true'));
@@ -83,8 +96,10 @@ export function createLightweightHandler(deps:Dependencies) {
           }
           const turn=pending[0], execution=await store.execution(id!,turn.requestId);
           if(execution.prepared) {
-            let result:WireResult;
-            try { result=await deps.cancel(actor,turn.requestId,execution,request.signal); } catch { throw new ChatStoreError('unavailable'); }
+            let result:WireResult|GuideWire;
+            const guide=await store.guide?.execution(id!,turn.requestId);
+            if(guide&&!deps.guideCancel)throw new ChatStoreError('unavailable');
+            try { result=guide?await deps.guideCancel!(actor,id!,turn.requestId,guide,request.signal):await deps.cancel(actor,turn.requestId,execution,request.signal); } catch { throw new ChatStoreError('unavailable'); }
             if(result.state!=='rejected' || result.code!=='cancelled')throw new ChatStoreError('unavailable');
           }
           if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
@@ -96,6 +111,18 @@ export function createLightweightHandler(deps:Dependencies) {
       }
       const work=async(start:ChatRead,question:string,requestId:string,progress:ActivityReporter,execution?:Execution,workRequest:Request=request) => {
         progress('routing_question');
+        const guide=await store.guide?.execution(id!,requestId);
+        if(guide){
+          if(!deps.guideAnswer || !store.guide)throw new ChatStoreError('unavailable');
+          const controller=new AbortController(),abort=()=>controller.abort();workRequest.signal.addEventListener('abort',abort,{once:true});if(workRequest.signal.aborted)abort();
+          const boundedRequest=new Request(workRequest.url,{method:workRequest.method,headers:workRequest.headers,signal:controller.signal});
+          let timer:ReturnType<typeof setTimeout>|undefined;
+          const finish=async()=>{const answer=await deps.guideAnswer!(actor,id!,requestId,guide,store.guide!,boundedRequest,progress,Boolean(execution));
+            const current=await deps.current(actor);if(controller.signal.aborted || !current)throw new ChatStoreError('unauthenticated');
+            progress('saving_answer');await store.guide!.complete(id!,requestId,answer,answer.guideSucceeded===true);return release();};
+          try{return await Promise.race([finish(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new ChatStoreError('unavailable'));},guideDeadlineMs);})]);}
+          finally{clearTimeout(timer);workRequest.signal.removeEventListener('abort',abort);}
+        }
         const catalog=isUnscopedConversation(question)?[]:await deps.products(actor);
         let previous:string|undefined;
         for(const old of start.turns.filter(t=>t.status==='complete').slice(-12)) { const s=resolveChatScope(old.question,catalog,previous); previous=s.kind==='resolved'?s.productSku:undefined; }
@@ -122,9 +149,10 @@ export function createLightweightHandler(deps:Dependencies) {
         }
         return json(pending.length ? await release() : project(start));
       }
-      const question=(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
+      const question=guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
       if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unavailable');
-      const start=await store.begin(id!,requestId,question);
+      if(guideInput&&(!deps.guideEnabled?.()||!store.guide))throw new ChatStoreError('unavailable');
+      const start=guideInput?await store.guide!.begin(id!,requestId,guideInput):await store.begin(id!,requestId,question);
       const turn=start.turns.find(t=>t.requestId===requestId);
       if(!turn || turn.question!==question)throw new ChatStoreError('unavailable');
       if(turn.status==='complete')return json(await release());
@@ -139,7 +167,7 @@ export function createLightweightHandler(deps:Dependencies) {
         void work(start,question,requestId,progress,undefined,workRequest).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
       },cancel(){closed=true;workController.abort();}});
       return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});
-    } catch(e) { const s=status(e); return json({error:error(s)},s); }
+    } catch(e) { if(e instanceof GuideDisabledError)return json({error:'guide_disabled'},409);const s=status(e); return json({error:error(s)},s); }
   }
   return {
     listGET:(r:Request)=>handle(r,'GET','list'),createPOST:(r:Request)=>handle(r,'POST','create'),

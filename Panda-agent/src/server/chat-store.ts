@@ -1,6 +1,7 @@
 import type { InsForgeClient } from '@insforge/sdk';
 import type { Citation } from '../retrieval/contracts.ts';
 import { publicSearchCitationUrl, webSearchSection } from '../search/citation-url.ts';
+import {parseProjectMemory} from '../guide/contracts.ts';
 import { uuid, type ChatAnswer, type ChatMessage, type ChatRead, type ChatThread, type ChatTurn } from './chat-contracts.ts';
 
 export class ChatStoreError extends Error {
@@ -49,7 +50,9 @@ function turn(v: unknown): ChatTurn {
 }
 export function parseChatRead(v: unknown): ChatRead {
   if (!record(v) || !Array.isArray(v.messages) || v.messages.length > 200 || !Array.isArray(v.turns) || v.turns.length > 100) return bad();
-  return { thread: thread(v.thread), messages: v.messages.map(message), turns: v.turns.map(turn) };
+  const memory=v.projectMemory===undefined?undefined:parseProjectMemory(v.projectMemory);
+  if(memory===null)return bad();
+  return { thread: thread(v.thread), messages: v.messages.map(message), turns: v.turns.map(turn),...(memory===undefined?{}:{projectMemory:memory}) };
 }
 export function createChatStore(client: InsForgeClient) {
   async function rpc(name: string, args: Record<string, unknown>): Promise<unknown> {

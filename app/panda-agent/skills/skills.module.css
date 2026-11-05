@@ -1,0 +1,9 @@
+.screen { min-height:100dvh; padding:32px max(24px,calc((100vw - 1120px)/2)); background:var(--background); color:var(--foreground); }
+.header { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:40px; }
+.header a { color:inherit; text-decoration:none; }
+.header a:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:600; }
+.brand img { background:white; border-radius:8px; }
+.screen h1 { font-size:30px; margin:0 0 8px; }
+.screen>p { margin:0 0 28px; }
+@media(max-width:600px){.screen{padding:20px 16px;}.header{margin-bottom:28px;gap:12px;}}
