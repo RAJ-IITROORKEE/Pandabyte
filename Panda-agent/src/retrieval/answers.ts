@@ -138,7 +138,8 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         if (!await scopeUnchanged(fragments.map(fragment => fragment.handle)))
             return { kind: 'unavailable' };
         activity('searching_sources', { fragments: fragments.length, characters: 20000 - remaining, duplicatesRemoved, limitCharacters: 20000 });
-        const result = await adapters.select(input.question, fragments, { revalidate: () => scopeUnchanged(fragments.map(fragment => fragment.handle)) });
+        const completeEligibleScope = handles.length <= 8 && fragments.length === handles.length && duplicatesRemoved === 0 && fragments.every(f => byHandle.get(f.handle)?.text === f.text);
+        const result = await adapters.select(input.question, fragments, { revalidate: () => scopeUnchanged(fragments.map(fragment => fragment.handle)), completeEligibleScope });
         if (!result || Object.keys(result).some(k => k !== 'selections') || !Array.isArray(result.selections) || result.selections.length > 4)
             return { kind: 'unavailable' };
         const seen = new Set<string>();

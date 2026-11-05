@@ -37,6 +37,29 @@ test('noncomplete response union is matched to HTTP status exactly', () => {
  assert.throws(()=>verify(200,{version:1,state:'complete',selections:[],usage:{modelCalls:0,inputTokens:0,outputTokens:0,costNanoUsd:0}}));
  assert.throws(()=>verify(200,{version:1,state:'complete',selections:[],usage:{modelCalls:1,inputTokens:0,outputTokens:0,costNanoUsd:1}}));
 });
+test('mode is bound to select digest and pins receipt usage validation',async()=>{
+ const mode='deterministic-mcu-v1', prepared=prepareSelect({...request,mode}), model=prepareSelect(request), nonce='22222222-2222-4222-8222-222222222222';
+ assert.notEqual(prepared.requestBodySha256,model.requestBodySha256);assert.equal(JSON.parse(prepared.body).mode,mode);
+ const body=JSON.stringify({version:1,state:'complete',selections:[{handle:'h',quote:'exact quote'}],usage:{modelCalls:0,inputTokens:0,outputTokens:0,costNanoUsd:0}});
+ const params={status:200,body,receipt:receipt(nonce,prepared.requestBodySha256,body),secret,nonce,bodySha256:prepared.requestBodySha256,fragments:request.fragments};
+ assert.equal(verifyResponse({...params,mode}).state,'complete');assert.throws(()=>verifyResponse(params));
+ const modelBody=JSON.stringify({version:1,state:'complete',selections:[],usage:{modelCalls:1,inputTokens:0,outputTokens:0,costNanoUsd:0}});
+ assert.throws(()=>verifyResponse({...params,body:modelBody,receipt:receipt(nonce,prepared.requestBodySha256,modelBody),mode}));
+ assert.throws(()=>prepareSelect({...request,mode:'other'}));
+ const client=createLightweightClient({baseUrl:'http://127.0.0.1:1234',secret,mode,fetch:async()=>assert.fail('mismatch must not send')});
+ await assert.rejects(client.select({subject:'user',sessionId:'session',prepared:model}));
+});
+test('deterministic status uses configured mode and preserves original digest',async()=>{
+ const mode='deterministic-mcu-v1',prepared=prepareSelect({...request,mode}),seen=[];
+ const client=createLightweightClient({baseUrl:'http://127.0.0.1:1234',secret,mode,fetch:async (url,init)=>{
+  const claims=JSON.parse(Buffer.from(init.headers.authorization.split(' ')[1].split('.')[0],'base64url').toString());
+  const body=JSON.stringify({version:1,state:'complete',selections:[{handle:'h',quote:'exact quote'}],usage:{modelCalls:0,inputTokens:0,outputTokens:0,costNanoUsd:0}});
+  seen.push({path:new URL(url).pathname,body:JSON.parse(init.body),claims});
+  return new Response(body,{status:200,headers:{'x-panda-receipt':receipt(claims.nonce,claims.bodySha256,body)}});
+ }});
+ assert.equal((await client.status({subject:'user',sessionId:'session',turnId,productSku:'SKU',requestBodySha256:prepared.requestBodySha256,fragments:request.fragments})).state,'complete');
+ assert.deepEqual(seen[0].body,{version:1,turnId,requestBodySha256:prepared.requestBodySha256});assert.equal(seen[0].claims.bodySha256,hex(JSON.stringify(seen[0].body)));assert.equal(seen[0].path,'/v1/evidence/status');
+});
 test('external abort reaches transport before or during fetch and removes its listener without retry', async () => {
  for(const abortFirst of [true,false]) {
   const controller=new AbortController();let calls=0, added=0, removed=0;

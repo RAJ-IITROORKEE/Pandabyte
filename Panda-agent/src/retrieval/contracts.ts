@@ -92,7 +92,7 @@ export type Adapters = {
     select(question: string, fragments: Array<{
         handle: string;
         text: string;
-    }>, context?: { revalidate(): Promise<boolean> }): Promise<{
+    }>, context?: { revalidate(): Promise<boolean>; completeEligibleScope?: boolean }): Promise<{
         selections: Selection[];
     }>;
 };

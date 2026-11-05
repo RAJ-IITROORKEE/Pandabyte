@@ -9,6 +9,7 @@ type Store = ReturnType<typeof createLightweightStore>;
 type Input = {thread:string;requestId:string;question:string;productSku:string;store:Store;reconcileOnly?:boolean;execution?:Execution};
 type Resolve = (actor:ChatActor,input:Input) => ReturnType<ReturnType<typeof createInsforgeAdapters>['resolveIdentity']>;
 export function createLightweightAnswer(deps:{
+  mode?:'deterministic-mcu-v1';
   current:(subject:string,sessionId:string)=>Promise<boolean>;
   clientForActor:(actor:ChatActor)=>ReturnType<typeof createLightweightClient>;
   resolveIdentity?:Resolve;
@@ -27,6 +28,7 @@ export function createLightweightAnswer(deps:{
     const client=deps.clientForActor(actor);
     let execute=false;
     const result=await (deps.evidence ?? answerWithLightweight)({
+      ...(deps.mode ? {mode:deps.mode} : {}),
       subject:actor.subject,sessionId:actor.sessionId,turnId:input.requestId,productSku:scope.sku,question:input.question,ragClient:actor.client,
       beforeDispatch:async({requestBodySha256})=>{
         if(request.signal.aborted || !await deps.current(actor.subject,actor.sessionId!))throw new ChatStoreError('unauthenticated');

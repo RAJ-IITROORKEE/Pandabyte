@@ -25,6 +25,27 @@ test('valid answer projects trusted citation and rechecks scope', async () => {
     assert.deepEqual(result, { kind: 'evidence', citations: [{ id: 'S1', title: 'Product listing', sourceUrl: 'https://pandabyte.in/product-page/a', capturedAt: '2026-10-30T00:00:00Z', quote: '4 pins', sectionPath: ['Specifications'] }] });
     assert.equal(x.calls.filter(c => c === 'scope').length, 3);
 });
+test('selector context reports complete coverage only when every eligible full body is included',async()=>{
+ for(const mode of ['complete','omitted','duplicate','overbudget','morethan8']) {
+  const x=make({ranking:{mode:'lexical'}}), base=chunk().handle;
+  const count=mode==='morethan8'?9:mode==='complete'?1:2;
+  x.scope.chunks=Array.from({length:count},(_,i)=>{const h=base.replace('000000000001:',`${String(i+1).padStart(12,'0')}:`),text=mode==='duplicate'?'same':mode==='overbudget'?`${i}`+'x'.repeat(11000):`text ${i}`;return chunk(h,{text,textHash:hash(text)});});
+  x.adapters.lexical=async()=>x.scope.chunks.slice(0,mode==='omitted'?1:count).map(c=>c.handle);
+  let coverage; x.adapters.select=async(_q,fs,context)=>{coverage=context.completeEligibleScope;return {selections:[]};};
+  assert.equal((await ask(x.adapters)).kind,'insufficient');assert.equal(coverage,mode==='complete',mode);
+ }
+});
+test('coverage-gated selector never dispatches incomplete or revoked scope',async()=>{
+ for(const scenario of ['overflow','duplicate','revoked']){
+  const x=make({ranking:{mode:'lexical'}}),base=chunk().handle;let dispatches=0, reads=0;
+  const count=scenario==='overflow'?9:scenario==='duplicate'?2:1;
+  x.scope.chunks=Array.from({length:count},(_,i)=>{const h=base.replace('000000000001:',`${String(i+1).padStart(12,'0')}:`),text=scenario==='duplicate'?'same':`text ${i}`;return chunk(h,{text,textHash:hash(text)});});
+  x.adapters.lexical=async(_q,handles)=>handles;
+  x.adapters.currentScope=async()=>++reads===2 && scenario==='revoked'?null:structuredClone(x.scope);
+  x.adapters.select=async(_q,_f,context)=>{if(!context.completeEligibleScope || !await context.revalidate())throw Error('incomplete');dispatches++;return {selections:[]};};
+  assert.equal((await ask(x.adapters)).kind,'unavailable');assert.equal(dispatches,0,scenario);
+ }
+});
 test('signed out and spoofed or oversized input reject before adapters', async () => {
     const x = make();
     assert.equal((await answerQuestion(null, { question: 'x' }, x.adapters)).kind, 'unauthorized');
