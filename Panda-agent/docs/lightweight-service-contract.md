@@ -4,6 +4,8 @@ Agreed Phase 2 implementation contract, 5 November 2026. Branch `codex/panda-age
 
 ## Ownership and paths
 
+Phase 4 also passed its distinct [guide/registry/memory amendment](lightweight-phase4-contract.md) and [verification](verification/lightweight-phase4-20261105.json): a separate signed guide kind, bounded deterministic graph and owner intent memory, with current reviewed guide v1 restored at registry version 7. The base QA wire below remains its own boundary. Phase 5 is now explicitly resumed for [preflight and contract work](lightweight-phase5-contract.md); no diagnostic/vendor/vision wire is accepted merely by that start.
+
 | Owner | Write scope | Initial failing acceptance case |
 | --- | --- | --- |
 | Terra runtime | `Panda-agent/services/lightweight/` including private FastAPI, pinned Python dependencies, Dockerfile, SQLite journal and Python tests | Signed bounded request returns literal selections and verifiable receipt; changed payload/replayed nonce/unknown dispatch never causes a second provider call |

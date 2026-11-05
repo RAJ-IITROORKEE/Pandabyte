@@ -1,8 +1,8 @@
 {
   "phase": 4,
   "date": "2026-11-05",
-  "result": "IN_PROGRESS",
-  "lastPassingPhase": 3,
+  "result": "PASS",
+  "lastPassingPhase": 4,
   "branch": "codex/panda-agent-fastapi-replacement",
   "sourceParent": "7411a2344e283ed8fcf08b6d82bae256f79d594a",
   "sourceCommit": "72902032ff95c2b399e33d60bb936435821b227a",
@@ -91,10 +91,10 @@
     "tool": "Codex built-in browser operated by Root",
     "url": "http://localhost:3001/panda-agent",
     "adminRoute": "/panda-agent/skills",
-    "adminLifecycleReported": ["review v1", "enable v1", "review v2", "enable v2", "rollback v1"],
+    "adminLifecycleReported": ["review v1", "enable v1", "review v2", "enable v2", "rollback v1", "disable v1", "re-enable v1"],
     "currentReportedSkillVersion": 1,
-    "currentReportedRegistryVersion": 6,
-    "currentGuideRegistryEnabled": false,
+    "currentReportedRegistryVersion": 7,
+    "currentGuideRegistryEnabled": true,
     "nonAdminAccessDeniedReported": true,
     "xLoRaGuideReported": "Conceptual parking plan; no approved facts/citations; TRIG/ECHO unresolved; no compiled-code or hardware claim",
     "eightGuideCompactionAndReload": {"status": "PASS", "successfulGuideTurns": 8, "reloadMemoryVersion": 8, "reloadGuideTurns": 8, "reloadCompactions": 1, "reloadGoal": "Build an xLoRa parking monitor with calibration and missing revision questions", "reloadOpenQuestions": ["revision", "wiring", "framework", "component-specifications"]},
@@ -102,8 +102,9 @@
     "mobileViewport": {"recordedWidth": 390, "recordedHeight": 844, "reset": true, "phase7NetworkPerformanceClaim": false},
     "guideDisableAndQaPreserved": {"status": "PASS in actual Codex browser receipt independently inspected by Sol", "nextGuideDenied": true, "inputsRetained": true, "cancelOrStatusUncertainty": false, "ordinaryQaExactQuote": "Microcontroller: ESP8266", "ordinaryQaSavedCitationCount": 1},
     "ownerRestored": "Actual owner Google SSO and ADMIN confirmed by Root",
-    "nativeDialog": {"type": "permanent-delete confirmation for one newly created owner QA test chat", "confirmed": false, "cancelRequestedFromUser": true, "cancelPending": true, "newOwnerQaTestChatRetained": true, "earlierOwnerHistoryPreserved": true},
-    "resumeAfterCancel": {"skillsTab": 13, "action": "Enable reviewed guide v1 once using prefilled reason and expectedVersion6", "expectedEnabledRecordVersion": 7, "verifyOwnerDisplayNameWithoutPublishingIt": true, "newOwnerQaChatCleanup": "recoverable archive only; match newly created Which MCU chat, preserve older or xC5 history"}
+    "nativeDialog": {"type": "historical permanent-delete confirmation for one newly created owner QA test chat", "confirmed": false, "cancelRequestedFromUser": true, "cancelPending": false, "noLongerPresent": true, "newOwnerQaTestChatRetained": true, "earlierOwnerHistoryPreserved": true},
+    "historicalResumeAfterCancel": {"skillsTab": 13, "action": "Enable reviewed guide v1 once using prefilled reason and expectedVersion6", "expectedEnabledRecordVersion": 7, "verifyOwnerDisplayNameWithoutPublishingIt": true, "newOwnerQaChatCleanup": "recoverable archive only; match newly created Which MCU chat, preserve older or xC5 history", "completed": true},
+    "finalRestoration": {"receiptIndependentlyInspected": true, "buildId": "JwrDfXDCg_UpDvrsFw8Hq", "nativeDialogNoLongerPresent": true, "permanentDeleteAccepted": false, "newOwnerQaStillExists": true, "newOwnerQaRecoverablyArchived": true, "archiveListReadback": true, "earlierOwnerHistoryPreserved": true, "ownerGoogleAccountRestored": true, "actualAdminGuideEnabled": true, "guideActiveVersion": 1, "guideRegistryVersion": 7, "enabledStateSurvivedPageReload": true}
   },
   "preservedAttempts": [
     "Older local runtime venv lacked LangGraph: 43 passed, one failed and one errored; final adopted ARM image passes all 45.",
@@ -113,14 +114,10 @@
     "Prepared guide catalog invalidation formerly stranded reconciliation; failing-first regression now returns no-quote SQL-fenced terminal proposal while outages remain pending.",
     "Initial v2 helper expected different checklist wording; actual BFF readback verified the observation-checklist behavior.",
     "Root integration tests first used default port3000 and failed connection; explicit port3001 environment rerun passed12/12.",
-    "Unconfirmed native permanent-delete dialog blocks further browser mutation; user cancellation pending, no delete confirmed."
+    "Unconfirmed native permanent-delete dialog temporarily blocked browser mutation; later cleared without accepted deletion, followed by actual re-enable and recoverable archive readback."
   ],
   "rollback": "Use the reviewed Phase4 image with guides OFF; preserve the expanded SQLite journal. Older Phase3 positional inserts are incompatible. Whole app OFF is honest disabled, never legacy fallback.",
-  "pendingSignoff": [
-    "cancel native browser permanent-delete dialog without confirming deletion",
-    "re-enable reviewed guide v1 and verify final owner/registry state",
-    "recoverably archive only the new owner QA test chat; preserve earlier histories"
-  ],
+  "pendingSignoff": [],
   "limitations": [
     "No live model, vision, tools, compiled firmware or hardware execution accepted.",
     "No actual canonical-source withdrawal or corpus/candidate widening occurred.",
@@ -128,5 +125,5 @@
     "Phase4 resource observations do not replace Phase7 constrained production performance comparisons.",
     "No push, merge, Vercel rollout or public AWS endpoint."
   ],
-  "nextPhase": {"phase": 5, "status": "PENDING until Phase4 PASS"}
+  "nextPhase": {"phase": 5, "status": "IN_PROGRESS: explicit user PROCEED; preflight and contract only before interface freeze/implementation"}
 }
