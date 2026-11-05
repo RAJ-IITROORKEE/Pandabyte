@@ -1,0 +1,328 @@
+{
+  "phase": 4,
+  "status": "IN PROGRESS; candidate preflight only",
+  "candidate": "langgraph==1.2.20",
+  "source": "https://pypi.org/project/langgraph/1.2.20/",
+  "resolverExit": 0,
+  "requestedWheelTarget": "CPython3.12 manylinux2014_aarch64",
+  "host": "Windows; environment markers still require actual Linux verification",
+  "existingRuntimePins": 17,
+  "resolvedPackages": 44,
+  "additionalPackages": 27,
+  "runtimePackagesInstalled": 0,
+  "runtimeManifestChanged": false,
+  "containerChanged": false,
+  "licenseEvidence": "Package metadata declarations only; wheel license/notice texts, bundled components and obligations still require inspection before adoption",
+  "containerSizeStartupMemoryMeasured": false,
+  "providerEnabled": false,
+  "packages": [
+    {
+      "name": "langgraph",
+      "version": "1.2.20",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "2b9fd01c3d5e0652e6c9b436dc0341413788010eb279ac8c46a733cf485d848b"
+    },
+    {
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0"
+    },
+    {
+      "name": "anyio",
+      "version": "4.16.0",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "c66ae634e0b8228396b801741beb3294326d4b6102f7bba4041c0dfb58c29026"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.10.23",
+      "existingRuntime": true,
+      "declaredLicense": "MPL-2.0",
+      "wheelSha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "existingRuntime": true,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+    },
+    {
+      "name": "fastapi",
+      "version": "0.162.0",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "3785963de305dd09912426cb81f2d230fce98ab3521cdfe97265c8d14983128c"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "existingRuntime": true,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "existingRuntime": true,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "existingRuntime": true,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c"
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.2",
+      "existingRuntime": true,
+      "declaredLicense": "Apache-2.0",
+      "wheelSha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.14.2",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "7efbf7507b937931cd32a5755acb00ea1cf5ccb1d4e8067a5850d5069e382118"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.50.2",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "43a8fd56f3c681f3cda2d5c842ad28e88241df742dfcbe8fd1dd437a3056e1f6"
+    },
+    {
+      "name": "starlette",
+      "version": "1.10.0",
+      "existingRuntime": true,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "478c0ab3b4ced6e82719849c118fa406f0278a3499c1a898cd15cd31bdc38ce4"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.5",
+      "existingRuntime": true,
+      "declaredLicense": "MIT",
+      "wheelSha256": "bc210535442b39e1bf2805e0c7a17dfd6a4ace760c84c7f7d16245d23a6b1c39"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "existingRuntime": true,
+      "declaredLicense": "PSF-2.0",
+      "wheelSha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "existingRuntime": true,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf"
+    },
+    {
+      "name": "langchain-core",
+      "version": "1.7.6",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "f61908be526fbeb5da8cc1ffd9d24bce3b50cf45b3a2f1737c1a7a2958046ce6"
+    },
+    {
+      "name": "langgraph-checkpoint",
+      "version": "4.3.1",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "215a826935c8db4d9676e79fd95943e5b3847d78604390898e1d98581cc594e5"
+    },
+    {
+      "name": "langgraph-prebuilt",
+      "version": "1.1.1",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "fae17c22562e501940eb7aa052a15c58a431febbabf33f8ad172e1b44354a7e4"
+    },
+    {
+      "name": "langgraph-sdk",
+      "version": "0.4.13",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "c1c7e586653989c37cc0eb4d016b3154d69386d5fc31208224477f560657455f"
+    },
+    {
+      "name": "xxhash",
+      "version": "4.0.2",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-2-Clause",
+      "wheelSha256": "1fce8df7958f0828bd78d2ecfd9b11510abff9edc0e28fa7f7ca0ddcee2f0a8b"
+    },
+    {
+      "name": "jsonpatch",
+      "version": "1.42",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "0a94e8725b8b53cafdf3eba3112a7ccd31ea420bb04e6374096d9d17bf4563e9"
+    },
+    {
+      "name": "langchain-protocol",
+      "version": "0.0.20",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "3c935e5e46b0f6f9cb52f45ba7cfa53d1b9fa80c82c4a277d47f03e07f7385b1"
+    },
+    {
+      "name": "langsmith",
+      "version": "0.14.17",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "0aa2c79936c93c7cea9c55656f05e21cc5da715fecbdbda439d084adc08429be"
+    },
+    {
+      "name": "orjson",
+      "version": "3.13.0",
+      "existingRuntime": false,
+      "declaredLicense": "MPL-2.0 AND (Apache-2.0 OR MIT)",
+      "wheelSha256": "ae1d895cf7bbfd50ef34bb63bb727b14514f259f3e3f8dd010783bd38e864c6e"
+    },
+    {
+      "name": "ormsgpack",
+      "version": "1.13.0",
+      "existingRuntime": false,
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "wheelSha256": "a22d85e6010676b8a6e9024c4f7fdeb56953684ea6679cc084d0ecb7d768b572"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "existingRuntime": false,
+      "declaredLicense": "Apache-2.0 OR BSD-2-Clause",
+      "wheelSha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "9149cad251584d5fb4981be1ecde53a1ca46c891a79788c0df828d2f166bda28"
+    },
+    {
+      "name": "tenacity",
+      "version": "9.2.1",
+      "existingRuntime": false,
+      "declaredLicense": "Apache-2.0",
+      "wheelSha256": "9e56f17539296baab7beabb08b92f6ee3d7be92d8be72d763360677c2ad6580e"
+    },
+    {
+      "name": "uuid_utils",
+      "version": "0.19.0",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "82573c0e5090732c0ae2e18626e06cb35fe7cfcf6fe9534d4c1638af41d25d36"
+    },
+    {
+      "name": "websockets",
+      "version": "17.4",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "51adfc30f467077293a6695d8149bcef501c0728386f3a491054f835dadb60b2"
+    },
+    {
+      "name": "distro",
+      "version": "1.9.0",
+      "existingRuntime": false,
+      "declaredLicense": "Apache License, Version 2.0",
+      "wheelSha256": "7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"
+    },
+    {
+      "name": "httpx2",
+      "version": "2.16.0",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "fd2c5d7909e8d86fe92d53020c310ca0e4e431b838c207c5754b9bbf0308d49a"
+    },
+    {
+      "name": "httpcore2",
+      "version": "2.16.0",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "5c4358319f2602d984ad93182c9fee5160f22e9da7babdda870a5e7c4e2dc34f"
+    },
+    {
+      "name": "jsonpointer",
+      "version": "3.8",
+      "existingRuntime": false,
+      "declaredLicense": "Modified BSD License",
+      "wheelSha256": "d69af85adaea202111bbc931067ead68dc16bca4592c74e1a1953152e2a330ab"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "existingRuntime": false,
+      "declaredLicense": "Apache-2.0",
+      "wheelSha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
+    },
+    {
+      "name": "requests-toolbelt",
+      "version": "1.0.0",
+      "existingRuntime": false,
+      "declaredLicense": "Apache 2.0",
+      "wheelSha256": "cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"
+    },
+    {
+      "name": "zstandard",
+      "version": "0.25.0",
+      "existingRuntime": false,
+      "declaredLicense": "BSD-3-Clause",
+      "wheelSha256": "6dffecc361d079bb48d7caef5d673c88c8988d3d33fb74ab95b7ee6da42652ea"
+    },
+    {
+      "name": "sniffio",
+      "version": "1.3.1",
+      "existingRuntime": false,
+      "declaredLicense": "MIT OR Apache-2.0",
+      "wheelSha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "b91363207bd9dc966a691e959bb47f64b30f7ac4b072be9968b366982f7db77c"
+    },
+    {
+      "name": "truststore",
+      "version": "0.10.5",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "9aaaedaefaf06d8b206278cf8b5012bc897f485a874503501e12d776df78951c"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "existingRuntime": false,
+      "declaredLicense": "MIT",
+      "wheelSha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+    }
+  ]
+}

@@ -2,16 +2,16 @@
 
 - Latest authorization (5 November 2026): finish Phase 1, then build a **fresh** lightweight agent/Docker FastAPI runtime on a **separate feature branch**, preserving UI and approved RAG/auth/history protections. Remove old orchestration from the replacement caller; switch OFF is honest disabled/unavailable, never legacy fallback. Owner approved reusing the existing Panda Agent AWS host **if capacity permits**, not a new host. See [replacement scope and AWS gates](lightweight-replacement-contract.md). Earlier blanket no-deployment/default-legacy notes are historical where superseded. Private task-owned build/container tests are recorded below; no production cutover or general-assistant acceptance has occurred.
 - Branch: `codex/panda-agent-fastapi-replacement` (fresh replacement branch; baseline control retained as `codex/panda-agent-lightweight-rag`)
-- Tested code checkpoint: `c704da1aa6699af91889879cdc3b5e4f24bf6fae` (20 reviewed files); attempt parent `4b2e67ff182527d01d8ae248148f711a06598189`, clean before attempt 2. Final committed source diff fingerprint is recorded below; the prior attempt's `f5d7419` remains historical evidence.
+- Tested code checkpoint: **`198ee4de8d8700487c9c3168ba2e7fa3b9644891`** (Phase 3; parent `bf98a9dd0be9cd073a3a2e0db0367603024f24ef`). Source diff SHA-256 **`4171276ef1fa08a59dfddceba435bb3d8eb81fe831d451d2f23dab3e64a77a2f`**, independently verified below. Prior phase/attempt checkpoints remain historical evidence.
 - Base SHA: `a3a4756fa514af780ae6a1e138d7aeddd36c77bc` (fetched `origin/main`, 5 November 2026)
-- Current phase: 3 — PASS (guardrails/recovery under the explicitly user-authorized alternative method; final build `5loZYJ4dLTNmH9iWdHOqp`)
+- Current phase: 4 — IN PROGRESS (contract, source/license/dependency and Admin/data-boundary review only; no guide/skill feature acceptance)
 - Last passing phase: 3
-- Current checkpoint: the user resumed Phase 3 and explicitly selected Codex browser testing and validation. Preserve Phase 2 evidence; use disposable development records and reversible fault injection.
+- Current checkpoint: Phase 3 committed and accepted under the documented user-authorized alternative. The brief continues Phase 4 automatically; its start is recorded before implementation/delegation, with dependency/design gates still open.
 - Active URL: `http://localhost:3001/panda-agent` (final Phase 3 recovery build `5loZYJ4dLTNmH9iWdHOqp`, ON in explicit deterministic mode).
 - Process status: official direct Next production server `3001`, owned exec `50713`; authenticated private SSM tunnel exec `43852` to loopback 8182. The barrier/counting helpers are stopped; no 8183 dependency remains. Private deterministic worker health/readiness 200/200, OpenRouter OFF. Port `3000` belongs to another app; preserve it. Earlier process/port reports below are historical. Do not stop unrelated processes.
-- Next action: Root records the Phase 3 source fingerprint, durable verification and local checkpoint commit. Then start Phase 4 automatically under the brief, recording its start and agreed contract before delegation; current Phase 4 work is preparatory review only. Keep OpenRouter OFF, the owner session/corpus/gateway preserved, and no push/merge/Vercel rollout.
+- Next action: finish Task 1's actual candidate wheel license/notice/bundled-component review, then the isolated Linux/ARM64 compatibility and resource measurement in the [dependency proof plan](../../docs/superpowers/plans/2026-11-05-panda-agent-guide-dependency-proof.md). Only after that gate, settle the exact guide/skill/memory wire/spec and bounded implementation scopes. Reuse the accepted simple-query path; keep OpenRouter OFF and owner/corpus/gateway preserved. Root owns shared manifests, migrations, integration and operations; no push/merge/Vercel rollout.
 - Environment: Windows, Node 24.18.0, npm; managed worktree `C:/Users/rajra/.codex/worktrees/panda-agent-lightweight-rag/Pandabyte`, reused on the separately created replacement branch from Phase 1 checkpoint `bfe4683435196885c954f09470f8046165999e50`. Branch/HEAD/clean status verified before edits. Local Docker absent; the approved existing AWS host runs the isolated reviewed replacement container with provider OFF. The old gateway/data remain preserved; no production cutover or general-assistant acceptance.
-- Overall: Phases 1–3 PASS within their documented scopes and authorized test method. Phases 4–8 PENDING. No general assistant, live-model, actual canonical-withdrawal or production-readiness claim.
+- Overall: Phases 1–3 PASS within their documented scopes and authorized test method. Phase 4 IN PROGRESS; Phases 5–8 PENDING. No general assistant, live-model, actual canonical-withdrawal or production-readiness claim.
 
 ## Initial ownership and authorization (historical; latest steering above governs)
 
@@ -26,7 +26,7 @@ Configured contract/review lead and final tracker owner: `gpt-6.1-sol`, high, ag
 | 1 | PASS | Baseline/control, source/contract review, real first-party browser/resource reconciliation and final 152-test/lint checks complete; mobile/network-profile comparison remains Phase 7 |
 | 2 | PASS | Real approved MCU-field quote/citation, private deterministic receipt, one protected save/reload, keyboard/cancel/focus/narrow/long-thread/scroll/rollback checks; manual announcement verification is user-reported |
 | 3 | PASS | Genuine A/B API isolation, connected source-DI/private-HTTP races, real disposable SQL fences, Codex cancel/recovery/happy path and cleanup; no claim of canonical withdrawal or two browser profiles |
-| 4 | PENDING | Bounded student guide and reviewed Admin skill lifecycle |
+| 4 | IN PROGRESS | Guide/skill/memory contract and dependency review started; implementation and real Admin/browser acceptance pending |
 | 5 | PENDING | Private screenshot flow, reviewed vendor scope, tool contracts |
 | 6 | PENDING | Real restricted MCP fetch and bounded agentic retrieval |
 | 7 | PENDING | Production browser delta and constrained Docker measurements |
@@ -437,18 +437,39 @@ Sol inspected final cleanup receipts: **3 disposable Clerk users verified absent
 
 Root stopped only the loopback barrier (exec `54225`) and counted server. Official direct Next server **`50713` on 3001** serves this same final build through authenticated private SSM tunnel **`43852` to 8182**; no 8183/helper dependency remains. Existing gateway/corpus/owner records remain preserved. **Phase 3 PASS, last passing phase 3**, with explicit limits: no two isolated browser profiles, no actual canonical source withdrawal, no live model inference/timeout, no load/peak/production rollout claim. Root now records the final durable verification/source fingerprint/commit. **Phase 4 remains PENDING until its start is recorded after the checkpoint, then continues automatically under the brief**; preparing its contract is review only, not implementation.
 
+**Committed Phase 3 checkpoint:** `198ee4de8d8700487c9c3168ba2e7fa3b9644891`, parent `bf98a9dd0be9cd073a3a2e0db0367603024f24ef`, 21 source files / 24 total files including documentation/evidence; Root reported clean status after commit. Sol independently verified HEAD and reproduced raw binary source diff SHA-256 **`4171276ef1fa08a59dfddceba435bb3d8eb81fe831d451d2f23dab3e64a77a2f`** using:
+
+```text
+git diff --binary bf98a9dd0be9cd073a3a2e0db0367603024f24ef 198ee4de8d8700487c9c3168ba2e7fa3b9644891 -- .env.example README.md Panda-agent app/api/panda-agent app/panda-agent/page.tsx :(exclude)Panda-agent/docs :(exclude)Panda-agent/src/ui/README.md :(exclude)Panda-agent/services/lightweight/README.md
+```
+
+Sol reviewed [durable Phase 3 verification](verification/lightweight-phase3-20261105.json): scope, test modes, genuine A/B API identity and query proof, actual SQL fences, final Codex cancellation/recovery, exact cleanup and limitations agree with the recorded evidence. The final connected-test report contains **8 cases**, adding post-save redaction to the earlier seven-case checkpoint, with synthetic constructor scope/auth/store plus real private HTTP/HMAC; the actual SQL five-case exact-quote projection result stays separately labeled. The hash excludes the listed documentation paths, does not self-hash this amendment, and is not the image/global repository hash. This follow-up changes documentation only; accepted Phase 3 runtime/build/results are unchanged.
+
+## Phase 4 attempt 1 — started 5 November 2026, review gate
+
+Phase 3 PASS/checkpoint is complete. The brief now starts Phase 4 automatically. Starting commit **`198ee4de8d8700487c9c3168ba2e7fa3b9644891`**, same branch/worktree, last passing phase **3**; Phase 4 **IN PROGRESS**, Phases **5–8 PENDING**. Root reported clean checkpoint status; Sol independently verified HEAD. This start is recorded before guide/skill implementation. Current work is bounded source/license/dependency, interface and security review; no Phase 4 feature or deployment acceptance is claimed.
+
+The [Phase 4 review contract](lightweight-phase4-contract.md) defines the intended opt-in guide, bounded memory, genuine ADMIN bundled-skill lifecycle and real exit gates. Its concrete route/schema/private wire and exact pinned coordinator closure must be settled before Terra implementation assignments. Root reviews the brief's recommended LangGraph choice, source/licenses/transitive footprint and resource compatibility; no dependency install/manifest change follows just from a candidate name. OpenRouter remains OFF. Simple product questions retain the accepted fast path; no duplicate graph/state owner, developer-skill execution or expanded corpus/source grant.
+
+Read-only Terra inventories report the branch lacks guide/project/registry/activation/version/rollback/compaction implementations. Existing fragment telemetry is not memory, and ADMIN Control Room review/inspection is not a skill registry. The reviewed release comparison workflow is reference-only, with no branch merge or implicit native dependency import. Root owns shared manifests, migrations, integration/auth and operations; Sol owns contracts/handoff/review; exact bounded Terra file scopes follow the final agreed wire/dependency gate. No new guide runtime, SQL, provider operation or browser feature result is claimed by this documentation start.
+
+**Dependency preflight, no adoption:** Root recorded the [dependency proof plan](../../docs/superpowers/plans/2026-11-05-panda-agent-guide-dependency-proof.md) and [sanitized candidate preflight](verification/lightweight-phase4-dependency-preflight-20261105.json). Official PyPI candidate metadata identifies `langgraph==1.2.20` as MIT. An isolated PyPI dry run targeting CPython 3.12/manylinux2014_aarch64 exited 0 and resolved **44 packages: 17 existing pins unchanged + 27 additions**. Sol independently verified 44 unique package records, hash fields and exact equality of the 17 existing versions with current runtime requirements. This is resolver/metadata evidence only; Windows environment markers do not prove an actual Linux installation or binary compatibility.
+
+The candidate closure includes LangSmith and HTTPX2 and declares `orjson` as `MPL-2.0 AND (Apache-2.0 OR MIT)`; do not label the whole closure MIT or infer full shipped-component obligations from metadata. Task 1 still needs actual wheel license/notice/component inspection, then Task 2 needs an isolated hash-pinned ARM64/Linux build, no-egress/no-model graph tests and actual image/startup/idle/peak/deadline/cancellation measurements. Root reports **zero packages installed, no runtime requirements/manifest/container change and no provider activation** from this dry run. Phase 4 remains IN PROGRESS, with no dependency adoption or guide/skill acceptance. Final direct Codex reload and expanded citation confirmed the normal accepted app after barrier removal; that is Phase 3 operational continuity, not a Phase 4 feature test.
+
 ## Current resume
 
-Current local app is `.next-lightweight-phase2-acceptance` on **3001**, explicit deterministic mode ON. OpenRouter remains OFF. Recheck owned processes before starting anything; port 3000 belongs to another app. To reproduce the accepted local assistant from the managed worktree:
+Current local app is `.next-lightweight-phase3-recovery` on **3001**, explicit deterministic mode ON. OpenRouter remains OFF. Recheck owned processes before starting anything; port 3000 belongs to another app. To reproduce the accepted local assistant from the managed worktree, with its existing explicit namespaced Agent configuration provided locally:
 
 ```powershell
-$env:PANDABYTE_NEXT_DIST_DIR = '.next-lightweight-phase2-acceptance'
+$env:PANDABYTE_NEXT_DIST_DIR = '.next-lightweight-phase3-recovery'
 $env:PANDA_AGENT_LIGHTWEIGHT_MODE = 'deterministic-mcu-v1'
 $env:PANDA_AGENT_LIGHTWEIGHT_ENABLED = 'true'
+$env:PANDA_AGENT_LIGHTWEIGHT_URL = 'http://127.0.0.1:8182'
 node Panda-agent/infra/lightweight/artifacts/launch-baseline.cjs 'E:/Web development/PROJECTS-FULL STACK/Pandabyte/.env.local' start --hostname localhost --port 3001
 ```
 
-The existing build must be present and matched to the reviewed source. To roll back, stop only the owned server, set `PANDA_AGENT_LIGHTWEIGHT_ENABLED=false`, and run the same command/build/port: disabled UI and preserved records, never legacy fallback. No OpenRouter profile/key is implied. Aggregate-only wrapper observations are recorded above; no counter instrumentation is required for ordinary startup. The private tunnel and preserved runtime journal requirements below still apply. Phase 3 remains the first incomplete phase under the brief; record its start before implementation. These reproduction commands alone do not constitute Phase 3 work.
+The existing build must be present and matched to the reviewed source. To roll back, stop only the owned server, set `PANDA_AGENT_LIGHTWEIGHT_ENABLED=false`, and run the same command/build/port: disabled UI and preserved records, never legacy fallback. No OpenRouter profile/key is implied. Aggregate-only wrapper observations are recorded above; no counter instrumentation is required for ordinary startup. The private tunnel and preserved runtime journal requirements below still apply. Phase 4 is the current review phase under the brief; follow its agreed contract/dependency gate before implementation. These reproduction commands serve the accepted Phase 3 build and do not implement Phase 4.
 
 ### Historical attempt 1 start command (superseded port/build)
 
