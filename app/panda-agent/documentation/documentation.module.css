@@ -1,0 +1,19 @@
+.screen { min-height: 100dvh; padding: 32px max(24px, calc((100vw - 1120px) / 2)); background: var(--background); color: var(--foreground); }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 40px; }
+.header a { color: inherit; text-decoration: none; }
+.header a:focus-visible, .panel :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+.brand img { background: white; border-radius: 8px; }
+.screen h1 { font-size: 30px; margin: 0 0 8px; }
+.screen > p { margin: 0 0 28px; }
+.panel { margin: 1rem 0; padding: 1.25rem; border: 1px solid var(--divider); border-radius: 0.75rem; background: var(--surface); overflow-wrap: anywhere; }
+.panel h2, .panel h3 { margin: 0 0 0.65rem; }
+.panel label { display: grid; gap: 0.35rem; margin: 0.75rem 0; }
+.panel input, .panel select, .panel textarea { width: 100%; padding: 0.55rem; border: 1px solid var(--divider); border-radius: 0.5rem; color: inherit; background: var(--background); font: inherit; }
+.panel textarea { min-height: 4rem; }
+.panel button { padding: 0.5rem 0.75rem; margin: 0.25rem 0.5rem 0.25rem 0; border: 1px solid var(--divider); border-radius: 0.5rem; color: inherit; background: transparent; font: inherit; }
+.panel button:disabled { opacity: 0.55; }
+.panel a { color: inherit; overflow-wrap: anywhere; }
+.panel pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.notice { border: 1px solid var(--divider); border-radius: 0.5rem; padding: 0.75rem; }
+@media(max-width: 600px) { .screen { padding: 20px 16px; } .header { margin-bottom: 28px; gap: 12px; } }

@@ -15,7 +15,7 @@ import httpx
 from fastapi.testclient import TestClient
 from lightweight.app import Journal, create_app, provider_prompt
 
-SECRET = b'fixture-secret'
+SECRET = b'fixture-secret-at-least-32-bytes-long'
 ACTOR = 'a' * 64
 SESSION = 'b' * 64
 TURN = '00000000-0000-4000-8000-000000000001'
@@ -71,11 +71,12 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(self.calls, [])
 
     def test_fixed_hmac_vector(self):
-        self.assertEqual(b64(hmac.new(SECRET, b'eyJ2IjoxfQ', hashlib.sha256).digest()), 'bJC6mFqbkzjhlQwAxBHXrsEN75d_vZE8aNUjRqz8Kl8')
+        vector_secret = b'fixture-secret'
+        self.assertEqual(b64(hmac.new(vector_secret, b'eyJ2IjoxfQ', hashlib.sha256).digest()), 'bJC6mFqbkzjhlQwAxBHXrsEN75d_vZE8aNUjRqz8Kl8')
         body_hash = hashlib.sha256(b'{"version":1}').hexdigest()
         response_hash = hashlib.sha256(b'{}').hexdigest()
         message = ('response.v1\n00000000-0000-4000-8000-000000000001\n' + body_hash + '\n' + response_hash).encode()
-        self.assertEqual(b64(hmac.new(SECRET, message, hashlib.sha256).digest()), '4hY46ftRY0PPGzxfLY0Xr2pMtFAREAUWklYYI9klm2U')
+        self.assertEqual(b64(hmac.new(vector_secret, message, hashlib.sha256).digest()), '4hY46ftRY0PPGzxfLY0Xr2pMtFAREAUWklYYI9klm2U')
 
     def test_ambiguous_provider_failure_is_unknown_and_never_reexecuted(self):
         self.provider_result = TimeoutError('private provider message')

@@ -1,8 +1,8 @@
 import type { InsForgeClient } from '@insforge/sdk';
-import type { Citation } from '../retrieval/contracts.ts';
+import {parseVendorCitation} from '../diagnostics/contracts.ts';
 import { publicSearchCitationUrl, webSearchSection } from '../search/citation-url.ts';
 import {parseProjectMemory} from '../guide/contracts.ts';
-import { uuid, type ChatAnswer, type ChatMessage, type ChatRead, type ChatThread, type ChatTurn } from './chat-contracts.ts';
+import { uuid, type ChatAnswer, type ChatCitation, type ChatMessage, type ChatRead, type ChatThread, type ChatTurn } from './chat-contracts.ts';
 
 export class ChatStoreError extends Error {
   code: 'not_found' | 'conflict' | 'invalid' | 'unauthenticated' | 'quota' | 'unavailable';
@@ -12,9 +12,10 @@ const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 const string = (v: unknown, max: number): v is string => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
 const date = (v: unknown): v is string => string(v, 50) && Number.isFinite(Date.parse(v));
 const bad = (): never => { throw new ChatStoreError('unavailable'); };
-function citations(value: unknown): Citation[] {
+function citations(value: unknown): ChatCitation[] {
   if (!Array.isArray(value) || value.length > 4) return bad();
   return value.map(c => {
+    if(record(c) && Object.hasOwn(c,'kind')) { const vendor=parseVendorCitation(c);return vendor??bad(); }
     if (!record(c) || !string(c.id, 40) || !string(c.title, 300) || !string(c.sourceUrl, 500) || !date(c.capturedAt) || !string(c.quote, 600) || !Array.isArray(c.sectionPath) || c.sectionPath.length > 12 || c.sectionPath.some((p: unknown) => !string(p, 200))) return bad();
     try {
       const u = new URL(c.sourceUrl);

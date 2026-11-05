@@ -9,8 +9,11 @@ import {parseGuideInput,guideQuestion} from '../guide/contracts.ts';
 import type {createGuideStore,GuideExecution} from './guide-store.ts';
 import {GuideDisabledError} from './guide-store.ts';
 import type {GuideWire} from '../guide/client.ts';
+import {parseDiagnosticInput,diagnosticQuestion} from '../diagnostics/contracts.ts';
+import {DiagnosticDisabledError,type createDiagnosticStore} from './diagnostic-store.ts';
+import type {createDiagnosticAnswer} from './diagnostic-answer.ts';
 
-type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>};
+type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>;diagnostic?:ReturnType<typeof createDiagnosticStore>};
 type Dependencies = {
   enabled():boolean;
   authenticate():Promise<ChatActor|null>;
@@ -23,6 +26,9 @@ type Dependencies = {
   guideDeadlineMs?:number;
   guideAnswer?(actor:ChatActor,thread:string,requestId:string,execution:GuideExecution,store:ReturnType<typeof createGuideStore>,request:Request,progress:ActivityReporter,reconcile?:boolean):Promise<ChatAnswer & {guideSucceeded?:boolean}>;
   guideCancel?(actor:ChatActor,thread:string,requestId:string,execution:GuideExecution,signal:AbortSignal):Promise<GuideWire>;
+  diagnosticEnabled?():boolean;
+  diagnosticDeadlineMs?:number;
+  diagnosticAnswer?:ReturnType<typeof createDiagnosticAnswer>;
 };
 const json = (value:unknown,status=200) => new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store'}});
 const status = (e:unknown) => e instanceof ChatStoreError ? ({not_found:404,conflict:409,invalid:400,unauthenticated:401,quota:429,unavailable:503})[e.code] : typeof e==='number' ? e : 503;
@@ -42,6 +48,8 @@ async function body(request:Request) {
 export function createLightweightHandler(deps:Dependencies) {
   const guideDeadlineMs=deps.guideDeadlineMs??30000;
   if(!Number.isInteger(guideDeadlineMs)||guideDeadlineMs<1||guideDeadlineMs>30000)throw Error('Invalid guide deadline');
+  const diagnosticDeadlineMs=deps.diagnosticDeadlineMs??30000;
+  if(!Number.isInteger(diagnosticDeadlineMs)||diagnosticDeadlineMs<1||diagnosticDeadlineMs>30000)throw Error('Invalid diagnostic deadline');
   async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'cancel',id?:string):Promise<Response> {
     try {
       if (request.method!==method) return new Response(null,{status:405,headers:{allow:method,'cache-control':'private, no-store'}});
@@ -59,7 +67,10 @@ export function createLightweightHandler(deps:Dependencies) {
       if(action==='archive' && (Object.keys(input).length!==1 || typeof input.archived!=='boolean'))throw 400;
       if(action==='cancel' && (Object.keys(input).some(k=>k!=='requestId') || (input.requestId!==undefined && (!uuid(input.requestId) || input.requestId!==input.requestId.toLowerCase()))))throw 400;
       const guideInput=action==='message'&&Object.hasOwn(input,'guide')?parseGuideInput(input.guide):undefined;
-      if(action==='message' && (guideInput!==undefined
+      const diagnosticInput=action==='message'&&Object.hasOwn(input,'diagnostic')?parseDiagnosticInput(input.diagnostic):undefined;
+      if(action==='message' && (diagnosticInput!==undefined
+        ? !diagnosticInput || Object.keys(input).some(k=>!['requestId','diagnostic'].includes(k)) || !uuid(input.requestId)
+        : guideInput!==undefined
         ? !guideInput || Object.keys(input).some(k=>!['requestId','guide'].includes(k)) || !uuid(input.requestId)
         : Object.keys(input).some(k=>!['requestId','question','webSearch'].includes(k)) || !uuid(input.requestId) || !text(input.question,2000) || (input.webSearch!==undefined && input.webSearch!==false)))throw 400;
       if(method==='DELETE' && request.body) {const reader=request.body.getReader();try{while(true){const p=await reader.read();if(p.done)break;if(p.value.byteLength){await reader.cancel();throw 400;}}}finally{reader.releaseLock();}}
@@ -111,6 +122,19 @@ export function createLightweightHandler(deps:Dependencies) {
       }
       const work=async(start:ChatRead,question:string,requestId:string,progress:ActivityReporter,execution?:Execution,workRequest:Request=request) => {
         progress('routing_question');
+        const diagnostic=question.startsWith('Diagnostic (')?await store.diagnostic?.execution(id!,requestId):null;
+        if(diagnostic){
+          if(!deps.diagnosticAnswer||!store.diagnostic)throw new ChatStoreError('unavailable');
+          const controller=new AbortController(),abort=()=>controller.abort();workRequest.signal.addEventListener('abort',abort,{once:true});if(workRequest.signal.aborted)abort();
+          const boundedRequest=new Request(workRequest.url,{method:workRequest.method,headers:workRequest.headers,signal:controller.signal});let timer:ReturnType<typeof setTimeout>|undefined;
+          const finish=async()=>{
+            const result=deps.diagnosticEnabled?.()?await deps.diagnosticAnswer!(actor,id!,requestId,diagnostic,store.diagnostic!,boundedRequest,progress,Boolean(execution)):{answer:{outcome:'insufficient' as const,text:'Diagnostic assistance is disabled. Ordinary product chat remains available.',citations:[]},scopeHash:null,bindings:[]};
+            const current=await deps.current(actor);if(controller.signal.aborted||!current)throw new ChatStoreError('unauthenticated');
+            progress('saving_answer');await store.diagnostic!.complete(id!,requestId,result.answer,result.scopeHash,result.bindings);return release();
+          };
+          try{return await Promise.race([finish(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new ChatStoreError('unavailable'));},diagnosticDeadlineMs);})]);}
+          finally{clearTimeout(timer);workRequest.signal.removeEventListener('abort',abort);}
+        }
         const guide=await store.guide?.execution(id!,requestId);
         if(guide){
           if(!deps.guideAnswer || !store.guide)throw new ChatStoreError('unavailable');
@@ -130,7 +154,7 @@ export function createLightweightHandler(deps:Dependencies) {
         let answer:ChatAnswer;
         if(scope.kind==='resolved')answer=await deps.answer(actor,{thread:id!,requestId,question,productSku:scope.productSku,store,...(execution?{reconcileOnly:true,execution}:{})},workRequest,progress);
         else if(execution)throw new ChatStoreError('unavailable');
-        else if(scope.kind==='conversation' || scope.kind==='manufacturer')answer={outcome:'clarification',text:'Ask about a PandaByte product and include its model or SKU. Project guidance and official documentation lookup are not enabled yet.',citations:[]};
+        else if(scope.kind==='conversation' || scope.kind==='manufacturer')answer={outcome:'clarification',text:'Ask about a PandaByte product and include its model or SKU. Other workflows are available only through their enabled controls.',citations:[]};
         else answer={outcome:scope.kind,text:scope.text,citations:[]};
         if(workRequest.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
         progress('saving_answer');
@@ -142,17 +166,19 @@ export function createLightweightHandler(deps:Dependencies) {
         if(pending.length>1)throw new ChatStoreError('unavailable');
         if(pending.length===1) {
           const turn=pending[0], execution=await store.execution(id!,turn.requestId);
-          if(execution.prepared) {
+          const diagnostic=turn.question.startsWith('Diagnostic (')?await store.diagnostic?.execution(id!,turn.requestId):null;
+          if(execution.prepared||diagnostic) {
             try { return json(await work(start,turn.question,turn.requestId,()=>{},execution)); }
             catch(e) { if(!(e instanceof ChatStoreError) || e.code!=='unavailable')throw e; return json(await release()); }
           }
         }
         return json(pending.length ? await release() : project(start));
       }
-      const question=guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
+      const question=diagnosticInput?diagnosticQuestion(diagnosticInput):guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
       if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unavailable');
       if(guideInput&&(!deps.guideEnabled?.()||!store.guide))throw new ChatStoreError('unavailable');
-      const start=guideInput?await store.guide!.begin(id!,requestId,guideInput):await store.begin(id!,requestId,question);
+      if(diagnosticInput&&(!deps.diagnosticEnabled?.()||!store.diagnostic))throw new ChatStoreError('unavailable');
+      const start=diagnosticInput?await store.diagnostic!.begin(id!,requestId,diagnosticInput):guideInput?await store.guide!.begin(id!,requestId,guideInput):await store.begin(id!,requestId,question);
       const turn=start.turns.find(t=>t.requestId===requestId);
       if(!turn || turn.question!==question)throw new ChatStoreError('unavailable');
       if(turn.status==='complete')return json(await release());
@@ -167,7 +193,7 @@ export function createLightweightHandler(deps:Dependencies) {
         void work(start,question,requestId,progress,undefined,workRequest).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
       },cancel(){closed=true;workController.abort();}});
       return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});
-    } catch(e) { if(e instanceof GuideDisabledError)return json({error:'guide_disabled'},409);const s=status(e); return json({error:error(s)},s); }
+    } catch(e) { if(e instanceof GuideDisabledError)return json({error:'guide_disabled'},409);if(e instanceof DiagnosticDisabledError)return json({error:'diagnostic_disabled'},409);const s=status(e); return json({error:error(s)},s); }
   }
   return {
     listGET:(r:Request)=>handle(r,'GET','list'),createPOST:(r:Request)=>handle(r,'POST','create'),

@@ -1,0 +1,15 @@
+import {parseDiagnosticInput,type DiagnosticInput,type VendorCitation} from './contracts.ts';
+import {vendorCatalog} from './vendor-catalog.ts';
+export type VendorSnapshot={sourceId:string;versionId:string;contentHash:string;scopeHash:string;approved:boolean;rights:string;current:boolean;chip:string;framework:string;frameworkVersion:string;fragments:string[];sourceUrl:string;title:string;capturedAt:string};
+type Answer={outcome:'evidence'|'insufficient';text:string;citations:VendorCitation[]};
+const hash=/^[a-f0-9]{64}$/;
+export function compatibleDiagnosticScope(input:DiagnosticInput):boolean {
+ return !!parseDiagnosticInput(input)&&input.chip==='esp32'&&/\b(?:gpio|esp_driver_gpio)\b/i.test(input.errorText)&&!/\b(?:wir(?:e|ing)|connect|pinout|header pin|voltage|power|schematic|arduino|micropython|esp8266)\b/i.test(input.errorText)&&!/\besp32[-_ ]?(?:c\d+|s\d+|h\d+)\b/i.test(input.errorText)&&!/\besp-idf\s*v?(?!5\.5\.1\b)\d+\.\d+(?:\.\d+)?\b/i.test(input.errorText);
+}
+export function answerVendorDiagnostic(input:DiagnosticInput,scope:VendorSnapshot|null):{answer:Answer;bindings:{sourceId:string;versionId:string;contentHash:string}[];scopeHash:string|null} {
+ const empty={answer:{outcome:'insufficient' as const,text:'I do not have applicable reviewed evidence to diagnose this error. Confirm the chip and framework version, and ask an administrator to review an applicable source. Board wiring requires separate board-specific evidence.',citations:[]},bindings:[],scopeHash:null};
+ if(!parseDiagnosticInput(input)||!scope||scope.approved!==true||scope.current!==true||scope.rights!=='permitted'||scope.chip!==vendorCatalog.chip||input.chip!==scope.chip||scope.framework!==input.framework||scope.frameworkVersion!==input.frameworkVersion||scope.sourceUrl!==vendorCatalog.sourceUrl||scope.title!==vendorCatalog.title||typeof scope.capturedAt!=='string'||!Number.isFinite(Date.parse(scope.capturedAt))||!hash.test(scope.contentHash)||!hash.test(scope.scopeHash)||scope.sourceId!==vendorCatalog.id||typeof scope.versionId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(scope.versionId)||!Array.isArray(scope.fragments)||scope.fragments.length>8||scope.fragments.some(x=>typeof x!=='string'||!x||x.length>3000)||scope.fragments.reduce((n,x)=>n+x.length,0)>20000||new Set(scope.fragments).size!==scope.fragments.length||!compatibleDiagnosticScope(input))return empty;
+ const quote='#include "driver/gpio.h"';if(scope.fragments.length!==1||scope.fragments[0]!==quote)return empty;
+ const citation:VendorCitation={kind:'vendor',vendor:'espressif',chip:'esp32',framework:'esp-idf',frameworkVersion:'5.5.1',id:'S1',title:vendorCatalog.title,sourceUrl:vendorCatalog.sourceUrl,capturedAt:scope.capturedAt,quote,sectionPath:['API Reference - Normal GPIO','Header File']};
+ return {answer:{outcome:'evidence',text:`For ESP32 with ESP-IDF 5.5.1, the reviewed reference shows: \`${quote}\` [S1] Check whether your project includes the GPIO header.`,citations:[citation]},bindings:[{sourceId:scope.sourceId,versionId:scope.versionId,contentHash:scope.contentHash}],scopeHash:scope.scopeHash};
+}

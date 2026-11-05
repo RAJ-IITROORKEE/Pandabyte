@@ -8,6 +8,8 @@ import { createLightweightAnswer } from './lightweight-answer';
 import {createGuideStore} from './guide-store';
 import {createGuideAnswer} from './guide-answer';
 import {createGuideClient} from '../guide/client';
+import {createDiagnosticStore} from './diagnostic-store';
+import {createDiagnosticAnswer} from './diagnostic-answer';
 
 const configuredMode=process.env.PANDA_AGENT_LIGHTWEIGHT_MODE;
 if(configuredMode && configuredMode!=='deterministic-mcu-v1')throw Error('Unsupported Agent mode');
@@ -17,7 +19,9 @@ export const lightweightChatHandlers=createLightweightHandler({
   enabled:()=>process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED==='true',
   authenticate:authenticateLightweight,
   current:actor=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false),
-  store:actor=>({...createLightweightStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),guide:createGuideStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'')}),
+  store:actor=>({...createLightweightStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),guide:createGuideStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),diagnostic:createDiagnosticStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'')}),
+  diagnosticEnabled:()=>process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED==='true',
+  diagnosticAnswer:createDiagnosticAnswer({current:currentLightweightSession,externalEnabled:()=>process.env.PANDA_AGENT_VENDOR_SEARCH_ENABLED==='true'}),
   guideEnabled:()=>process.env.PANDA_AGENT_GUIDES_ENABLED==='true',
   guideAnswer:createGuideAnswer({current:currentLightweightSession,baseUrl:process.env.PANDA_AGENT_LIGHTWEIGHT_URL??'',secret:process.env.PANDA_AGENT_LIGHTWEIGHT_SECRET??''}),
   guideCancel:(actor,threadId,turnId,execution,signal)=>{

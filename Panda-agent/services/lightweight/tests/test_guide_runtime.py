@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from lightweight.app import create_app
 from lightweight.guide import run_guide
 
-SECRET=b'fixture-secret'; THREAD='11111111-1111-4111-8111-111111111111'; TURN='22222222-2222-4222-8222-222222222222'; SKU='BOARD'
+SECRET=b'fixture-secret-at-least-32-bytes-long'; THREAD='11111111-1111-4111-8111-111111111111'; TURN='22222222-2222-4222-8222-222222222222'; SKU='BOARD'
 def encoded(value):return base64.urlsafe_b64encode(value).rstrip(b'=').decode()
 def wire(value):return json.dumps(value,separators=(',',':')).encode()
 def token(body,action,aud='panda-lightweight-guide-v1',turn=TURN,actor='a'*64):

@@ -13,6 +13,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from starlette.requests import ClientDisconnect
+from .images import create_image_router
 
 MAX_BODY = 98304
 HEX = re.compile(r'^[0-9a-f]{64}$')
@@ -163,13 +164,19 @@ class Journal:
     def state(self, actor, turn, state, value=None):
         self.db.execute('UPDATE turns SET state=?,result=? WHERE actor=? AND turn_id=?', (state, json.dumps(value, separators=(',', ':')) if value else None, actor, turn))
 
-def create_app(*, secret, journal_path, provider=None, selector_mode='model', guide_enabled=False, clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
+def create_app(*, secret, journal_path, provider=None, selector_mode='model', guide_enabled=False, image_enabled=False, image_root=None, clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
     if type(guide_enabled) is not bool:raise ValueError('invalid guide flag')
+    if type(image_enabled) is not bool:raise ValueError('invalid image flag')
     if selector_mode not in ('model', 'deterministic-mcu-v1') or (selector_mode != 'model' and provider is not None): raise ValueError('invalid selector mode')
     if type(ingress_limit) is not int or not 1 <= ingress_limit <= 32 or type(body_timeout) not in (int, float) or not 0 < body_timeout <= 30:
         raise ValueError('invalid ingress limits')
     if type(execution_timeout) not in (int, float) or not 0 < execution_timeout <= 30: raise ValueError('invalid execution timeout')
     journal = Journal(journal_path)
+    try:
+        image_router,image_cache=create_image_router(secret,journal,image_root if image_root is not None else str(journal_path)+'.images',clock=clock,upload_enabled=image_enabled)
+    except BaseException:
+        journal.close()
+        raise
     queue = asyncio.Queue(maxsize=5)
     ingress = asyncio.Semaphore(ingress_limit)
     waiters = {}; shutting_down = False; policy_stopped = journal.db.execute("SELECT 1 FROM settings WHERE key='policy_stopped'").fetchone() is not None
@@ -229,6 +236,7 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
     @asynccontextmanager
     async def lifespan(_app):
         nonlocal shutting_down
+        await image_cache.start()
         task = asyncio.create_task(worker())
         try: yield
         finally:
@@ -240,9 +248,11 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
             for key, waiter in waiters.items():
                 if not waiter.done(): waiter.set_result(journal.turn(*key))
             waiters.clear()
+            await image_cache.close()
             journal.close()
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+    app.include_router(image_router)
     @app.exception_handler(HTTPException)
     async def http_error(_request, exc):
         if exc.status_code == 405: return respond(result('method_not_allowed'), 405)

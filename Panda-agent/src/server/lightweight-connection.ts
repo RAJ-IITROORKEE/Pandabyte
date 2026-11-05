@@ -12,6 +12,7 @@ export async function authenticateLightweight() {
   if (!baseUrl || !template || !/^[A-Za-z0-9_-]{1,64}$/.test(template)) throw Error('Agent connection unavailable');
   const url = new URL(baseUrl);
   if (url.protocol !== 'https:' || !/^[a-z0-9]+\.[a-z0-9-]+\.insforge\.app$/.test(url.hostname) || url.pathname !== '/' || url.port || url.username || url.password || url.search || url.hash) throw Error('Agent connection unavailable');
+  if (!await currentLightweightSession(session.userId, session.sessionId)) return null;
   const accessToken = await session.getToken({ template });
   if (!accessToken) throw Error('Agent connection unavailable');
   const client = createClient({ baseUrl, accessToken, timeout:8000, retryCount:0, debug:false, fetch:boundedAgentFetch() });
