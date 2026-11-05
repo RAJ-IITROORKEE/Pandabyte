@@ -62,11 +62,11 @@ test('session revoked during final read prevents release',async()=>{
 test('GET reconciles prepared pending work using status only, saves once and reloads',async()=>{
  const calls=[], hash='ab'.repeat(32), scope={productId:threadId,sku:'x8266',scopeHash:'cd'.repeat(32)};let saved=false;
  const pending={requestId,question,status:'pending',response:null,createdAt:thread.updatedAt};
- const store={read:async()=>({thread,messages:saved?[{id:requestId,role:'assistant',text:'No verified answer.',createdAt:thread.updatedAt,citations:[]}]:[],turns:saved?[]:[pending]}),execution:async()=>({prepared:true,digest:hash,...scope}),scope:async()=>scope,prepare:async()=>{calls.push('prepare');return true;},complete:async()=>{calls.push('save');saved=true;}};
+ const store={read:async()=>({thread,messages:saved?[{id:requestId,role:'assistant',text:'No verified answer.',createdAt:thread.updatedAt,citations:[]}]:[],turns:saved?[{...pending,status:'complete',response:answer}]:[pending]}),execution:async()=>({prepared:true,digest:hash,...scope}),scope:async()=>scope,prepare:async()=>{calls.push('prepare');return true;},complete:async()=>{calls.push('save');saved=true;}};
  const client={select:async()=>{calls.push('select');},status:async()=>{calls.push('status');return {version:1,state:'complete',selections:[],usage:{modelCalls:1,inputTokens:1,outputTokens:1,costNanoUsd:0}};}};
  const coordinator=createLightweightAnswer({current:async()=>true,clientForActor:()=>client,resolveIdentity:async()=>({kind:'resolved',product:{id:threadId,sku:'x8266'}}),evidence:async i=>{await i.beforeDispatch({requestBodySha256:hash,productSku:'x8266'});const wire=await i.client.select({subject:'user',sessionId:'session',prepared:{requestBodySha256:hash,input:{fragments:[{handle:'h',text:'text'}]}}});return {wire,outcome:{kind:'insufficient'}};}});
  const h=createLightweightHandler({enabled:()=>true,authenticate:async()=>({subject:'user',sessionId:'session',client:{}}),current:async()=>true,store:()=>store,products:async()=>[{sku:'x8266',title:'x8266'}],answer:coordinator});
- for(let n=0;n<2;n++){const response=await h.readGET(new Request('http://localhost/api/chats/'+threadId),threadId);assert.equal(response.status,200);assert.equal((await response.json()).messages.length,1);}
+ for(let n=0;n<2;n++){const response=await h.readGET(new Request(`http://localhost/api/chats/${threadId}?requestId=${requestId}`),threadId);assert.equal(response.status,200);const result=await response.json();assert.equal(result.messages.length,1);assert.equal(result.attemptStatus,'complete');}
  assert.deepEqual(calls,['status','save']);
 });
 test('GET does not reconcile unprepared or inaccessible pending work',async()=>{
@@ -93,4 +93,70 @@ test('GET finalizes cached terminal rejections but leaves ambiguous states pendi
   const terminal=!['not_found','outcome_unknown','pending'].includes(code);
   assert.deepEqual(calls,terminal?['status','save']:['status'],code);assert.equal((await response.json()).messages.length,terminal?1:0,code);
  }
+});
+test('explicit cancel handles unprepared and prepared pending without exposing control data',async()=>{
+ for(const prepared of [false,true]){
+  const f=fixture(),calls=[];let canceled=false;
+  f.store.read=async()=>({thread,messages:[],turns:canceled?[]:[{requestId,question,status:'pending',response:null,createdAt:thread.updatedAt}]});
+  f.store.execution=async()=>prepared?{prepared:true,digest:'a'.repeat(64),sku:'x8266',scopeHash:'b'.repeat(64),productId:threadId}:{prepared:false,digest:null,sku:null,scopeHash:null,productId:null};
+  f.store.cancel=async(_t,_r,digest)=>{calls.push(['db',digest]);canceled=true;};
+  f.deps.cancel=async(_actor,_turn,e)=>{calls.push(['worker',e.digest]);return {version:1,state:'rejected',code:'cancelled',usage:null};};
+  const h=createLightweightHandler(f.deps), r=await h.cancelPOST(req({}),threadId);assert.equal(r.status,200);assert.doesNotMatch(await r.text(),/requestId|digest|cancelled|scopeHash/);
+  assert.deepEqual(calls,prepared?[['worker','a'.repeat(64)],['db','a'.repeat(64)]]:[['db',null]]);
+ }
+});
+test('cancel refuses unknown, bad origin, foreign owner and malformed input without terminalizing',async()=>{
+ for(const kind of ['unknown','origin','owner','input']){
+  const f=fixture();let writes=0,worker=0;
+  f.store.read=async()=>{if(kind==='owner')throw new ChatStoreError('not_found');return {thread,messages:[],turns:[{requestId,question,status:'pending',response:null,createdAt:thread.updatedAt}]};};
+  f.store.execution=async()=>({prepared:true,digest:'a'.repeat(64),sku:'x8266',scopeHash:'b'.repeat(64),productId:threadId});
+  f.store.cancel=async()=>{writes++;};f.deps.cancel=async()=>{worker++;return {version:1,state:'unknown',code:'outcome_unknown',usage:null};};
+  const r=await createLightweightHandler(f.deps).cancelPOST(req(kind==='input'?{extra:true}:{},kind==='origin'?{headers:{origin:'https://evil.test'}}:{}),threadId);
+  assert.equal(r.status,({unknown:503,origin:403,owner:404,input:400})[kind]);assert.equal(writes,0);assert.equal(worker,kind==='unknown'?1:0);
+ }
+});
+test('cancel retries observation after unprepared CAS loses to prepare',async()=>{
+ const f=fixture();let reads=0,worker=0,db=[];
+ f.store.read=async()=>({thread,messages:[],turns:[{requestId,question,status:'pending',response:null,createdAt:thread.updatedAt}]});
+ f.store.execution=async()=>++reads===1?{prepared:false,digest:null,sku:null,scopeHash:null,productId:null}:{prepared:true,digest:'a'.repeat(64),sku:'x8266',scopeHash:'b'.repeat(64),productId:threadId};
+ f.store.cancel=async(_t,_r,d)=>{db.push(d);if(d===null)throw new ChatStoreError('conflict');};
+ f.deps.cancel=async()=>{worker++;return {version:1,state:'rejected',code:'cancelled',usage:null};};
+ assert.equal((await createLightweightHandler(f.deps).cancelPOST(req({}),threadId)).status,200);assert.deepEqual(db,[null,'a'.repeat(64)]);assert.equal(worker,1);
+});
+test('canceling SSE reader aborts coordinator signal',async()=>{
+ const f=fixture();let entered, aborted;const ready=new Promise(r=>entered=r), observed=new Promise(r=>aborted=r);
+ f.deps.answer=async(_a,_i,request)=>{entered();await new Promise(resolve=>request.signal.addEventListener('abort',()=>{aborted(request.signal.aborted);resolve();},{once:true}));return answer;};
+ const response=await createLightweightHandler(f.deps).messagePOST(req({requestId,question},{sse:true}),threadId),reader=response.body.getReader();await ready;await reader.cancel();assert.equal(await observed,true);assert.equal(f.counts().completes,0);
+});
+test('attempt cancellation before delayed begin fences that attempt and permits another',async()=>{
+ const f=fixture(), markers=new Set(), next='33333333-3333-4333-8333-333333333333';let releaseBegin,entered;
+ const barrier=new Promise(r=>releaseBegin=r), ready=new Promise(r=>entered=r);
+ f.store.read=async()=>({thread,messages:[],turns:[]});f.store.cancel=async(_t,id,d)=>{assert.equal(d,null);markers.add(id);};
+ f.store.begin=async(_t,id,q)=>{entered();await barrier;if(markers.has(id))throw new ChatStoreError('conflict');return {thread,messages:[],turns:[{requestId:id,question:q,status:'pending',response:null,createdAt:thread.updatedAt}],admitted:true};};
+ const h=createLightweightHandler(f.deps), post=h.messagePOST(req({requestId,question}),threadId);await ready;
+ const response=await h.cancelPOST(req({requestId}),threadId);assert.equal(response.status,200);releaseBegin();assert.equal((await post).status,409);
+ assert.equal((await h.messagePOST(req({requestId:next,question}),threadId)).status,200);
+});
+test('explicit attempt cancel rejects malformed IDs, extras and different pending attempt',async()=>{
+ for(const body of [{requestId:'BAD'},{requestId,extra:true},{requestId:'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA'}]){
+  const f=fixture();f.deps.store=()=>assert.fail('bad input must not query');assert.equal((await createLightweightHandler(f.deps).cancelPOST(req(body),threadId)).status,400);
+ }
+ const f=fixture();f.store.read=async()=>({thread,messages:[],turns:[{requestId,question,status:'pending',response:null,createdAt:thread.updatedAt}]});f.store.cancel=async()=>assert.fail('wrong attempt');
+ assert.equal((await createLightweightHandler(f.deps).cancelPOST(req({requestId:'33333333-3333-4333-8333-333333333333'}),threadId)).status,409);
+});
+test('attempt status query exposes only owner-scoped terminal state, never identifiers',async()=>{
+ for(const state of ['pending','complete','absent']){
+  const f=fixture(), turns=state==='absent'?[]:[{requestId,question,status:state,response:state==='complete'?answer:null,createdAt:thread.updatedAt}];
+  f.store.read=async()=>({thread,messages:[],turns});f.store.execution=async()=>({prepared:false,digest:null,sku:null,scopeHash:null,productId:null});
+  const r=await createLightweightHandler(f.deps).readGET(new Request(`http://localhost/api/chats/${threadId}?requestId=${requestId}`),threadId);
+  assert.equal(r.status,200);const raw=await r.text(),data=JSON.parse(raw);assert.equal(data.attemptStatus,state);assert.doesNotMatch(raw,/requestId|scopeHash|digest/);
+ }
+});
+test('attempt status query rejects malformed or extra parameters before store',async()=>{
+ for(const query of [`?requestId=${requestId}&requestId=${requestId}`,`?requestId=${requestId}&x=1`,'?requestId=BAD','?requestId=AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA',`?requestId=%32${requestId.slice(1)}`,'?other=1']){
+  const f=fixture();f.deps.store=()=>assert.fail('invalid query');assert.equal((await createLightweightHandler(f.deps).readGET(new Request(`http://localhost/api/chats/${threadId}${query}`),threadId)).status,400,query);
+ }
+});
+test('attempt status query honors session and foreign ownership',async()=>{
+ for(const kind of ['session','owner']) {const f=fixture();if(kind==='session')f.setCurrent(false);else f.store.read=async()=>{throw new ChatStoreError('not_found');};const r=await createLightweightHandler(f.deps).readGET(new Request(`http://localhost/api/chats/${threadId}?requestId=${requestId}`),threadId);assert.equal(r.status,kind==='session'?401:404);}
 });

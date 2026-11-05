@@ -160,6 +160,142 @@ class JournalTests(unittest.TestCase):
             try: self.assertEqual(reopened.turn(ACTOR, TURN)[2], 'unknown')
             finally: reopened.close()
 
+class CancelTests(unittest.TestCase):
+    def test_tombstone_delayed_select_and_restart(self):
+        calls = []
+        async def provider(*args): calls.append(args); return None
+        with tempfile.TemporaryDirectory() as tmp:
+            path = str(Path(tmp) / 'journal.sqlite')
+            raw = body({'version': 1, 'turnId': TURN, 'productSku': 'x8266', 'question': 'Which MCU?', 'fragments': [{'handle': 'h', 'text': 'ESP8266'}]})
+            control = body({'version': 1, 'turnId': TURN, 'requestBodySha256': hashlib.sha256(raw).hexdigest()})
+            def send(client, path, payload, action):
+                token, _ = capability(payload, action)
+                return client.post(path, content=payload, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})
+            for _ in range(2):
+                app = create_app(secret=SECRET, journal_path=path, provider=provider, clock=lambda: 1000)
+                with TestClient(app) as client:
+                    for action, path_name, payload in [('cancelturn', 'cancel', control), ('readturn', 'status', control), ('select', 'select', raw)]:
+                        response = send(client, '/v1/evidence/' + path_name, payload, action)
+                        self.assertEqual((response.status_code, response.json()['code']), (409, 'cancelled'))
+                        self.assertIn('x-panda-receipt', response.headers)
+                    changed = body({**json.loads(raw), 'question': 'Other?'})
+                    self.assertEqual(send(client, '/v1/evidence/select', changed, 'select').json()['code'], 'turn_conflict')
+            self.assertEqual(calls, [])
+
+    def test_owner_session_and_nonce_guards(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(secret=SECRET, journal_path=str(Path(tmp) / 'journal.sqlite'), clock=lambda: 1000)
+            with TestClient(app) as client:
+                raw = body({'version': 1, 'turnId': TURN, 'requestBodySha256': 'd' * 64})
+                token, _ = capability(raw, 'cancelturn')
+                headers = {'authorization': 'Bearer ' + token, 'content-type': 'application/json'}
+                first = client.post('/v1/evidence/cancel', content=raw, headers=headers)
+                self.assertEqual(first.json()['code'], 'cancelled')
+                self.assertEqual(client.post('/v1/evidence/cancel', content=raw, headers=headers).json()['code'], 'capability_replayed')
+                changed = body({'version': 1, 'turnId': TURN, 'requestBodySha256': 'e' * 64})
+                changed_token, _ = capability(changed, 'cancelturn')
+                self.assertEqual(client.post('/v1/evidence/cancel', content=changed, headers={'authorization': 'Bearer ' + changed_token, 'content-type': 'application/json'}).json()['code'], 'turn_conflict')
+                wrong_sku, _ = capability(raw, 'cancelturn', sku='another')
+                self.assertEqual(client.post('/v1/evidence/cancel', content=raw, headers={'authorization': 'Bearer ' + wrong_sku, 'content-type': 'application/json'}).json()['code'], 'turn_conflict')
+                other, _ = capability(raw, 'readturn', actor='c' * 64)
+                self.assertEqual(client.post('/v1/evidence/status', content=raw, headers={'authorization': 'Bearer ' + other, 'content-type': 'application/json'}).status_code, 404)
+                other_cancel, _ = capability(raw, 'cancelturn', actor='c' * 64)
+                self.assertEqual(client.post('/v1/evidence/cancel', content=raw, headers={'authorization': 'Bearer ' + other_cancel, 'content-type': 'application/json'}).json()['code'], 'cancelled')
+                bad, _ = capability(raw, 'readturn')
+                self.assertEqual(client.post('/v1/evidence/cancel', content=raw, headers={'authorization': 'Bearer ' + bad, 'content-type': 'application/json'}).status_code, 401)
+
+class CancelRaceTests(unittest.IsolatedAsyncioTestCase):
+    async def test_queued_cancel_skips_and_dispatched_cancel_reconciles(self):
+        started = asyncio.Event(); release = asyncio.Event(); calls = []
+        async def provider(question, _fragments):
+            calls.append(question); started.set(); await release.wait()
+            return {'selections': [], 'usage': {'modelCalls': 1, 'inputTokens': 1, 'outputTokens': 1, 'costNanoUsd': 0}}
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(secret=SECRET, journal_path=str(Path(tmp) / 'journal.sqlite'), provider=provider, clock=lambda: 1000)
+            async with app.router.lifespan_context(app):
+                async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+                    async def send(path, raw, action, turn, actor):
+                        token, _ = capability(raw, action, turn=turn, actor=actor)
+                        return await client.post('/v1/evidence/' + path, content=raw, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})
+                    def make(question):
+                        turn = str(uuid.uuid4()); raw = body({'version': 1, 'turnId': turn, 'productSku': 'x8266', 'question': question, 'fragments': [{'handle': 'h', 'text': 'ESP8266'}]})
+                        control = body({'version': 1, 'turnId': turn, 'requestBodySha256': hashlib.sha256(raw).hexdigest()})
+                        return turn, raw, control
+                    active, active_raw, active_control = make('active'); actor = '1' * 64
+                    task = asyncio.create_task(send('select', active_raw, 'select', active, actor)); await asyncio.wait_for(started.wait(), 2)
+                    queued, queued_raw, queued_control = make('queued'); actor2 = '2' * 64
+                    task2 = asyncio.create_task(send('select', queued_raw, 'select', queued, actor2))
+                    try:
+                        for _ in range(100):
+                            if (await send('status', queued_control, 'readturn', queued, actor2)).status_code == 202: break
+                            await asyncio.sleep(.01)
+                        else: self.fail('not queued')
+                        self.assertEqual((await send('cancel', queued_control, 'cancelturn', queued, actor2)).json()['code'], 'cancelled')
+                        self.assertEqual((await task2).json()['code'], 'cancelled')
+                        self.assertEqual((await send('cancel', active_control, 'cancelturn', active, actor)).json()['code'], 'outcome_unknown')
+                    finally: release.set()
+                    self.assertEqual((await task).json()['state'], 'complete')
+                    self.assertEqual((await send('cancel', active_control, 'cancelturn', active, actor)).json()['state'], 'complete')
+                    self.assertEqual(calls, ['active'])
+
+class LifecycleTests(unittest.IsolatedAsyncioTestCase):
+    async def test_shutdown_waiters_reconcile_unknown_after_restart(self):
+        started = asyncio.Event(); calls = []
+        async def provider(question, fragments):
+            calls.append(question); started.set(); await asyncio.Event().wait()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = str(Path(tmp) / 'journal.sqlite')
+            app = create_app(secret=SECRET, journal_path=path, provider=provider, clock=lambda: 1000)
+            transport = httpx.ASGITransport(app=app)
+            async with httpx.AsyncClient(transport=transport, base_url='http://test') as client:
+                runs = []
+                async with app.router.lifespan_context(app):
+                    for index in range(2):
+                        turn = str(uuid.uuid4()); actor = str(index + 1) * 64
+                        raw = body({'version': 1, 'turnId': turn, 'productSku': 'x8266', 'question': 'Which MCU?', 'fragments': [{'handle': 'h', 'text': 'ESP8266'}]})
+                        token, _ = capability(raw, turn=turn, actor=actor)
+                        task = asyncio.create_task(client.post('/v1/evidence/select', content=raw, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'}))
+                        runs.append((turn, actor, raw, task))
+                        if index == 0: await asyncio.wait_for(started.wait(), 2)
+                        else:
+                            for _ in range(100):
+                                status = body({'version': 1, 'turnId': turn, 'requestBodySha256': hashlib.sha256(raw).hexdigest()}); token, _ = capability(status, 'readturn', turn=turn, actor=actor)
+                                if (await client.post('/v1/evidence/status', content=status, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})).status_code == 202: break
+                                await asyncio.sleep(.01)
+                            else: self.fail('queued turn not admitted')
+                for _, _, _, task in runs:
+                    response = await task
+                    self.assertEqual((response.status_code, response.json()['code']), (409, 'outcome_unknown'))
+                    self.assertIn('x-panda-receipt', response.headers)
+            reopened = create_app(secret=SECRET, journal_path=path, provider=provider, clock=lambda: 1000)
+            async with reopened.router.lifespan_context(reopened):
+                async with httpx.AsyncClient(transport=httpx.ASGITransport(app=reopened), base_url='http://test') as client:
+                    for turn, actor, raw, _ in runs:
+                        status = body({'version': 1, 'turnId': turn, 'requestBodySha256': hashlib.sha256(raw).hexdigest()}); token, _ = capability(status, 'readturn', turn=turn, actor=actor)
+                        result = await client.post('/v1/evidence/status', content=status, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})
+                        self.assertEqual((result.status_code, result.json()['code']), (409, 'outcome_unknown'))
+                        token, _ = capability(raw, turn=turn, actor=actor)
+                        self.assertEqual((await client.post('/v1/evidence/select', content=raw, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})).json()['code'], 'outcome_unknown')
+            self.assertEqual(len(calls), 1)
+
+    async def test_late_provider_response_remains_unknown(self):
+        calls = []
+        async def provider(question, fragments):
+            calls.append(question)
+            try: await asyncio.sleep(.5)
+            except asyncio.CancelledError: await asyncio.sleep(.01)
+            return {'selections': [], 'usage': {'modelCalls': 1, 'inputTokens': 1, 'outputTokens': 1, 'costNanoUsd': 0}}
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(secret=SECRET, journal_path=str(Path(tmp) / 'journal.sqlite'), provider=provider, clock=lambda: 1000, execution_timeout=.2)
+            async with app.router.lifespan_context(app):
+                async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+                    raw = body({'version': 1, 'turnId': TURN, 'productSku': 'x8266', 'question': 'Which MCU?', 'fragments': [{'handle': 'h', 'text': 'ESP8266'}]}); token, _ = capability(raw)
+                    response = await client.post('/v1/evidence/select', content=raw, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})
+                    self.assertEqual((response.status_code, response.json()['code']), (409, 'outcome_unknown'))
+                    token, _ = capability(raw)
+                    self.assertEqual((await client.post('/v1/evidence/select', content=raw, headers={'authorization': 'Bearer ' + token, 'content-type': 'application/json'})).json()['code'], 'outcome_unknown')
+                    self.assertEqual(len(calls), 1)
+
 class IngressTests(unittest.IsolatedAsyncioTestCase):
     async def test_slow_and_parallel_bodies_are_bounded_before_provider(self):
         entered = asyncio.Event(); never = asyncio.Event(); calls = []

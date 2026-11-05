@@ -74,3 +74,25 @@ test('external abort reaches transport before or during fetch and removes its li
   assert.equal(calls,1);assert.equal(added,1);assert.equal(removed,1);
  }
 });
+test('signed cancel validates control receipt without fragments and never selects',async()=>{
+ const routes=[],prepared=prepareSelect(request);
+ const client=createLightweightClient({baseUrl:'http://127.0.0.1:1234',secret,fetch:async(url,init)=>{
+  const claim=JSON.parse(Buffer.from(init.headers.authorization.split(' ')[1].split('.')[0],'base64url').toString());
+  routes.push({path:new URL(url).pathname,claim,body:JSON.parse(init.body)});
+  const body=JSON.stringify({version:1,state:'rejected',code:'cancelled',usage:null});
+  return new Response(body,{status:409,headers:{'x-panda-receipt':receipt(claim.nonce,claim.bodySha256,body)}});
+ }});
+ const args={subject:'user',sessionId:'session',turnId,productSku:'SKU',requestBodySha256:prepared.requestBodySha256};
+ assert.equal((await client.cancel(args)).code,'cancelled');assert.equal((await client.cancel(args)).code,'cancelled');
+ assert.deepEqual(routes.map(r=>r.path),['/v1/evidence/cancel','/v1/evidence/cancel']);assert.notEqual(routes[0].claim.nonce,routes[1].claim.nonce);
+ assert.equal(routes[0].claim.action,'cancelturn');assert.deepEqual(routes[0].body,{version:1,turnId,requestBodySha256:prepared.requestBodySha256});
+});
+test('cancel cannot accept tampered or complete response without source fragments',async()=>{
+ for(const validReceipt of [false,true]){
+  const client=createLightweightClient({baseUrl:'http://127.0.0.1:1234',secret,fetch:async(_url,init)=>{
+   const c=JSON.parse(Buffer.from(init.headers.authorization.split(' ')[1].split('.')[0],'base64url').toString());const body=validReceipt?complete:JSON.stringify({version:1,state:'rejected',code:'cancelled',usage:null});
+   return new Response(body,{status:validReceipt?200:409,headers:{'x-panda-receipt':validReceipt?receipt(c.nonce,c.bodySha256,body):'a'.repeat(43)}});
+  }});
+  await assert.rejects(client.cancel({subject:'user',sessionId:'session',turnId,productSku:'SKU',requestBodySha256:prepareSelect(request).requestBodySha256}),/unknown/i);
+ }
+});

@@ -31,11 +31,11 @@ export function strictJson(raw: string): unknown {
   const value = (): void => { ws(); if (raw[i] === '"') { string(); return; } if (raw[i] === '{') { i++; ws(); const seen = new Set<string>(); if (raw[i] === '}') { i++; return; } while (true) { ws(); if (raw[i] !== '"') throw Error('Invalid JSON'); const k = string(); if (seen.has(k)) throw Error('Duplicate key'); seen.add(k); ws(); if (raw[i++] !== ':') throw Error('Invalid JSON'); value(); ws(); const c = raw[i++]; if (c === '}') return; if (c !== ',') throw Error('Invalid JSON'); } } if (raw[i] === '[') { i++; ws(); if (raw[i] === ']') { i++; return; } while (true) { value(); ws(); const c = raw[i++]; if (c === ']') return; if (c !== ',') throw Error('Invalid JSON'); } } const m = /^(?:true|false|null|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/.exec(raw.slice(i)); if (!m) throw Error('Invalid JSON'); i += m[0].length; };
   value(); ws(); if (i !== raw.length) throw Error('Invalid JSON'); return JSON.parse(raw);
 }
-const codes: Record<number, string[]> = {202:['pending'],409:['outcome_unknown','turn_conflict','capability_replayed'],429:['busy','quota_exhausted'],503:['disabled','provider_unavailable'],422:['invalid_selection','budget_exceeded'],400:['invalid'],401:['unauthorized'],404:['not_found'],405:['method_not_allowed'],413:['too_large']};
+const codes: Record<number, string[]> = {202:['pending'],409:['outcome_unknown','turn_conflict','capability_replayed','cancelled'],429:['busy','quota_exhausted'],503:['disabled','provider_unavailable'],422:['invalid_selection','budget_exceeded'],400:['invalid'],401:['unauthorized'],404:['not_found'],405:['method_not_allowed'],413:['too_large']};
 export type WireResult = { version: 1; state: 'complete'; selections: Array<{handle:string;quote:string}>; usage: {modelCalls:number;inputTokens:number;outputTokens:number;costNanoUsd:number} } | {version:1; state:'pending'|'unknown'|'rejected'; code:string; usage:null};
-export function verifyResponse(p: {status:number;body:string;receipt:string|null;secret:string;nonce:string;bodySha256:string;fragments:Fragment[];mode?:SelectionMode}): WireResult {
+export function verifyResponse(p: {status:number;body:string;receipt:string|null;secret:string;nonce:string;bodySha256:string;fragments?:Fragment[];mode?:SelectionMode}): WireResult {
   if (p.mode!==undefined && p.mode!=='deterministic-mcu-v1') throw Error('Invalid mode');
-  if (Buffer.byteLength(p.body) > 16384 || !validFragments(p.fragments) || !uuid(p.nonce) || !hex(p.bodySha256) || !p.receipt || !/^[A-Za-z0-9_-]{43}$/.test(p.receipt)) throw Error('Invalid response');
+  if (Buffer.byteLength(p.body) > 16384 || (p.fragments!==undefined && !validFragments(p.fragments)) || !uuid(p.nonce) || !hex(p.bodySha256) || !p.receipt || !/^[A-Za-z0-9_-]{43}$/.test(p.receipt)) throw Error('Invalid response');
   const expected = hmac(p.secret, `response.v1\n${p.nonce}\n${p.bodySha256}\n${hash(p.body)}`);
   if (!timingSafeEqual(Buffer.from(expected), Buffer.from(p.receipt))) throw Error('Invalid receipt');
   const v = strictJson(p.body);
@@ -43,6 +43,7 @@ export function verifyResponse(p: {status:number;body:string;receipt:string|null
   const x = v as Record<string, unknown>;
   if (x.version !== 1) throw Error('Invalid response');
   if (p.status === 200 && x.state === 'complete' && keys(x,['version','state','selections','usage']) && Array.isArray(x.selections) && x.selections.length <= 4 && keys(x.usage,['modelCalls','inputTokens','outputTokens','costNanoUsd'])) {
+    if(!validFragments(p.fragments))throw Error('Missing source fragments');
     const u = x.usage; const seen = new Set<string>();
     if (![u.modelCalls,u.inputTokens,u.outputTokens,u.costNanoUsd].every(n => Number.isSafeInteger(n) && (n as number) >= 0) || (p.mode==='deterministic-mcu-v1' ? (u.modelCalls!==0 || u.inputTokens!==0 || u.outputTokens!==0) : u.modelCalls!==1) || (u.inputTokens as number) > 32768 || (u.outputTokens as number) > 1024 || u.costNanoUsd !== 0) throw Error('Invalid usage');
     for (const s of x.selections) { if (!keys(s,['handle','quote']) || !validText(s.handle,300) || !validText(s.quote,600) || seen.has(s.handle) || !p.fragments.some(f => f.handle === s.handle && f.text.includes(s.quote as string))) throw Error('Invalid selection'); seen.add(s.handle); }
@@ -57,8 +58,8 @@ export function createLightweightClient(config: {baseUrl:string;secret:string;fe
   if (url.username || url.password || url.search || url.hash || url.pathname !== '/' || (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost','127.0.0.1','[::1]'].includes(url.hostname))) || !validText(config.secret,4096) || (config.mode!==undefined && config.mode!=='deterministic-mcu-v1')) throw Error('Invalid transport configuration');
   const timeoutMs = config.timeoutMs ?? 35000;
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) throw Error('Invalid timeout');
-  async function send(action:'select'|'readturn', actor:Actor, turnId:string, sku:string, body:string, fragments:Fragment[]):Promise<WireResult> {
-    if (!validText(actor.subject,512) || !validText(actor.sessionId,512) || !uuid(turnId) || !validText(sku,128) || !validFragments(fragments)) throw Error('Invalid capability context');
+  async function send(action:'select'|'readturn'|'cancelturn', actor:Actor, turnId:string, sku:string, body:string, fragments?:Fragment[]):Promise<WireResult> {
+    if (!validText(actor.subject,512) || !validText(actor.sessionId,512) || !uuid(turnId) || !validText(sku,128) || (action!=='cancelturn' && !validFragments(fragments))) throw Error('Invalid capability context');
     const nonce = randomUUID(), bodySha256 = hash(body), iat = Math.floor(Date.now()/1000);
     const claims = {v:1,aud:'panda-lightweight-evidence-v1',action,sub:hash(actor.subject),sid:hash(actor.sessionId),turnId,sku,nonce,iat,exp:iat+60,bodySha256};
     const segment = Buffer.from(JSON.stringify(claims)).toString('base64url');
@@ -68,7 +69,7 @@ export function createLightweightClient(config: {baseUrl:string;secret:string;fe
     actor.signal?.addEventListener('abort',abort,{once:true});
     if(actor.signal?.aborted)controller.abort();
     try {
-      const response = await (config.fetch ?? fetch)(new URL(action === 'select' ? '/v1/evidence/select' : '/v1/evidence/status',url),{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body,signal:controller.signal,redirect:'error',cache:'no-store'});
+      const response = await (config.fetch ?? fetch)(new URL(action === 'select' ? '/v1/evidence/select' : action==='readturn'?'/v1/evidence/status':'/v1/evidence/cancel',url),{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body,signal:controller.signal,redirect:'error',cache:'no-store'});
       if (!response.body) throw Error('Missing body');
       const reader = response.body.getReader(); const chunks:Uint8Array[] = []; let size = 0;
       while (true) { const {done,value} = await reader.read(); if (done) break; size += value.byteLength; if (size > 16384) { await reader.cancel(); throw Error('Response too large'); } chunks.push(value); }
@@ -79,5 +80,6 @@ export function createLightweightClient(config: {baseUrl:string;secret:string;fe
   return {
     select: async ({subject,sessionId,prepared,signal}:Actor & {prepared:Prepared}) => { const verified = prepareSelect(prepared.input); if (verified.body !== prepared.body || verified.requestBodySha256 !== prepared.requestBodySha256 || verified.input.mode!==config.mode) throw Error('Invalid prepared request'); return send('select',{subject,sessionId,signal},verified.input.turnId,verified.input.productSku,verified.body,verified.input.fragments); },
     status: async ({subject,sessionId,turnId,productSku,requestBodySha256,fragments,signal}:Actor & {turnId:string;productSku:string;requestBodySha256:string;fragments:Fragment[]}) => { if (!hex(requestBodySha256)) throw Error('Invalid original digest'); return send('readturn',{subject,sessionId,signal},turnId,productSku,JSON.stringify({version:1,turnId,requestBodySha256}),fragments); },
+    cancel: async ({subject,sessionId,turnId,productSku,requestBodySha256,signal}:Actor & {turnId:string;productSku:string;requestBodySha256:string}) => { if (!hex(requestBodySha256)) throw Error('Invalid original digest'); return send('cancelturn',{subject,sessionId,signal},turnId,productSku,JSON.stringify({version:1,turnId,requestBodySha256})); },
   };
 }

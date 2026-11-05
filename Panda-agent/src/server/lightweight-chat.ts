@@ -16,6 +16,7 @@ export const lightweightChatHandlers=createLightweightHandler({
   current:actor=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false),
   store:actor=>createLightweightStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),
   products:actor=>listRuntimeProducts(actor.client),
+  cancel:(actor,turnId,execution,signal)=>createLightweightClient({baseUrl:process.env.PANDA_AGENT_LIGHTWEIGHT_URL??'',secret:process.env.PANDA_AGENT_LIGHTWEIGHT_SECRET??'',mode}).cancel({subject:actor.subject,sessionId:actor.sessionId!,turnId,productSku:execution.sku,requestBodySha256:execution.digest,signal}),
   answer:createLightweightAnswer({
     mode,
     current:currentLightweightSession,

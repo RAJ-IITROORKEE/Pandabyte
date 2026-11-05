@@ -60,3 +60,10 @@ test('execution metadata is owner-scoped and rejects incomplete projections',asy
  data={prepared:true,digest,sku:'x8266',scopeHash:null,productId:tid};await assert.rejects(store.execution(tid,rid));
  data={prepared:false,digest:null,sku:null,scopeHash:null,productId:null};assert.equal((await store.execution(tid,rid)).prepared,false);
 });
+test('cancel signs only owner turn and nullable digest',async()=>{
+ let payload;
+ const projection={thread:{id:tid,title:'Test',updatedAt:'2026-01-01T00:00:00Z',status:'idle'},messages:[],turns:[]};
+ const a={...actor,client:{database:{schema:()=>({rpc:async()=>({})}),rpc:async(name,args)=>{assert.equal(name,'panda_agent_lightweight_cancel');payload=JSON.parse(args.p_payload);assert.equal(args.p_mac,createHmac('sha256',Buffer.from(key,'hex')).update(`panda-lightweight-db-v1\n${args.p_payload}`).digest('hex'));return {data:projection,error:null};}}}};
+ const store=createLightweightStore(a,key);
+ for(const d of [null,digest]){await store.cancel(tid,rid,d);assert.deepEqual(Object.keys(payload).sort(),['action','digest','exp','request','subject','thread','v']);assert.equal(payload.action,'cancel');assert.equal(payload.digest,d);}
+});

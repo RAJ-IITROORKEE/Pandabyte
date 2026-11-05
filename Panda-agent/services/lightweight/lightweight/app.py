@@ -159,14 +159,15 @@ class Journal:
     def state(self, actor, turn, state, value=None):
         self.db.execute('UPDATE turns SET state=?,result=? WHERE actor=? AND turn_id=?', (state, json.dumps(value, separators=(',', ':')) if value else None, actor, turn))
 
-def create_app(*, secret, journal_path, provider=None, selector_mode='model', clock=time.time, ingress_limit=32, body_timeout=5):
+def create_app(*, secret, journal_path, provider=None, selector_mode='model', clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
     if selector_mode not in ('model', 'deterministic-mcu-v1') or (selector_mode != 'model' and provider is not None): raise ValueError('invalid selector mode')
     if type(ingress_limit) is not int or not 1 <= ingress_limit <= 32 or type(body_timeout) not in (int, float) or not 0 < body_timeout <= 30:
         raise ValueError('invalid ingress limits')
+    if type(execution_timeout) not in (int, float) or not 0 < execution_timeout <= 30: raise ValueError('invalid execution timeout')
     journal = Journal(journal_path)
     queue = asyncio.Queue(maxsize=5)
     ingress = asyncio.Semaphore(ingress_limit)
-    waiters = {}; policy_stopped = journal.db.execute("SELECT 1 FROM settings WHERE key='policy_stopped'").fetchone() is not None
+    waiters = {}; shutting_down = False; policy_stopped = journal.db.execute("SELECT 1 FROM settings WHERE key='policy_stopped'").fetchone() is not None
 
     async def worker():
         nonlocal policy_stopped
@@ -190,6 +191,9 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
                             value = {'selections': select_mcu(payload['question'], payload['fragments']), 'usage': {'modelCalls': 0, 'inputTokens': 0, 'outputTokens': 0, 'costNanoUsd': 0}}
                         else:
                             value = await asyncio.wait_for(provider(payload['question'], payload['fragments']), remaining)
+                        if time.monotonic() >= deadline:
+                            journal.state(*key, 'unknown')
+                            continue
                         try: final = validate_output(value, payload['fragments'], deterministic=selector_mode == 'deterministic-mcu-v1')
                         except ValueError as exc:
                             if str(exc) == 'usage':
@@ -198,23 +202,32 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
                             final = result('invalid_selection')
                         journal.state(*key, 'complete' if final['state'] == 'complete' else 'rejected', final)
                     except ProviderRejected as exc:
-                        journal.state(*key, 'rejected', result(exc.code))
+                        if time.monotonic() >= deadline: journal.state(*key, 'unknown')
+                        else: journal.state(*key, 'rejected', result(exc.code))
+                    except asyncio.CancelledError:
+                        journal.state(*key, 'unknown')
+                        raise
                     except Exception:
                         journal.state(*key, 'unknown')
             finally:
                 waiter = waiters.pop(key, None)
-                if waiter and not waiter.done(): waiter.set_result(None)
+                if waiter and not waiter.done(): waiter.set_result(journal.turn(*key))
                 queue.task_done()
 
     @asynccontextmanager
     async def lifespan(_app):
+        nonlocal shutting_down
         task = asyncio.create_task(worker())
         try: yield
         finally:
+            shutting_down = True
             task.cancel()
             try: await task
             except asyncio.CancelledError: pass
             journal.db.execute("UPDATE turns SET state='unknown' WHERE state IN ('pending', 'dispatch')")
+            for key, waiter in waiters.items():
+                if not waiter.done(): waiter.set_result(journal.turn(*key))
+            waiters.clear()
             journal.close()
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
@@ -238,7 +251,7 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
     def read_turn(row):
         if row[2] == 'complete': return json.loads(row[3]), 200
         if row[2] == 'rejected':
-            value = json.loads(row[3]); return value, 422 if value['code'] in ('invalid_selection', 'budget_exceeded') else 429 if value['code'] == 'quota_exhausted' else 503
+            value = json.loads(row[3]); return value, 409 if value['code'] == 'cancelled' else 422 if value['code'] in ('invalid_selection', 'budget_exceeded') else 429 if value['code'] == 'quota_exhausted' else 503
         if row[2] == 'unknown': return result('outcome_unknown', 'unknown'), 409
         return result('pending', 'pending'), 202
 
@@ -260,6 +273,7 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
         except (asyncio.TimeoutError, ConnectionError, ClientDisconnect): return respond(result('invalid'), 400)
         finally: ingress.release()
         if claim['exp'] <= int(clock()) or not hmac.compare_digest(claim['bodySha256'], digest(raw)): return respond(result('unauthorized'), 401)
+        if shutting_down: return respond(result('disabled'), 503, claim)
         issue = journal.nonce(claim['nonce'])
         if issue: return respond(result(issue), 409 if issue == 'capability_replayed' else 429, claim)
         try:
@@ -268,6 +282,19 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
         except OverflowError: return respond(result('budget_exceeded'), 422, claim)
         except (ValueError, TypeError, UnicodeError, KeyError, RecursionError): return respond(result('invalid'), 400, claim)
         row = journal.turn(claim['sub'], claim['turnId'])
+        if action == 'cancelturn':
+            if not row:
+                if journal.db.execute('SELECT count(*) FROM turns').fetchone()[0] >= 100000: return respond(result('busy'), 429, claim)
+                journal.db.execute('INSERT INTO turns VALUES (?,?,?,?,?,?)', (claim['sub'], claim['turnId'], claim['sku'], payload['requestBodySha256'], 'rejected', json.dumps(result('cancelled'), separators=(',', ':'))))
+                return respond(result('cancelled'), 409, claim)
+            if row[0] != claim['sku'] or row[1] != payload['requestBodySha256']: return respond(result('turn_conflict'), 409, claim)
+            if row[2] == 'pending':
+                journal.state(claim['sub'], claim['turnId'], 'rejected', result('cancelled'))
+                row = journal.turn(claim['sub'], claim['turnId'])
+                waiter = waiters.get((claim['sub'], claim['turnId']))
+                if waiter and not waiter.done(): waiter.set_result(row)
+            if row[2] in ('dispatch', 'unknown'): return respond(result('outcome_unknown', 'unknown'), 409, claim)
+            answer, status = read_turn(row); return respond(answer, status, claim)
         if action == 'readturn':
             if not row: return respond(result('not_found'), 404, claim)
             if row[0] != claim['sku'] or row[1] != payload['requestBodySha256']: return respond(result('not_found'), 404, claim)
@@ -282,8 +309,9 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
         journal.db.execute('INSERT INTO turns VALUES (?,?,?,?,?,NULL)', (claim['sub'], claim['turnId'], claim['sku'], claim['bodySha256'], 'pending'))
         key = (claim['sub'], claim['turnId']); waiter = asyncio.get_running_loop().create_future(); waiters[key] = waiter
         def cancel_queued():
+            if shutting_down: return
             updated = journal.db.execute("UPDATE turns SET state='rejected',result=? WHERE actor=? AND turn_id=? AND state='pending'", (json.dumps(result('provider_unavailable'), separators=(',', ':')), *key)).rowcount
-            if updated and not waiter.done(): waiter.set_result(None)
+            if updated and not waiter.done(): waiter.set_result(journal.turn(*key))
         async def watch_disconnect():
             try:
                 while True:
@@ -294,9 +322,9 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
             except Exception:
                 cancel_queued()
         monitor = asyncio.create_task(watch_disconnect())
-        queue.put_nowait((claim, payload, time.monotonic() + 30))
+        queue.put_nowait((claim, payload, time.monotonic() + execution_timeout))
         try:
-            await asyncio.shield(waiter)
+            row = await asyncio.shield(waiter)
         except asyncio.CancelledError:
             cancel_queued()
             raise
@@ -304,10 +332,12 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', cl
             monitor.cancel()
             try: await monitor
             except asyncio.CancelledError: pass
-        answer, status = read_turn(journal.turn(*key)); return respond(answer, status, claim)
+        answer, status = read_turn(row); return respond(answer, status, claim)
 
     @app.post('/v1/evidence/select')
     async def select(request: Request): return await endpoint(request, 'select')
     @app.post('/v1/evidence/status')
     async def status(request: Request): return await endpoint(request, 'readturn')
+    @app.post('/v1/evidence/cancel')
+    async def cancel(request: Request): return await endpoint(request, 'cancelturn')
     return app

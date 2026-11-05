@@ -1,0 +1,327 @@
+{
+  "phase": 3,
+  "date": "2026-11-05",
+  "result": "PASS under user-authorized alternative procedure",
+  "branch": "codex/panda-agent-fastapi-replacement",
+  "sourceParent": "bf98a9dd0be9cd073a3a2e0db0367603024f24ef",
+  "sourceDiffSha256": "4171276ef1fa08a59dfddceba435bb3d8eb81fe831d451d2f23dab3e64a77a2f",
+  "sourceFiles": 21,
+  "scope": "Current approved deterministic MCU-field lookup, turn lifecycle and source-release guards; no general assistant or live-model acceptance",
+  "testMethod": {
+    "userApprovedAlternative": true,
+    "genuineApiSessions": 2,
+    "isolatedBrowserProfiles": 0,
+    "actualCanonicalSourceWithdrawal": false,
+    "sourceFixtureUsed": true,
+    "liveProviderTimeout": false,
+    "timeoutEvidence": "dependency-injected runtime deadline tests"
+  },
+  "checks": {
+    "agentNodeTests": {
+      "command": "node --test Panda-agent/tests/*.test.mjs",
+      "passed": 145,
+      "failed": 0,
+      "skipped": 0,
+      "exit": 0
+    },
+    "lint": {
+      "command": "npm.cmd run lint",
+      "exit": 0
+    },
+    "productionBuild": {
+      "dist": ".next-lightweight-phase3-recovery",
+      "buildId": "5loZYJ4dLTNmH9iWdHOqp",
+      "exit": 0,
+      "typecheck": "passed inside build",
+      "staticPages": 41
+    },
+    "linuxRuntime": {
+      "tests": 37,
+      "exit": 0
+    },
+    "connectedGuards": {
+      "cases": 8,
+      "actualPrivateHttp": true,
+      "verifiedReceipts": true,
+      "authSourceStore": "test-constructor fixtures",
+      "casesCovered": [
+        "selection before scope invalidation",
+        "atomic save fence",
+        "post-save redaction fixture",
+        "tampered receipt and status-only recovery",
+        "wrong identity",
+        "ambiguous products",
+        "unsupported revision",
+        "injected source instructions"
+      ]
+    },
+    "genuineIdentity": {
+      "passed": 18,
+      "checks": [
+        "genuine_identity_a",
+        "owner_chat_created_a",
+        "genuine_identity_b",
+        "owner_chat_created_b",
+        "anonymous_read_denied",
+        "own_empty_cancel_route_available",
+        "foreign_read_a_to_b",
+        "foreign_write_a_to_b",
+        "foreign_cancel_a_to_b",
+        "foreign_read_b_to_a",
+        "foreign_write_b_to_a",
+        "foreign_cancel_b_to_a",
+        "duplicate_submit_has_success",
+        "exactly_one_durable_answer",
+        "real_grounded_citation",
+        "foreign_grounded_history_withheld",
+        "foreign_attempts_created_no_own_messages",
+        "revoked_session_not_released"
+      ],
+      "realClerk": true,
+      "realInsforge": true,
+      "actualBff": true,
+      "isolatedApiSessions": 2,
+      "isolatedBrowserContexts": 0,
+      "duplicateHttpStatuses": [
+        200,
+        200
+      ],
+      "ownerSessionChanged": false,
+      "sourceRowsChanged": 0,
+      "fixtureUsersRetainedForBrowserChecks": false
+    },
+    "genuineObservationalStatus": {
+      "passed": 8,
+      "checks": [
+        "specific_terminal_attempt_confirmed",
+        "bounded_observational_projection",
+        "absence_not_misrepresented_as_terminal",
+        "queried_foreign_thread_denied",
+        "duplicate_query_denied",
+        "extra_query_denied",
+        "noncanonical_query_denied",
+        "malformed_query_denied"
+      ],
+      "realClerk": true,
+      "realInsforge": true,
+      "actualBff": true,
+      "selectorExecutionRequested": false,
+      "ownerSessionChanged": false
+    },
+    "sqlCancelRollback": {
+      "migrationSha256": "30d2c8073d49e7e24e50e1e20d93b980804a9ca6446588bbdd32d8de34231690",
+      "passed": 28,
+      "checks": [
+        "bad_mac",
+        "missing_digest",
+        "extra_answer",
+        "invalid_digest_type",
+        "wrong_digest_for_unprepared",
+        "foreign_actor",
+        "preadmission_cancel_creates_no_fake_turn",
+        "preadmission_cancel_idempotent",
+        "late_signed_begin_fenced",
+        "late_legacy_begin_fenced",
+        "late_v2_begin_fenced",
+        "private_admission_guard",
+        "private_marker_table",
+        "marker_cannot_move_between_chats",
+        "marker_cascades_on_owned_chat_delete",
+        "marker_budget_bounds_new_cancel",
+        "combined_budget_bounds_new_begin",
+        "unprepared_cancel_terminal",
+        "cancel_replay_idempotent",
+        "late_complete_cannot_overwrite",
+        "late_prepare_cannot_execute",
+        "new_turn_admitted_after_cancel",
+        "prepare_wins_null_cancel_conflicts",
+        "wrong_prepared_digest",
+        "prepared_cancel_fixed_note_ignores_stale_scope_without_quote",
+        "late_prepared_completion_denied",
+        "private_cancel_metadata",
+        "original_execution_metadata_retained"
+      ],
+      "rolledBack": true,
+      "realClerk": false,
+      "realSourceWithdrawal": false,
+      "canonicalSourceRowsChanged": 0,
+      "providerCalls": 0
+    },
+    "sqlCancelConcurrency": {
+      "cancel_before_begin_blocks_late_admission": true,
+      "begin_before_cancel_has_one_fixed_terminal": true,
+      "cancel_wins_prepare_fenced": true,
+      "prepare_wins_null_cancel_fenced": true,
+      "expiry_rechecked_after_actual_lock_wait": true,
+      "disposableChats": 5,
+      "cleanupVerified": true,
+      "realClerk": false,
+      "realSourceWithdrawal": false,
+      "sourceRowsChanged": 0,
+      "providerCalls": 0
+    },
+    "sqlSourceHashConcurrency": {
+      "deleteWaitedForSourceFencedRead": true,
+      "commitWaitedThenRejectedStaleScope": true,
+      "disposableThreads": 2,
+      "cleanupVerified": true,
+      "realClerk": false,
+      "realSourceWithdrawal": false,
+      "canonicalSourceRowsChanged": 0,
+      "providerCalls": 0
+    },
+    "sqlExactQuoteHistory": {
+      "checks": [
+        "quoted_answer_present_before_invalidation",
+        "protected_original_retained",
+        "history_redacts_quote_and_citations",
+        "begin_replay_redacts_quote_and_citations",
+        "hosted_history_redacts_quote"
+      ],
+      "rolledBack": true,
+      "simulatedIdentity": true,
+      "metadataHashInvalidation": true,
+      "realSourceWithdrawal": false,
+      "canonicalSourceRowsChanged": 0,
+      "providerCalls": 0
+    }
+  },
+  "browser": {
+    "tool": "Codex built-in browser",
+    "url": "http://localhost:3001/panda-agent",
+    "genuineOwnerSession": true,
+    "viewport": {
+      "width": 1007,
+      "height": 750
+    },
+    "unknownAndAmbiguousProduct": "clarification, no worker selection",
+    "pinoutWithoutRevision": "abstained and requested revision/schematic",
+    "beforeForwardCancellation": {
+      "delayInstrumentation": "one unmodified private select held up to20seconds before forwarding",
+      "messagePosts": 1,
+      "forwardedSelects": 0,
+      "signedCancelStatus": 409,
+      "publicCancelStatus": 200,
+      "fixedNoQuoteNote": true,
+      "draftRestored": true,
+      "composerFocused": true
+    },
+    "responseLossRecovery": {
+      "delayInstrumentation": "one genuine completed response held up to20seconds; this is not upstream provider cancellation",
+      "doubleEnterMessagePosts": 1,
+      "forwardedSelects": 1,
+      "publicCancelStatus": 503,
+      "honestUncertainty": true,
+      "statusReadsWithoutRedispatch": true,
+      "specificAttemptCompletionProof": true,
+      "composerEnabled": true,
+      "composerFocused": true,
+      "draftPreserved": true,
+      "cancelDisabledDuringStatusLoad": true
+    },
+    "finalHappyPath": {
+      "quote": "Microcontroller: ESP8266",
+      "citations": 1,
+      "expandedSource": true,
+      "savedReload": true,
+      "sourceEligible": true
+    },
+    "retainedOwnerTestHistory": {
+      "turns": 7,
+      "complete": 7,
+      "pending": 0,
+      "prepared": 4,
+      "cancelled": 1,
+      "evidence": 3,
+      "protected": 7,
+      "uniqueRequestIds": 7
+    },
+    "screenshots": [
+      "phase3-identity-revision.png",
+      "phase3-cancel-confirmed.png",
+      "phase3-response-loss-pending.png",
+      "phase3-recovery-pass.png",
+      "phase3-final-cited-answer.png"
+    ],
+    "screenshotLocation": "ignored Panda-agent/infra/lightweight/artifacts; no original-owner sidebar history in screenshots"
+  },
+  "host": {
+    "image": "panda-lightweight:phase3-468b6b2e98087dd8",
+    "imageId": "sha256:48f0f72ab897f5007446a9c86768e3a485509604396228bc43fd10dd679a6dd2",
+    "sourceFingerprint": "468b6b2e98087dd8a431f9937f6c3ce933d09d97737215da8c4399c19e19a6a8",
+    "imageBytes": 161881365,
+    "startupToHealthMs": 1539,
+    "idleMemorySample": "37.86MiB / 512MiB",
+    "scopedJournalAndFinalHealth": {
+      "scopedTurns": 4,
+      "complete": 3,
+      "cancelled": 1,
+      "unknown": 0,
+      "modelCalls": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costNanoUsd": 0,
+      "imageVerified": true,
+      "health": 200,
+      "ready": 200,
+      "oomKilled": false,
+      "restartCount": 0,
+      "memoryLimitBytes": 536870912,
+      "nanoCpus": 1000000000,
+      "readOnly": true,
+      "providerEnabled": false,
+      "oldGatewayActive": true
+    },
+    "secretAndJournalRetained": true,
+    "existingGatewayRetained": true,
+    "publicExposureChanged": false
+  },
+  "migration": {
+    "file": "20261105090001_panda-agent-lightweight-cancel.sql",
+    "sha256": "30d2c8073d49e7e24e50e1e20d93b980804a9ca6446588bbdd32d8de34231690",
+    "newForwardMigrationApplied": true,
+    "priorAppliedMigrationEdited": false
+  },
+  "cleanup": {
+    "users": {
+      "deletedDisposableUsersVerified": 3,
+      "providerAbsenceStatus": 404,
+      "ownerSessionChanged": false
+    },
+    "database": {
+      "remainingChats": 0,
+      "remainingExecutionMetadata": 0,
+      "remainingMarkers": 0,
+      "disposableIdentitiesChecked": 3,
+      "ownerHistoriesPreserved": true
+    },
+    "delayHelperStopped": true,
+    "normalDirectTransportRestored": true,
+    "journalAuditAndTombstonesRetained": true,
+    "canonicalSourceChanges": 0,
+    "ownerSessionPreserved": true
+  },
+  "boundaries": {
+    "staticFiles": 101,
+    "privateValuesChecked": 10,
+    "secretMatches": 0,
+    "messageRouteTraceFiles": 124,
+    "forbiddenTraceMatches": 0,
+    "stagedSecretMatches": 0,
+    "cancelRouteTraceFiles": 124,
+    "cancelRouteForbiddenMatches": 0,
+    "rootManifestLockfileChanged": false,
+    "commerceChanged": false,
+    "pushOrMerge": false,
+    "vercelDeployment": false
+  },
+  "limitations": [
+    "Two genuine independent API sessions complement one owner browser profile; no isolated browser-cookie profile claim.",
+    "Synthetic source DI plus applied PostgreSQL fixture-metadata fences replace actual canonical source withdrawal under the user-approved alternative.",
+    "Model deadlines are injected fixture evidence; the enabled deterministic path makes zero model/provider calls.",
+    "Dispatched or unknown work and a cached result whose sources no longer permit saving can remain honestly unresolved; no universal cancellation claim.",
+    "Pre-admission cancellation markers share the100-attempt/chat admission budget.",
+    "This is private development integration, not production release readiness."
+  ],
+  "continuation": "Phase3PASS starts Phase4 contract/source review under the brief; no Phase4 feature acceptance is implied."
+}

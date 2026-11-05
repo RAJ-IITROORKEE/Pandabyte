@@ -44,6 +44,7 @@ export function createLightweightStore(actor: ChatActor, key: string) {
       if (!value || typeof value.execute!=='boolean') throw new ChatStoreError('unavailable');
       return value.execute;
     },
+    cancel: async (thread:string,request:string,digest:string|null) => parseChatRead(await rpc('cancel',signed('cancel',{thread,request,digest}))),
     complete: async (thread:string,request:string,answer:ChatAnswer) => parseChatRead(await rpc('complete',signed('complete',{thread,request,answer:cleanAnswer(answer)}))),
   };
 }
