@@ -1,17 +1,18 @@
 import 'server-only';
-import {auth} from '@clerk/nextjs/server';
-import {createInsforgeServerClient} from '@/lib/insforge/server';
+import {authenticateLightweight} from './lightweight-connection';
 import {controlRoomAdminAccess} from '../control-room/clerk';
 import {createRuntimeInspectionHandlers} from './runtime-inspection';
-import {localRuntimeStatus} from './local-runtime';
+import {lightweightReady} from './lightweight-ready';
+
+const runtimeStatus=async()=>({available:await lightweightReady(),mode:'lightweight_fastapi' as const,retrievalMethod:'lexical' as const});
 
 export async function productsGET(request: Request) {
   return createRuntimeInspectionHandlers({
     authenticate: async () => {
-      const session=await auth();
-      if(!session.isAuthenticated||session.sessionStatus!=='active'||!session.userId)return {kind:'unauthorized'};
-      return {kind:'signed_in',client:await createInsforgeServerClient()};
-    },runtimeStatus:localRuntimeStatus,
+      const actor=await authenticateLightweight();
+      if(!actor)return {kind:'unauthorized'};
+      return {kind:'signed_in',client:actor.client};
+    },runtimeStatus,
   }).productsGET(request);
 }
 export async function corpusGET(request: Request) {
@@ -19,7 +20,8 @@ export async function corpusGET(request: Request) {
     authenticate: async () => {
       const access=await controlRoomAdminAccess();
       if(!access.allowed)return {kind:access.status===401?'unauthorized':access.status===403?'forbidden':'unavailable'};
-      return {kind:'admin',client:await createInsforgeServerClient()};
-    },runtimeStatus:localRuntimeStatus,
+      const actor=await authenticateLightweight();
+      return actor?{kind:'admin',client:actor.client}:{kind:'unauthorized'};
+    },runtimeStatus,
   }).corpusGET(request);
 }

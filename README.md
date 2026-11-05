@@ -8,6 +8,8 @@ An India-first IoT hardware catalog and company website with an editable adminis
 
 **Deployment safety:** the live application uses a reviewed combined source snapshot, not `main` alone. The Agent integration includes approved source that is not yet committed here. Future deployments must reconcile that source and its deployment-only settings; deploying an ordinary `main` archive could overwrite the integration.
 
+**Panda Agent replacement branch, 5 November 2026:** Phase 1 is complete. This branch removes the old native orchestration and preserves the interface, approved canonical RAG, Clerk access and stored records. The replacement uses a private FastAPI container and a fresh Next.js coordinator. Phase 2 is blocked on the live free-provider and grounded-answer gate; inference remains disabled. The private AWS work does not deploy this branch to Vercel. See the [tracking handoff](Panda-agent/docs/lightweight-harness-handoff.md) and [service contract](Panda-agent/docs/lightweight-service-contract.md).
+
 **Test-commerce:** localhost and the separately authorized hosted preview support explicitly configured Razorpay TEST checkout, owner-approved provisional tax/shipping totals, paid-test PDF bills and shared customer/Admin fulfillment tracking. Live payments, emails and real tax invoices remain off. [Scope, setup boundaries and verification](docs/storefront-test-checkout.md).
 
 ## Implemented

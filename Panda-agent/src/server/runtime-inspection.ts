@@ -2,7 +2,7 @@ import { getRuntimeProductEvidence, listRuntimeProducts } from '../retrieval/ins
 
 type Client = Parameters<typeof listRuntimeProducts>[0];
 type Auth = { kind: 'signed_in' | 'admin'; client: Client } | { kind: 'unauthorized' | 'forbidden' | 'unavailable' };
-type RuntimeStatus = { available: boolean; mode: 'aws_opencode_local'; retrievalMethod: 'lexical' };
+type RuntimeStatus = { available: boolean; mode: 'lightweight_fastapi'; retrievalMethod: 'lexical' };
 type Dependencies = { authenticate: () => Promise<Auth>; runtimeStatus: () => Promise<RuntimeStatus> };
 const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' };
 function response(status: number, value: unknown): Response {
@@ -42,8 +42,8 @@ export function createRuntimeInspectionHandlers({ authenticate, runtimeStatus }:
             try {
                 const products = await listRuntimeProducts(auth.client);
                 const status = await runtimeStatus();
-                if (typeof status?.available !== 'boolean' || status.mode !== 'aws_opencode_local' || status.retrievalMethod !== 'lexical') return fail(503);
-                return response(200, { products, runtime: { available: status.available, mode: 'aws_opencode_local', retrievalMethod: 'lexical' }, corpus: { classification: 'captured_listing_engineering', candidateState: 'sealed_inactive', denseAvailable: false } });
+                if (typeof status?.available !== 'boolean' || status.mode !== 'lightweight_fastapi' || status.retrievalMethod !== 'lexical') return fail(503);
+                return response(200, { products, runtime: { available: status.available, mode: 'lightweight_fastapi', retrievalMethod: 'lexical' }, corpus: { classification: 'captured_listing_engineering', candidateState: 'sealed_inactive', denseAvailable: false } });
             } catch { return fail(503); }
         },
         async corpusGET(request: Request): Promise<Response> {
@@ -57,8 +57,8 @@ export function createRuntimeInspectionHandlers({ authenticate, runtimeStatus }:
                 const selected = params.sku ? await getRuntimeProductEvidence(auth.client, params.sku) : null;
                 if (params.sku && !selected) return fail(503);
                 const status = await runtimeStatus();
-                if (typeof status?.available !== 'boolean' || status.mode !== 'aws_opencode_local' || status.retrievalMethod !== 'lexical') return fail(503);
-                return response(200, { products, selected, runtime: { available: status.available, mode: 'aws_opencode_local', retrievalMethod: 'lexical' }, corpus: { classification: 'captured_listing_engineering', candidateState: 'sealed_inactive', denseAvailable: false }, capabilities: { externalFetch: false, indexUploads: false, compile: false } });
+                if (typeof status?.available !== 'boolean' || status.mode !== 'lightweight_fastapi' || status.retrievalMethod !== 'lexical') return fail(503);
+                return response(200, { products, selected, runtime: { available: status.available, mode: 'lightweight_fastapi', retrievalMethod: 'lexical' }, corpus: { classification: 'captured_listing_engineering', candidateState: 'sealed_inactive', denseAvailable: false }, capabilities: { externalFetch: false, indexUploads: false, compile: false } });
             } catch { return fail(503); }
         },
     };

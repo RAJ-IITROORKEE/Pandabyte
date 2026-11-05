@@ -1,10 +1,9 @@
 import "server-only";
-import { auth } from "@clerk/nextjs/server";
-import { createInsforgeServerClient } from "@/lib/insforge/server";
+import { authenticateLightweight } from '../server/lightweight-connection';
 import { createControlRoomHandlers } from "./handlers";
 import { createControlRoomStore } from "./insforge-store";
 import type { Admission } from "./contracts";
-type Client = Awaited<ReturnType<typeof createInsforgeServerClient>>;
+type Client = NonNullable<Awaited<ReturnType<typeof authenticateLightweight>>>['client'];
 type Context = {
     admission: {
         kind: "admin";
@@ -17,13 +16,13 @@ type Context = {
 };
 async function adminContext(): Promise<Context> {
     try {
-        const session = await auth();
-        if (!session.isAuthenticated || session.sessionStatus !== "active" || !session.userId) {
+        const actor = await authenticateLightweight();
+        if (!actor) {
             return { admission: { kind: "unauthorized" } };
         }
-        const client = await createInsforgeServerClient();
+        const client = actor.client;
         const { data, error } = await client.database.from("staff_role_memberships")
-            .select("role").eq("user_id", session.userId).limit(1);
+            .select("role").eq("user_id", actor.subject).limit(1);
         if (error || !Array.isArray(data))
             return { admission: { kind: "unavailable" } };
         if (data.length !== 1 || data[0]?.role !== "ADMIN")

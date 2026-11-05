@@ -1,4 +1,4 @@
-import { chatHandlers } from '@/Panda-agent/src/server/clerk-chat';
+import { lightweightChatHandlers as chatHandlers } from '@/Panda-agent/src/server/lightweight-chat';
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   return chatHandlers.readGET(request, (await context.params).id);

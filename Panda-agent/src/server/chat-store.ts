@@ -47,7 +47,7 @@ function turn(v: unknown): ChatTurn {
   if ((v.status === 'pending') !== (v.response === null)) return bad();
   return { requestId: v.requestId, question: v.question, status: v.status as ChatTurn['status'], response: v.response === null ? null : cleanAnswer(v.response), createdAt: v.createdAt };
 }
-function read(v: unknown): ChatRead {
+export function parseChatRead(v: unknown): ChatRead {
   if (!record(v) || !Array.isArray(v.messages) || v.messages.length > 200 || !Array.isArray(v.turns) || v.turns.length > 100) return bad();
   return { thread: thread(v.thread), messages: v.messages.map(message), turns: v.turns.map(turn) };
 }
@@ -67,14 +67,6 @@ export function createChatStore(client: InsForgeClient) {
     async archive(id: string, archived: boolean) { const v = await rpc('chat_archive', { p_thread: id, p_archived: archived }); if (!record(v) || v.ok !== true) return bad(); return { ok: true as const }; },
     async delete(id: string) { const v = await rpc('chat_delete', { p_thread: id }); if (!record(v) || v.ok !== true) return bad(); return { ok: true as const }; },
     async create(title: string) { const v = await rpc('chat_create', { p_title: title }); if (!record(v)) return bad(); return { thread: thread(v.thread) }; },
-    async read(id: string) { return read(await rpc('chat_read', { p_thread: id })); },
-    async begin(id: string, requestId: string, question: string, webSearch = false) {
-      const v = await rpc('chat_begin_v2', { p_thread: id, p_request: requestId, p_question: question, p_web_search: webSearch });
-      if (!record(v) || typeof v.admitted !== 'boolean' || (v.admitted && (typeof v.finishToken !== 'string' || !/^[0-9a-f]{64}$/.test(v.finishToken))) || (!v.admitted && v.finishToken !== undefined && v.finishToken !== null)) return bad();
-      if (!record(v.turn) || v.turn.webSearch !== webSearch || !uuid(v.turn.requestId) || !string(v.turn.question, 2000) || !['pending', 'complete'].includes(v.turn.status as string) || ((v.turn.status === 'pending') !== (v.turn.response === null))) return bad();
-      const currentTurn = { requestId: v.turn.requestId, question: v.turn.question, status: v.turn.status as 'pending' | 'complete', response: v.turn.response === null ? null : cleanAnswer(v.turn.response) };
-      return { ...read(v), admitted: v.admitted, turn: currentTurn, finishToken: v.admitted ? v.finishToken as string : undefined };
-    },
-    async finish(id: string, requestId: string, finishToken: string, answer: ChatAnswer) { return read(await rpc('chat_finish', { p_thread: id, p_request: requestId, p_finish_token: finishToken, p_response: cleanAnswer(answer) })); },
+    async read(id: string) { return parseChatRead(await rpc('chat_read', { p_thread: id })); },
   };
 }

@@ -41,13 +41,10 @@ test('context is a single bounded count-only event before the saved final', asyn
 });
 
 const sse = value => `data: ${JSON.stringify(value)}\n\n`;
-test('fragmented genuine deltas, reset and tool activity precede authoritative saved final', async () => {
-  const text = sse({ type: 'text_delta', text: 'Hello é' }) + sse({ type: 'text_reset' }) + sse({ type: 'text_delta', text: 'New answer' }) + sse({ type: 'tool_activity', tool: 'rag_search', status: 'completed' }) + complete;
-  const bytes = encode.encode(text), seen = [], tools = [];
-  const result = await readChatStream(stream([...bytes].map(byte => new Uint8Array([byte]))), () => {}, undefined, { onText: value => seen.push(value), onReset: () => seen.push('reset'), onTool: value => tools.push(value) });
-  assert.deepEqual(seen, ['Hello é', 'reset', 'New answer']);
-  assert.deepEqual(tools, [{ tool: 'rag_search', status: 'completed' }]);
-  assert.equal(result.type, 'complete'); assert.deepEqual(result.data.messages, []);
+test('rejects provisional text and tool events even when followed by a saved final', async () => {
+  for (const value of [{ type: 'text_delta', text: 'Hello é' }, { type: 'text_reset' }, { type: 'tool_activity', tool: 'rag_search', status: 'completed' }]) {
+    await assert.rejects(readChatStream(stream([sse(value) + complete]), () => {}));
+  }
 });
 test('rejects unconfirmed, malformed, foreign and oversized provisional events', async () => {
   const delta = sse({ type: 'text_delta', text: 'hello' });
