@@ -441,6 +441,12 @@
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
         "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      },
+      "providerDecision": {
+        "owner": "Keep existing zero-cost and ZDR requirements",
+        "record": "docs/agent-experience-upgrade/provider-policy-verification.json",
+        "activation": "Off: policy forwarding observed in local mock, native retries observed; price, strict retention, quota and live output gates remain open",
+        "wireEvidence": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json"
       }
     },
     {

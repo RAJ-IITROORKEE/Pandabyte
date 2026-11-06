@@ -115,9 +115,12 @@ are idle. Parent owns the next native BFF integration.
 Actual collaboration model
 identity metadata unavailable; explicit overrides do not prove execution identity.
 
-Existing approved OpenRouter model/profile is unresolved: the retained runtime has
-no active approved LLM profile. A concise identifier-only owner question is pending;
-keep inherited zero-cost/ZDR constraints and do not enable an unapproved default.
+Owner replied: keep the existing zero-cost and ZDR requirements. The model-choice
+question is resolved as a policy constraint; do not ask it again. Current anonymous
+OpenRouter metadata identified one preliminary free text/JSON ZDR candidate, but
+explicit required fee fields, strict account/key retention settings, native wire
+policy, quota and structured-output/zero-cost execution proof remain unverified.
+See provider-policy-verification.json. No model profile was approved or activated.
 The source profile, provider policy, generation identity and durable caller must be
 concrete before native activation. No credentials were requested in chat.
 
@@ -125,3 +128,29 @@ Run npm run typecheck:agent-native for unwired modules. Root application TypeScr
 did not reach them; this dedicated check caught and fixed five compatibility/type
 errors. It now passes under the existing ES2017 project target without broadening
 that target or changing runtime ID encoding.
+
+## Retained provider policy follow-up
+
+Owner confirmed zero cost and ZDR unchanged. provider-policy-verification.json
+records anonymous official catalogue checks and all unresolved gates. Preliminary
+free text endpoint is discovery only; required request/image prices were omitted,
+strict account/key retention settings and live quota/output/cost remain unverified.
+Do not label missing prices verified zero. Current OpenRouter documentation makes
+Safety Retention allowance separate from zdr:true; response caching also has its
+own controls. No global account/key changes or real inference were performed.
+
+The isolated 2.2.2 local mock wire probe observed exact model/provider pinning,
+no fallback, required parameters, ZDR, data_collection deny, four zero price caps,
+empty plugins and X-OpenRouter-Cache:false on all three captured requests. Despite
+settings.maxRetries:0, native made three attempts after a synthetic HTTP429 and
+remained active at the end of the 10-second observation. Result: policy_blocked,
+not execution readiness. The owned child/sink/fixture are cleaned up. Five existing
+Python provider-policy fixture tests pass; script syntax and task validation pass.
+HTTP5xx/lost-response cases remain untested. Read opencode-provider-wire-probe.json
+and scripts/opencode-provider-wire-probe.mjs before further native policy work.
+
+Next verify a supported native retry control from the pinned implementation or
+upstream interface; do not build a replacement gateway/runner or treat an arbitrary
+accepted settings property as enforcement. Preserve the established price/privacy
+gates and continue independent integration. The earlier model-choice question is
+answered; do not request it again or automatically select a paid/non-ZDR fallback.

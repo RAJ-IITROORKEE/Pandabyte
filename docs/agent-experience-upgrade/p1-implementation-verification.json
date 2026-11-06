@@ -108,9 +108,10 @@
     ]
   },
   "pendingActivation": [
-    "Existing approved LLM profile identifier/configuration; retained runtime has none active and the owner question is pending",
+    "Owner retained existing zero-cost and ZDR requirements. Profile remains inactive pending required fee, strict retention, native retry, quota and output/cost proof.",
     "Native BFF admission, prompt/current-message terminal correlation, status-only recovery and durable cleanup fencing",
     "Admin browser acceptance blocked by existing parent staff-access unavailable",
     "Shared full native tool/MCP management, isolated Playground and customer memory remain incomplete"
-  ]
+  ],
+  "providerPolicyFollowup": "provider-policy-verification.json and opencode-provider-wire-probe.json: actual local mock controls forwarded; native retried429 despite candidate maxRetries0, so activation stays off."
 }

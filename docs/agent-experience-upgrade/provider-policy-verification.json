@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-06",
+  "ownerDecision": "Keep the existing zero-cost and ZDR requirements",
+  "policyChanged": false,
+  "activated": false,
+  "privatePromptsUploaded": false,
+  "sources": [
+    {
+      "url": "https://openrouter.ai/api/v1/models",
+      "sha256": "f432da55d82f6ccf922db13ee775ff3c3f86f5311ea67d5fff4b7e5f70dc518e"
+    },
+    {
+      "url": "https://openrouter.ai/api/v1/endpoints/zdr",
+      "sha256": "21b50011747796bc0d70075ef714366520b96dd36ec334f3f732035eb9839108"
+    },
+    {
+      "url": "https://openrouter.ai/api/v1/models/xingchen-agi/xing4.0-29b-a4b:free/endpoints",
+      "sha256": "1ebb128099c9692db0bf6ae9cfc416b88772c2e4ea4ca557b942dae6e34a97fc"
+    }
+  ],
+  "publicInventory": {
+    "models": 453,
+    "zdrEndpointRows": 1118,
+    "zeroTokenPriceZdrRows": 12
+  },
+  "preliminaryCandidate": {
+    "model": "xingchen-agi/xing4.0-29b-a4b:free",
+    "providerTag": "phala",
+    "providerName": "Phala",
+    "context": 262144,
+    "status": 0,
+    "promptPrice": "0",
+    "completionPrice": "0",
+    "requestPrice": "not explicitly supplied",
+    "imagePrice": "not explicitly supplied",
+    "zdrCatalogMember": true,
+    "safetyRetention": false,
+    "jsonParameterAdvertised": true,
+    "toolChoiceRequiredAdvertised": false,
+    "approved": false
+  },
+  "remainingGates": [
+    "Explicit zero-price proof for every inherited required rate; omitted prices are not silently treated as verified zero",
+    "Current account/key guardrail ZDR-only state excluding Safety Retention, without shared-global changes",
+    "Verified supported native retry control; the candidate maxRetries setting did not prevent repeats in the actual mock fixture",
+    "Actual structured output, current account quota and reported endpoint/zero usage-cost proof",
+    "Previously recorded native BFF/lifecycle/current-message/citation release gates"
+  ],
+  "clarifications": [
+    "Public catalogue metadata is discovery only, not account-specific routing/quota or execution proof",
+    "The models catalogue canonical details link returned a base-model endpoint list without the free-variant row; the documented exact free model ID query returned the row",
+    "Current ZDR docs allow Safety Retention when account/guardrail settings permit it; provider.zdr alone does not prove strict ZDR",
+    "Response caching has separate controls; X-OpenRouter-Cache:false overrides a caching preset"
+  ],
+  "documentation": [
+    "https://openrouter.ai/docs/guides/features/zdr",
+    "https://openrouter.ai/docs/guides/routing/provider-selection",
+    "https://openrouter.ai/docs/guides/features/response-caching",
+    "https://openrouter.ai/docs/api/api-reference/endpoints/list-all-endpoints-for-a-model"
+  ],
+  "tooling": "Firecrawl installed/authenticated but 0 credits; official documentation read through built-in web tool; anonymous public metadata GETs only",
+  "credentialsExtractedOrPrinted": false,
+  "existingPolicyRegression": {
+    "command": "python -m unittest discover -s tests -p test_openrouter.py -v",
+    "passed": 5,
+    "failed": 0,
+    "evidenceClass": "Existing Python adapter with injected HTTP transport; not native or live provider proof"
+  },
+  "realInferenceRequests": 0,
+  "nativeWireProbe": {
+    "record": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json",
+    "evidenceClass": "Actual isolated OpenCode 2.2.2 to local mock completion endpoint; fake credential and synthetic text only",
+    "policyForwarding": "pass for every captured request",
+    "cacheHeader": "X-OpenRouter-Cache:false observed",
+    "mockCompletionAttempts": 3,
+    "scenario": "429 with Retry-After:1",
+    "candidateRetrySetting": "settings.maxRetries:0 did not prevent repeats in this fixture",
+    "retryGate": "failed; native remained active after observation",
+    "cleanup": "Owned child stopped, sink closed, temporary fixture removed",
+    "notRun": [
+      "HTTP5xx",
+      "Lost response after acceptance",
+      "Real provider success/structured output"
+    ]
+  },
+  "staticChecks": {
+    "wireProbeSyntax": "pass",
+    "wireProbeEslint": "pass",
+    "taskValidation": "97 tasks valid",
+    "diffCheck": "pass"
+  }
+}

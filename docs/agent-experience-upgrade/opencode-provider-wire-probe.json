@@ -1,0 +1,74 @@
+{
+  "version": "2.2.2",
+  "scope": "isolated native to loopback MOCK provider only",
+  "applicationAdmission": "disposable file receipt callback; not Clerk, database ownership or production isolation",
+  "realProviderCallsRequested": false,
+  "realCredentialFilesRead": false,
+  "runtimeOrProviderReady": false,
+  "nativeRetrySetting": "settings.maxRetries=0 is a candidate only; observation decides",
+  "observationWindowMs": 10000,
+  "cases": [
+    {
+      "scenario": "429",
+      "phase": "observed",
+      "attempts": 3,
+      "rejectedPaths": 0,
+      "wireChecks": [
+        {
+          "cacheDisabled": true,
+          "modelMatches": true,
+          "endpointOnly": true,
+          "noFallback": true,
+          "requireParameters": true,
+          "zdr": true,
+          "dataCollectionDenied": true,
+          "fourZeroCeilings": true,
+          "pluginsEmpty": true
+        },
+        {
+          "cacheDisabled": true,
+          "modelMatches": true,
+          "endpointOnly": true,
+          "noFallback": true,
+          "requireParameters": true,
+          "zdr": true,
+          "dataCollectionDenied": true,
+          "fourZeroCeilings": true,
+          "pluginsEmpty": true
+        },
+        {
+          "cacheDisabled": true,
+          "modelMatches": true,
+          "endpointOnly": true,
+          "noFallback": true,
+          "requireParameters": true,
+          "zdr": true,
+          "dataCollectionDenied": true,
+          "fourZeroCeilings": true,
+          "pluginsEmpty": true
+        }
+      ],
+      "terminal": false,
+      "activeAtEnd": true,
+      "pidVerified": true,
+      "onlyFixtureModel": true,
+      "promptAccepted": true,
+      "observedMs": 10183,
+      "policyForwarded": true,
+      "retryGate": "failed_native_retries_observed",
+      "childStopped": true,
+      "sinkClosed": true
+    }
+  ],
+  "additionalCases": {
+    "http5xx": "not_run",
+    "dropAfterAccept": "not_run"
+  },
+  "policyForwarding": "pass",
+  "retryGate": "failed",
+  "result": "policy_blocked",
+  "childrenStopped": true,
+  "mockSinksClosed": true,
+  "fixtureRemoved": true,
+  "logs": "task-owned stdout/stderr retained under ignored tmp/opencode-provider-wire-probe"
+}
