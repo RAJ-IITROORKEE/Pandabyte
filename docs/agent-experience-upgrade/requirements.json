@@ -1,0 +1,2490 @@
+{
+  "schemaVersion": "1.0",
+  "title": "Pandabyte Agent Experience Upgrade requirement and coverage authority",
+  "authority": "Single task/coverage source for the Master Codex Prompt; do not create a duplicate task list.",
+  "source": {
+    "path": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+    "verifiedRead": "Full 1,029-line file read; source ranges are 1-based inclusive.",
+    "scope": "P0.1-P0.7, P1.1-P1.8, Original Product Specification sections 1-14, E2E bullets, constraints, design and state requirements."
+  },
+  "repositorySnapshot": {
+    "root": "C:/Users/rajra/.codex/worktrees/panda-agent-lightweight-rag/Pandabyte",
+    "branchObserved": "codex/panda-agent-fastapi-replacement",
+    "gitStatusObserved": "No porcelain changes shown at inspection time; branch only.",
+    "phase6": "IN_PROGRESS; last passing phase 5; broader frozen held-out multi-hop gate not established.",
+    "evidencePolicy": "Existing evidence cites verified paths/existence and explicitly avoids claiming behavior acceptance from file presence. Unverified details are UNKNOWN."
+  },
+  "fields": [
+    "id",
+    "requirement",
+    "source",
+    "existingEvidence",
+    "plannedReuseChange",
+    "dependencies",
+    "owner",
+    "verification",
+    "status",
+    "dependsOn",
+    "claim"
+  ],
+  "statusVocabulary": [
+    "not_started",
+    "in_progress",
+    "partial",
+    "verified",
+    "blocked",
+    "unknown"
+  ],
+  "requirements": [
+    {
+      "id": "P0.1",
+      "requirement": "Establish repository/worktree/branch/status/instructions/handoff/stack/checks; report actual historical Phase 6 and preserve/accurately checkpoint authorized work.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "71-79"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "README.md",
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "Panda-agent/docs/verification/lightweight-phase6-20261106.json"
+        ],
+        "observation": "README and current handoff identify replacement branch and Phase 6 IN PROGRESS; actual Phase 6 evidence is detailed."
+      },
+      "plannedReuseChange": "Reconcile code, git and current handoff; do not infer closure from historical notes.",
+      "dependencies": "Current branch/worktree and complete Phase 6 evidence review.",
+      "owner": "Parent",
+      "verification": "Git status, branch/worktree, phase evidence and exact checkpoint review.",
+      "status": "verified",
+      "dependsOn": [],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.1b",
+      "requirement": "Inspect Panda Agent frontend/backend, existing Admin RAG/evaluations, OpenCode integration/lifecycle/skills/MCP/tools/config, and locate Mem0 plan; if absent record missing dependency and preserve behavior.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "75-76"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/",
+          "Panda-agent/src/"
+        ],
+        "observation": "Frontend workspace, control-room page, server modules and harness handoff exist; Mem0 plan and full capability contract not yet verified."
+      },
+      "plannedReuseChange": "Trace current call paths and identify reuse/gaps; record Mem0 plan presence explicitly.",
+      "dependencies": "P0.1 baseline.",
+      "owner": "Parent",
+      "verification": "Path/API matrix with source evidence and Mem0 search result.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.1c",
+      "requirement": "Inventory Codex/native memory/agents/skills/plugins/MCP/models/config scope and equivalents; record baseline failures separately from regressions.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "77"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          ".agents/skills/ecc-sources.json",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Repository-local ECC provenance and prior tool findings are documented; live Codex inventory is UNKNOWN."
+      },
+      "plannedReuseChange": "Inspect installed client only as needed, reuse equivalents and label baseline versus new failures.",
+      "dependencies": "P0.1 baseline.",
+      "owner": "Parent",
+      "verification": "Inventory with provenance and baseline check results.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.1d",
+      "requirement": "Create a complete compact coverage matrix with requirement, verified evidence, planned reuse/change, dependency, owner, verification, status for P0 and every original requirement.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "79"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [],
+        "observation": "This file is the requested authority being created; no prior complete matrix verified."
+      },
+      "plannedReuseChange": "Maintain this single requirements.json as the sole task/coverage authority.",
+      "dependencies": "None",
+      "owner": "Parent",
+      "verification": "Schema/coverage audit against all prompt sections and acceptance bullets.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.2",
+      "requirement": "Verify native Codex official support; configure supported specialists/models/reasoning/concurrency, preserve settings/hooks/permissions, scope/rollback; native memory state; Claude adapter only if installed.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "81-93"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          ".agents/skills/"
+        ],
+        "observation": "Local guidance inventory exists; current Codex recognition/routing/memory and Claude state UNKNOWN."
+      },
+      "plannedReuseChange": "Use native supported controls; separate configured/recognized/active/verified/restart states.",
+      "dependencies": "P0.1c",
+      "owner": "Parent",
+      "verification": "Help/docs and execution metadata; hooks/config diff; Claude conditional check.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1c"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.3",
+      "requirement": "Evaluate Beads against existing equivalent; verify license/version/deps/storage/install/integration/export/worktrees; initialize reproducibly only if needed and migrate provenance-preserving tasks; otherwise document reuse decision.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "95-105"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "plan.md",
+          "docs/"
+        ],
+        "observation": "Existing plans/docs exist; adequacy as shared task authority not verified."
+      },
+      "plannedReuseChange": "Keep this JSON as single task authority unless a demonstrably better existing store is selected; no parallel Markdown task list.",
+      "dependencies": "P0.1d",
+      "owner": "Parent",
+      "verification": "Fresh-process persistence/dependency/claims/export/worktree checks; license/version evidence.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1d"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.4",
+      "requirement": "Test selective local development-doc retrieval; source paths, relevance, current-over-archive, refresh, allowlist/exclusions, search-first; evaluate QMD/alternatives only for measured gap; no hosted API or customer corpus mixing.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "107-119"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "docs/",
+          "Panda-agent/docs/"
+        ],
+        "observation": "Docs exist; no verified dev retrieval mechanism."
+      },
+      "plannedReuseChange": "Test existing retrieval first; local keyword baseline, only add validated resource-suitable semantic retrieval; keep indexes/models out of Git.",
+      "dependencies": "P0.1c",
+      "owner": "Parent",
+      "verification": "Representative queries, edited doc refresh, archived conflict, source-path, cost/resource and Git checks.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1c"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.5",
+      "requirement": "Install only small verified dev skill set after auditing source/instructions/scripts/license/compatibility/activation/dependencies; prioritize observed gaps; inventory named UI/design guidance; maintain separate dev/runtime allowlists and one UI/conversation state strategy.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "121-140"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          ".agents/skills/ecc-sources.json",
+          ".agents/skills/"
+        ],
+        "observation": "Pinned ECC sources and local skills are present; exact broader installed sources and named identity mapping UNKNOWN."
+      },
+      "plannedReuseChange": "Reuse verified skills; install only pinned/project-scoped nonduplicative skills; never auto-expose dev skills to runtime.",
+      "dependencies": "P0.1c",
+      "owner": "Parent",
+      "verification": "Source/license/script review, activation test and allowlist separation.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1c"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.6",
+      "requirement": "Perform only justified behavior-preserving refactoring; reconcile docs/ownership/handoff/task authority; preserve unique evidence; evaluate Knip/Serena/RTK only when applicable/measured; avoid second orchestration framework.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "142-163"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "README.md",
+          "AGENTS.md",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "These core project records exist; duplication/dead code audit not done."
+      },
+      "plannedReuseChange": "Tie each change to observed need; update links; avoid generated clutter and preserve APIs/evidence.",
+      "dependencies": "P0.1-P0.5 evidence",
+      "owner": "Parent",
+      "verification": "Relevant regression checks and link/evidence reconciliation.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.1b",
+        "P0.2",
+        "P0.3",
+        "P0.4",
+        "P0.5"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P0.7",
+      "requirement": "Validate recognized config, skill discovery/routing metadata, fresh-session task persistence/dependencies/retrieval/refresh/current precedence, hooks, applicable Claude, baseline checks and measured workflow overhead; report unavailable truthfully; produce P1 backlog.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "165-173"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "Panda-agent/docs/verification/lightweight-phase6-20261106.json"
+        ],
+        "observation": "Phase 6 live evidence exists but P0 setup acceptance is not established."
+      },
+      "plannedReuseChange": "Close P0 only with reproducible setup, coverage, ownership, capability limits, checks and P1 backlog.",
+      "dependencies": "P0.2-P0.6",
+      "owner": "Parent",
+      "verification": "Fresh process and retrieval checks; model metadata; hooks and representative metrics.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.6"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p0-verification.json",
+        "limitations": "Accepted activation and measurement limits recorded there; this is P0 setup verification, not product acceptance."
+      }
+    },
+    {
+      "id": "P1.1",
+      "requirement": "Confirm audit/capability contracts, single execution path, minimal adapter, auth boundaries, config validation/rollback, redacted evidence and reload behavior.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "179-183"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "Panda-agent/docs/lightweight-phase6-contract.md",
+          "Panda-agent/src/opencode/inspection-client.ts",
+          "Panda-agent/src/opencode/inspection-handler.ts",
+          "Panda-agent/src/opencode/inspection.ts",
+          "app/api/admin/panda-agent/runtime/route.ts"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P0.1",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "verified",
+      "dependsOn": [
+        "P0.7"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-contract-verification.json",
+        "contract": "docs/agent-experience-upgrade/capability-contract.md",
+        "nativeProbe": "docs/agent-experience-upgrade/opencode-probe.json",
+        "scope": "Audit and capability contract verified, plus first read-only adapter. Execution/lifecycle/management implementation and live provider acceptance remain later product requirements."
+      }
+    },
+    {
+      "id": "P1.2",
+      "requirement": "Prepare concrete desktop/mobile light/dark customer/Admin proposals and all requested interface/state/a11y specs; review before customer UI replacement; no fabricated approval.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "185-191"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          ".superdesign/",
+          "design.md"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P1.1",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "blocked",
+      "dependsOn": [
+        "P1.1"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "proposal": "docs/agent-experience-upgrade/design-proposal.html",
+        "contract": "docs/agent-experience-upgrade/design-proposal.md",
+        "browser": "docs/agent-experience-upgrade/design-browser-review.json",
+        "approval": "Pending asynchronous owner review; no new customer UI replacement implemented"
+      }
+    },
+    {
+      "id": "P1.3",
+      "requirement": "Build unified customer shell/sidebar/history/search/new chat/Memory/Settings/Account/composer and supported attachment/dictation/model/draft/status/render/stream/cancel/recovery behaviors; remove mandatory modes, preserve auth/persistence/accessibility.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "193-197"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P1.2 approval; P1.1",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.2"
+      ],
+      "claim": null
+    },
+    {
+      "id": "P1.4",
+      "requirement": "Complete real provider shared conversational RAG and improve existing RAG controls/evals/diagnostics; enforce approved evidence, catalog, ambiguity, citations, withdrawal/cache/memory propagation for customer and Playground.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "199-203"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P1.1",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.1"
+      ],
+      "claim": null
+    },
+    {
+      "id": "P1.5",
+      "requirement": "Implement verified OpenCode Agent Skills sidebar/tabs/actions/status/permissions/config, safe install, MCP transports/secrets/connectivity/discovery, actual tool availability and limitations; no separate engine.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "205-213"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/skills-panel.tsx",
+          "app/admin/rag-control-room/tools-panel.tsx",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P1.1; P0.5; P1.2",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.1",
+        "P0.5"
+      ],
+      "claim": null
+    },
+    {
+      "id": "P1.6",
+      "requirement": "Implement isolated Admin Playground using existing runtime/RAG and conversation components; full configure-discover-test-inspect-correct-retest loop; enforce Admin, memory/history isolation, safe side effects and redaction.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "215-221"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P1.1; P1.3; P1.4; P1.5",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.3",
+        "P1.4",
+        "P1.5"
+      ],
+      "claim": null
+    },
+    {
+      "id": "P1.7",
+      "requirement": "Integrate documented Mem0/customer memory behavior across surfaces: owner scope, review/correction/deletion/privacy; dev/customer/test separation; withdrawal behavior; exact blockers if plan/access absent.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "223-227"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P0.1b; P1.3; P1.4; P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "partial",
+      "dependsOn": [
+        "P0.1b",
+        "P1.3",
+        "P1.4",
+        "P1.6"
+      ],
+      "claim": null,
+      "executionEvidence": {
+        "memoryContract": "docs/agent-experience-upgrade/memory-contract.md",
+        "ownerFollowup": "Find the missing plan or configure if required; no separately supplied plan found; existing memory preserved; no new processor enabled"
+      }
+    },
+    {
+      "id": "P1.8",
+      "requirement": "Run complete real-service E2E and regression suite, desktop/mobile/light/dark/a11y/types/build/auth/isolation/lifecycle/RAG/skills/MCP/config/recovery; distinguish mocks/live; reconcile every requirement and handoff.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "229-235"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/verification/lightweight-phase6-20261106.json",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "These paths were inspected and exist; feature completeness/contract acceptance is not inferred."
+      },
+      "plannedReuseChange": "Use the existing verified component/service/harness; implement only documented gaps and leave unsupported operations explicit.",
+      "dependencies": "P1.1-P1.7",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Requirement-specific acceptance evidence and regression checks.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.1",
+        "P1.2",
+        "P1.3",
+        "P1.4",
+        "P1.5",
+        "P1.6",
+        "P1.7"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.1",
+      "requirement": "Modern minimal responsive unified Panda Agent conversational UX; replace Guide/Diagnostics/Structured Task UI; Admin RAG, skills/external install, MCP, tools, model/runtime and Playground; preserve backend/auth/RAG/sessions/cancellation/persistence/Admin; OpenCode reuse mandatory.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "261-283"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.2",
+      "requirement": "Perform 10-point audit: repo/branch/handoff; Phase6; outstanding work; frontend/backend; Admin RAG; tests/diagnostics/evals; OpenCode APIs; skills/MCP/plugin/tools/config/session; Mem0; reuse vs gaps; provide audit findings and preserve unrelated evidence.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "287-313"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/",
+          "Panda-agent/docs/verification/lightweight-phase6-20261106.json",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.3a",
+      "requirement": "Customer layout: one conversation column/natural-language composer/compact header/collapsible sidebar/minimal neutral light-dark/mobile design.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "317-329"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.3b",
+      "requirement": "Sidebar: New Chat, Search Chats, Chat History, Memory & Context, Settings, Account; remove mandatory modes and route natural language to authorized harness capabilities.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "331-346"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.3c",
+      "requirement": "Composer: auto-expand, Send/Stop, optional attachments, dictation only if supported, server-authorized model selector, preserved drafts, upload preview/status; hide unsupported capabilities.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "348-360"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.3d",
+      "requirement": "Rendering: Markdown/code/copy, evidence citations, expandable compact tool activity, streaming, cancellation, clear error/recovery; preserve session ownership.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "362-374"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.4a",
+      "requirement": "Use ChatGPT/Codex interaction references and PandaByte brand; clean/minimal neutral surfaces, subtle accents/borders, comfortable typography, compact controls, accessible dialogs/menus, responsive drawers, restrained motion/reduced motion, no oversized cards.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "378-393"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "design.md",
+          "Panda-agent/src/ui/workspace.module.css"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.4b",
+      "requirement": "Inspect/reuse named design skills/libraries, dependencies, coherent state owner and licenses; prepare desktop/mobile light/dark review proposals before replacement UI.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "395-411"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          ".agents/skills/",
+          "Panda-agent/third-party/ai-elements/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.5",
+      "requirement": "Real RAG flow: authenticated user → harness routing → approved retrieval → evidence → authorized LLM → citation validation → persistent history; real provider; reuse APIs; source restrictions; natural routing/catalog resolution/clarify ambiguity/evidence validation/no fabrication; cancel/recover/history; server secrets; preserve services/no second runner.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "415-445"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/retrieval/",
+          "Panda-agent/src/lightweight/",
+          "Panda-agent/src/server/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.6a",
+      "requirement": "Reuse/improve EXISTING Admin RAG (inspect UI/backend/config/tests/eval); preserve capabilities and improve clarity.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "449-455"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.6b",
+      "requirement": "Knowledge Sources: upload/ingest, approved source management, supported external URLs, ingestion status, processing/chunk review.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "457-467"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.6c",
+      "requirement": "Review & Publication: approve/reject, publish, withdraw/disable outdated content; preserve version/audit history.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "468-472"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.6d",
+      "requirement": "Retrieval Testing: sample queries, chunks, available ranking/similarity, actual citations, relevance/behavior, supported parameters.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "474-480"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.6e",
+      "requirement": "Evaluations: reuse pipeline, questions, answer/citation correctness, retrieval relevance/coverage, failure/insufficient evidence, measured config comparisons; real execution only.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "482-497"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.6f",
+      "requirement": "Diagnostics: retrieval/processing errors, safe request logs, measured latency/tokens; same configured engine for customer and Playground; approved changes propagate; withdrawals cannot feed cache/memory; preserve source ownership/version/audit security.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "491-510"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.7",
+      "requirement": "Admin sidebar Agent Skills, compact four-tab Skills/MCP Servers/Tools/Configuration layout; no excessive dashboard controls.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "514-533"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.7.1",
+      "requirement": "Harness-discovered skills metadata/status/config/validation; Admin view/instructions/configure/enable/install/remove/refresh/test; verified source/permission; no arbitrary scripts or custom loader; unsupported actions truthful.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "535-567"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/skills-panel.tsx",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.7.2",
+      "requirement": "MCP UI lists actual servers/name/transport/config/enabled/state/discovered tools/error; supported add/edit/local+remote/env/secret refs/enable/remove/connect/discover/test; protect secret; verify deployed local executable/filesystem/process, don't claim local-computer access; OpenCode owns MCP client.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "569-607"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.7.3",
+      "requirement": "Show actual tools grouped by source with name/description/source/availability; only supported permission changes; Playground link; enforcement at execution layer.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "609-626"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/tools-panel.tsx",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.7.4",
+      "requirement": "Expose only supported minimal OpenCode configuration: default agent/model/providers/permissions/skills/MCP/tools/runtime when available; compact advanced settings; no duplicate backend/config engine.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "628-646"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8a",
+      "requirement": "Admin-only mini chat tests skills, MCP, routing, RAG/citations, models, tools, memory/context, config changes in Admin panel.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "650-672"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/ui/workspace.tsx"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8b",
+      "requirement": "Playground UI: current test history, natural input, supported model selection, session controls, Send/Stop, streaming, expandable activity, citations, status; reuse main chat components.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "674-688"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/ui/workspace.tsx"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8c",
+      "requirement": "Supported Playground controls: active model/agent, skills, MCPs, permitted tools, RAG profile, test reset; only actual runtime-supported controls.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "690-701"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8d",
+      "requirement": "Demonstrate genuine skill/MCP/RAG/routing configure→execute→inspect flows using actual selected capability evidence.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "703-721"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/verification/lightweight-phase6-20261106.json",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8e",
+      "requirement": "Use same OpenCode and RAG services; separate Admin test session/history/memory/side effects; server Admin auth; preserve permissions/logging; confirm consequential side effects; use real supported dry-run if available and distinguish simulation.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "723-741"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8f",
+      "requirement": "Optional inspection exposes only actual status/model/invocations/MCP/retrieval/citations/errors/measured latency/tokens; no private reasoning/secrets/credentials/sensitive payloads.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "743-758"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.8g",
+      "requirement": "Acceptance workflow entirely within Admin: install/config skill; verify discovery; open Playground; send request; observe actual invocation/output; inspect error/evidence; correct and retest.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.9",
+      "requirement": "Explicit ownership: OpenCode execution/orchestration/discovery/tool/MCP/plugin/config/permissions/model/lifecycle; Admin visibility/forms/validated changes/status/Playground/results; Pandabyte services auth/RAG/persistence/memory/audit; smallest adapter; no second runner/skills runtime/MCP client/tool engine/model framework/RAG/Playground backend; report unsupported APIs without inventing them.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "776-832"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/src/server/",
+          "Panda-agent/src/retrieval/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.10",
+      "requirement": "Follow Mem0 plan; compact development memory/retrieval/handoffs never customer-visible; owner-scoped customer memory review/correct/delete/privacy; Playground cannot write customer memory; no new processing without data-flow/isolation design.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "836-856"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/",
+          "Panda-agent/docs/"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.11",
+      "requirement": "Execute Phases A–G: audit/Phase6, design proposal/review, unified UI, real LLM/RAG, skills/MCP admin, isolated Playground, final browser/integration/types/build/responsive/auth/isolation/limitations; no unrelated deployment/publication.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "860-925"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          "Panda-agent/docs/lightweight-phase6-contract.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.13",
+      "requirement": "At each stage handoff records implementation/reuse/change rationale/tests/browser evidence/limits/checkpoint/next action; bounded workers/integration ownership; avoid needless refactor/duplicate infra.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "988-1003"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "SPEC.14",
+      "requirement": "Expected product: evidence-backed natural customer chat; Admin reuses RAG, harness-integrated skills/MCP, real Playground; architecture principle OpenCode execution + Pandabyte auth/knowledge/persistence + Admin config/visibility/testing.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "1007-1029"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/",
+          "app/admin/",
+          "app/panda-agent/page.tsx"
+        ],
+        "observation": "Existence/path presence verified by repository inspection; stated behaviors remain unverified unless separately evidenced."
+      },
+      "plannedReuseChange": "Reuse existing components/contracts; verify each behavior and implement uncovered scope.",
+      "dependencies": "P1.1-P1.8 as applicable",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Map to listed acceptance criteria and explicit live/browser evidence.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.01",
+      "requirement": "Real supported-service end-to-end acceptance: Natural-language chat.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.02",
+      "requirement": "Real supported-service end-to-end acceptance: LLM generation.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.03",
+      "requirement": "Real supported-service end-to-end acceptance: RAG retrieval and citations.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.04",
+      "requirement": "Real supported-service end-to-end acceptance: Session persistence.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.05",
+      "requirement": "Real supported-service end-to-end acceptance: Streaming and cancellation.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.06",
+      "requirement": "Real supported-service end-to-end acceptance: Error recovery.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.07",
+      "requirement": "Real supported-service end-to-end acceptance: User isolation.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.AGENT.08",
+      "requirement": "Real supported-service end-to-end acceptance: Mobile accessibility.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "933-942"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/panda-agent/page.tsx",
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.3/P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.3",
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.RAG.01",
+      "requirement": "Real supported-service end-to-end acceptance: Source ingestion.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "944-951"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.RAG.02",
+      "requirement": "Real supported-service end-to-end acceptance: Approval/publication.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "944-951"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.RAG.03",
+      "requirement": "Real supported-service end-to-end acceptance: Withdrawal enforcement.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "944-951"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.RAG.04",
+      "requirement": "Real supported-service end-to-end acceptance: Retrieval testing.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "944-951"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.RAG.05",
+      "requirement": "Real supported-service end-to-end acceptance: Evaluation runs.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "944-951"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.RAG.06",
+      "requirement": "Real supported-service end-to-end acceptance: Configuration propagation to answering engine.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "944-951"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/page.tsx",
+          "app/admin/rag-control-room/control-room.tsx",
+          "Panda-agent/src/control-room/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.4",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.4"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.SKILLS.01",
+      "requirement": "Real supported-service end-to-end acceptance: List installed skills.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "953-960"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.SKILLS.02",
+      "requirement": "Real supported-service end-to-end acceptance: Install supported external skill.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "953-960"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.SKILLS.03",
+      "requirement": "Real supported-service end-to-end acceptance: Validate availability.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "953-960"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.SKILLS.04",
+      "requirement": "Real supported-service end-to-end acceptance: Configure supported settings.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "953-960"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.SKILLS.05",
+      "requirement": "Real supported-service end-to-end acceptance: Test skill in Playground.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "953-960"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.SKILLS.06",
+      "requirement": "Real supported-service end-to-end acceptance: Verify disablement/uninstallation where supported.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "953-960"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.MCP.01",
+      "requirement": "Real supported-service end-to-end acceptance: Add supported MCP server.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "962-969"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.MCP.02",
+      "requirement": "Real supported-service end-to-end acceptance: Validate connectivity.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "962-969"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.MCP.03",
+      "requirement": "Real supported-service end-to-end acceptance: Discover tools.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "962-969"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.MCP.04",
+      "requirement": "Real supported-service end-to-end acceptance: Test MCP-backed action.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "962-969"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.MCP.05",
+      "requirement": "Real supported-service end-to-end acceptance: Handle connection failures.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "962-969"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.MCP.06",
+      "requirement": "Real supported-service end-to-end acceptance: Remove/disable configuration safely.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "962-969"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/",
+          "Panda-agent/docs/lightweight-phase6-mcp-preflight.md"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.5/P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.01",
+      "requirement": "Real supported-service end-to-end acceptance: Admin-only access.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.02",
+      "requirement": "Real supported-service end-to-end acceptance: Real agent response.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.03",
+      "requirement": "Real supported-service end-to-end acceptance: Real tool activity.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.04",
+      "requirement": "Real supported-service end-to-end acceptance: Real RAG citations.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.05",
+      "requirement": "Real supported-service end-to-end acceptance: Model selection.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.06",
+      "requirement": "Real supported-service end-to-end acceptance: Test-session isolation.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.07",
+      "requirement": "Real supported-service end-to-end acceptance: Cancellation/error recovery.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.PLAYGROUND.08",
+      "requirement": "Real supported-service end-to-end acceptance: No accidental production side effects.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "971-980"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/",
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Paths verified; acceptance is not presumed."
+      },
+      "plannedReuseChange": "Run against authorized real services and isolated identities; preserve artifacts and classify result as unit/browser/mock/live.",
+      "dependencies": "P1.6",
+      "owner": "Parent + bounded assigned owners",
+      "verification": "Record exact command/session/evidence and execution class; do not claim mock as live.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "E2E.CLASSIFY",
+      "requirement": "Distinguish unit, browser, mock, and verified live execution; never show fabricated metrics or success indicators.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "982-984"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/verification/lightweight-phase6-20261106.json",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Existing Phase 6 evidence labels simulated and live observations separately; future tests still require explicit classification."
+      },
+      "plannedReuseChange": "Carry result type/source into handoff and UI evidence; only measured values shown.",
+      "dependencies": "P1.8",
+      "owner": "Parent",
+      "verification": "Audit evidence labels and UI status derivation.",
+      "status": "partial",
+      "dependsOn": [
+        "P1.8"
+      ],
+      "claim": null
+    },
+    {
+      "id": "HANDOFF.CHECKPOINT",
+      "requirement": "After every completed stage record implementation, reuse, changes/reason, tests, browser evidence, limitations, checkpoint and exact next action; keep one current handoff.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "990-1001"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Current handoff is present and contains checkpoint/evidence/next actions."
+      },
+      "plannedReuseChange": "Update same handoff, maintain one task authority in this JSON.",
+      "dependencies": "Each stage",
+      "owner": "Parent",
+      "verification": "Review handoff completeness and evidence links.",
+      "status": "partial",
+      "dependsOn": [],
+      "claim": null
+    },
+    {
+      "id": "CONTRACT.PRECEDENCE",
+      "requirement": "Treat Original Product Specification as mandatory; map historical phases without overwriting Phase 6 evidence; resolve real conflicts explicitly, do not narrow scope or invent APIs; design approval gates production customer UI replacement.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "12-20"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Historical Phase 6 handoff exists and is explicitly in progress; no complete cross-prompt coverage matrix was present."
+      },
+      "plannedReuseChange": "Preserve historical evidence and use this file as mandatory complete coverage; do not implement replacement UI before equivalent explicit approval.",
+      "dependencies": "All phases",
+      "owner": "Parent",
+      "verification": "Review source scope, mapped phase labels and approval evidence before replacement UI changes.",
+      "status": "in_progress",
+      "dependsOn": [],
+      "claim": null
+    },
+    {
+      "id": "CONSTRAINT.SECURITY-AND-SCOPE",
+      "requirement": "OpenCode owns product execution/capabilities; Pandabyte owns auth, approved RAG, persistence, memory isolation and audit; Admin is configuration/visibility/testing only. Keep dev memory/skills separate from runtime/customer. Preserve existing protections and commerce. Limit refactoring to behavior-preserving observed needs; preserve concurrent work; no unauthorized deploy/publish/push/merge/data cleanup/destructive migration. Use local/signed-in development tooling; no new paid/hosted inference, credential extraction or external uploads.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "22-33"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "README.md",
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "README documents current service boundaries and hosted/test-commerce limits; handoff records ongoing private development evidence. Specific implementation compliance remains unverified."
+      },
+      "plannedReuseChange": "Apply as cross-cutting acceptance constraints; no additional engine or unrelated infrastructure; preserve live data and concurrent changes.",
+      "dependencies": "All phases",
+      "owner": "Parent + all implementation owners",
+      "verification": "Review diffs, APIs, auth/ownership tests, deployment and external-action logs against each constraint.",
+      "status": "partial",
+      "dependsOn": [],
+      "claim": null
+    },
+    {
+      "id": "CONTRACT.WORKFLOW-AND-HANDOFF",
+      "requirement": "Use one task store/current handoff, stage evidence with ownership/dependencies/acceptance, progressive verified retrieval, bounded workers/task packets and supported model routing; report actual execution model metadata, reassess failed attempts, checkpoint before compaction and measure workflow without fabricated savings.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "35-67"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md",
+          ".agents/skills/ecc-sources.json"
+        ],
+        "observation": "A current detailed handoff and pinned repository skill provenance exist; model routing metadata and shared task persistence are UNKNOWN."
+      },
+      "plannedReuseChange": "Keep this single JSON authority and existing handoff; use bounded assignments and source-backed updates.",
+      "dependencies": "P0.1/P0.2/P0.3",
+      "owner": "Parent",
+      "verification": "Inspect task/handoff updates, actual model metadata and representative context/tool/time usage where exposed.",
+      "status": "partial",
+      "dependsOn": [],
+      "claim": null
+    },
+    {
+      "id": "DESIGN.STATES-AND-A11Y",
+      "requirement": "Propose explicit loading, empty, streaming, cancellation, upload, error/recovery, disabled/unsupported and connection-status states; specify keyboard navigation, focus, labels, screen-reader feedback, contrast, touch layout, responsive drawers and reduced motion.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "185-191"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/ui/workspace.tsx",
+          "Panda-agent/src/ui/workspace.module.css",
+          "docs/frontend-theme.md"
+        ],
+        "observation": "Workspace/style and theme contract exist; a complete upgrade-state proposal is not verified."
+      },
+      "plannedReuseChange": "Include each state and accessibility behavior in desktop/mobile light/dark proposal before customer UI replacement.",
+      "dependencies": "P1.1; design approval",
+      "owner": "Parent + UI owner",
+      "verification": "Reviewable proposal plus keyboard/browser checks; distinguish DOM checks from actual screen-reader, zoom and OS motion tests.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.2"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.01",
+      "requirement": "Admin installs or configures a supported skill.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Skills panel path exists; requested Playground workflow is not verified."
+      },
+      "plannedReuseChange": "Use verified harness-supported Admin skill configuration and record exact outcome.",
+      "dependencies": "P1.5",
+      "owner": "Parent + Admin owner",
+      "verification": "Complete through Admin UI using supported harness operation and isolated development scope.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.5"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.02",
+      "requirement": "Admin verifies the skill is discovered by the actual harness.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Agentic capability code exists; discovery UI and post-change proof are UNKNOWN."
+      },
+      "plannedReuseChange": "Read discovery state from actual harness interface; never synthesize availability.",
+      "dependencies": "ACCEPT.PLAYGROUND.01",
+      "owner": "Parent + harness owner",
+      "verification": "Capture actual discovery response/status.",
+      "status": "not_started",
+      "dependsOn": [
+        "ACCEPT.PLAYGROUND.01"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.03",
+      "requirement": "Admin opens the Playground inside the Admin panel.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/"
+        ],
+        "observation": "Admin routes exist; dedicated Playground route is not verified."
+      },
+      "plannedReuseChange": "Add dedicated Admin route only if absent and gate it server-side.",
+      "dependencies": "P1.6",
+      "owner": "Parent + UI owner",
+      "verification": "Browser route access as Admin and denial for non-Admin.",
+      "status": "not_started",
+      "dependsOn": [
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.04",
+      "requirement": "Admin sends a test request from the Playground.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/ui/workspace.tsx"
+        ],
+        "observation": "Customer workspace exists; isolated Admin test request path is UNKNOWN."
+      },
+      "plannedReuseChange": "Reuse conversation/runtime components and OpenCode execution path with a dedicated test scope.",
+      "dependencies": "ACCEPT.PLAYGROUND.03; P1.6",
+      "owner": "Parent + runtime owner",
+      "verification": "Real supported harness request in isolated test session.",
+      "status": "not_started",
+      "dependsOn": [
+        "ACCEPT.PLAYGROUND.03",
+        "P1.6"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.05",
+      "requirement": "Admin observes actual skill invocation evidence and output.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/src/agentic/"
+        ],
+        "observation": "Harness/capability code is present; skill attribution evidence availability is not established."
+      },
+      "plannedReuseChange": "Show only actual harness loading/invocation/result evidence; clearly label unavailable attribution.",
+      "dependencies": "ACCEPT.PLAYGROUND.04",
+      "owner": "Parent + runtime owner",
+      "verification": "Inspect real execution trace and output; no fabricated activity.",
+      "status": "not_started",
+      "dependsOn": [
+        "ACCEPT.PLAYGROUND.04"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.06",
+      "requirement": "Admin inspects actual errors or execution evidence.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "Panda-agent/docs/lightweight-harness-handoff.md"
+        ],
+        "observation": "Sanitized execution evidence exists in the current handoff; dedicated Playground inspection remains UNKNOWN."
+      },
+      "plannedReuseChange": "Expose redacted supported errors/status/evidence and measured metrics only.",
+      "dependencies": "ACCEPT.PLAYGROUND.04",
+      "owner": "Parent + runtime owner",
+      "verification": "Exercise success and failure; audit response/UI for secrets and private reasoning.",
+      "status": "not_started",
+      "dependsOn": [
+        "ACCEPT.PLAYGROUND.04"
+      ],
+      "claim": null
+    },
+    {
+      "id": "ACCEPT.PLAYGROUND.07",
+      "requirement": "Admin corrects configuration and retests the skill in the same Admin workflow.",
+      "source": {
+        "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
+        "lines": "760-772"
+      },
+      "existingEvidence": {
+        "verifiedPaths": [
+          "app/admin/rag-control-room/skills-panel.tsx"
+        ],
+        "observation": "Configuration UI path exists; end-to-end retest loop is not verified."
+      },
+      "plannedReuseChange": "Keep the configuration→discovery→test→inspect→correct→retest loop in Admin, with version/concurrency guards.",
+      "dependencies": "ACCEPT.PLAYGROUND.01-06; P1.6",
+      "owner": "Parent + Admin owner",
+      "verification": "Complete full correction-and-retest loop and save linked evidence.",
+      "status": "not_started",
+      "dependsOn": [
+        "ACCEPT.PLAYGROUND.01",
+        "ACCEPT.PLAYGROUND.02",
+        "ACCEPT.PLAYGROUND.03",
+        "ACCEPT.PLAYGROUND.04",
+        "ACCEPT.PLAYGROUND.05",
+        "ACCEPT.PLAYGROUND.06"
+      ],
+      "claim": null
+    }
+  ],
+  "dependencyPolicy": "dependsOn is the enforced acyclic task graph. Prose dependencies retain external prerequisites; verified status requires recorded acceptance, including design approval where required. claim is exclusive active ownership; owner remains accountable ownership."
+}

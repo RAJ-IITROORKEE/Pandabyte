@@ -1,0 +1,90 @@
+{
+  "version": "2.2.2",
+  "scope": "isolated provider-free read-only local probe",
+  "checks": {
+    "authenticatedInfo": {
+      "status": 200,
+      "versionMatches": true,
+      "pidMatchesSpawnedChild": true
+    },
+    "anonymousInfo": {
+      "status": 401
+    },
+    "applicationInspectionAdapter": {
+      "result": "pass",
+      "projection": {
+        "version": "2.2.2",
+        "status": "discovery_only",
+        "execution": "not_execution_ready",
+        "counts": {
+          "skills": 0,
+          "mcpServers": 0,
+          "models": 0
+        },
+        "capabilities": {
+          "install": false,
+          "configure": false,
+          "execute": false
+        }
+      }
+    },
+    "config": {
+      "status": 200,
+      "array": true,
+      "documentCount": 3,
+      "reviewedFieldsMatch": true,
+      "entries": [
+        {
+          "type": "document",
+          "path": "inside",
+          "keys": [
+            "permissions",
+            "plugins",
+            "policies",
+            "share",
+            "skills",
+            "update"
+          ]
+        },
+        {
+          "type": "directory",
+          "path": "inside",
+          "keys": []
+        },
+        {
+          "type": "document",
+          "path": "inside",
+          "keys": [
+            "permissions",
+            "plugins",
+            "policies",
+            "share",
+            "skills",
+            "update"
+          ]
+        }
+      ]
+    },
+    "skills": {
+      "status": 200,
+      "dataArray": true,
+      "count": 0,
+      "entries": []
+    },
+    "mcp": {
+      "status": 200,
+      "dataArray": true,
+      "count": 0
+    },
+    "models": {
+      "status": 200,
+      "dataArray": true,
+      "count": 0
+    }
+  },
+  "noPromptsOrExternalCallsRequested": true,
+  "runtimeOrProviderReady": false,
+  "result": "completed",
+  "childStopped": true,
+  "fixtureRemoved": true
+}

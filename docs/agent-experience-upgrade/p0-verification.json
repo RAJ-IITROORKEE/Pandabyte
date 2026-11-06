@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-06",
+  "milestone": "Agent Experience Upgrade / P0",
+  "baseline": {"branch": "codex/panda-agent-fastapi-replacement", "head": "8360a46", "initialWorkingTree": "clean", "historicalPhase6": "in_progress; last full passing phase 5; broad held-out gate unestablished"},
+  "specification": {"verbatimCopy": true, "lines": 1029, "sha256": "a502bffef09a7c0bbf89920a9f25499ddc88f4085526873501c1b35a4965b067"},
+  "checks": [
+    {"command": "node --test scripts/agent-tasks.test.mjs scripts/dev-context.test.mjs", "result": "pass", "tests": 6, "durationMs": 1230.9125, "scope": "Disposable fresh-process claims, concurrent claim exclusion, dependency graph/reverification, current source retrieval, refresh, archive order, exclusions"},
+    {"command": "node --test Panda-agent/tests/*.test.mjs", "result": "pass", "tests": 260, "durationMs": 15040.8656, "scope": "Existing Panda Agent local regression suite; no provider or live integration proof", "warning": "Existing MODULE_TYPELESS_PACKAGE_JSON warnings retained; no package-wide module change"},
+    {"command": "npx eslint scripts/agent-tasks.mjs scripts/agent-tasks.test.mjs scripts/dev-context.mjs scripts/dev-context.test.mjs scripts/agent-design-preview.mjs", "result": "pass"},
+    {"command": "node scripts/agent-tasks.mjs validate", "result": "pass", "rows": 97, "structuredDependencyArrays": 97},
+    {"command": "codex features list", "result": "pass", "memories": "stable true; CLI recognition only", "multiAgent": "stable true"},
+    {"command": "Python tomllib parse project config and 3 agent files", "result": "pass"},
+    {"command": "git diff --check", "result": "pass", "note": "Line-ending normalization notice is not a failure"}
+  ],
+  "review": {"specialist": "master_p0_review", "configuredModel": "gpt-6.1-sol", "executionModelIdentity": "unverified; not exposed by collaboration metadata", "finding": "P2 verification allowed regressed dependency", "resolution": "Fixed readiness check on verified; failing-before/passing-after regression; root reran all six tooling tests"},
+  "representativeRetrieval": {"query": "OpenCode ownership", "elapsedMs": 67.3, "stdoutUtf8Bytes": 3758, "returnedLines": 12, "retries": 0, "measurement": "One fresh process, not a comparative benchmark; source references inspected", "indexOrModelDownloads": 0, "readVolume": "Full allowlisted text files read on each invocation; excerpts bounded, no claim of reduced I/O", "modelUsageAndBilling": "Not exposed; no savings claimed"},
+  "toolDecisions": {"tasks": "Repository JSON plus guarded CLI; Beads evaluated and deferred as redundant for this checkpoint", "retrieval": "Fresh allowlisted keyword excerpts; QMD evaluated and deferred; no hosted retrieval", "skills": "Reuse reviewed existing guidance; 23 manifest file hashes matched; no whole collection or duplicate installation", "knip": "Deferred: no dead application code removal in P0; dynamic runtime refactor belongs to P1", "claude": "Not resolved on PATH; shared CLAUDE.md entry only; no execution claim"},
+  "acceptedLimitations": ["Native agent file activation and background memories in this ongoing desktop session remain unverified; explicit native delegation worked", "Configured Luna/Terra/Sol routing accepted, but execution model identity is not exposed", "No cross-worktree transaction, crash recovery or multi-client validation claimed", "Mem0 plan missing; search and proposed contract recorded; existing memory preserved", "Historical Phase 6 unresolved evaluation and blocked fixture remain preserved", "P0 does not certify the product or authorize deployment/push/merge"]
+}

@@ -1,0 +1,12 @@
+# Project development tooling only. Product runtime configuration is separate.
+[features]
+memories = true
+
+[agents]
+max_concurrent_threads_per_session = 3
+
+[memories]
+generate_memories = true
+use_memories = true
+max_rollouts_per_startup = 2
+min_rate_limit_remaining_percent = 50

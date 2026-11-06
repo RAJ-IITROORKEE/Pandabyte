@@ -30,6 +30,8 @@
 
 # Instructions for agents working on Pandabyte.in
 
+**Current Agent Experience Upgrade, 6 November 2026:** the owner's adopted [master specification](docs/agent-experience-upgrade/specification.md), [current handoff](docs/agent-experience-upgrade/handoff.md) and [single task/coverage authority](docs/agent-experience-upgrade/requirements.json) govern new P0/P1 work. Preserve historical Phase 6 evidence and unrelated work. The master supersedes historical replacement-only and future-Agent deferrals for this assignment; it requires OpenCode execution ownership and a new design-review gate. It does not authorize deployment, push or merge. Other business/access guards still apply. Use `node scripts/agent-tasks.mjs validate` and bounded `node scripts/dev-context.mjs <terms>`; project `.codex/agents/` records specialist routing with current activation limits in [native tooling](docs/agent-experience-upgrade/native-tooling.md).
+
 ## Current authorization
 
 **Latest operational-documentation authorization, 26 October 2026:** after `1ed5c23`, prepare [operational readiness](docs/phase-6-operational-readiness.md) with bounded Luna xhigh reviewers, offline source/document verification and a local commit. No runtime or service changes, private configuration reads or provider probes are needed. Preserve other-chat artifacts and owner access. Content publication, checkout/payments, load tests, deployment, live email/billing and backup/export/copy/restore/recovery provisioning remain deferred. Runbook actions and roadmap exit criteria are preparatory, not authorization to execute them. Full Phase 6 exit remains open.

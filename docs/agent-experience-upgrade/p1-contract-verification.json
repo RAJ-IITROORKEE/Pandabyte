@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-06",
+  "milestone": "Agent Experience Upgrade / P1.1",
+  "scope": "Capability audit and disabled-by-default read-only Admin discovery adapter; customer execution cutover remains future work",
+  "checks": [
+    {"command": "node --test --test-reporter=dot Panda-agent/tests/*.test.mjs", "result": "pass", "tests": 274},
+    {"command": "node --test Panda-agent/tests/opencode-inspection.test.mjs scripts/agent-tasks.test.mjs scripts/dev-context.test.mjs", "result": "pass", "tests": 20, "durationMs": 1428.1707},
+    {"command": "node scripts/opencode-contract-probe.mjs", "result": "pass", "evidence": "opencode-probe.json", "scope": "Actual native 2.2.2 + application inspection client; no prompt/provider/tool calls"},
+    {"command": "npx tsc --noEmit --incremental false", "result": "pass"},
+    {"command": "Scoped ESLint over all new scripts, native inspection source/tests and route", "result": "pass"},
+    {"command": "PANDABYTE_NEXT_DIST_DIR=.next-agent-experience-build npm run build", "result": "pass", "scope": "Application build and TypeScript completed; new Admin runtime GET appears in generated route table; isolated output retained locally; only auto-added test output paths removed from tsconfig afterward"}
+  ],
+  "liveFinding": {"initialFailure": "Adapter/direct count mismatch: startup native skill read returned two, subsequent reads zero", "cause": "Skill listing can precede final native policy activation; model listing awaits native plugins", "fix": "Use info, model, skill, MCP order; regression and actual native probe passed", "meaning": "Discovery count snapshot only, not execution readiness or atomic config receipt"},
+  "browser": {"evidence": "design-browser-review.json", "designApproval": "pending", "authenticatedMountedRoute": "not verified; existing localhost:3001 app retained, attempted separate server refused occupied port"},
+  "preservation": {"customerExecution": "Existing lightweight path unchanged", "runtimeConfiguration": "No persistent runtime/provider configuration changed", "temporaryNativeChild": "stopped and fixture removed", "deploymentPushMerge": "none"},
+  "remainingProductGates": ["P1.2 owner design approval", "Version-aligned isolated customer execution/lifecycle and live provider configuration", "Execution-layer skill/MCP/tool permission proofs and supported management operations", "Shared conversational RAG and mounted Admin evaluations", "Admin Playground and customer/test memory isolation", "Mem0 configuration/storage/provider/deletion decisions", "Full P1.8 browser/live regression; historical Phase 6 broad evaluation remains open"]
+}
