@@ -41,26 +41,24 @@
   "nativeSessions": {
     "record": "opencode-session-probe.json",
     "evidenceClass": "Actual pinned 2.2.2 disposable provider-free process with file receipt callback; not real Clerk/database integration",
-    "limits": "No prompt or provider call, live active inference cancellation, customer cutover, runtime cleanup API or permission certification"
+    "limits": "No prompt/provider call, live inference cancellation, customer cutover or effective-permission certification. Mounted durable cleanup admission and runtime generation/secret binding remain required.",
+    "followup": "Actual provider-free owned inactive removal, typed absence and pinned PID before/after operations passed. Unknown removal is observation-only; no automatic second DELETE."
   },
   "nativeJournal": {
     "record": "native-journal-verification.json",
     "groupsPassed": 9,
     "applied": false,
     "evidenceClass": "Selected development PostgreSQL, synthetic authenticated SQL subjects and isolated fixtures; candidate migration and fixtures rolled back",
-    "limits": "Injected post-entry expiry delay is not real lock contention; UUID duplicate check uses an injected scope helper; real canonical-source withdrawal was not performed."
+    "limits": "Injected post-entry expiry delay is not real lock contention; UUID duplicate check uses an injected scope helper; real canonical-source withdrawal was not performed.",
+    "followup": "Durable terminal-only removal claim added; repeat claim conflicts and retirement requires the claim. Revised migration hash and all9 rollback groups pass; table remains absent."
   },
   "checks": {
     "agentNodeTests": {
-      "passed": 307,
+      "passed": 329,
       "failed": 0
     },
     "developmentToolTests": {
       "passed": 6,
-      "failed": 0
-    },
-    "nativeAndAdminNavigationFocusedTests": {
-      "passed": 36,
       "failed": 0
     },
     "coverage": "97 tasks validate; P1.3, P1.4 and P1.5 remain in progress",
@@ -75,7 +73,44 @@
     "sharedInspectionProjectionTests": {
       "passed": 14,
       "failed": 0
+    },
+    "currentNativeAndEvidenceTests": {
+      "sessions": 26,
+      "journalStore": 13,
+      "preparedEvidence": 16,
+      "includedInAgentTotal": true
+    },
+    "adminNavigationTests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "nativeUnwiredTypecheck": {
+      "command": "npm run typecheck:agent-native",
+      "result": "pass",
+      "why": "Application typecheck includes only its import graph. Dedicated check caught and fixed ES2017 BigInt literal compatibility and typed error projection in the unwired foundation."
     }
   },
-  "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation."
+  "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation.",
+  "preparedEvidence": {
+    "status": "unwired foundation",
+    "singleProductOnly": true,
+    "contextCharactersMax": 20000,
+    "wholeFragmentsMax": 8,
+    "citationsMax": 4,
+    "modelFragmentAliases": "E1..E8; canonical mappings stay private",
+    "sourceFences": "Access, current identity, scope hash/fingerprint and sent-chunk membership rechecked before context/final release, including zero-selection replies",
+    "reviewFixes": "Private revision metadata, comment-bearing or invalid timestamps rejected; trusted empty identity conflict retained",
+    "evidenceClass": "16 injected adapter fixtures; not real provider/Clerk or canonical-source withdrawal",
+    "notClaimed": [
+      "Semantic entailment or hardware applicability",
+      "Multi-product or approved vendor support",
+      "Mounted native answering"
+    ]
+  },
+  "pendingActivation": [
+    "Existing approved LLM profile identifier/configuration; retained runtime has none active and the owner question is pending",
+    "Native BFF admission, prompt/current-message terminal correlation, status-only recovery and durable cleanup fencing",
+    "Admin browser acceptance blocked by existing parent staff-access unavailable",
+    "Shared full native tool/MCP management, isolated Playground and customer memory remain incomplete"
+  ]
 }

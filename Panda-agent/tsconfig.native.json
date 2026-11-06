@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "src/opencode/**/*.ts",
+    "src/server/native-*.ts",
+    "src/retrieval/prepared-evidence.ts"
+  ]
+}

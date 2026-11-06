@@ -33,9 +33,9 @@ export class NativeSessionError extends Error {
 
 // Native 2.2.2 identifier.ts: 48-bit time/counter followed by fourteen base-62 characters.
 function nativeID(descending: boolean) {
-    const timestamp = BigInt(Date.now()) * 0x1000n + 1n;
+    const timestamp = BigInt(Date.now()) * BigInt(4096) + BigInt(1);
     const value = descending ? ~timestamp : timestamp;
-    const time = Array.from({ length: 6 }, (_, i) => Number((value >> BigInt(40 - i * 8)) & 0xffn).toString(16).padStart(2, '0')).join('');
+    const time = Array.from({ length: 6 }, (_, i) => Number((value >> BigInt(40 - i * 8)) & BigInt(255)).toString(16).padStart(2, '0')).join('');
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     return time + Array.from(randomBytes(14), byte => chars[byte % 62]).join('');
 }

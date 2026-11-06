@@ -83,7 +83,7 @@ try {
     await writeFile(receiptPath, JSON.stringify(receipt), {flag:'wx'});
     const access = async candidate => JSON.stringify(candidate) === await readFile(receiptPath, 'utf8');
     summary.checks.nativeSessionAdapter = {result:'unverified',phase:'create'};
-    const native = createNativeSessionClient({baseUrl:base, password, directory:join(root,'workspace'), timeoutMs:5000});
+    const native = createNativeSessionClient({baseUrl:base, password, directory:join(root,'workspace'), expectedPid:child.pid, timeoutMs:5000});
     const created = await native.create(receipt, access);
     summary.checks.nativeSessionAdapter.phase = 'get';
     const state = await native.get(receipt, access);
@@ -97,7 +97,11 @@ try {
     if (active.active || history.length || created.outcome !== undefined || state.outcome !== undefined) throw Error('unexpected_disposable_session_state');
     const interrupt = await native.interrupt(receipt, access);
     if (interrupt.status === 'cancelled') throw Error('unstarted_session_falsely_cancelled');
-    summary.checks.nativeSessionAdapter = {result:'pass', durableFixtureReceipt:true, createAndOwnedRead:true, active:false, historyCount:history.length, unstartedInterrupt:interrupt.status, admission:'disposable file callback; not real application ownership or database isolation'};
+    summary.checks.nativeSessionAdapter.phase = 'remove';
+    const removal = await native.remove(receipt, access);
+    const absent = await native.absence(receipt, access);
+    if (removal.status !== 'removed' || absent.absent !== true) throw Error('native_removal_unverified');
+    summary.checks.nativeSessionAdapter = {result:'pass', durableFixtureReceipt:true, createAndOwnedRead:true, active:false, historyCount:history.length, unstartedInterrupt:interrupt.status, ownedInactiveRemoval:true, typedAbsence:true, pinnedProcessBeforeAndAfter:true, admission:'disposable file callback with no prompt; not real application ownership or database isolation'};
   }
   summary.result = 'completed';
 } catch (error) { summary.result = 'stopped'; summary.reason = /^[a-z_]+$/.test(error.message) ? error.message : 'probe_error'; }

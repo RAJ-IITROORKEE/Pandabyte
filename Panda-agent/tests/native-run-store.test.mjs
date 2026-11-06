@@ -11,7 +11,7 @@ const productId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const key = 'ab'.repeat(32);
 const receipt = createNativeReceipt('customer', 'b'.repeat(64));
 const input = { thread, request, question: 'Fixture question', receipt, messageID: createNativeMessageID(), promptHash: 'c'.repeat(64), runtimeBinding: 'd'.repeat(64), scopes: [{ productId, scopeHash: 'e'.repeat(64) }] };
-const pending = { receipt, messageID: input.messageID, promptHash: input.promptHash, runtimeBinding: input.runtimeBinding, scopes: input.scopes, phase: 'admitted', version: 1, createClaimed: false, promptClaimed: false, cancelRequested: false, terminalReason: null, nativeOutcome: null, responseHash: null, runtimeRetired: false };
+const pending = { receipt, messageID: input.messageID, promptHash: input.promptHash, runtimeBinding: input.runtimeBinding, scopes: input.scopes, phase: 'admitted', version: 1, createClaimed: false, promptClaimed: false, cancelRequested: false, terminalReason: null, nativeOutcome: null, responseHash: null, removalClaimed: false, runtimeRetired: false };
 const answer = { outcome: 'conversation', text: 'Fixture answer', citations: [] };
 const terminal = { ...pending, phase: 'terminal', version: 3, createClaimed: true, promptClaimed: true, terminalReason: 'answered', nativeOutcome: 'succeeded', responseHash: 'f'.repeat(64) };
 const failure = code => error => error instanceof ChatStoreError && error.code === code && error.message === code;
@@ -34,7 +34,8 @@ test('each native journal operation signs a short-lived nested actor envelope in
         ['state', pending, store => store.state(thread, request)],
         ['transition', { ...pending, phase: 'create_claimed', createClaimed: true, version: 2 }, store => store.transition(thread, request, 1, 'claim_create')],
         ['complete', terminal, store => store.complete(thread, request, 2, answer, 'succeeded', 'answered')],
-        ['retire', { ...terminal, version: 4, runtimeRetired: true }, store => store.retire(thread, request, 3)],
+        ['claim_removal', { ...terminal, version: 4, removalClaimed: true }, store => store.claimRemoval(thread, request, 3)],
+        ['retire', { ...terminal, version: 5, removalClaimed: true, runtimeRetired: true }, store => store.retire(thread, request, 4)],
     ];
     for (const [action, result, perform] of operations) {
         const current = fixture(result);
@@ -102,11 +103,13 @@ test('bounded UUIDs, question, hashes, scopes and native message IDs fail before
         await assert.rejects(current.store.state(...args), failure('invalid'));
         await assert.rejects(current.store.transition(...args, 1, 'unknown'), failure('invalid'));
         await assert.rejects(current.store.complete(...args, 1, answer, null, 'unavailable'), failure('invalid'));
+        await assert.rejects(current.store.claimRemoval(...args, 1), failure('invalid'));
         await assert.rejects(current.store.retire(...args, 1), failure('invalid'));
     }
     for (const version of [0, -1, 1.5, NaN, Number.MAX_SAFE_INTEGER + 1]) {
         await assert.rejects(current.store.transition(thread, request, version, 'unknown'), failure('invalid'));
         await assert.rejects(current.store.complete(thread, request, version, answer, null, 'unavailable'), failure('invalid'));
+        await assert.rejects(current.store.claimRemoval(thread, request, version), failure('invalid'));
         await assert.rejects(current.store.retire(thread, request, version), failure('invalid'));
     }
     await assert.rejects(current.store.transition(thread, request, 1, 'execute_tool'), failure('invalid'));
@@ -115,7 +118,7 @@ test('bounded UUIDs, question, hashes, scopes and native message IDs fail before
 
 test('private state rejects malformed phases, flags, missing keys and forged terminal combinations', async () => {
     for (const fields of [
-        { phase: 'executing' }, { version: 0 }, { version: '1' }, { createClaimed: 1 }, { promptClaimed: 'true' }, { cancelRequested: null }, { runtimeRetired: true }, { runtimeRetired: 'true' },
+        { phase: 'executing' }, { version: 0 }, { version: '1' }, { createClaimed: 1 }, { promptClaimed: 'true' }, { cancelRequested: null }, { removalClaimed: true }, { removalClaimed: 'true' }, { runtimeRetired: true }, { runtimeRetired: 'true' },
         { phase: 'admitted', createClaimed: true }, { phase: 'create_claimed', createClaimed: false },
         { phase: 'accepted', createClaimed: true, promptClaimed: false }, { phase: 'unknown', promptClaimed: true },
         { phase: 'cancel_requested', cancelRequested: false }, { phase: 'terminal' },
@@ -124,6 +127,9 @@ test('private state rejects malformed phases, flags, missing keys and forged ter
     ]) await assert.rejects(fixture({ ...pending, ...fields }).store.state(thread, request), failure('unavailable'));
     const missing = { ...pending }; delete missing.runtimeBinding;
     await assert.rejects(fixture(missing).store.state(thread, request), failure('unavailable'));
+    const missingRemoval = { ...pending }; delete missingRemoval.removalClaimed;
+    await assert.rejects(fixture(missingRemoval).store.state(thread, request), failure('unavailable'));
+    await assert.rejects(fixture({ ...terminal, runtimeRetired: true }).store.state(thread, request), failure('unavailable'));
     for (const outcome of [null, 'succeeded', 'failed']) await assert.rejects(fixture({ ...terminal, terminalReason: 'cancelled', nativeOutcome: outcome }).store.state(thread, request), failure('unavailable'));
     const preDispatchCancel = { ...pending, phase: 'terminal', version: 2, cancelRequested: true, terminalReason: 'cancelled', responseHash: 'f'.repeat(64) };
     assert.deepEqual(await fixture(preDispatchCancel).store.state(thread, request), preDispatchCancel);
@@ -145,12 +151,26 @@ test('CAS response checks reject wrong transitions and preserve idempotent compl
     assert.deepEqual(await fixture(terminal).store.complete(thread, request, 3, answer, 'succeeded', 'answered'), terminal);
     assert.deepEqual(await fixture(terminal).store.complete(thread, request, 1, answer, 'succeeded', 'answered'), terminal);
     for (const fields of [{ nativeOutcome: 'failed' }, { terminalReason: 'unavailable' }, { version: 1 }]) await assert.rejects(fixture({ ...terminal, ...fields }).store.complete(thread, request, 2, answer, 'succeeded', 'answered'), failure('unavailable'));
-    const retired = { ...terminal, runtimeRetired: true, version: 4 };
+    const retired = { ...terminal, removalClaimed: true, runtimeRetired: true, version: 4 };
     assert.deepEqual(await fixture(retired).store.retire(thread, request, 3), retired);
     assert.deepEqual(await fixture(retired).store.retire(thread, request, 4), retired);
     assert.deepEqual(await fixture(retired).store.retire(thread, request, 2), retired);
     await assert.rejects(fixture(terminal).store.retire(thread, request, 3), failure('unavailable'));
     await assert.rejects(fixture(retired).store.retire(thread, request, 5), failure('unavailable'));
+});
+
+test('removal claim requires a fresh terminal CAS acknowledgement before native cleanup', async () => {
+    const claimed = { ...terminal, removalClaimed: true, version: 4 };
+    const current = fixture(claimed);
+    assert.deepEqual(await current.store.claimRemoval(thread, request, 3), claimed);
+    assert.deepEqual(JSON.parse(current.calls[0].args.p_payload).input, { thread, request, expectedVersion: 3 });
+    for (const value of [pending, terminal, { ...claimed, version: 3 }, { ...claimed, version: 5 }, { ...claimed, runtimeRetired: true }]) {
+        await assert.rejects(fixture(value).store.claimRemoval(thread, request, 3), failure('unavailable'));
+    }
+    const repeated = fixture(null, { response: { data: null, error: { code: 'P0001', details: 'conflict' } } });
+    await assert.rejects(repeated.store.claimRemoval(thread, request, 4), failure('conflict'));
+    assert.equal(repeated.calls.length, 1);
+    assert.equal(repeated.calls[0].name, 'panda_agent_native_claim_removal');
 });
 
 test('completion validates and cleans saved answers without leaking raw extra fields', async () => {

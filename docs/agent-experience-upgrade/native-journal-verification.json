@@ -1,5 +1,5 @@
 {
-  "migrationSha256": "3811c01c0fad629d560cf427e016df71649ee3733710741d4a40f744faf47d78",
+  "migrationSha256": "224d0d759b6fa3e169ea1cf6c5b8e7432d732614d6c2c06cb4fc423564dba4ba",
   "evidenceClass": "synthetic SQL roles and disposable records; rollback only",
   "expiryDelayEvidence": "injected after entry verification; not real lock contention",
   "sourceWithdrawalTested": false,

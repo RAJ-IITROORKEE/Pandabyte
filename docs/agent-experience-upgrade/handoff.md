@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 6 November 2026. Branch: codex/panda-agent-fastapi-replacement.
-Previous foundation checkpoint: b20b7dd. Use git log -1 for this local checkpoint.
+Approved UI/foundation checkpoint: 93272f0; earlier foundation b20b7dd. Use git log -1 for this local checkpoint.
 No push, merge or deployment occurred.
 
 ## Authority and stage
@@ -53,8 +53,9 @@ horizontal overflow; DPR about 1.2, override reset. No actual browser zoom,
 new-interface screen-reader speech or reduced-motion switching claim.
 Only the newly created owned disposable chat was archived; old fixtures preserved.
 
-307 Agent Node tests, six development-tool tests, and 36 focused native/navigation
-tests pass (focused native tests overlap the 307). Scoped ESLint and TypeScript pass.
+329 Agent Node tests, six development-tool tests and three Admin navigation tests
+pass. Native totals include 26 session, 13 store and 16 prepared-evidence tests.
+Scoped ESLint, application TypeScript and dedicated native TypeScript pass.
 Final candidate build result is in p1-implementation-verification.json; it is not
 the running server. Existing module-type warnings remain.
 Independent Sol review found four SQL defects; all fixed and re-reviewed clean.
@@ -62,7 +63,8 @@ Independent Sol review found four SQL defects; all fixed and re-reviewed clean.
 opencode-session-probe.json: actual isolated 2.2.2 process, anonymous denial,
 deny-all catalogs, create/owned read/inactive/empty history and unknown interruption
 of an unstarted session. No model prompt/provider call or active inference cancel.
-Child stopped and fixture removed. Global CLI 2.1.3 unchanged.
+Owned inactive removal, exact typed absence and PID checks before/after calls also
+passed the actual probe. Child stopped and fixture removed. Global CLI unchanged.
 native-journal-verification.json: nine rollback-only development SQL groups PASS,
 rows/functions/triggers/ACL unchanged, candidate absent. Four expiry replays use
 injected post-entry delay, not real lock contention. UUID-case duplicate check uses
@@ -76,13 +78,17 @@ lightweight container serves. Read-only inventory: about 1,153 MiB RAM available
 no swap, 12 GiB disk free. No runtime/config/deployment change was made.
 
 Read persistence-transition.md, native-session-contract.md and capability-contract.md.
-Extract bounded approved retrieval/current-scope validation from retrieval/answers.ts;
-do not make its finite selector or old controllers the native orchestrator.
+The bounded prepared-evidence kernel is now extracted from retrieval/answers.ts
+with its existing validators; no finite selector or old controller is used there.
+It supplies 0/1 product context, opaque fragment aliases and current-source release
+checks; reviewed metadata-escape regressions are fixed. It remains unwired.
 Connect one owned native prompt per natural message with eligible context,
 durable receipts and structured citation release. This limited context-fed increment
 is distinct from full tool routing. Verify provider/permission profile, process
 identity, current-message terminal correlation and owned inactive native removal
-before activation. The native leaf has no removal method yet. Journal inherits QA
+before activation. Native removal/absence methods and a one-time durable terminal
+removal claim now exist; the mounted caller must enforce their admission and
+observe unknown deletion instead of repeating it. Journal inherits QA
 capability and fences canonical product scopes; vendor evidence needs its fence.
 Unknown work is observed, never redispatched. Preserve old pending engine kinds.
 For full tool routing verify native extension/MCP support: preserved rag-mcp POST
@@ -104,7 +110,18 @@ Old production session 82471 was stopped after verifying ownership; build retain
 Candidate: .next-agent-experience-candidate. Generated tsconfig include paths must
 be removed from the checkpoint. Original dirty E: checkout remains preserved.
 Parent owns integration/migrations/config/coverage/checkpoints. Bounded Terra UI
-and Sol native/store outputs integrated. Next bounded Sol worker is extracting the
-shared prepared-evidence kernel; Parent owns native retirement and integration.
+and Sol native/store/kernel outputs integrated and independently reviewed; workers
+are idle. Parent owns the next native BFF integration.
 Actual collaboration model
 identity metadata unavailable; explicit overrides do not prove execution identity.
+
+Existing approved OpenRouter model/profile is unresolved: the retained runtime has
+no active approved LLM profile. A concise identifier-only owner question is pending;
+keep inherited zero-cost/ZDR constraints and do not enable an unapproved default.
+The source profile, provider policy, generation identity and durable caller must be
+concrete before native activation. No credentials were requested in chat.
+
+Run npm run typecheck:agent-native for unwired modules. Root application TypeScript
+did not reach them; this dedicated check caught and fixed five compatibility/type
+errors. It now passes under the existing ES2017 project target without broadening
+that target or changing runtime ID encoding.

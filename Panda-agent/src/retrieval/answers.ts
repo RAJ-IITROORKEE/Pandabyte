@@ -3,7 +3,7 @@ import type { Actor, Adapters, CanonicalChunk, Outcome, Question, Scope } from '
 import type { ContextSummary } from './context-summary.ts';
 const sha = (s: string) => createHash('sha256').update(s, 'utf8').digest('hex');
 const bounded = (s: unknown, max: number): s is string => typeof s === 'string' && s.trim().length > 0 && s.length <= max;
-const privatePointer = (s: string) => /(?:s3:\/\/|["']?(?:private[_ -]?(?:bucket|key)|bucket|object[_ -]?key|storage[_ -]?(?:path|key))["']?\s*[:=]|file:\/\/|\\\\)/i.test(s);
+export const privatePointer = (s: string) => /(?:s3:\/\/|["']?(?:private[_ -]?(?:bucket|key)|bucket|object[_ -]?key|storage[_ -]?(?:path|key))["']?\s*[:=]|file:\/\/|\\\\)/i.test(s);
 export function parseQuestion(value: unknown): Question | null {
     if (!value || typeof value !== 'object' || Array.isArray(value))
         return null;
@@ -22,7 +22,7 @@ export function parseQuestion(value: unknown): Question | null {
 function needsUnavailableProof(q: string): boolean {
     return /\b(?:wir(?:e|ing)|pin\s*(?:map|out|assignment)|gpio|guaranteed|safe(?:ly|ty)?|physical\s*revision|board\s*revision|revision\s*(?:of|equivalen|match)|hardware\s*(?:tests?|test(?:ed|ing)|verified)|(?:verify|verified|verification|confirm|confirmed)\s*(?:the\s*)?(?:physical\s*)?board|board\s*(?:verification|verified|tested)|(?:tested|verified)\s*(?:on|with)\s*(?:hardware|board)|(?:proven|verified|guaranteed)\s*(?:to\s*)?compil(?:e|es|ed|ing)|(?:absolute.maximum|ratings?).{0,80}(?:datasheet|linked|pdf)|(?:datasheet|linked|pdf).{0,80}(?:absolute.maximum|ratings?))\b/i.test(q);
 }
-function validChunk(c: CanonicalChunk, productId: string, revision?: string): boolean {
+export function validChunk(c: CanonicalChunk, productId: string, revision?: string): boolean {
     if (!c || c.productId !== productId || c.blocked !== false || !bounded(c.handle, 300) || !/^panda:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{64}:[0-9a-f]{64}$/.test(c.handle))
         return false;
     if (!bounded(c.text, 12000) || sha(c.text) !== c.textHash || !bounded(c.header, 1000))
@@ -45,7 +45,7 @@ function validChunk(c: CanonicalChunk, productId: string, revision?: string): bo
     }
     return true;
 }
-function validScope(scope: Scope | null): scope is Scope {
+export function validScope(scope: Scope | null): scope is Scope {
     return !!scope && bounded(scope.fingerprint, 300) && scope.candidate === true && scope.sealed === true && scope.engineeringVerified === true && scope.manifestVerified === true && scope.configVerified === true && scope.generationCurrent === true && Array.isArray(scope.chunks) && scope.chunks.length <= 2000;
 }
 export function reciprocalRankFusion(lexical: string[], dense: string[]): string[] {

@@ -49,8 +49,17 @@ completion/replay. This is an explicit first-increment limitation, not a final
 general capability policy. Canonical product scopes/citations are supported by
 this journal; approved vendor evidence still needs its corresponding fence.
 Native context retirement is recorded only after a future caller verifies owned,
-inactive removal and absence on the same runtime; the current native leaf has no
-removal method, so customer activation remains blocked at that lifecycle gate.
+inactive removal and absence on the same runtime. The native leaf now supports
+no-child removal and typed absence with PID checks; the mounted durable cleanup
+fence and runtime generation/secret binding are still activation gates.
+
+Before removal, `claimRemoval(thread,request,expectedVersion)` consumes a separate
+durable terminal-only CAS claim. A second claim conflicts. The winning caller may
+perform one native DELETE; uncertain acknowledgement permits observation through
+`absence`, never another DELETE. Retirement requires the consumed claim and the
+caller's actual same-generation cleanup proof. An absent session does not settle
+an unknown create or prompt. The revised migration and these removal/retirement
+guards passed the rollback checker again; its current SHA is in the JSON record.
 
 The next connected increment should extract the existing bounded retrieval and
 current-scope checks from `retrieval/answers.ts`, not reuse its finite selector as
@@ -60,3 +69,33 @@ the old lightweight/guide/diagnostic/composite controllers. Full harness-selecte
 knowledge tools require a verified native extension or MCP surface: the preserved
 `rag-mcp` POST `/search` facade is not an MCP endpoint. Keep this limited
 context-fed generation distinct from complete native tool routing.
+
+## Prepared evidence kernel
+
+`retrieval/prepared-evidence.ts` now reuses the existing actor-scoped identity,
+canonical scope, lexical search and validators. It does not call the old selector
+or proof-refusal routing. Construct `prepareEvidenceContext` with the current
+actor/input, `createInsforgeAdapters` retrieval methods, current-session callback
+and existing read-only `lightweightStore.scope(product.id)` callback. Private
+`scopes` feed the native journal; `context()` returns a detached snapshot after
+revalidation. The whole serialized context is at most 20,000 characters, with
+up to eight whole fragments and one resolved product in this first increment.
+Unresolved/conflicting questions retain honest empty context instead of becoming
+finite canned answers. General routing still belongs to the future native caller.
+
+Service-supplied internal IDs/headers/hashes are excluded from model context;
+fragment aliases E1..E8 map privately to canonical chunks. The user's own question
+is retained. `finalize` accepts only `{outcome,text,selections:[{handle,quote}]}`,
+assigns citation metadata from sent chunks, rejects private metadata/internal-ID
+echoes and rechecks current access, identity, scope hash, fingerprint and sent
+chunk membership before release. Withdrawn evidence blocks even citation-free
+answers from that prepared context. Source timestamp and revision metadata have
+explicit privacy/date validation; trusted empty identity conflicts remain conflict.
+
+Sixteen kernel fixtures pass, including withdrawal before context/finalization,
+empty-context access checks, detached mutation, spoofed aliases/metadata and the
+independently reproduced metadata-escape regressions. This proves literal quote
+membership and current-source fencing, not semantic entailment, hardware
+applicability, multi-product/vendor coverage or live native answering. The kernel
+is not yet mounted. `npm run typecheck:agent-native` explicitly checks these
+unwired modules; the application's import graph alone does not include them.

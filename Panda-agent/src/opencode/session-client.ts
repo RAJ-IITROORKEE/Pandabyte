@@ -19,19 +19,19 @@ function receiptSnapshot(value: NativeSessionReceipt): NativeSessionReceipt {
 }
 
 // Server boundary only: configuration and durable receipts must never come from browser JSON.
-export function createNativeSessionClient(config: { baseUrl: string; password: string; directory: string; fetch?: typeof fetch; timeoutMs?: number }) {
+export function createNativeSessionClient(config: { baseUrl: string; password: string; directory: string; expectedPid: number; fetch?: typeof fetch; timeoutMs?: number }) {
     const timeoutMs = config.timeoutMs ?? 5000;
     const match = typeof config.baseUrl === 'string' && /^http:\/\/127\.0\.0\.1:([1-9][0-9]{0,4})$/.exec(config.baseUrl);
     requireValue(match && Number(match[1]) <= 65535 && typeof config.password === 'string' && Buffer.byteLength(config.password, 'utf8') >= 32 && Buffer.byteLength(config.password, 'utf8') <= 4096
         && boundedText(config.directory, 4096) && isAbsolute(config.directory) && !/[\u0000-\u001f\u007f]/.test(config.directory)
-        && Number.isInteger(timeoutMs) && timeoutMs >= 1 && timeoutMs <= 10000);
+        && Number.isSafeInteger(config.expectedPid) && config.expectedPid > 0 && Number.isInteger(timeoutMs) && timeoutMs >= 1 && timeoutMs <= 10000);
     const { baseUrl, directory } = config;
     const transport = config.fetch ?? fetch;
     const authorization = `Basic ${Buffer.from(`opencode:${config.password}`, 'utf8').toString('base64')}`;
 
     async function operation<T>(input: NativeSessionReceipt, checkAccess: NativeAccessCheck, signal: AbortSignal | undefined, execute: (ctx: {
         receipt: NativeSessionReceipt;
-        request: (path: string, body?: unknown, method?: 'POST') => Promise<Record<string, unknown>>;
+        request: (path: string, body?: unknown, method?: 'POST' | 'DELETE', expected?: 'json' | 'removed' | 'absent') => Promise<Record<string, unknown>>;
         owned: () => Promise<NativeSessionState>;
         inactive: () => Promise<boolean>;
         check: () => Promise<void>;
@@ -54,15 +54,19 @@ export function createNativeSessionClient(config: { baseUrl: string; password: s
             if (await checkAccess(receipt) !== true) throw new NativeSessionError('forbidden');
             controller.signal.throwIfAborted();
         }
-        async function request(path: string, body?: unknown, method?: 'POST') {
+        async function request(path: string, body?: unknown, method?: 'POST' | 'DELETE', expected: 'json' | 'removed' | 'absent' = 'json') {
             controller.signal.throwIfAborted();
-            const mutation = body !== undefined || method === 'POST';
+            const mutation = body !== undefined || method === 'POST' || method === 'DELETE';
             if (mutation) { await check(); dispatched = true; }
             const response = await transport(baseUrl + path, {
-                method: mutation ? 'POST' : 'GET', headers: { Accept: 'application/json', Authorization: authorization, 'x-opencode-directory': encodeURIComponent(directory), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+                method: method ?? (mutation ? 'POST' : 'GET'), headers: { Accept: 'application/json', Authorization: authorization, 'x-opencode-directory': encodeURIComponent(directory), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
                 ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: controller.signal, redirect: 'error', cache: 'no-store', credentials: 'omit',
             });
-            if (controller.signal.aborted || response.status !== 200 || response.redirected || !/^application\/json(?:\s*;[^\r\n]*)?$/i.test(response.headers.get('content-type') ?? '') || !response.body) {
+            if (!controller.signal.aborted && !response.redirected && expected === 'removed' && response.status === 204) {
+                void response.body?.cancel().catch(() => {});
+                return {};
+            }
+            if (controller.signal.aborted || response.status !== (expected === 'absent' ? 404 : 200) || response.redirected || expected === 'removed' || !/^application\/json(?:\s*;[^\r\n]*)?$/i.test(response.headers.get('content-type') ?? '') || !response.body) {
                 void response.body?.cancel().catch(() => {});
                 throw new NativeSessionError();
             }
@@ -84,7 +88,9 @@ export function createNativeSessionClient(config: { baseUrl: string; password: s
                     requireValue(size <= maxBytes);
                     chunks.push(part.value);
                 }
-                return object(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks))));
+                const decoded = object(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks))));
+                if (expected === 'absent') requireValue(decoded._tag === 'SessionNotFoundError' && decoded.sessionID === receipt.sessionID && boundedText(decoded.message, 2048));
+                return decoded;
             } finally {
                 void current.cancel().catch(() => {});
                 current.releaseLock();
@@ -106,12 +112,17 @@ export function createNativeSessionClient(config: { baseUrl: string; password: s
             requireValue(Object.keys(active).length <= 1000 && Object.entries(active).every(([id, value]) => sessionID.test(id) && object(value).type === 'running'));
             return !Object.hasOwn(active, receipt.sessionID);
         }
-        const run = async () => {
-            await check();
+        const verifyProcess = async () => {
             const info = await request('/api/info');
             requireValue(typeof info.version === 'string');
             if (info.version !== '2.2.2') throw new NativeSessionError('version_mismatch');
+            requireValue(info.pid === config.expectedPid);
+        };
+        const run = async () => {
+            await check();
+            await verifyProcess();
             const result = await execute({ receipt, request, owned, inactive, check });
+            await verifyProcess();
             await check();
             return result;
         };
@@ -215,6 +226,31 @@ export function createNativeSessionClient(config: { baseUrl: string; password: s
                     && (before.time.busy === undefined || after.time.busy! >= before.time.busy)
                     && (before.time.idle === undefined || after.time.idle! > before.time.idle);
                 return confirmed ? { status: 'cancelled' as const, outcome: 'interrupted' as const } : { status: 'unknown' as const };
+            });
+        },
+        // Caller must fence cleanup against a durable terminal journal and any future prompt.
+        remove(receipt: NativeSessionReceipt, check: NativeAccessCheck, signal?: AbortSignal) {
+            return operation(receipt, check, signal, async ctx => {
+                const before = await ctx.owned();
+                const terminal = before.outcome !== undefined && before.time.busy !== undefined && before.time.idle !== undefined && before.time.idle >= before.time.busy;
+                requireValue(terminal || before.time.busy === undefined);
+                requireValue(await ctx.inactive());
+                // Native removal cascades to child sessions; refuse even one child.
+                const children = await ctx.request(`/api/session?parentID=${ctx.receipt.sessionID}&limit=1`);
+                const cursor = object(children.cursor);
+                requireValue(Array.isArray(children.data) && children.data.length === 0 && (cursor.next === null || cursor.next === undefined));
+                await ctx.owned();
+                requireValue(await ctx.inactive());
+                await ctx.request(`/api/session/${ctx.receipt.sessionID}`, undefined, 'DELETE', 'removed');
+                await ctx.request(`/api/session/${ctx.receipt.sessionID}`, undefined, undefined, 'absent');
+                return { status: 'removed' as const };
+            });
+        },
+        // Observation only after uncertain removal; a 404 from another process is not proof.
+        absence(receipt: NativeSessionReceipt, check: NativeAccessCheck, signal?: AbortSignal) {
+            return operation(receipt, check, signal, async ctx => {
+                await ctx.request(`/api/session/${ctx.receipt.sessionID}`, undefined, undefined, 'absent');
+                return { absent: true as const };
             });
         },
     };

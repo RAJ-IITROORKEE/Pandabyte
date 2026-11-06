@@ -4,7 +4,7 @@
 not a customer execution cutover or an execution-policy certification.
 
 `Panda-agent/src/opencode/session-client.ts` exports
-`createNativeSessionClient({baseUrl,password,directory,fetch?,timeoutMs?})`.
+`createNativeSessionClient({baseUrl,password,directory,expectedPid,fetch?,timeoutMs?})`.
 Routing, credentials and the exact native canonical directory are server-owned.
 Every native request includes the encoded `x-opencode-directory` header to bind
 location-scoped active/catalog reads to that directory rather than process cwd.
@@ -22,8 +22,8 @@ before release. Mutations recheck immediately before the native request.
 Native responses must match receipt ID/title/metadata/directory and must not be
 forked or child sessions. Native IDs are never browser authority.
 
-The six methods are `create`, `get`, `messages`, `active`, `prompt` and
-`interrupt`, all taking the persisted receipt, admission callback and optional
+The methods are `create`, `get`, `messages`, `active`, `prompt`, `interrupt`,
+`remove` and `absence`, all taking the persisted receipt, admission callback and optional
 abort signal. Prompt additionally takes `{messageID,text}` before the callback.
 The caller generates/persists the message ID using `createNativeMessageID()`
 before a possible dispatch. ID encoding follows the installed native generator:
@@ -38,6 +38,8 @@ state, provider selection, tool execution or orchestration is introduced.
 | messages | At most 100 messages across four native pages; user/assistant text, idle outcome and opaque activity markers only |
 | prompt | `{status:'accepted',messageID}` from a validated native user inbox acknowledgement; never an answer or terminal completion |
 | interrupt | `cancelled` only after actual interruption, new terminal interrupted state and inactive drain; otherwise `already_terminal` or `unknown` |
+| remove | Owned inactive session only; refuses any child because native deletion cascades; requires DELETE 204 and exact typed 404 absence before `removed` |
+| absence | Observation only after uncertain removal; exact typed 404 for the persisted session on the pinned process, never another DELETE |
 
 Create/prompt await native model discovery as the verified plugin activation
 barrier. Create adds native deny-all session permissions; no tool capability is
@@ -50,12 +52,23 @@ the verified owned session route; history has no independent browser cursor.
 `NativeSessionError` exposes only a fixed code and an outcome of
 `not_dispatched` or `unknown`. Once a mutating call may have been sent, timeout,
 disconnect, malformed acknowledgement or revoked access stays unknown. The
-client never repeats a mutation, deletes a session or automatically dispatches
-after reconciliation. Durable operation fencing, exclusive admission, native
-process identity, effective permission enforcement, source/citation fencing,
+client never repeats a mutation or automatically dispatches after reconciliation.
+Every operation checks the configured positive OS PID and version before work and
+before release. PID is not a durable boot identity; runtime generation/dedicated
+secret binding remains the caller's responsibility. Durable operation fencing,
+exclusive admission, effective permission enforcement, source/citation fencing,
 terminal answer correlation and restart reconciliation belong to the caller.
 An existing session outcome can describe an earlier run; compare busy/idle
 times and the persisted current message receipt before releasing any answer.
+
+Removal's admission callback MUST verify a durable terminal journal and exclusion
+of all future prompt claims on every invocation. An unstarted session (no native
+busy time) may be removed only if that callback also proves no prompt claim was
+ever consumed; native inactivity by itself does not establish that fact. A
+previously active session must have terminal native times/outcome. Reconciliation
+uses `absence` only for an already recorded uncertain removal on the same runtime
+generation, never to infer that an unknown create or prompt did not execute.
+The durable journal cannot be marked retired from an acknowledgement alone.
 
 Verified source: installed preserved `@opencode/protocol`, `schema` and `client`
 2.2.2 under the original Panda-agent spike, plus pinned upstream
@@ -71,6 +84,14 @@ The parser accepts null or omitted terminal cursors, bounded opaque strings for
 continuation, and no unknown cursor fields. Fixtures cover both terminal shapes;
 the real-shape regression failed before this correction and passes afterward.
 See [probe evidence](opencode-session-probe.json).
+
+The actual provider-free probe now additionally verifies empty child discovery,
+owned inactive removal, typed absence and PID checks against its spawned child.
+It has no possible prompt claim or model call. Unit fixtures cover five cleanup
+groups, including active/child/ownership/access denial, changed process identity,
+lost acknowledgement with observation-only recovery and missing absence proof.
+Independent Sol review found no actionable leaf defect under the documented
+durable cleanup fence; that future mounted caller remains unverified.
 
 Verification: `node --test Panda-agent/tests/opencode-session.test.mjs` exercises
 receipt forgery, cross-scope/directory ownership, revocation, JSON/deadline/body

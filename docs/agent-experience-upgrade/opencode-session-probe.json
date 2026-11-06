@@ -88,7 +88,10 @@
       "active": false,
       "historyCount": 0,
       "unstartedInterrupt": "unknown",
-      "admission": "disposable file callback; not real application ownership or database isolation"
+      "ownedInactiveRemoval": true,
+      "typedAbsence": true,
+      "pinnedProcessBeforeAndAfter": true,
+      "admission": "disposable file callback with no prompt; not real application ownership or database isolation"
     }
   },
   "noPromptsOrExternalCallsRequested": true,

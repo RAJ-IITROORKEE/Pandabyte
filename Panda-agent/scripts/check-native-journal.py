@@ -68,13 +68,14 @@ def check(conn, key):
         receipt = {'sessionID':'ses_'+secrets.token_hex(6)+'A'*14,'title':'panda-agent-customer-'+nonce,'nonce':nonce,'scope':'customer','binding':secrets.token_hex(32)}
         fields = {'thread':thread,'request':str(uuid.uuid4()),'question':'Disposable native question','receipt':receipt,'messageID':'msg_'+secrets.token_hex(6)+'B'*14,'promptHash':secrets.token_hex(32),'runtimeBinding':secrets.token_hex(32),'scopes':[]}
         result = signed('admit',fields)
-        assert result['admitted'] is True and result['state']['version']==1
+        assert result['admitted'] is True and result['state']['version']==1 and result['state']['removalClaimed'] is False
         return fields
     def ref(fields): return {'thread':fields['thread'],'request':fields['request']}
     def transition(fields, version, event): return signed('transition',ref(fields)|{'expectedVersion':version,'event':event})
     def complete(fields, version, reason, native_outcome, answer):
         return signed('complete',ref(fields)|{'expectedVersion':version,'terminalReason':reason,'nativeOutcome':native_outcome,'answer':answer})
     def cancel_answer(): return {'outcome':'insufficient','text':'This request was cancelled. Start a new question when ready.','citations':[]}
+    def claim_removal(fields, version): return signed('claim_removal',ref(fields)|{'expectedVersion':version})
     def retire(fields, version): return signed('retire',ref(fields)|{'expectedVersion':version})
     def response(fields):
         result = value('SELECT public.panda_agent_native_read(%s)',(fields['thread'],))
@@ -109,14 +110,21 @@ def check(conn, key):
         run('exact_admission_cas_and_unknown_never_redispatch', replay_and_cas)
         def cancel_cases():
             pre = new(); claim_created(pre)
+            deny(lambda:claim_removal(pre,3))
             assert transition(pre,3,'cancel_requested')['version']==4
             deny(lambda:complete(pre,4,'cancelled','interrupted',cancel_answer()))
             assert complete(pre,4,'cancelled',None,cancel_answer())['phase']=='terminal'
             post = new(); claim_created(post); transition(post,3,'claim_prompt'); transition(post,4,'cancel_requested')
             deny(lambda:complete(post,5,'cancelled',None,cancel_answer()))
             assert complete(post,5,'cancelled','interrupted',cancel_answer())['phase']=='terminal'
-            deny(lambda:retire(post,5))
-            assert retire(post,6)['runtimeRetired'] is True
+            deny(lambda:retire(post,6))
+            claimed=claim_removal(post,6)
+            assert claimed['removalClaimed'] is True and claimed['version']==7
+            deny(lambda:claim_removal(post,6))
+            deny(lambda:claim_removal(post,7))
+            retired=retire(post,7)
+            assert retired['runtimeRetired'] is True and retired['removalClaimed'] is True and retired['version']==8
+            assert retire(post,7)['runtimeRetired'] is True
             operator(); conn.execute('DELETE FROM public.panda_agent_native_runs WHERE thread_id=%s AND request_id=%s',(post['thread'],post['request'])); actor()
         run('cancel_requires_matching_native_outcome_and_retire_before_delete',cancel_cases)
         def grants_and_replay():
@@ -130,7 +138,8 @@ def check(conn, key):
             assert response(f)['outcome']=='insufficient'
             operator();conn.execute("UPDATE public.panda_agent_skills SET enabled=true WHERE id='product-evidence-qa'");actor()
             assert response(f)['outcome']=='insufficient'
-            assert retire(f,6)['runtimeRetired'] is True
+            assert claim_removal(f,6)['removalClaimed'] is True
+            assert retire(f,7)['runtimeRetired'] is True
         run('completion_replay_and_qa_grant_revocation',grants_and_replay)
         def revoke_before_dispatch():
             f=new();claim_created(f)
@@ -186,7 +195,7 @@ def check(conn, key):
         def delayed_expiry():
             f=new(); claim_created(f); transition(f,3,'claim_prompt'); transition(f,4,'accepted')
             answer={'outcome':'conversation','text':'Disposable expiry fixture.','citations':[]}
-            complete(f,5,'answered','succeeded',answer); retire(f,6)
+            complete(f,5,'answered','succeeded',answer); claim_removal(f,6); retire(f,7)
             operator()
             conn.execute('ALTER FUNCTION public.panda_agent_native_verify(text,text,text) RENAME TO panda_agent_native_verify_before_fixture')
             conn.execute('''CREATE FUNCTION public.panda_agent_native_verify(text,text,text) RETURNS jsonb
@@ -201,7 +210,7 @@ def check(conn, key):
             conn.execute('REVOKE ALL ON FUNCTION public.panda_agent_native_verify(text,text,text) FROM PUBLIC,anon,authenticated')
             try:
                 actor()
-                cases=[('state',ref(f)),('admit',f),('complete',ref(f)|{'expectedVersion':5,'answer':answer,'nativeOutcome':'succeeded','terminalReason':'answered'}),('retire',ref(f)|{'expectedVersion':6})]
+                cases=[('state',ref(f)),('admit',f),('complete',ref(f)|{'expectedVersion':5,'answer':answer,'nativeOutcome':'succeeded','terminalReason':'answered'}),('retire',ref(f)|{'expectedVersion':7})]
                 for action,fields in cases:
                     value("SELECT set_config('panda.fixture_delayed','0',true)")
                     expires=value('SELECT floor(extract(epoch FROM clock_timestamp()))::bigint + 2')

@@ -20,14 +20,18 @@ function fixture(options = {}) {
         time: { created: 100, updated: 100 },
     };
     const calls = [];
-    const native = { active: false, messages: [], interrupted: true };
+    const native = { active: false, messages: [], interrupted: true, removed: false, children: [] };
     const defaultResponse = (url, init) => {
         const path = new URL(url).pathname;
         if (path === '/api/info') return Response.json({ version: '2.2.2', pid: 321 });
         if (path === '/api/model') return Response.json({ data: [] });
         if (path === '/api/session' && init.method === 'POST') return Response.json({ data: state });
+        if (path === '/api/session' && init.method === 'GET') return Response.json({ data: native.children, cursor: { previous: null, next: null } });
         if (path === '/api/session/active') return Response.json({ data: native.active ? { [receipt.sessionID]: { type: 'running' } } : {} });
-        if (path === `/api/session/${receipt.sessionID}`) return Response.json({ data: state });
+        if (path === `/api/session/${receipt.sessionID}`) {
+            if (init.method === 'DELETE') { native.removed = true; return new Response(null, { status: 204 }); }
+            return native.removed ? Response.json({ _tag: 'SessionNotFoundError', sessionID: receipt.sessionID, message: 'Fixture absent' }, { status: 404 }) : Response.json({ data: state });
+        }
         if (path.endsWith('/message')) return Response.json({ data: native.messages, cursor: { previous: null, next: null } });
         if (path.endsWith('/prompt')) {
             const body = JSON.parse(init.body);
@@ -45,7 +49,7 @@ function fixture(options = {}) {
         }
         throw Error('Unexpected fixture request');
     };
-    const client = createNativeSessionClient({ baseUrl, password, directory, timeoutMs: options.timeoutMs,
+    const client = createNativeSessionClient({ baseUrl, password, directory, expectedPid: 321, timeoutMs: options.timeoutMs,
         fetch: async (url, init) => {
             calls.push({ url, init });
             return options.fetch ? options.fetch(url, init, { state, native, calls, defaultResponse, receipt }) : defaultResponse(url, init);
@@ -68,11 +72,12 @@ test('native receipt and message IDs use the 2.2.2 wire format without customer 
 });
 
 test('server configuration rejects nonliteral loopback, weak secrets and relative or unsafe directory', () => {
-    const config = { baseUrl, password, directory };
+    const config = { baseUrl, password, directory, expectedPid: 321 };
     for (const url of ['http://localhost:1234', 'https://127.0.0.1:1234', baseUrl + '/', baseUrl + '/x', baseUrl + '?x=1', 'http://127.1:1234', 'http://user:secret@127.0.0.1:1234', 'http://127.0.0.1:65536', 'http://127.0.0.1:0']) assert.throws(() => createNativeSessionClient({ ...config, baseUrl: url }), unavailable);
     for (const secret of ['', 'x'.repeat(31), 'x'.repeat(4097)]) assert.throws(() => createNativeSessionClient({ ...config, password: secret }), unavailable);
     for (const location of ['', 'relative', directory + '\nsecret', directory + '\0']) assert.throws(() => createNativeSessionClient({ ...config, directory: location }), unavailable);
     for (const timeoutMs of [0, -1, 10001, NaN, 1.5]) assert.throws(() => createNativeSessionClient({ ...config, timeoutMs }), unavailable);
+    for (const expectedPid of [undefined, 0, -1, NaN, 1.5]) assert.throws(() => createNativeSessionClient({ ...config, expectedPid }), unavailable);
 });
 
 test('create uses persisted identity, activation barrier, exact ownership metadata and deny permissions', async () => {
@@ -80,7 +85,7 @@ test('create uses persisted identity, activation barrier, exact ownership metada
     let checks = 0;
     const result = await current.client.create(current.receipt, async value => { checks++; assert.deepEqual(value, current.receipt); return true; });
     assert.deepEqual(result, { time: { created: 100, updated: 100 } });
-    assert.deepEqual(current.calls.map(call => new URL(call.url).pathname), ['/api/info', '/api/model', '/api/session', `/api/session/${current.receipt.sessionID}`]);
+    assert.deepEqual(current.calls.map(call => new URL(call.url).pathname), ['/api/info', '/api/model', '/api/session', `/api/session/${current.receipt.sessionID}`, '/api/info']);
     assert.equal(checks, 3);
     const body = JSON.parse(current.calls[2].init.body);
     assert.deepEqual(body, { id: current.receipt.sessionID, title: current.receipt.title, location: { directory }, metadata: { pandaAgent: { nonce: current.receipt.nonce, scope: 'customer', binding } }, permissions: [{ action: '*', resource: '*', effect: 'deny' }] });
@@ -352,4 +357,69 @@ test('server-owned native location header prevents default-location false inacti
     assert.deepEqual(await current.client.interrupt(current.receipt, allow), { status: 'cancelled', outcome: 'interrupted' });
     assert.equal(current.calls.filter(call => call.init.method === 'POST').length, 1);
     assert.equal(current.calls.every(call => call.init.headers['x-opencode-directory'] === encodeURIComponent(directory)), true);
+});
+
+test('owned inactive native removal refuses cascade and verifies exact absent identity on the pinned process', async () => {
+    const current = fixture();
+    // Caller admission represents the durable terminal/no-future-prompt cleanup fence.
+    assert.deepEqual(await current.client.remove(current.receipt, allow), { status: 'removed' });
+    const removed = current.calls.filter(call => call.init.method === 'DELETE');
+    assert.equal(removed.length, 1);
+    const children = new URL(current.calls.find(call => call.url.includes('parentID=')).url);
+    assert.equal(children.searchParams.get('parentID'), current.receipt.sessionID);
+    assert.equal(children.searchParams.get('limit'), '1');
+    assert.deepEqual(await current.client.absence(current.receipt, allow), { absent: true });
+    assert.equal(current.calls.filter(call => call.init.method === 'DELETE').length, 1);
+});
+
+test('active work, incomplete busy state, child sessions and lost admission prevent native removal', async () => {
+    for (const prepare of [
+        f => { f.native.active = true; },
+        f => { f.state.time.busy = 110; },
+        f => { f.native.children = [{ id: 'unrelated-child' }]; },
+        f => { f.state.metadata.pandaAgent.binding = 'b'.repeat(64); },
+    ]) {
+        const current = fixture(); prepare(current);
+        await assert.rejects(current.client.remove(current.receipt, allow), unavailable);
+        assert.equal(current.calls.some(call => call.init.method === 'DELETE'), false);
+    }
+    const current = fixture(); let checks = 0;
+    await assert.rejects(current.client.remove(current.receipt, async () => ++checks < 2), error => error.code === 'forbidden' && error.outcome === 'not_dispatched');
+    assert.equal(current.calls.some(call => call.init.method === 'DELETE'), false);
+});
+
+test('pinned process mismatch before a call or before release never supplies cleanup proof', async () => {
+    const wrong = fixture({ fetch: (url, init, f) => url.endsWith('/api/info') ? Response.json({ version: '2.2.2', pid: 999 }) : f.defaultResponse(url, init) });
+    await assert.rejects(wrong.client.remove(wrong.receipt, allow), unavailable);
+    await assert.rejects(wrong.client.absence(wrong.receipt, allow), unavailable);
+    assert.equal(wrong.calls.some(call => call.init.method === 'DELETE'), false);
+    let infos = 0;
+    const changed = fixture({ fetch: (url, init, f) => url.endsWith('/api/info') ? Response.json({ version: '2.2.2', pid: ++infos === 1 ? 321 : 999 }) : f.defaultResponse(url, init) });
+    await assert.rejects(changed.client.remove(changed.receipt, allow), unknown);
+    assert.equal(changed.calls.filter(call => call.init.method === 'DELETE').length, 1);
+});
+
+test('uncertain native deletion is never repeated and observation can reconcile only exact absence', async () => {
+    const current = fixture({ fetch: (url, init, f) => {
+        if (init.method === 'DELETE') { f.native.removed = true; throw Error('lost ack'); }
+        return f.defaultResponse(url, init);
+    } });
+    await assert.rejects(current.client.remove(current.receipt, allow), unknown);
+    assert.deepEqual(await current.client.absence(current.receipt, allow), { absent: true });
+    assert.equal(current.calls.filter(call => call.init.method === 'DELETE').length, 1);
+    for (const response of [
+        () => Response.json({ _tag: 'OtherError', sessionID: current.receipt.sessionID, message: 'wrong' }, { status: 404 }),
+        () => Response.json({ _tag: 'SessionNotFoundError', sessionID: 'wrong-session', message: 'wrong' }, { status: 404 }),
+        () => new Response('not found', { status: 404 }),
+    ]) {
+        const broken = fixture({ fetch: (url, init, f) => url.includes('/api/session/') && !url.endsWith('/active') ? response() : f.defaultResponse(url, init) });
+        await assert.rejects(broken.client.absence(broken.receipt, allow), unavailable);
+        assert.equal(broken.calls.some(call => call.init.method === 'DELETE'), false);
+    }
+});
+
+test('removal acknowledgement without verified absence remains unknown', async () => {
+    const current = fixture({ fetch: (url, init, f) => init.method === 'DELETE' ? new Response(null, { status: 204 }) : f.defaultResponse(url, init) });
+    await assert.rejects(current.client.remove(current.receipt, allow), unknown);
+    assert.equal(current.calls.filter(call => call.init.method === 'DELETE').length, 1);
 });

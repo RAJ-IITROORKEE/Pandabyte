@@ -4,6 +4,10 @@ An India-first IoT hardware catalog and company website with an editable adminis
 
 **Current Agent assignment, 6 November 2026:** the [Agent Experience Upgrade handoff](docs/agent-experience-upgrade/handoff.md) and [requirement register](docs/agent-experience-upgrade/requirements.json) govern the new P0/P1 work. The [complete adopted master specification](docs/agent-experience-upgrade/specification.md) requires OpenCode execution ownership and a design review before replacing the customer UI. Historical Phase 6 remains in progress; its evidence and existing runtime are preserved during the transition. Older roadmap and deployment records describe their own checkpoints.
 
+The new local proposal is approved and its customer shell is implemented. Native
+execution and full Admin management remain in progress; current chat still uses
+the preserved deterministic RAG path. See the handoff for precise acceptance limits.
+
 **Status: hosted development preview, 29 October 2026.** [Open PandaByte](https://pandabyte-iot.vercel.app). The site uses the selected development Clerk/InsForge services. It is not a production-commerce launch; real payments and invoice issuance remain disabled/deferred. [Deployment and checks](docs/vercel-preview-deployment.md).
 
 **Latest hosted checkpoint, 1 November 2026:** Admin/menu source through `cde6262` is live together with the separately reviewed Panda Agent pilot integration. Hosted Admin cards, user sorting/filtering/CSV, sidebar actions and access guards passed checks. Agent owner-only pilot restrictions remain in place; full Agent acceptance is tracked separately. [Combined source and deployment record](docs/vercel-preview-deployment.md).
@@ -73,6 +77,7 @@ See [backend setup](docs/backend-setup.md), [account contracts](docs/account-das
 ```sh
 npm run lint
 npm run typecheck
+npm run typecheck:agent-native
 npm run test:unit
 npm run build
 ```
@@ -80,6 +85,9 @@ npm run build
 Unit tests use fixture data. Tests that reconcile the owner-only catalog/CAD archive explicitly skip when that local archive is absent; fixture-based importer and GLB validation tests still run. Backend/browser integration scripts require approved development services and may create disposable records. They are separate commands and must not be run against production by default.
 
 Existing browser evidence and manual limits are recorded under `docs/verification/`. DOM/viewport checks do not prove screen-reader speech, genuine browser zoom or OS reduced-motion switching.
+
+The native Agent check includes unwired server modules that the application's
+import-based typecheck does not yet reach. It does not activate an Agent service.
 
 ## Repository layout
 

@@ -21,6 +21,7 @@ export type NativeRunState = {
     terminalReason: NativeRunTerminalReason | null;
     nativeOutcome: NativeRunOutcome | null;
     responseHash: string | null;
+    removalClaimed: boolean;
     runtimeRetired: boolean;
 };
 export type NativeRunAdmitInput = {
@@ -49,16 +50,16 @@ function scopes(value: unknown, code: 'invalid' | 'unavailable'): NativeRunScope
     return value.map(item => ({ productId: item.productId, scopeHash: item.scopeHash }));
 }
 function state(value: unknown): NativeRunState {
-    requireValue(object(value) && exact(value, ['receipt', 'messageID', 'promptHash', 'runtimeBinding', 'scopes', 'phase', 'version', 'createClaimed', 'promptClaimed', 'cancelRequested', 'terminalReason', 'nativeOutcome', 'responseHash', 'runtimeRetired'])
+    requireValue(object(value) && exact(value, ['receipt', 'messageID', 'promptHash', 'runtimeBinding', 'scopes', 'phase', 'version', 'createClaimed', 'promptClaimed', 'cancelRequested', 'terminalReason', 'nativeOutcome', 'responseHash', 'removalClaimed', 'runtimeRetired'])
         && typeof value.messageID === 'string' && /^msg_[a-f0-9]{12}[A-Za-z0-9]{14}$/.test(value.messageID) && hex(value.promptHash) && hex(value.runtimeBinding)
         && ['admitted', 'create_claimed', 'created', 'prompt_claimed', 'accepted', 'cancel_requested', 'unknown', 'terminal'].includes(value.phase as string)
-        && positive(value.version) && typeof value.createClaimed === 'boolean' && typeof value.promptClaimed === 'boolean' && typeof value.cancelRequested === 'boolean' && typeof value.runtimeRetired === 'boolean'
+        && positive(value.version) && typeof value.createClaimed === 'boolean' && typeof value.promptClaimed === 'boolean' && typeof value.cancelRequested === 'boolean' && typeof value.removalClaimed === 'boolean' && typeof value.runtimeRetired === 'boolean'
         && (value.terminalReason === null || terminalReason(value.terminalReason)) && (value.nativeOutcome === null || nativeOutcome(value.nativeOutcome)) && (value.responseHash === null || hex(value.responseHash)), 'unavailable');
     requireValue((!value.promptClaimed || value.createClaimed)
         && (value.phase !== 'admitted' || (!value.createClaimed && !value.promptClaimed && !value.cancelRequested))
         && (!['create_claimed', 'created'].includes(value.phase as string) || value.createClaimed)
         && (!['prompt_claimed', 'accepted'].includes(value.phase as string) || (value.createClaimed && value.promptClaimed))
-        && (value.phase !== 'cancel_requested' || value.cancelRequested) && (!value.runtimeRetired || value.phase === 'terminal')
+        && (value.phase !== 'cancel_requested' || value.cancelRequested) && (!value.removalClaimed || value.phase === 'terminal') && (!value.runtimeRetired || value.removalClaimed)
         && (value.phase === 'terminal'
             ? value.terminalReason !== null && value.responseHash !== null && (value.terminalReason !== 'cancelled' || !value.promptClaimed || value.nativeOutcome === 'interrupted')
             : value.terminalReason === null && value.responseHash === null && value.nativeOutcome === null), 'unavailable');
@@ -66,7 +67,7 @@ function state(value: unknown): NativeRunState {
         receipt: receipt(value.receipt, 'unavailable'), messageID: value.messageID, promptHash: value.promptHash, runtimeBinding: value.runtimeBinding, scopes: scopes(value.scopes, 'unavailable'),
         phase: value.phase as NativeRunState['phase'], version: value.version, createClaimed: value.createClaimed, promptClaimed: value.promptClaimed, cancelRequested: value.cancelRequested,
         terminalReason: value.terminalReason as NativeRunState['terminalReason'], nativeOutcome: value.nativeOutcome as NativeRunState['nativeOutcome'], responseHash: value.responseHash as string | null,
-        runtimeRetired: value.runtimeRetired,
+        removalClaimed: value.removalClaimed, runtimeRetired: value.runtimeRetired,
     };
 }
 
@@ -75,7 +76,7 @@ export function createNativeRunStore(actor: ChatActor, key: string) {
     requireValue(hex(key) && object(actor) && text(actor.subject, 512), 'unavailable');
     const subject = actor.subject;
     function identity(thread: string, request: string) { requireValue(uuid(thread) && uuid(request), 'invalid'); return { thread, request }; }
-    async function rpc(action: 'admit' | 'state' | 'transition' | 'complete' | 'retire', input: Record<string, unknown>): Promise<unknown> {
+    async function rpc(action: 'admit' | 'state' | 'transition' | 'complete' | 'claim_removal' | 'retire', input: Record<string, unknown>): Promise<unknown> {
         const p_payload = JSON.stringify({ v: 1, action, subject, exp: Math.floor(Date.now() / 1000) + 60, input });
         requireValue(Buffer.byteLength(p_payload, 'utf8') <= 32768, 'invalid');
         const p_mac = createHmac('sha256', Buffer.from(key, 'hex')).update('panda-native-db-v1\n' + p_payload).digest('hex');
@@ -84,7 +85,7 @@ export function createNativeRunStore(actor: ChatActor, key: string) {
         catch { throw new ChatStoreError('unavailable'); }
         requireValue(object(result), 'unavailable');
         if (result.error) {
-            const error = object(result.error) ? result.error : {};
+            const error: Record<string, unknown> = object(result.error) ? result.error : {};
             const known = ['not_found', 'conflict', 'invalid', 'unauthenticated', 'quota'] as const;
             throw new ChatStoreError(error.code === 'P0001' ? known.find(code => code === error.details) ?? 'unavailable' : 'unavailable');
         }
@@ -121,10 +122,16 @@ export function createNativeRunStore(actor: ChatActor, key: string) {
             requireValue(saved.phase === 'terminal' && saved.version >= expectedVersion && saved.nativeOutcome === outcome && saved.terminalReason === reason, 'unavailable');
             return saved;
         },
+        async claimRemoval(thread: string, request: string, expectedVersion: number): Promise<NativeRunState> {
+            requireValue(positive(expectedVersion), 'invalid');
+            const saved = state(await rpc('claim_removal', { ...identity(thread, request), expectedVersion }));
+            requireValue(saved.phase === 'terminal' && saved.removalClaimed && !saved.runtimeRetired && saved.version === expectedVersion + 1, 'unavailable');
+            return saved;
+        },
         async retire(thread: string, request: string, expectedVersion: number): Promise<NativeRunState> {
             requireValue(positive(expectedVersion), 'invalid');
             const saved = state(await rpc('retire', { ...identity(thread, request), expectedVersion }));
-            requireValue(saved.phase === 'terminal' && saved.runtimeRetired && saved.version >= expectedVersion, 'unavailable');
+            requireValue(saved.phase === 'terminal' && saved.removalClaimed && saved.runtimeRetired && saved.version >= expectedVersion, 'unavailable');
             return saved;
         },
     };

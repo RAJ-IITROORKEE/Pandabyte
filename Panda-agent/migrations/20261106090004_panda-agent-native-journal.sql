@@ -14,6 +14,7 @@ CREATE TABLE public.panda_agent_native_runs (
  create_claimed boolean NOT NULL DEFAULT false,
  prompt_claimed boolean NOT NULL DEFAULT false,
  cancel_requested boolean NOT NULL DEFAULT false,
+ removal_claimed boolean NOT NULL DEFAULT false,
  runtime_retired boolean NOT NULL DEFAULT false,
  terminal_reason text CHECK(terminal_reason IN ('answered','cancelled','unavailable')),
  native_outcome text CHECK(native_outcome IN ('succeeded','failed','interrupted')),
@@ -30,7 +31,8 @@ CREATE TABLE public.panda_agent_native_runs (
  CHECK(phase NOT IN ('create_claimed','created','prompt_claimed','accepted') OR create_claimed),
  CHECK(phase NOT IN ('prompt_claimed','accepted') OR prompt_claimed),
  CHECK(phase<>'cancel_requested' OR cancel_requested),
- CHECK(NOT runtime_retired OR phase='terminal')
+ CHECK(NOT removal_claimed OR phase='terminal'),
+ CHECK(NOT runtime_retired OR (phase='terminal' AND removal_claimed))
 );
 CREATE UNIQUE INDEX panda_agent_native_session_unique ON public.panda_agent_native_runs((receipt->>'sessionID'));
 ALTER TABLE public.panda_agent_native_runs ENABLE ROW LEVEL SECURITY;
@@ -59,7 +61,7 @@ CREATE FUNCTION public.panda_agent_native_state_json(g public.panda_agent_native
 LANGUAGE sql IMMUTABLE SET search_path=pg_catalog,public,pg_temp AS $$
  SELECT jsonb_build_object('receipt',g.receipt,'messageID',g.message_id,'promptHash',g.prompt_hash,'runtimeBinding',g.runtime_binding,'scopes',g.scopes,
  'phase',g.phase,'version',g.version,'createClaimed',g.create_claimed,'promptClaimed',g.prompt_claimed,'cancelRequested',g.cancel_requested,
- 'terminalReason',g.terminal_reason,'nativeOutcome',g.native_outcome,'responseHash',g.response_hash,'runtimeRetired',g.runtime_retired)
+ 'terminalReason',g.terminal_reason,'nativeOutcome',g.native_outcome,'responseHash',g.response_hash,'removalClaimed',g.removal_claimed,'runtimeRetired',g.runtime_retired)
 $$;
 REVOKE ALL ON FUNCTION public.panda_agent_native_state_json(public.panda_agent_native_runs) FROM PUBLIC,anon,authenticated;
 
@@ -244,6 +246,24 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.panda_agent_native_complete(text,text) FROM PUBLIC,anon,authenticated;
 
+CREATE FUNCTION public.panda_agent_native_claim_removal(p_payload text,p_mac text) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
+DECLARE v jsonb; g public.panda_agent_native_runs;
+BEGIN
+ v:=public.panda_agent_native_verify(p_payload,p_mac,'claim_removal');
+ IF NOT v ?& ARRAY['thread','request','expectedVersion'] OR (SELECT count(*) FROM jsonb_object_keys(v))<>3
+ OR jsonb_typeof(v->'expectedVersion') IS DISTINCT FROM 'number' OR coalesce(v->>'expectedVersion','') !~ '^[1-9][0-9]{0,8}$' THEN PERFORM public.phase3_fail('invalid'); END IF;
+ PERFORM 1 FROM public.panda_agent_chats WHERE id=(v->>'thread')::uuid AND owner_subject=public.requesting_user_id() FOR UPDATE;
+ IF NOT FOUND THEN PERFORM public.phase3_fail('not_found'); END IF;
+ SELECT * INTO g FROM public.panda_agent_native_runs WHERE thread_id=(v->>'thread')::uuid AND request_id=(v->>'request')::uuid AND owner_subject=public.requesting_user_id() FOR UPDATE;
+ IF NOT FOUND THEN PERFORM public.phase3_fail('not_found'); END IF;
+ IF g.phase<>'terminal' OR g.removal_claimed OR g.runtime_retired OR g.version<>(v->>'expectedVersion')::integer THEN PERFORM public.phase3_fail('conflict'); END IF;
+ PERFORM public.panda_agent_native_verify(p_payload,p_mac,'claim_removal');
+ UPDATE public.panda_agent_native_runs SET removal_claimed=true,version=version+1,updated_at=clock_timestamp() WHERE thread_id=g.thread_id AND request_id=g.request_id RETURNING * INTO g;
+ RETURN public.panda_agent_native_state_json(g);
+END $$;
+REVOKE ALL ON FUNCTION public.panda_agent_native_claim_removal(text,text) FROM PUBLIC,anon,authenticated;
+
 CREATE FUNCTION public.panda_agent_native_retire(p_payload text,p_mac text) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
 DECLARE v jsonb; g public.panda_agent_native_runs;
@@ -257,7 +277,7 @@ BEGIN
  SELECT * INTO g FROM public.panda_agent_native_runs WHERE thread_id=(v->>'thread')::uuid AND request_id=(v->>'request')::uuid AND owner_subject=public.requesting_user_id() FOR UPDATE;
  IF NOT FOUND THEN PERFORM public.phase3_fail('not_found'); END IF;
  PERFORM public.panda_agent_native_verify(p_payload,p_mac,'retire');
- IF g.phase<>'terminal' THEN PERFORM public.phase3_fail('conflict'); END IF;
+ IF g.phase<>'terminal' OR NOT g.removal_claimed THEN PERFORM public.phase3_fail('conflict'); END IF;
  IF g.runtime_retired THEN RETURN public.panda_agent_native_state_json(g); END IF;
  IF g.version<>(v->>'expectedVersion')::integer THEN PERFORM public.phase3_fail('conflict'); END IF;
  IF (p_payload::jsonb->>'exp')::bigint<extract(epoch FROM clock_timestamp()) THEN PERFORM public.phase3_fail('unauthenticated'); END IF;
@@ -319,4 +339,4 @@ END $$;
 REVOKE ALL ON FUNCTION public.panda_agent_native_read(uuid) FROM PUBLIC,anon,authenticated;
 
 REVOKE ALL ON FUNCTION public.panda_agent_native_admit(text,text),public.panda_agent_native_state(text,text),public.panda_agent_native_transition(text,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.panda_agent_native_admit(text,text),public.panda_agent_native_state(text,text),public.panda_agent_native_transition(text,text),public.panda_agent_native_complete(text,text),public.panda_agent_native_retire(text,text),public.panda_agent_native_read(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.panda_agent_native_admit(text,text),public.panda_agent_native_state(text,text),public.panda_agent_native_transition(text,text),public.panda_agent_native_complete(text,text),public.panda_agent_native_claim_removal(text,text),public.panda_agent_native_retire(text,text),public.panda_agent_native_read(uuid) TO authenticated;
