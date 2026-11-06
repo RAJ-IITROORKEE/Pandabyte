@@ -209,3 +209,15 @@ test('admission envelope and configuration reject malformed typed values', async
     for (const value of ['', 'a'.repeat(63), 'A'.repeat(64), null]) assert.throws(() => createNativeRunStore(current.actor, value), failure('unavailable'));
     for (const subject of ['', 'x'.repeat(513), '\ud800']) assert.throws(() => createNativeRunStore({ ...current.actor, subject }, key), failure('unavailable'));
 });
+
+test('native fenced history and cleanup projections validate bounded private SQL responses',async()=>{
+ const date='2026-11-06T00:00:00Z';const read={thread:{id:thread,title:'Fixture',updatedAt:date,status:'idle'},messages:[],turns:[]};
+ const f=fixture(read);assert.deepEqual(await f.store.read(thread),read);assert.deepEqual(f.calls[0],{schema:'public',name:'panda_agent_native_read',args:{p_thread:thread}});
+ const contexts=fixture({pending:false,requests:[request],more:false});assert.deepEqual(await contexts.store.contexts(thread),{pending:false,requests:[request],more:false});assert.equal(contexts.calls[0].name,'panda_agent_native_contexts');
+ for(const value of [null,{}, {pending:false,requests:[request,request],more:false},{pending:false,requests:['PRIVATE'],more:false},{pending:false,requests:[],more:false,receipt:'PRIVATE'}]) await assert.rejects(fixture(value).store.contexts(thread),failure('unavailable'));
+ await assert.rejects(fixture(null).store.read(thread),failure('unavailable'));
+ for(const action of ['read','contexts']) {
+  await assert.rejects(fixture(null,{throw:Error('PRIVATE')}).store[action](thread),failure('unavailable'));
+  await assert.rejects(fixture(null,{response:{data:null,error:{code:'P0001',details:'not_found'}}}).store[action](thread),failure('not_found'));
+ }
+});

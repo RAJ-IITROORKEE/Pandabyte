@@ -1,5 +1,5 @@
 {
-  "migrationSha256": "224d0d759b6fa3e169ea1cf6c5b8e7432d732614d6c2c06cb4fc423564dba4ba",
+  "migrationSha256": "9f60e3b08c7b74e9d057f33219f6d61990b31fc8dfdc4cf87d307c1203f5e9bd",
   "evidenceClass": "synthetic SQL roles and disposable records; rollback only",
   "expiryDelayEvidence": "injected after entry verification; not real lock contention",
   "sourceWithdrawalTested": false,
@@ -12,6 +12,7 @@
     "scope_uuid_case_duplicate_rejected_with_injected_scope",
     "foreign_unsigned_raw_table_and_helper_denied",
     "legacy_cancel_prepare_and_unretired_delete_blocked",
+    "owner_only_cleanup_candidates_bounded_and_excludes_retired",
     "injected_post_verify_delay_rejects_expired_replays"
   ],
   "failed": null,

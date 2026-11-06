@@ -33,7 +33,7 @@ const instructions = 'Return exactly one JSON object with outcome, text, selecti
 const unavailable: ChatAnswer = { outcome: 'insufficient', text: 'This request ended without a current validated result. No uncertain request was repeated. Start a new question.', citations: [] };
 const cancelled: ChatAnswer = { outcome: 'insufficient', text: 'This request was cancelled. Start a new question when ready.', citations: [] };
 
-// Unmounted translation only. Runtime policy proof, HTTP routes, cancellation and durable cleanup remain separate gates.
+// Private translation only; route selection and runtime admission cannot authorize unverified inference.
 export function createNativeTurn(deps: NativeTurnDependencies) {
     async function run(input: Input, start: boolean, signal?: AbortSignal): Promise<NativeTurnResult> {
         if (!input || Object.keys(input).sort().join(',') !== 'question,request,thread' || !uuid(input.thread) || !uuid(input.request)

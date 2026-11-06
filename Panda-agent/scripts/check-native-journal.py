@@ -62,8 +62,8 @@ def check(conn, key):
         stage=name
         fn()
         passed.append(name)
-    def new():
-        thread = value("SELECT public.panda_agent_chat_create('Disposable native SQL fixture')")['thread']['id']
+    def new(thread=None):
+        thread = thread or value("SELECT public.panda_agent_chat_create('Disposable native SQL fixture')")['thread']['id']
         nonce = secrets.token_hex(16)
         receipt = {'sessionID':'ses_'+secrets.token_hex(6)+'A'*14,'title':'panda-agent-customer-'+nonce,'nonce':nonce,'scope':'customer','binding':secrets.token_hex(32)}
         fields = {'thread':thread,'request':str(uuid.uuid4()),'question':'Disposable native question','receipt':receipt,'messageID':'msg_'+secrets.token_hex(6)+'B'*14,'promptHash':secrets.token_hex(32),'runtimeBinding':secrets.token_hex(32),'scopes':[]}
@@ -192,6 +192,27 @@ def check(conn, key):
             deny(lambda:conn.execute('DELETE FROM public.panda_agent_native_runs WHERE thread_id=%s AND request_id=%s',(f['thread'],f['request'])))
             actor()
         run('legacy_cancel_prepare_and_unretired_delete_blocked',old_writes)
+        def cleanup_candidates():
+            f = new()
+            def candidates(subject=owner):
+                return value('SELECT public.panda_agent_native_contexts(%s)', (f['thread'],))
+            assert candidates() == {'pending':True,'requests':[],'more':False}
+            fields = [f]
+            for index in range(5):
+                if index: fields.append(new(f['thread']))
+                current = fields[-1]
+                transition(current,1,'cancel_requested'); complete(current,2,'cancelled',None,cancel_answer())
+            batch = candidates()
+            assert batch['pending'] is False and batch['more'] is True and len(batch['requests']) == 4
+            actor(foreign)
+            deny(lambda:candidates(),detail='not_found')
+            actor()
+            by_id = {item['request']:item for item in fields}
+            for request in batch['requests']:
+                item = by_id[request]; claim_removal(item,3); retire(item,4)
+            remaining = candidates()
+            assert remaining['pending'] is False and remaining['more'] is False and len(remaining['requests']) == 1
+        run('owner_only_cleanup_candidates_bounded_and_excludes_retired',cleanup_candidates)
         def delayed_expiry():
             f=new(); claim_created(f); transition(f,3,'claim_prompt'); transition(f,4,'accepted')
             answer={'outcome':'conversation','text':'Disposable expiry fixture.','citations':[]}

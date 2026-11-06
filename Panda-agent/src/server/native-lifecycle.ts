@@ -18,7 +18,7 @@ const immutable = (run: NativeRunState) => ({ receipt: run.receipt, messageID: r
 const cancelled: ChatAnswer = { outcome: 'insufficient', text: 'This request was cancelled. Start a new question when ready.', citations: [] };
 const unavailable: ChatAnswer = { outcome: 'insufficient', text: 'This request ended without a current validated result. No uncertain request was repeated. Start a new question.', citations: [] };
 
-// Unmounted: cancellation/cleanup translate native operations; current source-checked answer projection stays elsewhere.
+// Cancellation/cleanup translate owned native operations; current source-checked answer projection stays elsewhere.
 export function createNativeLifecycle(deps: NativeLifecycleDependencies) {
     async function run(input: Input, action: 'cancel' | 'status' | 'cleanup', signal?: AbortSignal): Promise<NativeLifecycleResult> {
         if (!input || Object.keys(input).sort().join(',') !== 'request,thread' || !uuid(input.thread) || !uuid(input.request)) throw new ChatStoreError('invalid');
@@ -38,16 +38,15 @@ export function createNativeLifecycle(deps: NativeLifecycleDependencies) {
                 await guard(receipt, identity.runtimeBinding);
                 if (!equal(receipt, identity.receipt) || receipt.scope !== 'customer' || await deps.ownerBinding(thread) !== receipt.binding) throw new ChatStoreError('unavailable');
             };
-            const latest = async () => {
-                await owned();
+            const latest = async (receipt = identity.receipt) => {
+                await owned(receipt);
                 const value = await deps.store.state(thread, request);
                 if (!value || !equal(immutable(value), identity)) throw new ChatStoreError('unavailable');
                 return value;
             };
             await owned();
             const check = async (receipt: NativeSessionReceipt, mutation?: 'interrupt' | 'remove' | 'absence') => {
-                await owned(receipt);
-                const value = await latest();
+                const value = await latest(receipt);
                 if (value.runtimeRetired) return false;
                 if (mutation === 'remove' || mutation === 'absence') return value.phase === 'terminal' && value.removalClaimed && value.version === saved!.version;
                 if (mutation === 'interrupt') return value.phase === 'cancel_requested' && value.cancelRequested && value.version === saved!.version && !value.removalClaimed;
@@ -59,7 +58,7 @@ export function createNativeLifecycle(deps: NativeLifecycleDependencies) {
                 if (!saved.removalClaimed) {
                     if (saved.createClaimed) {
                         const observationCheck = async (receipt: NativeSessionReceipt) => {
-                            await owned(receipt); const value = await latest();
+                            const value = await latest(receipt);
                             return value.phase === 'terminal' && !value.removalClaimed && !value.runtimeRetired && value.version === saved!.version;
                         };
                         const session = await deps.native.get(saved.receipt, observationCheck, signal);

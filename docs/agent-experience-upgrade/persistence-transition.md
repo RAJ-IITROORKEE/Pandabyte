@@ -30,7 +30,7 @@ taking over the same turn. Existing historical reads remain source fenced.
 The first journal increment supports customer scope only. Playground must use a
 separate test-history/memory namespace and ADMIN admission before being enabled;
 accepting a `playground` label on a native receipt alone does not provide isolation.
-The native client remains unwired until durable admission, source-fenced release,
+Live native execution remains disabled until durable admission, source-fenced release,
 runtime identity, provider policy and rollback tests pass. No deployment is implied.
 
 The additive `20261106090004_panda-agent-native-journal.sql` migration and typed
@@ -41,7 +41,8 @@ deletion and four expired replay paths. The latter uses an injected delay after
 entry verification, not real concurrent lock contention. The UUID case test uses
 an injected scope helper; no canonical source was withdrawn. Existing rows,
 functions, triggers and ACLs matched after rollback; the candidate table is absent.
-See `native-journal-verification.json`. The migration is **not applied**.
+See `native-journal-verification.json` for that historical rollback checkpoint.
+It is now applied in development with inference OFF; see the mounted-route section below.
 
 Current native admission inherits the existing QA skill capability even for
 conversation. Its captured epoch is checked before prompt dispatch and answer
@@ -97,13 +98,13 @@ empty-context access checks, detached mutation, spoofed aliases/metadata and the
 independently reproduced metadata-escape regressions. This proves literal quote
 membership and current-source fencing, not semantic entailment, hardware
 applicability, multi-product/vendor coverage or live native answering. The kernel
-is not yet mounted. `npm run typecheck:agent-native` explicitly checks these
+is now assembled behind the inference-disabled native bridge. `npm run typecheck:agent-native` explicitly checks these
 unwired modules; the application's import graph alone does not include them.
 
 ## Thin turn adapter
 
 `server/native-turn.ts` connects the existing session client, private run store,
-prepared evidence and current-turn correlator. It remains unmounted. `start` and
+prepared evidence and current-turn correlator. It is assembled behind the inference-disabled native bridge. `start` and
 `status` accept only an owned application thread/request/question and return
 pending, unknown or saved. The caller reads the existing current-source-checked
 history projection after saved; native text/IDs are never the public response.
@@ -132,7 +133,7 @@ both SQL contract mismatches; the fake store now enforces these predicates.
 Eighteen adapter tests cover CAS races, lost acknowledgements, source withdrawal,
 runtime/owner changes, invalid JSON/citations, dispatch disablement and recovery.
 
-The unmounted `server/native-lifecycle.ts` now supplies cancellation/status and
+The private `server/native-lifecycle.ts` now supplies cancellation/status and
 terminal native cleanup through these same dependencies. Cancellation is sticky;
 only a fresh CAS winner can interrupt. Cleanup claims removal once and retires only
 after current ownership/generation/version checks and typed native absence.
@@ -141,6 +142,29 @@ and the actual provider-free unstarted-session case pass; the latter uses a
 synthetic file journal, not real Clerk/database integration. See the session
 contract for explicit late-prompt/interrupt and consumed-claim recovery limits.
 
-Live runtime admission/binding, HTTP routes and durable callback integration still
-need completion before mounting. The migration is not applied, the provider
-profile is inactive, and no native customer cutover occurred.
+The private route bridge and current owner/runtime callbacks are now assembled.
+The development journal is installed, with new inference hard OFF; no live native
+customer cutover occurred. See the mounted-route section below.
+
+## Mounted routes with inference disabled
+
+The existing lightweight HTTP shell now accepts an optional actor-scoped native
+bridge. It selects a fresh native request before any legacy begin; durable journal
+classification handles existing native work regardless of new-message selection.
+Old guide/diagnostic/composite/unprepared requests retain their original handlers.
+Unknown native operations never become replacement legacy executions.
+
+The bridge reads through native_read -> parseChatRead -> the existing public
+projection, with current Clerk checks before/after release. Terminal replay does
+not require a runtime. Same-origin POST cleanup and normal Delete use the same
+owned lifecycle adapter; Delete fetches only four cleanup candidates and retains
+conflict for pending/more/unknown work, within20s, before SQL's final delete guard.
+
+The reviewed0004 journal is applied to the selected existing development project;
+0005 reloads PostgREST's schema cache. This follow-up was required by real PGRST202
+observations, after SQL-only fixture validation passed. No existing rows changed
+at installation; native rows remain0 after real admission/isolation tests.
+Schema/recovery routing stays enabled locally; fresh native selection is off.
+Even when selection was temporarily on, source hard-denies new dispatch and native
+create/prompt before inference. A persistent isolated supervisor, strict provider
+privacy/fee proof and full live observation/cancellation/latency remain open gates.

@@ -113,20 +113,21 @@
   "nativeSessions": {
     "record": "opencode-session-probe.json",
     "evidenceClass": "Actual pinned 2.2.2 disposable provider-free process with file receipt callback; not real Clerk/database integration",
-    "limits": "No prompt/provider call, live inference cancellation, customer cutover or effective-permission certification. Mounted durable cleanup admission and runtime generation/secret binding remain required.",
+    "limits": "Actual disposable runtime generation/descriptor + lifecycle filejournal proof; full Clerk/SQL/native execution and active cancellation/latency remain unverified",
     "followup": "Actual native lifecycle adapter owned unstarted cancellation and claimed removal pass:1create,0prompt,0interrupt,1DELETE; typed absence and repeat cleanup. Synthetic file journal, not real Clerk/SQL."
   },
   "nativeJournal": {
     "record": "native-journal-verification.json",
-    "groupsPassed": 9,
-    "applied": false,
+    "groupsPassed": 10,
+    "applied": true,
     "evidenceClass": "Selected development PostgreSQL, synthetic authenticated SQL subjects and isolated fixtures; candidate migration and fixtures rolled back",
     "limits": "Injected post-entry expiry delay is not real lock contention; UUID duplicate check uses an injected scope helper; real canonical-source withdrawal was not performed.",
-    "followup": "Durable terminal-only removal claim added; repeat claim conflicts and retirement requires the claim. Revised migration hash and all9 rollback groups pass; table remains absent."
+    "followup": "Development-only additive schema installed after rollback10groups and exact-hash review; separate0005 PostgREST cache reload fixes observedPGRST202; native rows0 and prior rows unchanged at install",
+    "installationRecord": "native-journal-installation.json"
   },
   "checks": {
     "agentNodeTests": {
-      "passed": 370,
+      "passed": 414,
       "failed": 0
     },
     "developmentToolTests": {
@@ -140,9 +141,9 @@
       "nativeTypeScript": "pass",
       "productionBuild": "pass",
       "dist": ".next-agent-experience-candidate",
-      "buildId": "-S3hvm2Wt69MUJOOrYqQ-",
+      "buildId": "HxxtysgGlUVWp8Zw57GCI",
       "runningBuild": false,
-      "generatedTsconfigIncludes": "removed; original include contract restored"
+      "generatedTsconfigIncludes": "removed; original contract restored"
     },
     "sharedInspectionProjectionTests": {
       "passed": 14,
@@ -150,12 +151,17 @@
     },
     "currentNativeAndEvidenceTests": {
       "sessions": 26,
-      "journalStore": 13,
+      "journalStore": 14,
       "preparedEvidence": 16,
       "includedInAgentTotal": true,
       "turnCorrelation": 6,
       "turnAdapter": 18,
-      "nativeLifecycle": 17
+      "nativeLifecycle": 17,
+      "ownerAdmission": 13,
+      "runtimeAdmission": 10,
+      "routeBridge": 11,
+      "serviceAssembly": 7,
+      "runtimeFile": 2
     },
     "adminNavigationTests": {
       "passed": 3,
@@ -199,11 +205,23 @@
       "keyOnlyProbe": "four supported metadata GETs pass; privacy stays unverified; zero inference",
       "independentReview": "Lifecycle and both probe increments reviewed clean; offline intercepted metadata/error path verified",
       "applicationBuild": "Prior f02d1f4 application build/type/storefront checks retained; no application import graph change"
+    },
+    "nativeRoutesFollowup": {
+      "agentTests": "414/414 pass",
+      "nativeTypeScript": "pass",
+      "applicationTypeScript": "pass",
+      "scopedEslint": "pass; zero warnings",
+      "candidateBuild": "PASS HxxtysgGlUVWp8Zw57GCI; isolated candidate, not current devserver",
+      "actualRuntimeProbe": "PASS; provider-free, no prompt, private descriptor/pinned lifecycle/rotation and cleanup",
+      "developmentSQL": "10rollback groups PASS then exact-hash additive installation and separate schema-cache reload; current native rows0",
+      "actualApi": "13checks PASS; disposable identities and app fixtures cleaned",
+      "browser": "Disabled native admission, no fallback, absent-attempt cancellation, restored deterministic answer/citation/reload and fixture archive pass",
+      "independentReview": "Clean for off-gated route/schema/current owner and runtime admission; active full integration limits retained"
     }
   },
   "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation.",
   "preparedEvidence": {
-    "status": "unwired foundation",
+    "status": "assembled private native context kernel; inference off",
     "singleProductOnly": true,
     "contextCharactersMax": 20000,
     "wholeFragmentsMax": 8,
@@ -220,13 +238,13 @@
   },
   "pendingActivation": [
     "Owner retained zero-cost and strict ZDR. Tested native HTTP session retry veto passes, but actual required fees, account/key retention, quota and live output/cost proof remain open.",
-    "Mounted native BFF admission/current-message reconciliation and durable lifecycle callbacks; unmounted start/status18tests and cancel/status/cleanup17tests plus provider-free native lifecycle case pass",
+    "Private native routes/owner/runtime admission now assembled and development journal installed; full persistent supervisor and live Clerk/SQL/native cancellation/latency acceptance still open",
     "Admin access and rendered-state/browser acceptance repaired; native discovery/management still inactive and unsupported controls disabled",
     "Shared full native tool/MCP management, isolated Playground and customer memory remain incomplete"
   ],
   "providerPolicyFollowup": "provider-policy-verification.json and opencode-provider-wire-probe.json: supported native session retry veto yields one attempt and inactive correlated terminal state for429/503/full-body disconnect/synthetic success; retained failed baseline; no real provider activation.",
   "nativeTurnCorrelation": {
-    "status": "unwired private correlation helper",
+    "status": "private correlation assembled behind inference-disabled native routes",
     "unitGroupsPassed": 6,
     "actualNativeEvidence": "All four isolated wire cases correlate to current persisted prompt/message and matching terminal outcome; exact synthetic success text",
     "reviewFix": "Reject later busy periods/stale output; native busy precedes inbox-user promotion, confirmed by pinned coordinator/projector and actual observations",
@@ -242,18 +260,150 @@
   },
   "nativeTurnAdapter": {
     "path": "Panda-agent/src/server/native-turn.ts",
-    "status": "unmounted translation",
+    "status": "assembled behind inference-disabled private routes",
     "testsPassed": 18,
     "review": "Independent final review clean; exact SQL failure text, durable cancellation flag and dispatch/observe split verified",
-    "limits": "Injected journal/native fixtures only; lifecycle translation now separately tested but real admission callback, routes and migration application remain open"
+    "limits": "Leaf fixtures and off-gated real Clerk/API checks only; no live provider activation or full native conversational acceptance"
   },
   "providerKeyFollowup": "Supported existing-key /key and /models/user200; candidate eligible, public exact ZDR row safety_retention:false and token prices zero. Effective Safety Retention/logging and required request/image fees remain unverified; no inference/profile/account change.",
   "nativeLifecycle": {
     "path": "Panda-agent/src/server/native-lifecycle.ts",
-    "status": "unmounted translation",
+    "status": "assembled behind private lifecycle routes",
     "testsPassed": 17,
     "independentReview": "clean",
     "actualProbe": "opencode-session-probe.json checks.nativeLifecycleAdapter; owned unstarted cancellation, one terminal removal and typed absence; repeated cleanup does not repeat DELETE",
-    "limits": "Synthetic file journal/current callback; not Clerk/SQL integration, active inference cancellation or mounted routes. Late prompt versus early/lost interrupt and consumed-claim recovery remain mount gates."
+    "limits": "Actual provider-free filejournal + runtime descriptor proof; full Clerk/SQL/native active cancellation and guard latency remain open. Late prompt/early interrupt and consumed-removal uncertainty retained."
+  },
+  "nativeRoutes": {
+    "status": "mounted locally, inference hard OFF",
+    "newSelectionFinal": false,
+    "schemaRecoveryRoutingFinal": true,
+    "runtimeDescriptorConfigured": false,
+    "handlerTests": 11,
+    "serviceTests": 7,
+    "ownerTests": 13,
+    "runtimeTests": 10,
+    "fileTests": 2,
+    "api": {
+      "scope": "real development Clerk bearer sessions and localhost3001 mounted native journal routing; new selection ON with inference hard OFF",
+      "checks": [
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats",
+          "method": "POST",
+          "status": 201,
+          "noStore": true
+        },
+        {
+          "actor": "anonymous",
+          "operation": "/api/panda-agent/chats/:owned-chat/cleanup",
+          "method": "POST",
+          "status": 401,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat/messages",
+          "method": "POST",
+          "status": 503,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat?requestId=:request",
+          "method": "GET",
+          "status": 200,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat/cleanup",
+          "method": "POST",
+          "status": 404,
+          "noStore": true
+        },
+        {
+          "actor": "foreign",
+          "operation": "/api/panda-agent/chats/:owned-chat",
+          "method": "GET",
+          "status": 404,
+          "noStore": true
+        },
+        {
+          "actor": "foreign",
+          "operation": "/api/panda-agent/chats/:owned-chat/cancel",
+          "method": "POST",
+          "status": 404,
+          "noStore": true
+        },
+        {
+          "actor": "foreign",
+          "operation": "/api/panda-agent/chats/:owned-chat/cleanup",
+          "method": "POST",
+          "status": 404,
+          "noStore": true
+        },
+        {
+          "actor": "foreign",
+          "operation": "/api/panda-agent/chats/:owned-chat",
+          "method": "DELETE",
+          "status": 404,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat/messages",
+          "method": "POST",
+          "status": 403,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat/messages",
+          "method": "POST",
+          "status": 400,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat",
+          "method": "DELETE",
+          "status": 200,
+          "noStore": true
+        },
+        {
+          "actor": "owner",
+          "operation": "/api/panda-agent/chats/:owned-chat",
+          "method": "GET",
+          "status": 404,
+          "noStore": true
+        }
+      ],
+      "fixtureUsersCreated": 2,
+      "fixtureUsersDeleted": 2,
+      "fixtureAbsenceVerified": 2,
+      "appFixtureDeleted": true,
+      "roleWrites": false,
+      "providerCalls": 0,
+      "result": "pass",
+      "cleanup": "complete"
+    },
+    "initialFailure": "PGRST202 stale schema cache after direct SQL migration; separate0005 documented reload; rerun passes",
+    "review": "Independent high-risk review clean; exact reviewed journal hash in installation record",
+    "providerRequests": 0,
+    "scope": "No deployment, provider activation, role writes or unrelated history mutation",
+    "browser": {
+      "surface": "Codex built-in browser, real owner session, localhost3001",
+      "disabledAdmission": "New selection temporarily ON; rejection preserved draft/uncertain status. After cache reload, status observed absent, explicit cancellation confirmed and restored composer. No native turn/provider call. Owned empty fixture archived.",
+      "baseline": "Journal routing ON, new selection OFF: literal x8266 ESP8266 answer, S1 source/capture/link, reload persisted; terminal owned fixture archived",
+      "admin": "Owner Configuration accessible; discovery unavailable, Edit disabled",
+      "cleanup": "Both owned browser fixtures absent from recent; composer empty/enabled; old histories and blocked Phase6 fixture preserved",
+      "screenshots": [
+        "tmp/agent-phase1-native-admission-off.png",
+        "tmp/agent-phase1-native-routes-baseline.png",
+        "tmp/agent-phase1-native-routes-cleanup.png"
+      ],
+      "limits": "Disabled-admission and deterministic FastAPI/SQL browser path only. No live native provider generation, active cancellation or full Clerk/native latency acceptance."
+    }
   }
 }

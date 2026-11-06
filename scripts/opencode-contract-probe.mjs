@@ -2,7 +2,7 @@
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, basename, relative, isAbsolute } from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { randomBytes, createHash } from 'node:crypto';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
@@ -11,6 +11,8 @@ import { createNativeSessionClient } from '../Panda-agent/src/opencode/session-c
 import { createNativeReceipt } from '../Panda-agent/src/opencode/session-contracts.ts';
 import { createNativeMessageID } from '../Panda-agent/src/opencode/session-contracts.ts';
 import { createNativeLifecycle } from '../Panda-agent/src/server/native-lifecycle.ts';
+import { createNativeRuntimeAdmission } from '../Panda-agent/src/server/native-runtime.ts';
+import { readNativeRuntimeFile } from '../Panda-agent/src/server/native-runtime-file.ts';
 
 const executable = resolve('tmp/opencode-2.2.2-review/opencode.exe');
 if (process.argv.slice(2).some(arg => arg !== '--sessions') || process.argv.length > 3) throw Error('invalid_probe_argument');
@@ -80,6 +82,35 @@ try {
   summary.checks.applicationInspectionAdapter = {result:'pass', projection:inspected};
   if (sessionProbe) {
     if (inspected.counts.models !== 0 || inspected.counts.skills !== 0 || inspected.counts.mcpServers !== 0) throw Error('fixture_not_denied');
+    summary.checks.runtimeAdmission = {verified:false};
+    const descriptorPath = join(root, 'native-runtime.json');
+    // Apply the owner-only ACL before putting authentication material in the file.
+    await writeFile(descriptorPath, '{}', {flag:'wx',mode:0o600});
+    if (process.platform === 'win32') execFileSync(join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe'), ['-NoProfile','-NonInteractive','-Command',
+      "$ErrorActionPreference='Stop';[Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false);$p=[Console]::In.ReadToEnd();$sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User;$a=[System.Security.AccessControl.FileSecurity]::new();$a.SetOwner($sid);$a.SetAccessRuleProtection($true,$false);$a.AddAccessRule([System.Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','Allow'));[System.IO.File]::SetAccessControl($p,$a)"], {input:descriptorPath,windowsHide:true,timeout:5000,stdio:['pipe','ignore','ignore']});
+    const descriptor = {version:1,generation:randomBytes(32).toString('hex'),pid:child.pid,baseUrl:base,directory:join(root,'workspace'),configHash:createHash('sha256').update(await readFile(configPath)).digest('hex'),password};
+    await writeFile(descriptorPath, JSON.stringify(descriptor));
+    const mutations={creates:0,prompts:0,interrupts:0,deletes:0};
+    let runtimeRequests=0;
+    const countedFetch=async(url,init)=>{
+      runtimeRequests++;
+      const path=new URL(url).pathname;
+      if(path.endsWith('/prompt')) { mutations.prompts++; throw Error('unexpected_fixture_prompt'); }
+      if(init?.method==='DELETE')mutations.deletes++;
+      if(init?.method==='POST' && path==='/api/session')mutations.creates++;
+      if(init?.method==='POST' && path.endsWith('/interrupt'))mutations.interrupts++;
+      return fetch(url,init);
+    };
+    const admission=createNativeRuntimeAdmission({key:randomBytes(32).toString('hex'),readDescriptor:()=>readNativeRuntimeFile(descriptorPath),fetch:countedFetch});
+    const connection=await admission.connection();
+    if(!connection || !/^[a-f0-9]{64}$/.test(connection.binding) || await connection.authorize('observe')!==connection.binding)throw Error('runtime_admission_unverified');
+    const beforeDenied=runtimeRequests;
+    if(await admission.authorize('dispatch')!==null || await connection.authorize('dispatch')!==null)throw Error('runtime_dispatch_not_denied');
+    let deniedCreates=0,deniedPrompts=0;
+    try { await connection.native.create({},async()=>true); } catch(error) { if(error?.code==='forbidden' && error?.outcome==='not_dispatched')deniedCreates++; }
+    try { await connection.native.prompt({},{},async()=>true); } catch(error) { if(error?.code==='forbidden' && error?.outcome==='not_dispatched')deniedPrompts++; }
+    if(deniedCreates!==1 || deniedPrompts!==1 || runtimeRequests!==beforeDenied)throw Error('runtime_inference_boundary_unverified');
+    summary.checks.runtimeAdmission={verified:true,ownerPrivateDescriptor:true,authenticatedPinnedProcess:true,opaqueBinding:true,dispatchDeniedWithoutNetwork:true,createDeniedWithoutNetwork:true,promptDeniedWithoutNetwork:true,deniedCreates,deniedPrompts};
     const receipt = createNativeReceipt('playground', 'a'.repeat(64));
     const receiptPath = join(root, 'session-receipt.json');
     await writeFile(receiptPath, JSON.stringify(receipt), {flag:'wx'});
@@ -107,7 +138,7 @@ try {
     const turn = {thread:'11111111-1111-4111-8111-111111111111',request:'22222222-2222-4222-8222-222222222222'};
     const lifecycleReceipt = createNativeReceipt('customer', 'c'.repeat(64));
     const journalPath = join(root, 'lifecycle-journal.json');
-    const runtimeBinding = createHash('sha256').update(`${child.pid}:${password}:${root}`).digest('hex');
+    const runtimeBinding = connection.binding;
     await writeFile(journalPath, JSON.stringify({receipt:lifecycleReceipt,messageID:createNativeMessageID(),promptHash:'d'.repeat(64),runtimeBinding,scopes:[],phase:'created',version:1,createClaimed:true,promptClaimed:false,cancelRequested:false,terminalReason:null,nativeOutcome:null,responseHash:null,removalClaimed:false,runtimeRetired:false}), {flag:'wx'});
     const readJournal = async () => JSON.parse(await readFile(journalPath, 'utf8'));
     const saveJournal = async value => { await writeFile(journalPath, JSON.stringify(value)); return structuredClone(value); };
@@ -132,20 +163,13 @@ try {
         return saveJournal({...row,runtimeRetired:true,version:version+1});
       },
     };
-    const mutations={creates:0,prompts:0,interrupts:0,deletes:0};
-    const lifecycleNative=createNativeSessionClient({baseUrl:base,password,directory:join(root,'workspace'),expectedPid:child.pid,timeoutMs:5000,fetch:async(url,init)=>{
-      const path=new URL(url).pathname;
-      if(path.endsWith('/prompt')) { mutations.prompts++; throw Error('unexpected_fixture_prompt'); }
-      if(init?.method==='DELETE')mutations.deletes++;
-      if(init?.method==='POST' && path==='/api/session')mutations.creates++;
-      if(init?.method==='POST' && path.endsWith('/interrupt'))mutations.interrupts++;
-      return fetch(url,init);
-    }});
+    const lifecycleNative=connection.native;
+    const seedNative=createNativeSessionClient({baseUrl:base,password,directory:join(root,'workspace'),expectedPid:child.pid,timeoutMs:5000,fetch:countedFetch});
     const fileAccess=async candidate=>JSON.stringify(candidate)===JSON.stringify((await readJournal()).receipt);
-    await lifecycleNative.create(lifecycleReceipt,fileAccess);
+    await seedNative.create(lifecycleReceipt,fileAccess);
     const lifecycle=createNativeLifecycle({store:fileStore,native:lifecycleNative,
       current:async value=>value.thread===turn.thread && value.request===turn.request && (!value.receipt || await fileAccess(value.receipt)),
-      authorizeRuntime:async purpose=>purpose==='observe'?runtimeBinding:null,ownerBinding:async()=>lifecycleReceipt.binding});
+      authorizeRuntime:connection.authorize,ownerBinding:async()=>lifecycleReceipt.binding});
     const cancellation=await lifecycle.cancel(turn);
     const cleanup=await lifecycle.cleanup(turn);
     const repeatCleanup=await lifecycle.cleanup(turn);
@@ -154,6 +178,12 @@ try {
     requireValue(cancellation.status==='saved' && cleanup.status==='retired' && repeatCleanup.status==='retired' && finalJournal.runtimeRetired && finalAbsence.absent);
     requireValue(mutations.creates===1 && mutations.prompts===0 && mutations.interrupts===0 && mutations.deletes===1);
     summary.checks.nativeLifecycleAdapter={result:'pass',ownedUnstartedCancellation:true,terminalClaimedRemoval:true,repeatCleanupWithoutSecondDelete:true,typedAbsence:true,mutations,admission:'synthetic file journal/current callback; not Clerk or database integration',activeInferenceCancellation:false};
+    const beforeRotation=runtimeRequests;
+    await writeFile(descriptorPath,JSON.stringify({...descriptor,generation:randomBytes(32).toString('hex')}));
+    requireValue(await connection.authorize('observe')===null && runtimeRequests===beforeRotation);
+    requireValue((await lifecycle.status(turn)).status==='unknown' && runtimeRequests===beforeRotation);
+    requireValue((await readJournal()).runtimeBinding===runtimeBinding);
+    Object.assign(summary.checks.runtimeAdmission,{lifecycleUsesPinnedConnection:true,journalBindingPinned:true,rotatedDescriptorDeniedBeforeNetwork:true,rotatedLifecycleStatusUnknown:true,journalNotRebound:true,rotationRequests:runtimeRequests-beforeRotation,requests:runtimeRequests});
   }
   summary.result = 'completed';
 } catch (error) { summary.result = 'stopped'; summary.reason = /^[a-z_]+$/.test(error.message) ? error.message : 'probe_error'; }

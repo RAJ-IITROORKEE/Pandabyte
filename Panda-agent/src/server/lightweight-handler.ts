@@ -17,6 +17,7 @@ import {buildPlan} from '../agentic/plan.ts';
 import {validAgenticCatalog,type createAgenticAnswer} from './agentic-answer.ts';
 import type {createAgenticStore,CompositeExecution} from './agentic-store.ts';
 import {parseToolActivity} from '../agentic/tool-activity.ts';
+import type {NativeChatBridge} from './native-chat-service.ts';
 
 type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>;diagnostic?:ReturnType<typeof createDiagnosticStore>;agentic?:ReturnType<typeof createAgenticStore>};
 type Dependencies = {
@@ -37,6 +38,8 @@ type Dependencies = {
   agenticEnabled?():boolean;
   agenticAnswer?:ReturnType<typeof createAgenticAnswer>;
   agenticCancel?(actor:ChatActor,execution:CompositeExecution,signal:AbortSignal):Promise<void>;
+  native?(actor:ChatActor):NativeChatBridge;
+  nativeNewMessages?():boolean;
 };
 const json = (value:unknown,status=200) => new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store'}});
 const status = (e:unknown) => e instanceof ChatStoreError ? ({not_found:404,conflict:409,invalid:400,unauthenticated:401,quota:429,unavailable:503})[e.code] : typeof e==='number' ? e : 503;
@@ -58,7 +61,7 @@ export function createLightweightHandler(deps:Dependencies) {
   if(!Number.isInteger(guideDeadlineMs)||guideDeadlineMs<1||guideDeadlineMs>30000)throw Error('Invalid guide deadline');
   const diagnosticDeadlineMs=deps.diagnosticDeadlineMs??30000;
   if(!Number.isInteger(diagnosticDeadlineMs)||diagnosticDeadlineMs<1||diagnosticDeadlineMs>30000)throw Error('Invalid diagnostic deadline');
-  async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'cancel',id?:string):Promise<Response> {
+  async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'cancel'|'cleanup',id?:string):Promise<Response> {
     try {
       if (request.method!==method) return new Response(null,{status:405,headers:{allow:method,'cache-control':'private, no-store'}});
       const actor=await deps.authenticate(); if(!actor?.subject || !actor.sessionId)throw new ChatStoreError('unauthenticated');
@@ -67,13 +70,14 @@ export function createLightweightHandler(deps:Dependencies) {
       const readQuery=action==='read' && /^\?requestId=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(url.search);
       if(url.search && !(action==='list' && url.search==='?archived=true') && !readQuery)throw 400;
       const attemptId=readQuery ? readQuery[1] : undefined;
-      if(['read','message','archive','delete','cancel'].includes(action) && !uuid(id))throw 400;
+      if(['read','message','archive','delete','cancel','cleanup'].includes(action) && !uuid(id))throw 400;
       if(method!=='GET' && request.headers.get('origin')!==url.origin)throw 403;
       let input:Record<string,unknown>={};
       if(method==='POST' || method==='PATCH') { const v=await body(request); if(!object(v))throw 400; input=v; }
       if(action==='create' && (Object.keys(input).some(k=>k!=='title') || (input.title!==undefined && !text(input.title,100))))throw 400;
       if(action==='archive' && (Object.keys(input).length!==1 || typeof input.archived!=='boolean'))throw 400;
       if(action==='cancel' && (Object.keys(input).some(k=>k!=='requestId') || (input.requestId!==undefined && (!uuid(input.requestId) || input.requestId!==input.requestId.toLowerCase()))))throw 400;
+      if(action==='cleanup' && (Object.keys(input).length!==1 || !uuid(input.requestId) || input.requestId!==input.requestId.toLowerCase()))throw 400;
       const guideInput=action==='message'&&Object.hasOwn(input,'guide')?parseGuideInput(input.guide):undefined;
       const diagnosticInput=action==='message'&&Object.hasOwn(input,'diagnostic')?parseDiagnosticInput(input.diagnostic):undefined;
       const agenticInput=action==='message'&&Object.hasOwn(input,'agentic')?parseAgenticInput(input.agentic):undefined;
@@ -86,13 +90,18 @@ export function createLightweightHandler(deps:Dependencies) {
         : Object.keys(input).some(k=>!['requestId','question','webSearch'].includes(k)) || !uuid(input.requestId) || !text(input.question,2000) || (input.webSearch!==undefined && input.webSearch!==false)))throw 400;
       if(method==='DELETE' && request.body) {const reader=request.body.getReader();try{while(true){const p=await reader.read();if(p.done)break;if(p.value.byteLength){await reader.cancel();throw 400;}}}finally{reader.releaseLock();}}
       const store=deps.store(actor);
+      const native=deps.native?.(actor);
       if(action==='list')return json(await store.list(url.search==='?archived=true'));
       if(action==='create')return json(await store.create((input.title as string|undefined)?.trim()??'New chat'),201);
       if(action==='archive')return json(await store.archive(id!,input.archived as boolean));
-      if(action==='delete')return json(await store.delete(id!));
+      if(action==='delete') {
+        if(native && !await native.cleanupThread(id!,request.signal))throw new ChatStoreError('conflict');
+        if(native && !await deps.current(actor))throw new ChatStoreError('unauthenticated');
+        return json(await store.delete(id!));
+      }
       const safeRead=async () => {
         if(!await deps.current(actor))throw new ChatStoreError('unauthenticated');
-        const saved=await store.read(id!);
+        const saved=await (native ? native.read(id!) : store.read(id!));
         if(!await deps.current(actor))throw new ChatStoreError('unauthenticated');
         return saved;
       };
@@ -103,6 +112,16 @@ export function createLightweightHandler(deps:Dependencies) {
         return {...publicRead(saved),attemptStatus:matches[0]?.status ?? 'absent'};
       };
       const release=async () => project(await safeRead());
+      // Only explicit same-origin mutations may remove native context; history GET never deletes it.
+      const cleanup=async(requestId:string)=>{try{await native?.cleanup({thread:id!,request:requestId},request.signal);}catch{/* Retain uncertain native context; SQL still forbids deleting its history. */}};
+      if(action==='cleanup') {
+        if(!native)throw new ChatStoreError('unavailable');
+        await safeRead();
+        const result=await native.cleanup({thread:id!,request:input.requestId as string},request.signal);
+        if(!await deps.current(actor))throw new ChatStoreError('unauthenticated');
+        if(result.status!=='retired')throw new ChatStoreError('conflict');
+        return json({ok:true});
+      }
       let agenticObserveOnly=false;
       if(action==='cancel') {
         for(let attempt=0;attempt<2;attempt++) {
@@ -118,6 +137,12 @@ export function createLightweightHandler(deps:Dependencies) {
             return json(await release());
           }
           const turn=pending[0];
+          if(native && await native.state(id!,turn.requestId)) {
+            const result=await native.cancel({thread:id!,request:turn.requestId},request.signal);
+            if(result.status!=='saved')throw new ChatStoreError('unavailable');
+            await cleanup(turn.requestId);
+            return json(await release());
+          }
           if(turn.workflow==='agentic'){
             if(!store.agentic||!deps.agenticCancel)throw new ChatStoreError('unavailable');
             const composite=await store.agentic.execution(id!,turn.requestId);if(!composite)throw new ChatStoreError('unavailable');
@@ -196,7 +221,13 @@ export function createLightweightHandler(deps:Dependencies) {
         const start=await safeRead(), pending=start.turns.filter(t=>t.status==='pending');
         if(pending.length>1)throw new ChatStoreError('unavailable');
         if(pending.length===1) {
-          const turn=pending[0], execution=await store.execution(id!,turn.requestId);
+          const turn=pending[0];
+          if(native && await native.state(id!,turn.requestId)) {
+            try {await native.status({thread:id!,request:turn.requestId,question:turn.question},request.signal);}
+            catch(e) {if(!(e instanceof ChatStoreError) || e.code!=='unavailable')throw e;}
+            return json(await release());
+          }
+          const execution=await store.execution(id!,turn.requestId);
           const diagnostic=turn.question.startsWith('Diagnostic (')?await store.diagnostic?.execution(id!,turn.requestId):null;
           if(execution.prepared||diagnostic||turn.workflow==='agentic') {
             try { return json(await work(start,turn.question,turn.requestId,()=>{},execution)); }
@@ -207,6 +238,19 @@ export function createLightweightHandler(deps:Dependencies) {
       }
       const question=agenticInput?agenticInput.question:diagnosticInput?diagnosticQuestion(diagnosticInput):guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
       if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unavailable');
+      if(native) {
+        const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
+        const persisted=await native.state(id!,requestId);
+        if(persisted || (deps.nativeNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput)) {
+          if(existing && (existing.question!==question || existing.workflow))throw new ChatStoreError('conflict');
+          const result=persisted
+            ? await native.status({thread:id!,request:requestId,question},request.signal)
+            : await native.start({thread:id!,request:requestId,question},request.signal);
+          if(result.status!=='saved')throw new ChatStoreError('unavailable');
+          await cleanup(requestId);
+          return json(await release());
+        }
+      }
       if(guideInput&&(!deps.guideEnabled?.()||!store.guide))throw new ChatStoreError('unavailable');
       if(diagnosticInput&&(!deps.diagnosticEnabled?.()||!store.diagnostic))throw new ChatStoreError('unavailable');
       if(agenticInput&&(!deps.agenticEnabled?.()||!store.agentic))throw new ChatStoreError('unavailable');
@@ -234,5 +278,6 @@ export function createLightweightHandler(deps:Dependencies) {
     readGET:(r:Request,id:string)=>handle(r,'GET','read',id),messagePOST:(r:Request,id:string)=>handle(r,'POST','message',id),
     archivePATCH:(r:Request,id:string)=>handle(r,'PATCH','archive',id),deleteDELETE:(r:Request,id:string)=>handle(r,'DELETE','delete',id),
     cancelPOST:(r:Request,id:string)=>handle(r,'POST','cancel',id),
+    cleanupPOST:(r:Request,id:string)=>handle(r,'POST','cleanup',id),
   };
 }

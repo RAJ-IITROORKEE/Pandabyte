@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
 import type { NativeSessionReceipt } from '../opencode/session-contracts.ts';
 import { uuid, type ChatActor, type ChatAnswer } from './chat-contracts.ts';
-import { ChatStoreError, cleanAnswer } from './chat-store.ts';
+import { ChatStoreError, cleanAnswer, parseChatRead } from './chat-store.ts';
 
 export type NativeRunScope = { productId: string; scopeHash: string };
 export type NativeRunEvent = 'claim_create' | 'created' | 'claim_prompt' | 'accepted' | 'cancel_requested' | 'unknown';
@@ -92,6 +92,31 @@ export function createNativeRunStore(actor: ChatActor, key: string) {
         return result.data;
     }
     return {
+        async contexts(thread: string): Promise<{pending: boolean; requests: string[]; more: boolean}> {
+            requireValue(uuid(thread), 'invalid');
+            let result;
+            try { result = await actor.client.database.schema('public').rpc('panda_agent_native_contexts', { p_thread: thread }); }
+            catch { throw new ChatStoreError('unavailable'); }
+            if (result.error) {
+                const error: Record<string, unknown> = object(result.error) ? result.error : {};
+                throw new ChatStoreError(error.code === 'P0001' && error.details === 'not_found' ? 'not_found' : 'unavailable');
+            }
+            const value = result.data;
+            requireValue(object(value) && exact(value, ['pending', 'requests', 'more']) && typeof value.pending === 'boolean' && typeof value.more === 'boolean'
+                && Array.isArray(value.requests) && value.requests.length <= 4 && value.requests.every(uuid) && new Set(value.requests).size === value.requests.length, 'unavailable');
+            return {pending: value.pending, requests: [...value.requests], more: value.more};
+        },
+        async read(thread: string) {
+            requireValue(uuid(thread), 'invalid');
+            let result;
+            try { result = await actor.client.database.schema('public').rpc('panda_agent_native_read', { p_thread: thread }); }
+            catch { throw new ChatStoreError('unavailable'); }
+            if (result.error) {
+                const error: Record<string, unknown> = object(result.error) ? result.error : {};
+                throw new ChatStoreError(error.code === 'P0001' && error.details === 'not_found' ? 'not_found' : 'unavailable');
+            }
+            return parseChatRead(result.data);
+        },
         async admit(input: NativeRunAdmitInput): Promise<{ admitted: boolean; state: NativeRunState }> {
             requireValue(object(input) && exact(input, ['thread', 'request', 'question', 'receipt', 'messageID', 'promptHash', 'runtimeBinding', 'scopes'])
                 && text(input.question, 2000) && typeof input.messageID === 'string' && /^msg_[a-f0-9]{12}[A-Za-z0-9]{14}$/.test(input.messageID) && hex(input.promptHash) && hex(input.runtimeBinding), 'invalid');

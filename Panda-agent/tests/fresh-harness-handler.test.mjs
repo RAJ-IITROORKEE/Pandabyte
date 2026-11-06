@@ -8,7 +8,7 @@ import { createLightweightAnswer } from '../src/server/lightweight-answer.ts';
 const threadId='11111111-1111-4111-8111-111111111111', requestId='22222222-2222-4222-8222-222222222222';
 const question='What MCU does x8266 use?', answer={outcome:'insufficient',text:'No verified answer.',citations:[]};
 const thread={id:threadId,title:'Test',updatedAt:'2026-01-01T00:00:00Z',status:'idle'};
-test('active chat routes and coordinator have no native or legacy selector imports',async()=>{
+test('chat routes retain their coordinator and do not import legacy selectors directly',async()=>{
  const routes=['../../app/api/panda-agent/chats/route.ts','../../app/api/panda-agent/chats/[id]/route.ts','../../app/api/panda-agent/chats/[id]/messages/route.ts'];
  for(const file of routes)assert.match(await readFile(new URL(file,import.meta.url),'utf8'),/lightweight-chat/);
  for(const file of ['../src/server/lightweight-chat.ts','../src/server/lightweight-answer.ts','../src/lightweight/evidence.ts','../src/lightweight/client.ts']) {

@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-06T17:57:34.861859+00:00",
+  "scope": "Selected existing development InsForge project only; exact tracked additive migration via verified TLS PostgreSQL connection resolved by existing official CLI",
+  "migration": "20261106090004_panda-agent-native-journal.sql",
+  "migrationSha256": "9f60e3b08c7b74e9d057f33219f6d61990b31fc8dfdc4cf87d307c1203f5e9bd",
+  "applied": true,
+  "transactionCommitted": true,
+  "nativeRows": 0,
+  "existingRowsUnchanged": true,
+  "rawJournalSelectDenied": true,
+  "privateVerifierDenied": true,
+  "ownerContextsFunctionGranted": true,
+  "inferenceEnabled": false,
+  "providerCalls": 0,
+  "credentialsPrinted": false,
+  "deploymentOrGlobalConfigurationChanged": false,
+  "rollback": "Leave additive empty schema unused with journal routing off; never drop dispatched receipts. No existing data rewrite or reset.",
+  "schemaCacheReload": {
+    "migration": "20261106090005_panda-agent-native-schema-cache.sql",
+    "sha256": "2c7679c04227ff4721a46be1f991c6a895c328e8098103a0302bef4d427f8ead",
+    "applied": true,
+    "documentedCommand": "NOTIFY pgrst, 'reload schema'",
+    "source": "https://docs.postgrest.org/en/v14/references/schema_cache.html"
+  },
+  "failedFixtureCleanup": {
+    "emptyOwnedAppFixturesDeleted": 2,
+    "absenceVerified": true,
+    "guards": "Exact task marker subject/title, no application turns and no native runs; no other history touched",
+    "debugIdentityAbsenceVerified": true
+  },
+  "postApiChecks": {
+    "nativeRows": 0,
+    "providerCalls": 0,
+    "liveNativeInference": false,
+    "migrationInstalled": true
+  }
+}

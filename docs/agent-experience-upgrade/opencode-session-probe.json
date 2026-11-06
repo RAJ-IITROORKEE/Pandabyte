@@ -81,6 +81,24 @@
       "dataArray": true,
       "count": 0
     },
+    "runtimeAdmission": {
+      "verified": true,
+      "ownerPrivateDescriptor": true,
+      "authenticatedPinnedProcess": true,
+      "opaqueBinding": true,
+      "dispatchDeniedWithoutNetwork": true,
+      "createDeniedWithoutNetwork": true,
+      "promptDeniedWithoutNetwork": true,
+      "deniedCreates": 1,
+      "deniedPrompts": 1,
+      "lifecycleUsesPinnedConnection": true,
+      "journalBindingPinned": true,
+      "rotatedDescriptorDeniedBeforeNetwork": true,
+      "rotatedLifecycleStatusUnknown": true,
+      "journalNotRebound": true,
+      "rotationRequests": 0,
+      "requests": 58
+    },
     "nativeSessionAdapter": {
       "result": "pass",
       "durableFixtureReceipt": true,

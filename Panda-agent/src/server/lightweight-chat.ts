@@ -13,6 +13,7 @@ import {createDiagnosticAnswer} from './diagnostic-answer';
 import {createAgenticStore} from './agentic-store';
 import {createAgenticAnswer} from './agentic-answer';
 import {createMcpClient} from '../agentic/mcp-client';
+import {nativeChatForActor} from './native-chat';
 
 const configuredMode=process.env.PANDA_AGENT_LIGHTWEIGHT_MODE;
 if(configuredMode && configuredMode!=='deterministic-mcu-v1')throw Error('Unsupported Agent mode');
@@ -22,6 +23,8 @@ export const lightweightChatHandlers=createLightweightHandler({
   enabled:()=>process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED==='true',
   authenticate:authenticateLightweight,
   current:actor=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false),
+  ...(process.env.PANDA_AGENT_NATIVE_JOURNAL_ENABLED==='true'?{native:nativeChatForActor}:{}),
+  nativeNewMessages:()=>process.env.PANDA_AGENT_NATIVE_NEW_MESSAGES==='true',
   store:actor=>({...createLightweightStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),guide:createGuideStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),diagnostic:createDiagnosticStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),agentic:createAgenticStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'')}),
   agenticEnabled:()=>process.env.PANDA_AGENT_AGENTIC_ENABLED==='true',
   agenticAnswer:createAgenticAnswer({current:currentLightweightSession,baseUrl:process.env.PANDA_AGENT_LIGHTWEIGHT_URL??'',secret:process.env.PANDA_AGENT_LIGHTWEIGHT_SECRET??''}),

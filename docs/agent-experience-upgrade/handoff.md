@@ -1,332 +1,170 @@
 # Agent Experience Upgrade — current handoff
 
-6 November 2026. Branch: codex/panda-agent-fastapi-replacement.
-Approved UI/foundation checkpoint: 93272f0; earlier foundation b20b7dd. Use git log -1 for this local checkpoint.
-No push, merge or deployment occurred.
+6 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
+Use `git log -1` for this local checkpoint; previous checkpoint `7779007`.
+No push, merge, application deployment, payment or invoice configuration change.
+This file records current state; prior detailed checkpoints remain in Git and the
+verification JSON records. Do not treat their earlier activation limits as current.
 
-## Authority and stage
+## Authority and phase boundary
 
-The adopted complete 1,029-line Downloads master is retained verbatim in
-specification.md. requirements.json is the single 97-row task/coverage authority;
-all embedded Original Product Specification requirements remain mandatory.
-P0 VERIFIED with documented activation limits; P1.1 audit/contract VERIFIED.
-P1.2 complete local proposal APPROVED by the owner's “Approved and procced” reply.
+The complete adopted1,029-line master is `specification.md`, SHA256
+`a502bffef09a7c0bbf89920a9f25499ddc88f4085526873501c1b35a4965b067`.
+`requirements.json` is the single97-row task/coverage authority; all embedded
+Original Product Specification requirements remain mandatory.
+P0 VERIFIED with documented activation limits; P1.1 VERIFIED; P1.2 proposal APPROVED.
 P1.3 customer integration, P1.4 conversational RAG/native execution and P1.5 Admin
-management remain IN PROGRESS, claimed by Parent. Full P1 is not complete.
-Historical Phase 6 remains IN PROGRESS, last full PASS 5; its broad held-out
-multi-hop gate is unestablished. Preserve its evidence and blocked synthetic
-fixture. Do not replay it, clear its journal or relabel this work as Phase 6 PASS.
+management remain IN PROGRESS, claimed by Parent. Do not advance to later phases.
+Historical Phase6 remains IN PROGRESS, last full PASS5; its broad held-out multi-hop
+gate is unestablished. Preserve blocked synthetic fixtures, histories and evidence.
 
-## Implemented increment
+Latest request: integrate remaining native routes/admission; keep zero-cost and
+strict ZDR unchanged, leave inference OFF until verified, use Codex browser and
+update this handoff. Earlier request resolved provider access: use the existing
+key directly, no OpenRouter account login. Do not ask for login/model-choice again.
 
-- Approved customer shell retains the existing assistant-ui external store.
-  Mandatory mode forms/buttons removed from the surface; old services/histories
-  remain. Memory & Context shows existing owner/thread intent read-only;
-  Settings/Account use existing destinations. Unsupported model selection,
-  attachments and Search are clearly disabled. Send/Stop uses existing cancellation
-  and uncertain status recovery. Drawer focus/inert/Escape and drafts retained.
-  Archive clears an old restoration draft; New Chat disables during history mutation.
-- New /admin/agent-skills and sidebar entry: four compact tabs, existing strictly
-  projected native discovery API, manual refresh and honest unsupported states.
-  No fabricated metadata, credentials or mutations. Existing bundled RAG controls
-  remain linked. The parent Admin template regression is now fixed: browser access,
-  tabs and existing RAG controls load. Native discovery/management stays inactive.
-- Native session-client.ts translates pinned 2.2.2 create/get/active/messages/
-  prompt/interrupt. Durable nonce/scope/binding/title/directory ownership, admission
-  checks, strict loopback/no redirects/bounds/deadline and deny-all policy retained.
-  Acknowledgement is pending; unknown calls never repeat. Actual nullable terminal
-  cursors differ from declarations; regression and actual probe now pass.
-- native-run-store.ts and additive migration 20261106090004 implement private
-  signed owner-scoped IDs, immutable prepared hashes/scope/runtime binding, CAS
-  create/prompt claims, unknown/status-only recovery, source/QA epoch fences,
-  completion/replay and retirement-before-delete guards. Migration NOT APPLIED;
-  candidate/fixtures rolled back. No mounted execution caller uses it.
+## Current implementation
 
-## Evidence and limitations
+The approved unified customer shell retains assistant-ui's external store, current
+Clerk identity, history/drafts/keyboard/focus, source disclosure, Markdown, uncertain
+status and cancellation recovery. Mandatory mode controls are removed. Model
+selection, attachments and Search remain honestly unavailable. Memory & Context
+shows existing owner/thread intent read-only; Settings/Account retain destinations.
+No separate Mem0 plan was found; owner authorized compatible configuration as
+needed. Hosted extraction/embedding or invented retention is not activated.
 
-p1-implementation-verification.json separates real browser/deterministic RAG,
-actual provider-free native probe, SQL fixtures and unit results.
-Customer browser: history filter, memory/draft/focus, drawer keyboard edges/Escape,
-auto expansion, source disclosure/copy, saved literal x8266 MCU citation/reload,
-Stop cancellation. Light/dark measured CSS widths 320/768/1024/1440 have no document
-horizontal overflow; DPR about 1.2, override reset. No actual browser zoom,
-new-interface screen-reader speech or reduced-motion switching claim.
-Only the newly created owned disposable chat was archived; old fixtures preserved.
+Admin Agent Skills has four tabs and guarded discovery/unsupported states. Owner
+access was repaired at `f02d1f4` by respecting the retained Clerk JWT template helper
+and existing `INSFORGE_CLERK_JWT_TEMPLATE` selector. No login bypass, backend/issuer,
+role/grant or global environment change. Existing RAG controls remain available;
+live native management/discovery is still unavailable. No fake capabilities.
 
-370 Agent Node tests, six development-tool tests and three Admin navigation tests
-pass. Native totals include 26 session, 13 store and 16 prepared-evidence tests.
-Scoped ESLint, application TypeScript and dedicated native TypeScript pass.
-Final candidate build result is in p1-implementation-verification.json; it is not
-the running server. Existing module-type warnings remain.
-Independent Sol review found four SQL defects; all fixed and re-reviewed clean.
+`native-chat-service.ts` now assembles the existing private turn, lifecycle, journal,
+prepared-evidence and native-client adapters inside the existing HTTP shell. This
+is not a second runner, model gateway or MCP executor. OpenCode owns execution.
+The app owns admission, approved source authority, persistence and public release.
 
-opencode-session-probe.json: actual isolated 2.2.2 process, anonymous denial,
-deny-all catalogs, create/owned read/inactive/empty history and unknown interruption
-of an unstarted session. No model prompt/provider call or active inference cancel.
-Owned inactive removal, exact typed absence and PID checks before/after calls also
-passed the actual probe. Child stopped and fixture removed. Global CLI unchanged.
-native-journal-verification.json: nine rollback-only development SQL groups PASS,
-rows/functions/triggers/ACL unchanged, candidate absent. Four expiry replays use
-injected post-entry delay, not real lock contention. UUID-case duplicate check uses
-an injected scope helper. QA grant revocation tested; real source withdrawal not.
+- Fresh native selection occurs before any legacy begin. Durable journal lookup
+  classifies existing requests before legacy read/cancel handling. Unknown native
+  work never falls back. Existing old engine kinds retain their original handlers.
+- History uses `native_read -> parseChatRead -> publicRead`, with current Clerk
+  checks before/after release. Terminal replay works without a native process.
+- `native-owner.ts` captures Clerk subject/session/client and uses a distinct HMAC
+  namespace for subject/thread binding. Receipt checks use current Clerk -> signed
+  actor/thread/request-authorized journal -> current Clerk, then exact comparison.
+- Create/prompt claims remain CAS-once; acknowledgements are pending, uncertain
+  mutations observe instead of redispatching. Current message/prompt SHA, native
+  terminal/idle ordering and structured source finalization precede atomic save.
+- Cancellation is sticky; one fresh winner can interrupt. Cleanup has one removal
+  claim, owned inactive/no-child checks and typed absence before retirement. Lost
+  claims/acknowledgements cannot authorize a second interrupt or DELETE.
+- Same-origin POST `/api/panda-agent/chats/[id]/cleanup` accepts only `{requestId}`.
+  Normal Delete fetches up to four owned terminal cleanup candidates within20s;
+  pending/more/unknown retains conflict. SQL's delete guard remains authoritative.
+- The context kernel supports0/1 product, at most8 whole fragments and20,000 context
+  characters, E1..E8 aliases and fresh source/QA fences. Literal membership is not
+  semantic entailment/hardware applicability or complete multi-product/vendor RAG.
 
-## Exact next integration
+## Runtime and provider admission
 
-Current customer execution is still deterministic FastAPI MCU. Removing mode
-buttons is not native routing. AWS native containers are stopped; preserved
-lightweight container serves. Read-only inventory: about 1,153 MiB RAM available,
-no swap, 12 GiB disk free. No runtime/config/deployment change was made.
+`native-runtime.ts` accepts a closed owner-private supervisor descriptor; bounded,
+authenticated loopback info must match2.2.2/PID. Re-read pins a server-HMAC over
+fresh generation, canonical directory, config/auth hashes and origin. Changed
+bindings fail closed; journals are never rebound. `native-runtime-file.ts` checks
+Windows current-SID/strictDACL, null/empty/shared ACLs, or POSIX owner/mode, and file
+identity. Missing descriptor means native observation unavailable.
 
-Read persistence-transition.md, native-session-contract.md and capability-contract.md.
-The bounded prepared-evidence kernel is now extracted from retrieval/answers.ts
-with its existing validators; no finite selector or old controller is used there.
-It supplies 0/1 product context, opaque fragment aliases and current-source release
-checks; reviewed metadata-escape regressions are fixed. The new unmounted
-server/native-turn.ts connects it to the private journal/client/correlator; it is
-not mounted in customer execution.
-Connect one owned native prompt per natural message with eligible context,
-durable receipts and structured citation release. This limited context-fed increment
-is distinct from full tool routing. Verify provider/permission profile, process
-identity, current-message terminal correlation and owned inactive native removal
-before activation. Native removal/absence methods and a one-time durable terminal
-removal claim now exist; the mounted caller must enforce their admission and
-observe unknown deletion instead of repeating it. Journal inherits QA
-capability and fences canonical product scopes; vendor evidence needs its fence.
-Unknown work is observed, never redispatched. Preserve old pending engine kinds.
-For full tool routing verify native extension/MCP support: preserved rag-mcp POST
-/search is not an MCP endpoint. No second runner/MCP client/tool executor/RAG
-engine/Playground backend. Playground needs a separate test-history/memory namespace.
+**Inference remains hard OFF in source**, including returned native create/prompt;
+no environment switch or descriptor can assert missing strict-ZDR proof. There is
+no persistent application supervisor/descriptor configured. The probe owns only a
+disposable isolated process with fresh auth, generation and state, then removes it.
+Full real Clerk/SQL/native guard latency and active cancellation remain unverified.
+Late prompt versus early/lost interrupt and consumed-removal uncertainty remain
+explicit recovery limits; do not hide them with automatic mutation retries.
 
-No separate Mem0 plan found. Owner authorized locating/configuring as needed;
-do not ask again for that plan as the sole blocker. Prepare documented compatible
-configuration within existing service/privacy limits. Current bounded owner/thread
-intent unchanged; no default hosted extraction/embedding or invented retention.
-Continue independent authorized work when another dependency is blocked.
+The supported native session retry hook already passes429/503/full-body disconnect/
+synthetic SSE tests with one attempt. The failing3-attempt baseline is preserved.
+Auxiliary generation and websocket retry-full paths are not certified. See
+`opencode-provider-wire-probe.json` and `native-session-contract.md`.
 
-## Local sessions and ownership
+Existing-key `/key` and `/models/user` authenticate and establish eligibility only.
+The candidate's public exact ZDR row has `safety_retention:false` and token prices0;
+effective key Safety Retention/logging and required request/image fees remain
+unverified. Management-only guardrails returned401; do not retry or request login.
+No inference request/account-wide setting/new key. See
+`provider-policy-verification.json`; profile remains OFF.
 
-UI dev session 16974: localhost:3001, .next-agent-experience-dev, existing launcher,
-deterministic-mcu-v1 mode. The datumm AWS CLI login is refreshed and its account verified.
-Private SSM tunnel session 27106 listens on localhost:8182; readiness returned200.
-The earlier6212 session ended idle; existing AWS credentials restored the tunnel
-without another sign-in.
-No worker secret/journal rotation or deployed runtime change. Review-only proposal server 36452: localhost:3000.
-Old production session 82471 was stopped after verifying ownership; build retained.
-Candidate: .next-agent-experience-candidate. Generated tsconfig include paths must
-be removed from the checkpoint. Original dirty E: checkout remains preserved.
-Parent owns integration/migrations/config/coverage/checkpoints. Bounded Terra UI
-and Sol native/store/kernel outputs integrated and independently reviewed; workers
-are idle. Parent owns the next native BFF integration.
-Actual collaboration model
-identity metadata unavailable; explicit overrides do not prove execution identity.
+## Development schema and actual verification
 
-Owner replied: keep the existing zero-cost and ZDR requirements. The model-choice
-question is resolved as a policy constraint; do not ask it again. Current anonymous
-OpenRouter metadata identified one preliminary free text/JSON ZDR candidate, but
-explicit required fee fields, strict account/key retention settings, deployed native wire
-policy, quota and structured-output/zero-cost execution proof remain unverified.
-Isolated native HTTP mock wire policy/retry checks now pass.
-See provider-policy-verification.json. No model profile was approved or activated.
-The source profile, provider policy, generation identity and durable caller must be
-concrete before native activation. No credentials were requested in chat.
+Journal0004 is now applied to the selected existing development InsForge project,
+exact reviewed SHA256
+`9f60e3b08c7b74e9d057f33219f6d61990b31fc8dfdc4cf87d307c1203f5e9bd`.
+Ten rollback-only groups passed before installation, restoring rows/schema/ACLs.
+Installation changed no existing rows; raw journal/verifier access denied.
+Real API checks then found PGRST202 stale discovery after direct SQL application.
+Separate forward0005 performs documented PostgREST schema-cache reload;0004 was
+not edited after installation. Native journal remains0 after API checks. See
+`native-journal-verification.json` and `native-journal-installation.json`.
+Rollback is to leave additive schema unused; never drop dispatched receipts.
 
-Run npm run typecheck:agent-native for unwired modules. Root application TypeScript
-did not reach them; this dedicated check caught and fixed five compatibility/type
-errors. It now passes under the existing ES2017 project target without broadening
-that target or changing runtime ID encoding.
+Current source:414/414 Agent tests PASS; application/native TypeScript and scoped
+ESLint PASS. Candidate build PASS, BUILD_ID `HxxtysgGlUVWp8Zw57GCI`; it is not the
+running dev server. Generated tsconfig includes removed. Prior storefront checks
+at `f02d1f4`:486pass/3archive-dependent skips out489, plus10media; not rerun because
+this increment changes Agent routing only. Independent high-risk review clean.
 
-## Native retry and current-turn follow-up
+Actual pinned2.2.2 provider-free probe PASS: private descriptor admission, hard
+create/prompt/dispatch denial with0requests, same-binding lifecycle, generation
+rotation rejection before network and unchanged journal. Lifecycle case counts:
+1fixture-create,0prompt,0interrupt,1DELETE. Child and fixture removed. File journal
+and current callback are synthetic, not real Clerk/database integration. See
+`opencode-session-probe.json`.
 
-Owner retained zero cost and strict ZDR. The original failed probe is preserved
-under `opencode-provider-wire-probe.json` baseline: settings.maxRetries:0 allowed
-three HTTP429 attempts and stayed active. The pinned native retry loop uses its
-session retry hook instead of that provider setting. The new dependency-free
-`Panda-agent/runtime/opencode/plugins/no-retry.ts` vetoes retry proposals. The
-isolated dedicated fixture grants only that exact local plugin directory and
-checks the hook is active before prompting; no global configuration was changed.
+Real development Clerk/API isolation PASS: create201; disabled native message503;
+GET absent/empty; missing cleanup404; anonymous401; foreign read/cancel/cleanup/
+Delete404; wrong origin403; extra receipt400; owned Delete200 then404. All private/
+no-store. Final2disposable identities/application fixture cleaned with absence
+verified; initial failed/debug2empty app fixtures cleaned under exact owner/title/
+zero-turn guards. All5temporary identities are deleted, debug absence verified.
+No role writes or unrelated history mutation. Detailed sanitized results are in
+`p1-implementation-verification.json`.
 
-Actual pinned 2.2.2 -> loopback MOCK results: HTTP429, HTTP503, a socket dropped
-after accepting the full request body, and synthetic SSE success each produced
-one request and a matching inactive terminal outcome. Exact model/provider pin,
-no fallback, required parameters, ZDR, data_collection deny, four zero price caps,
-empty provider plugins and X-OpenRouter-Cache:false were retained. Owned children,
-sinks and temporary fixture were cleaned. This verifies those HTTP session paths,
-not auxiliary generation or websocket retry-full recovery. No real provider call,
-credential extraction, account/key privacy change or deployed plugin activation.
+## Codex browser verification
 
-`opencode/turn-result.ts` adds private current-turn correlation: exact persisted
-message ID/prompt SHA, one user/assistant, ordered native times, terminal idle and
-inactive state. Pinned execution begins busy before inbox promotion, as verified
-by actual observations and source. Independent review found a later-busy stale
-output case; it is rejected and covered. All four actual mock histories correlate;
-synthetic success text matches exactly, failure text is never released. Six unit
-groups, 335 full Agent tests, scoped ESLint and dedicated native TypeScript pass.
-The dedicated TypeScript scope includes the new runtime plugin. The helper remains
-unwired; JSON/evidence validation, admission, persistence and mounted cleanup still
-belong to the next BFF integration. Independent final review has no unresolved
-finding within this bounded contract.
+Real signed-in localhost3001 browser PASS. With fresh-native selection temporarily
+ON, one new owned question was rejected; generic uncertain UI kept its draft and
+Check status controls. After the cache fix, status reported no saved turn; explicit
+cancellation confirmed the absent attempt without native inference and restored
+the composer. Only this empty disposable chat was archived.
 
-Explicit request/image fee metadata, strict account/key ZDR-only settings, quota
-and real structured-output/reported zero-cost proof remain unverified. Keep the
-provider profile OFF and retain all zero-cost/ZDR requirements. The resolved model
-choice must not be asked again or replaced by a paid/non-ZDR fallback.
+With native journal/recovery routing still ON and new selection OFF, a fresh
+`Which MCU does the x8266 use?` returned literal `Microcontroller: ESP8266`, S1,
+listing section/capture and approved link. Saved answer/citation survived reload
+through native_read. Only this second completed disposable chat was archived;
+composer is empty/enabled and both fixtures are absent from recent. Owner session,
+old histories and Phase6 blocked fixture preserved. Admin Configuration still
+reports native discovery unavailable, with Edit disabled. No UI redesign or new
+screen-reader/zoom/motion claim. Ignored screenshots:
+`tmp/agent-phase1-native-admission-off.png`,
+`tmp/agent-phase1-native-routes-baseline.png`,
+`tmp/agent-phase1-native-routes-cleanup.png`.
+This is real disabled-admission + deterministic RAG/SQL integration; not live native
+LLM generation, token streaming or active inference cancellation acceptance.
 
-## AWS refresh and resumed Phase 1 browser verification
+## Local state and next work
 
-After the owner's MFA confirmation, the existing datumm CLI profile was refreshed
-through the official AWS remote-login flow in Codex browser. The CLI reported
-profile update; STS confirmed the existing expected account (boolean only in
-evidence). The displayed CLI verification format was used; the browser clipboard
-had returned an older code. Earlier invalid attempts terminated. The one-time
-transfer file was consumed/deleted, authentication tabs closed and task-owned
-clipboard cleared. No login URL/code, credential, ARN or account identifier was
-written to tracked evidence. No role/policy, service configuration or deployment
-changed. The private SSM tunnel is restored on port 8182.
+Running UI: session31613, localhost3001, `.next-agent-experience-dev`, existing
+baseline launcher. Worktree-only `.env.local` now retains
+`PANDA_AGENT_NATIVE_JOURNAL_ENABLED=true` and
+`PANDA_AGENT_NATIVE_NEW_MESSAGES=false`; original E: environment unchanged.
+New selection was temporarily ON only for disabled-admission tests. Keep journal
+classification/replay/recovery enabled even if new dispatch is disabled.
+`PANDA_AGENT_NATIVE_RUNTIME_FILE` remains unset; no global CLI/config change.
+Existing datumm credentials restored private SSM tunnel session9211 on8182; no new
+sign-in, container update or AWS deployment. Original dirty E: checkout preserved.
 
-Codex browser, real signed-in localhost:3001 session:
-- Checked only the existing owned pending test by status; no resend. It became
-  review-blocked, then explicit cancellation succeeded. The saved cancellation
-  states that it occurred before evidence selection; composer became usable.
-- A fresh query adding "Quote the captured source" returned insufficient evidence.
-  The preserved deterministic MCU selector accepts only its exact query patterns;
-  this is a known baseline limitation, not conversational native acceptance.
-- Explicitly sent a new supported "Which MCU does the x8266 use?" question. It
-  saved the literal "Microcontroller: ESP8266" with S1, the approved listing link,
-  section and capture timestamp. Activity showed actual retrieval/check/save
-  stages and supplied-context counts. Answer and citation survived reload.
-- Archived only the owned `Help me get started!!!` chat after every turn was
-  terminal. It is absent from recent chats; composer draft is empty. Historical
-  Phase 6 blocked fixture and user histories were preserved. No journal reset.
-- At checkpoint f2a614c, /admin/agent-skills still displayed "Staff access is
-  unavailable." That prior browser block is superseded by the repair below.
-
-Ignored local screenshots: `tmp/agent-phase1-restored-browser.png`,
-`tmp/agent-phase1-cleanup-browser.png`, `tmp/agent-phase1-admin-guard.png`.
-`tmp/agent-retry-browser-checkpoint.json` records completed cleanup, and
-`tmp/agent-aws-signin-handoff.json` records refreshed CLI/tunnel state without
-secrets. These checks exercised the deterministic FastAPI RAG path, not native
-LLM generation. Zero-cost and strict ZDR requirements are unchanged; provider
-profile remains OFF. The 335-test/unit/type/lint evidence belongs to source
-checkpoint 3543477; this follow-up changes documentation/evidence only.
-
-## Admin repair and native adapter follow-up
-
-The Admin outage was a source regression in this branch: storefront
-`lib/insforge/server.ts` requested historical Clerk template `insforge`, despite
-the preserved migration's existing `INSFORGE_CLERK_JWT_TEMPLATE` configuration.
-The original checkout already had the reviewed selector helper. This branch now
-uses that exact `lib/insforge/jwt-template.ts` behavior and documents the optional
-server variable. Invalid configured names fail closed; unset preserves the legacy
-default. Active Clerk session and user token are still required. No backend,
-issuer/signing setup, roles/grants, key or environment file was changed.
-Four connection regressions are included in `npm run test:unit`.
-
-Real Codex browser now verifies owner Admin shell + Agent Skills page, four tabs,
-ArrowRight/End/ArrowLeft/Home focus/selection, refresh loading/unavailable state,
-disabled unsupported controls, and no horizontal document/body overflow at measured
-CSS320/1200 in light/dark. Original System theme and viewport were restored.
-Existing RAG controls load: connected lexical sealed candidate,44sources,
-44versions,292chunks, existing skills/tools; evaluations remain unavailable.
-Native discovery is still unavailable/inactive and is not claimed connected.
-A new disposable development customer returned403 for staff/runtime/overview APIs;
-anonymous returned401 for all three, all private/no-store. The disposable identity
-was deleted and absence verified. No application row or role writes. Prior data,
-owner session and old blocked fixtures were preserved. Ignored screenshots:
-`tmp/agent-phase1-admin-fixed.png` and `tmp/agent-phase1-admin-mobile-dark.png`;
-sanitized API evidence is `tmp/agent-phase1-admin-access.json`.
-
-The unmounted `server/native-turn.ts` adds start/status translation through the
-existing store, native session client, prepared evidence and correlator. It
-persists prompt/IDs before claims; only a fresh CAS winner dispatches once.
-Duplicate/uncertain calls observe status. Fresh native mutations require exact
-claimed version/phase and immutable identity. Output uses strict JSON and shared
-source finalization before atomic save; only pending/unknown/saved crosses this
-private interface. The eventual caller must use current fenced public history.
-`authorizeRuntime(dispatch|observe)` keeps new admission/quota checks separate
-from observation of already owned work on the same verified generation. Context
-reconstruction must match its saved hash/scopes. Review caught and fixed two
-SQL mismatches: exact unavailable response text and cancellation requiring its
-durable flag; unsolicited interruption is unavailable. Eighteen adapter tests and
-independent final review pass. This is fixture evidence, not mounted integration.
-The migration is NOT APPLIED. Cancellation/cleanup translation is added below;
-real admission callbacks and route integration still need completion before mount.
-
-Latest owner steering: use the existing OpenRouter API key directly; account
-sign-in unavailable. Do not request the same browser login or a model-choice
-answer again. The existing local key authenticated to GET/api/v1/key (200), with
-1000/1000 free daily requests remaining at inspection. It is a non-management key;
-GET/api/v1/guardrails returned401, and key metadata has no strict ZDR/Safety
-Retention fields. No inference request, key export, account-wide setting change
-or new credential. Provider profile stays OFF: strict ZDR settings and other
-price/output/runtime gates remain unverified. Official free-variant zero-pricing
-FAQ is supplementary documentary evidence; omitted required endpoint fee fields
-were not silently reclassified zero. See provider-policy-verification.json.
-The task's OpenRouter browser sign-in tab was closed per the new direction.
-
-Final source checks:353/353 Agent tests, including18adapter tests; main application
-unit suite486pass/3skip out of489 (owner-only source archive missing), plus10media
-tests pass; scoped ESLint zero warnings; application/native TypeScript pass.
-Isolated candidate build PASS, BUILD_ID -S3hvm2Wt69MUJOOrYqQ-; it is not the
-running localhost server. Generated candidate tsconfig includes were removed.
-No push, merge or deployment. Historical Phase6 and P1.3/P1.4/P1.5 stay IN PROGRESS.
-
-
-## Existing-key verification and lifecycle follow-up
-
-Owner requested continuing native integration, supported strict-ZDR verification
-with the existing key and no account login, Codex browser checks and this handoff.
-`scripts/openrouter-key-policy-probe.mjs` performs four fixed official metadata
-GETs, bounded by one deadline, without inference, retries, redirects or account
-mutations. Authenticated `/key` and `/models/user` returned200; the latter is a
-supported catalog filtered by user preferences/privacy/guardrails. It returned417
-models including the current candidate. The exact public candidate endpoint has
-zero prompt/completion prices; its matching public ZDR row has explicit
-`safety_retention:false`. Required request/image prices remain absent.
-
-These responses do not expose effective key Safety Retention exclusions or opt-in
-logging. No supported strict-policy read was found for this ordinary inference
-key; management-only guardrails previously returned401 and were not retried.
-Eligibility/public classification must not be promoted to effective policy proof.
-No undocumented retention override, new key, account-wide change or login request.
-Strict ZDR remains UNVERIFIED and profile OFF; zero-cost requirements unchanged.
-Safe projections and response hashes are in provider-policy-verification.json.
-
-`server/native-lifecycle.ts` now reuses the current private store/client to translate
-cancel/status/cleanup. Only a fresh sticky-cancellation CAS winner can interrupt;
-unknown outcomes observe. Durable terminal cleanup claims removal once and needs
-current ownership/generation and typed absence before retirement. Source withdrawal
-or disabled new dispatch does not block owned cleanup. It adds17 fixtures, with
-independent review clean. Actual pinned2.2.2 provider-free lifecycle proof passes:
-owned unstarted cancellation, one removal, typed absence and repeat cleanup with no
-second DELETE. Counts for this case:1create,0prompt,0interrupt,1DELETE. Its synthetic
-file journal/current callback does not certify real Clerk/SQL integration or active
-inference cancellation. Child and fixture were cleaned. No migration was applied.
-
-Mount limits remain explicit: runtime-generation/current-owner callbacks, late
-prompt after early/lost interrupt, and a consumed cleanup claim without confirmed
-deletion. Those outcomes remain unknown instead of silently retrying mutations.
-HTTP routes and real admission integration remain unfinished.
-
-Current source checks:370/370 Agent tests PASS, dedicated native TypeScript PASS,
-scoped ESLint PASS. Independent lifecycle/probe review clean; probe syntax and an
-offline intercepted metadata/error-path check pass. Prior f02d1f4 application
-TypeScript/build/storefront checks above are retained; the unmounted increment
-does not change the application import graph, so no redundant application build.
-
-Real Codex browser at localhost3001: Admin Configuration refresh returned its
-honest unavailable state with Edit disabled. A fresh deterministic MCU question
-saved `Microcontroller: ESP8266` with S1, source section/capture/link and retrieval/
-check/save activity. Answer/citation survived reload. Only this newly created
-terminal test chat was archived; it is absent from recent, composer empty/enabled,
-prior histories and blocked Phase6 fixture preserved. Screenshot:
-`tmp/agent-phase1-lifecycle-baseline.png` (ignored). This proves the preserved
-deterministic browser path, not the unmounted native helper or live inference.
-
-Exact next action: finish current runtime admission and durable route/callback
-integration independently of provider activation, with uncertain lifecycle cases
-kept fail-closed. Mount the native BFF against the additive journal only after its
-gates pass. Supported ordinary-key APIs checked here do not establish strict ZDR;
-keep inference OFF unless authorized effective privacy proof and all remaining
-fee/quota/output gates are obtained. Preserve status-only recovery, old engine
-kinds and zero-cost/ZDR. Full native Admin management, Playground and customer
-memory remain open. P1.3/P1.4/P1.5 and historical Phase6 remain IN PROGRESS.
+Next permitted work: complete the owned isolated supervisor and full Clerk/SQL/
+native observation, cancellation and latency acceptance. Keep inference OFF until
+effective strict-ZDR, all required zero-fee/quota and output gates pass. Preserve
+unknown claims and source/QA fences. Full native tools/MCP/skills management,
+isolated Playground and customer memory remain unfinished mandatory scope.

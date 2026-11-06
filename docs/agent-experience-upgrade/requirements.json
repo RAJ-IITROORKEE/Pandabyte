@@ -411,7 +411,9 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin access is repaired and read-only rendered states are browser-verified."
+        "limitations": "Native private routes/owner/runtime admission are integrated with inference hard OFF. Live native conversational execution, full management/Playground/memory and provider privacy/price acceptance remain unfinished.",
+        "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
+        "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF."
       }
     },
     {
@@ -440,10 +442,12 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin access is repaired and read-only rendered states are browser-verified.",
+        "limitations": "Native private routes/owner/runtime admission are integrated with inference hard OFF. Live native conversational execution, full management/Playground/memory and provider privacy/price acceptance remain unfinished.",
         "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted.",
-        "nativeTurnAdapter": "Unmounted thin start/status adapter connects existing client/journal/evidence/correlation;18tests+independent review. No new runner, no actual provider or route cutover.",
-        "nativeLifecycle": "Unmounted cancel/status/cleanup17tests and independent review pass; actual pinned2.2.2 provider-free unstarted cancellation/one removal/typed absence/repeat cleanup pass with synthetic file journal. No route or Clerk/SQL activation."
+        "nativeTurnAdapter": "Private start/status adapter assembled behind hard-disabled inference;18leaf tests plus route/service/owner/runtime tests. No replacement runner or legacy fallback after uncertainty.",
+        "nativeLifecycle": "Cancel/status/cleanup assembled;17leaf tests, actual provider-free owned unstarted cleanup using pinned runtime admission; full Clerk/SQL/native active cancellation remains open.",
+        "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
+        "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",

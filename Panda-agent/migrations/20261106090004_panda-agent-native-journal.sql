@@ -338,5 +338,21 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.panda_agent_native_read(uuid) FROM PUBLIC,anon,authenticated;
 
+-- Bounded owner-only cleanup candidates; raw native identifiers and receipts never cross this projection.
+CREATE FUNCTION public.panda_agent_native_contexts(p_thread uuid) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
+DECLARE requests jsonb; pending boolean; more boolean;
+BEGIN
+ PERFORM 1 FROM public.panda_agent_chats WHERE id=p_thread AND owner_subject=public.requesting_user_id() FOR SHARE;
+ IF NOT FOUND THEN PERFORM public.phase3_fail('not_found'); END IF;
+ SELECT EXISTS(SELECT 1 FROM public.panda_agent_native_runs WHERE thread_id=p_thread AND owner_subject=public.requesting_user_id() AND phase<>'terminal') INTO pending;
+ SELECT coalesce(jsonb_agg(request_id ORDER BY created_at,request_id),'[]'::jsonb) INTO requests FROM
+  (SELECT request_id,created_at FROM public.panda_agent_native_runs WHERE thread_id=p_thread AND owner_subject=public.requesting_user_id() AND phase='terminal' AND NOT runtime_retired ORDER BY created_at,request_id LIMIT 4) candidates;
+ SELECT count(*)>4 INTO more FROM (SELECT 1 FROM public.panda_agent_native_runs WHERE thread_id=p_thread AND owner_subject=public.requesting_user_id() AND phase='terminal' AND NOT runtime_retired LIMIT 5) candidates;
+ RETURN jsonb_build_object('pending',pending,'requests',requests,'more',more);
+END $$;
+REVOKE ALL ON FUNCTION public.panda_agent_native_contexts(uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.panda_agent_native_contexts(uuid) TO authenticated;
+
 REVOKE ALL ON FUNCTION public.panda_agent_native_admit(text,text),public.panda_agent_native_state(text,text),public.panda_agent_native_transition(text,text) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.panda_agent_native_admit(text,text),public.panda_agent_native_state(text,text),public.panda_agent_native_transition(text,text),public.panda_agent_native_complete(text,text),public.panda_agent_native_claim_removal(text,text),public.panda_agent_native_retire(text,text),public.panda_agent_native_read(uuid) TO authenticated;

@@ -1,6 +1,6 @@
 # Native session translation foundation
 
-6 November 2026. This is an unwired server-side OpenCode 2.2.2 HTTP translation,
+6 November 2026. This is the private server-side OpenCode 2.2.2 HTTP translation,
 not a customer execution cutover or an execution-policy certification.
 
 `Panda-agent/src/opencode/session-client.ts` exports
@@ -118,7 +118,7 @@ A later busy period cannot settle the earlier prompt. The final idle outcome mus
 match the inactive session outcome. This is private correlation, not public answer
 validation: the caller still parses bounded JSON, invokes prepared-evidence
 finalization, rechecks current admission/source grants and persists before release.
-The helper is not mounted in customer execution.
+The helper is assembled behind the inference-disabled native bridge.
 
 The dependency-free `runtime/opencode/plugins/no-retry.ts` uses the supported
 session `retry` hook to set `event.decision = {retry:false}`. The prior provider
@@ -140,7 +140,7 @@ strict ZDR, all required fee fields, quota and live output/cost gates stay open.
 
 ## Cancellation and native context cleanup
 
-`server/native-lifecycle.ts` adds unmounted cancel/status/cleanup translation using
+`server/native-lifecycle.ts` adds private cancel/status/cleanup translation using
 the same journal, native client, current owner and runtime-generation callbacks.
 A fresh cancellation CAS winner may interrupt once; duplicate or uncertain calls
 only observe. An owned inactive unstarted session can settle cancellation without
@@ -166,3 +166,23 @@ Mount gates remain: real callback/binding and routes, journal application, activ
 inference cancellation, late prompt versus early/lost interrupt, and recovery after
 a consumed removal claim without confirmed deletion. No retry lease or automatic
 second interrupt/DELETE is introduced to hide those uncertain outcomes.
+
+## Mounted admission boundary
+
+The route assembly now uses native-owner and native-runtime admission. Owner
+receipt checks call current Clerk -> actor/thread/request-authorized journal state
+-> current Clerk and compare exact durable receipt + keyed thread/subject binding.
+They do not repeat full history reads. Lifecycle access callbacks no longer repeat
+the same owned/latest checks. The session client used for observation has a10s
+operation deadline; cleanup batching has a20s request deadline. Full real Clerk +
+active native latency is not certified by the smaller fixture checks.
+
+Runtime binding is a server-HMAC over the supervisor's fresh generation, PID,
+canonical directory,2.2.2, config hash, password hash and loopback origin. Authenticated
+info and the owner-private descriptor are checked again before operations. Windows
+ACL ownership/allowed trustees/nullDACL and POSIX owner/mode checks fail closed.
+The descriptor must come from an owned isolated supervisor with fresh secret/state
+per boot; the application does not start or resume a process from a descriptor.
+No persistent descriptor is configured. Dispatch and returned create/prompt always
+deny in source; neither this binding nor public provider metadata proves strict ZDR.
+Actual disposable2.2.2 descriptor/lifecycle/rotation checks pass in the probe report.
