@@ -99,3 +99,39 @@ membership and current-source fencing, not semantic entailment, hardware
 applicability, multi-product/vendor coverage or live native answering. The kernel
 is not yet mounted. `npm run typecheck:agent-native` explicitly checks these
 unwired modules; the application's import graph alone does not include them.
+
+## Thin turn adapter
+
+`server/native-turn.ts` connects the existing session client, private run store,
+prepared evidence and current-turn correlator. It remains unmounted. `start` and
+`status` accept only an owned application thread/request/question and return
+pending, unknown or saved. The caller reads the existing current-source-checked
+history projection after saved; native text/IDs are never the public response.
+
+One prompt is prepared and hashed before durable admission. Only the fresh
+admission winner can consume create/prompt CAS claims. Native dispatch callbacks
+require the exact claimed version/phase, immutable receipt/message/prompt/scope/
+runtime identity and current owner access. Duplicate starts and uncertain writes
+become status-only observations, never replacement execution. Status reconstructs
+only identical prepared context; changed context or source scope remains unknown.
+There is no polling, model/tool orchestration loop or second knowledge engine.
+
+The root supplies `authorizeRuntime('dispatch'|'observe')`. Both purposes must
+verify the owned current runtime generation/policy binding. Dispatch additionally
+requires the current zero-cost/ZDR profile, quota and new-call permission.
+Disabling new calls must not block observation of already admitted work on the
+same verified generation. A changed generation remains unknown. These callbacks
+are not implemented or certified by a fixture's returned opaque binding.
+
+Correlated successful output passes the existing strict JSON parser and prepared
+evidence finalizer before current admission/source rechecks and atomic completion.
+Failure uses the exact SQL-defined unavailable answer. A native interruption is
+cancelled only when the latest journal has its durable cancellation flag; an
+unsolicited interruption is unavailable. Independent review caught and fixed
+both SQL contract mismatches; the fake store now enforces these predicates.
+Eighteen adapter tests cover CAS races, lost acknowledgements, source withdrawal,
+runtime/owner changes, invalid JSON/citations, dispatch disablement and recovery.
+
+Live runtime admission/binding, HTTP route integration, cancellation dispatch and
+durable cleanup still need integration before mounting. The migration is not
+applied, the provider profile is inactive, and no native customer cutover occurred.

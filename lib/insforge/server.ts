@@ -2,6 +2,7 @@ import "server-only";
 
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@insforge/sdk";
+import { insforgeJwtTemplate } from "./jwt-template";
 
 export async function createInsforgeServerClient() {
   const { isAuthenticated, sessionStatus, getToken } = await auth();
@@ -15,7 +16,7 @@ export async function createInsforgeServerClient() {
     throw new Error("InsForge account access is unavailable.");
   }
 
-  const accessToken = await getToken({ template: "insforge" });
+  const accessToken = await getToken({ template: insforgeJwtTemplate() });
   if (!accessToken) {
     throw new Error("InsForge account access is unavailable.");
   }

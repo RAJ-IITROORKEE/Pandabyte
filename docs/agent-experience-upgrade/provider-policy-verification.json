@@ -43,20 +43,24 @@
     "Explicit zero-price proof for every inherited required rate; omitted prices are not silently treated as verified zero",
     "Current account/key guardrail ZDR-only state excluding Safety Retention, without shared-global changes",
     "Verify deployed dedicated-instance loading and keep auxiliary generation/websocket recovery outside the accepted HTTP session path until separately proven",
-    "Actual structured output, current account quota and reported endpoint/zero usage-cost proof",
+    "Actual structured output, current model/endpoint availability and reported endpoint/zero usage-cost proof; key daily quota metadata is now verified",
     "Previously recorded native BFF/lifecycle/current-message/citation release gates"
   ],
   "clarifications": [
     "Public catalogue metadata is discovery only, not account-specific routing/quota or execution proof",
     "The models catalogue canonical details link returned a base-model endpoint list without the free-variant row; the documented exact free model ID query returned the row",
     "Current ZDR docs allow Safety Retention when account/guardrail settings permit it; provider.zdr alone does not prove strict ZDR",
-    "Response caching has separate controls; X-OpenRouter-Cache:false overrides a caching preset"
+    "Response caching has separate controls; X-OpenRouter-Cache:false overrides a caching preset",
+    "Official free-model FAQ states free variants have zero model pricing and are not billed; this is additional documentary evidence, not explicit endpoint request/image rate metadata or strict key privacy verification."
   ],
   "documentation": [
     "https://openrouter.ai/docs/guides/features/zdr",
     "https://openrouter.ai/docs/guides/routing/provider-selection",
     "https://openrouter.ai/docs/guides/features/response-caching",
-    "https://openrouter.ai/docs/api/api-reference/endpoints/list-all-endpoints-for-a-model"
+    "https://openrouter.ai/docs/api/api-reference/endpoints/list-all-endpoints-for-a-model",
+    "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key",
+    "https://openrouter.ai/docs/api/api-reference/guardrails/list-guardrails",
+    "https://openrouter.ai/collections/free-models"
   ],
   "tooling": "Firecrawl installed/authenticated but 0 credits; official documentation read through built-in web tool; anonymous public metadata GETs only",
   "credentialsExtractedOrPrinted": false,
@@ -99,5 +103,26 @@
     "diffCheck": "pass",
     "nativePluginTypecheck": "pass; included in dedicated native tsconfig",
     "correlationTests": "6 pass, plus actual four-case native-to-mock correlation"
+  },
+  "ownerAccessDecision": "Use the existing API key directly; account sign-in unavailable. Do not request the same browser login again.",
+  "existingKeyMetadata": {
+    "credentialSource": "Existing preserved local environment; value never printed/copied to tracked config",
+    "authorization": 200,
+    "credentialValid": true,
+    "managementKey": false,
+    "freeRequests": {
+      "remaining": 1000,
+      "limit": 1000
+    },
+    "remainingCreditPositive": true,
+    "privacyPolicyFieldsPresent": [],
+    "liveInferenceRequests": 0,
+    "accountSettingsChanged": false,
+    "guardrailsRead": {
+      "status": 401,
+      "ordinaryKeyDenied": true,
+      "documentedManagementKeyRequired": true,
+      "privacyVerified": false
+    }
   }
 }

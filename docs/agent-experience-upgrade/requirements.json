@@ -411,7 +411,7 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin access is repaired and read-only rendered states are browser-verified."
       }
     },
     {
@@ -440,13 +440,14 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503.",
-        "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted."
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin access is repaired and read-only rendered states are browser-verified.",
+        "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted.",
+        "nativeTurnAdapter": "Unmounted thin start/status adapter connects existing client/journal/evidence/correlation;18tests+independent review. No new runner, no actual provider or route cutover."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",
         "record": "docs/agent-experience-upgrade/provider-policy-verification.json",
-        "activation": "Off: supported native HTTP session retry veto verified with current-turn correlation in four isolated mock cases; required fees, strict account/key ZDR, quota and live output remain open",
+        "activation": "Off: existing API key metadata200/quota verified; key is not management key and guardrails read401, so strict privacy unverified. Existing required fee/live output/runtime/lifecycle gates remain.",
         "wireEvidence": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json"
       }
     },
@@ -477,7 +478,8 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+        "limitations": "Rendered Admin access now verified. Live native metadata, configuration writes, installation, model/tool/skill permission enforcement and Playground remain incomplete.",
+        "adminAccessFix": "Existing configured Clerk JWT template respected; owner browser shell+four tabs, keyboard and CSS320/1200 both themes pass; anon401/customer403 and cleanup verified. Native discovery/management remains incomplete."
       }
     },
     {

@@ -29,8 +29,8 @@ fixture. Do not replay it, clear its journal or relabel this work as Phase 6 PAS
 - New /admin/agent-skills and sidebar entry: four compact tabs, existing strictly
   projected native discovery API, manual refresh and honest unsupported states.
   No fabricated metadata, credentials or mutations. Existing bundled RAG controls
-  remain linked. Parent Admin staff-access 503 blocks child browser acceptance;
-  preserve the guard and storefront backend instead of bypassing it.
+  remain linked. The parent Admin template regression is now fixed: browser access,
+  tabs and existing RAG controls load. Native discovery/management stays inactive.
 - Native session-client.ts translates pinned 2.2.2 create/get/active/messages/
   prompt/interrupt. Durable nonce/scope/binding/title/directory ownership, admission
   checks, strict loopback/no redirects/bounds/deadline and deny-all policy retained.
@@ -53,7 +53,7 @@ horizontal overflow; DPR about 1.2, override reset. No actual browser zoom,
 new-interface screen-reader speech or reduced-motion switching claim.
 Only the newly created owned disposable chat was archived; old fixtures preserved.
 
-335 Agent Node tests, six development-tool tests and three Admin navigation tests
+353 Agent Node tests, six development-tool tests and three Admin navigation tests
 pass. Native totals include 26 session, 13 store and 16 prepared-evidence tests.
 Scoped ESLint, application TypeScript and dedicated native TypeScript pass.
 Final candidate build result is in p1-implementation-verification.json; it is not
@@ -81,7 +81,9 @@ Read persistence-transition.md, native-session-contract.md and capability-contra
 The bounded prepared-evidence kernel is now extracted from retrieval/answers.ts
 with its existing validators; no finite selector or old controller is used there.
 It supplies 0/1 product context, opaque fragment aliases and current-source release
-checks; reviewed metadata-escape regressions are fixed. It remains unwired.
+checks; reviewed metadata-escape regressions are fixed. The new unmounted
+server/native-turn.ts connects it to the private journal/client/correlator; it is
+not mounted in customer execution.
 Connect one owned native prompt per natural message with eligible context,
 durable receipts and structured citation release. This limited context-fed increment
 is distinct from full tool routing. Verify provider/permission profile, process
@@ -193,8 +195,8 @@ Codex browser, real signed-in localhost:3001 session:
 - Archived only the owned `Help me get started!!!` chat after every turn was
   terminal. It is absent from recent chats; composer draft is empty. Historical
   Phase 6 blocked fixture and user histories were preserved. No journal reset.
-- Rechecked /admin/agent-skills: parent still displays "Staff access is
-  unavailable." Full Admin tabs remain unverified; no authorization bypass.
+- At checkpoint f2a614c, /admin/agent-skills still displayed "Staff access is
+  unavailable." That prior browser block is superseded by the repair below.
 
 Ignored local screenshots: `tmp/agent-phase1-restored-browser.png`,
 `tmp/agent-phase1-cleanup-browser.png`, `tmp/agent-phase1-admin-guard.png`.
@@ -205,11 +207,71 @@ LLM generation. Zero-cost and strict ZDR requirements are unchanged; provider
 profile remains OFF. The 335-test/unit/type/lint evidence belongs to source
 checkpoint 3543477; this follow-up changes documentation/evidence only.
 
-Exact next action: continue P1.4 mounted native BFF integration using the prepared
-evidence kernel, current-turn correlation, durable admission/status-only recovery
-and dedicated-instance retry hook. Complete required fee metadata and strict
-account/key ZDR verification before any real provider activation; preserve other
-quota/output/cost/runtime-generation/cleanup gates. Resolve parent Admin service
-availability through its existing backend to resume its browser acceptance.
-P1.3/P1.4/P1.5 and historical Phase 6 remain IN PROGRESS. No native cutover, push,
-merge or deployment occurred.
+## Admin repair and native adapter follow-up
+
+The Admin outage was a source regression in this branch: storefront
+`lib/insforge/server.ts` requested historical Clerk template `insforge`, despite
+the preserved migration's existing `INSFORGE_CLERK_JWT_TEMPLATE` configuration.
+The original checkout already had the reviewed selector helper. This branch now
+uses that exact `lib/insforge/jwt-template.ts` behavior and documents the optional
+server variable. Invalid configured names fail closed; unset preserves the legacy
+default. Active Clerk session and user token are still required. No backend,
+issuer/signing setup, roles/grants, key or environment file was changed.
+Four connection regressions are included in `npm run test:unit`.
+
+Real Codex browser now verifies owner Admin shell + Agent Skills page, four tabs,
+ArrowRight/End/ArrowLeft/Home focus/selection, refresh loading/unavailable state,
+disabled unsupported controls, and no horizontal document/body overflow at measured
+CSS320/1200 in light/dark. Original System theme and viewport were restored.
+Existing RAG controls load: connected lexical sealed candidate,44sources,
+44versions,292chunks, existing skills/tools; evaluations remain unavailable.
+Native discovery is still unavailable/inactive and is not claimed connected.
+A new disposable development customer returned403 for staff/runtime/overview APIs;
+anonymous returned401 for all three, all private/no-store. The disposable identity
+was deleted and absence verified. No application row or role writes. Prior data,
+owner session and old blocked fixtures were preserved. Ignored screenshots:
+`tmp/agent-phase1-admin-fixed.png` and `tmp/agent-phase1-admin-mobile-dark.png`;
+sanitized API evidence is `tmp/agent-phase1-admin-access.json`.
+
+The unmounted `server/native-turn.ts` adds start/status translation through the
+existing store, native session client, prepared evidence and correlator. It
+persists prompt/IDs before claims; only a fresh CAS winner dispatches once.
+Duplicate/uncertain calls observe status. Fresh native mutations require exact
+claimed version/phase and immutable identity. Output uses strict JSON and shared
+source finalization before atomic save; only pending/unknown/saved crosses this
+private interface. The eventual caller must use current fenced public history.
+`authorizeRuntime(dispatch|observe)` keeps new admission/quota checks separate
+from observation of already owned work on the same verified generation. Context
+reconstruction must match its saved hash/scopes. Review caught and fixed two
+SQL mismatches: exact unavailable response text and cancellation requiring its
+durable flag; unsolicited interruption is unavailable. Eighteen adapter tests and
+independent final review pass. This is fixture evidence, not mounted integration.
+The migration is NOT APPLIED; real admission callbacks, cancellation dispatch,
+durable native cleanup and route integration still need completion before mount.
+
+Latest owner steering: use the existing OpenRouter API key directly; account
+sign-in unavailable. Do not request the same browser login or a model-choice
+answer again. The existing local key authenticated to GET/api/v1/key (200), with
+1000/1000 free daily requests remaining at inspection. It is a non-management key;
+GET/api/v1/guardrails returned401, and key metadata has no strict ZDR/Safety
+Retention fields. No inference request, key export, account-wide setting change
+or new credential. Provider profile stays OFF: strict ZDR settings and other
+price/output/runtime gates remain unverified. Official free-variant zero-pricing
+FAQ is supplementary documentary evidence; omitted required endpoint fee fields
+were not silently reclassified zero. See provider-policy-verification.json.
+The task's OpenRouter browser sign-in tab was closed per the new direction.
+
+Final source checks:353/353 Agent tests, including18adapter tests; main application
+unit suite486pass/3skip out of489 (owner-only source archive missing), plus10media
+tests pass; scoped ESLint zero warnings; application/native TypeScript pass.
+Isolated candidate build PASS, BUILD_ID -S3hvm2Wt69MUJOOrYqQ-; it is not the
+running localhost server. Generated candidate tsconfig includes were removed.
+No push, merge or deployment. Historical Phase6 and P1.3/P1.4/P1.5 stay IN PROGRESS.
+
+Exact next action: complete verified runtime/policy admission, cancellation and
+durable cleanup, then mount the native BFF against the additive journal only after
+its gates pass. Preserve status-only recovery and old engine kinds. Strict provider
+privacy verification needs an existing authorized management/privacy authority;
+the valid inference key alone did not expose it. Continue permitted independent
+work without enabling inference, weakening zero-cost/ZDR or changing shared-global
+settings. Full native Admin management, Playground and customer memory remain open.
