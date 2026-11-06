@@ -60,9 +60,12 @@
     "https://openrouter.ai/docs/api/api-reference/endpoints/list-all-endpoints-for-a-model",
     "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key",
     "https://openrouter.ai/docs/api/api-reference/guardrails/list-guardrails",
-    "https://openrouter.ai/collections/free-models"
+    "https://openrouter.ai/collections/free-models",
+    "https://openrouter.ai/docs/api/api-reference/models/list-models-filtered-by-user-provider-preferences-privacy-settings-and-guardrails",
+    "https://openrouter.ai/docs/guides/privacy/data-collection",
+    "https://github.com/OpenRouterTeam/terraform-provider-openrouter/blob/main/docs/data-sources/guardrails.md"
   ],
-  "tooling": "Firecrawl installed/authenticated but 0 credits; official documentation read through built-in web tool; anonymous public metadata GETs only",
+  "tooling": "Official primary documentation via built-in web tool; existing-key official GET metadata and anonymous catalogs only; no inference. Firecrawl has0credits and was not used for paid calls.",
   "credentialsExtractedOrPrinted": false,
   "existingPolicyRegression": {
     "command": "python -m unittest discover -s tests -p test_openrouter.py -v",
@@ -124,5 +127,64 @@
       "documentedManagementKeyRequired": true,
       "privacyVerified": false
     }
+  },
+  "keyOnlySupportedProbe": {
+    "date": "2026-11-06T15:55:17.789Z",
+    "scope": "supported GET metadata with existing inference key; no account login",
+    "observations": [
+      {
+        "path": "/key",
+        "authenticated": true,
+        "status": 200,
+        "sha256": "5e3712f006781ba9f953a5c3192b2c4c6df6db49bfb91edb8f2cdbb5fa540d57"
+      },
+      {
+        "path": "/models/user",
+        "authenticated": true,
+        "status": 200,
+        "sha256": "a4396863686f6344afe74176f5e6345202503569154132e030b203dde2b8c301"
+      },
+      {
+        "path": "/models/xingchen-agi/xing4.0-29b-a4b:free/endpoints",
+        "authenticated": false,
+        "status": 200,
+        "sha256": "1ebb128099c9692db0bf6ae9cfc416b88772c2e4ea4ca557b942dae6e34a97fc"
+      },
+      {
+        "path": "/endpoints/zdr",
+        "authenticated": false,
+        "status": 200,
+        "sha256": "100ea6863a768f37a620f468f8915a33a8c722ec5cc0101de9080922fe87249c"
+      }
+    ],
+    "inferenceRequests": 0,
+    "accountSettingsChanged": false,
+    "credentialsPrinted": false,
+    "strictZdr": "unverified",
+    "inferenceAuthorized": false,
+    "key": {
+      "authenticated": true,
+      "management": false,
+      "freeRequestsRemaining": 1000,
+      "strictPolicyFields": []
+    },
+    "eligibility": {
+      "model": "xingchen-agi/xing4.0-29b-a4b:free",
+      "present": true,
+      "models": 417,
+      "establishesStrictZdr": false
+    },
+    "candidate": {
+      "model": "xingchen-agi/xing4.0-29b-a4b:free",
+      "provider": "phala",
+      "endpoints": 1,
+      "zdrRows": 1,
+      "safetyRetentionExplicitlyFalse": true,
+      "tokenPricesZero": true,
+      "otherRequiredPrices": "unverified",
+      "establishesEffectiveKeyPolicy": false
+    },
+    "reason": "Eligible model and public ZDR classification do not expose effective Safety Retention or logging settings. Known management-only guardrail route is not retried.",
+    "result": "observed_blocked"
   }
 }

@@ -137,3 +137,32 @@ The hook is not evidence for the separate `session/generate.ts` retry path or
 HTTP single-prompt acceptance scope. See `opencode-provider-wire-probe.json` for
 the actual mock observations and the retained failing baseline. Account-specific
 strict ZDR, all required fee fields, quota and live output/cost gates stay open.
+
+## Cancellation and native context cleanup
+
+`server/native-lifecycle.ts` adds unmounted cancel/status/cleanup translation using
+the same journal, native client, current owner and runtime-generation callbacks.
+A fresh cancellation CAS winner may interrupt once; duplicate or uncertain calls
+only observe. An owned inactive unstarted session can settle cancellation without
+a prompt. A missing session cannot settle an unknown create that could arrive late.
+Only correlated interrupted work with the durable flag becomes cancelled; another
+terminal outcome uses the exact SQL unavailable answer. Native/provider text is
+never released by this interface.
+
+Cleanup requires durable completion, current ownership/generation, inactive native
+context and one removal claim. A consumed claim authorizes absence observation only,
+never a second DELETE. Retirement follows typed absence and a fresh journal check.
+Revoked evidence or disabled new dispatch does not prevent owned cancellation and
+cleanup. Changed ownership or runtime generation still fails closed.
+
+Seventeen fixtures cover races, unknown acknowledgements, forged identity, source
+withdrawal and cleanup fences. The actual isolated 2.2.2 probe also cancels an owned
+unstarted session and removes it once, observes typed absence and repeats cleanup
+without another DELETE: one create, zero prompts, zero interrupts, one DELETE in
+this lifecycle case. Its synthetic file journal/current callback is not Clerk or
+database acceptance. Child and fixture were removed.
+
+Mount gates remain: real callback/binding and routes, journal application, active
+inference cancellation, late prompt versus early/lost interrupt, and recovery after
+a consumed removal claim without confirmed deletion. No retry lease or automatic
+second interrupt/DELETE is introduced to hide those uncertain outcomes.

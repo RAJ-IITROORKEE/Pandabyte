@@ -56,6 +56,19 @@
       "evidenceClass": "Real existing Clerk/InsForge/browser/private FastAPI deterministic RAG integration; not native inference",
       "secrets": "One-time transfer file deleted; authentication tabs closed; no authorization codes/URLs, credentials or account identifiers in tracked evidence",
       "policy": "Zero-cost and strict ZDR unchanged; live native provider remains off"
+    },
+    "lifecycleFollowup": {
+      "surface": "Codex browser localhost3001, existing signed-in session",
+      "deterministicQuery": "Which MCU does the x8266 use?",
+      "passed": [
+        "Saved literal Microcontroller: ESP8266 with S1",
+        "Source title, quote, section, capture and approved link",
+        "Retrieval/check/save activity",
+        "Saved answer/citation survives reload",
+        "Only new terminal disposable chat archived; absent from recent; empty enabled composer; old histories and blocked Phase6 fixture preserved"
+      ],
+      "screenshot": "tmp/agent-phase1-lifecycle-baseline.png",
+      "limits": "Deterministic FastAPI path only; native helper unmounted"
     }
   },
   "adminBrowser": {
@@ -94,13 +107,14 @@
       "tmp/agent-phase1-admin-fixed.png",
       "tmp/agent-phase1-admin-mobile-dark.png"
     ],
-    "limits": "Real native metadata/execution/management still unavailable; rendered states are not live discovery or full Admin feature acceptance"
+    "limits": "Real native metadata/execution/management still unavailable; rendered states are not live discovery or full Admin feature acceptance",
+    "lifecycleFollowup": "Configuration refresh transitions loading to honest unavailable; Edit configuration remains disabled"
   },
   "nativeSessions": {
     "record": "opencode-session-probe.json",
     "evidenceClass": "Actual pinned 2.2.2 disposable provider-free process with file receipt callback; not real Clerk/database integration",
     "limits": "No prompt/provider call, live inference cancellation, customer cutover or effective-permission certification. Mounted durable cleanup admission and runtime generation/secret binding remain required.",
-    "followup": "Actual provider-free owned inactive removal, typed absence and pinned PID before/after operations passed. Unknown removal is observation-only; no automatic second DELETE."
+    "followup": "Actual native lifecycle adapter owned unstarted cancellation and claimed removal pass:1create,0prompt,0interrupt,1DELETE; typed absence and repeat cleanup. Synthetic file journal, not real Clerk/SQL."
   },
   "nativeJournal": {
     "record": "native-journal-verification.json",
@@ -112,7 +126,7 @@
   },
   "checks": {
     "agentNodeTests": {
-      "passed": 353,
+      "passed": 370,
       "failed": 0
     },
     "developmentToolTests": {
@@ -140,7 +154,8 @@
       "preparedEvidence": 16,
       "includedInAgentTotal": true,
       "turnCorrelation": 6,
-      "turnAdapter": 18
+      "turnAdapter": 18,
+      "nativeLifecycle": 17
     },
     "adminNavigationTests": {
       "passed": 3,
@@ -175,6 +190,15 @@
       "passed": 4,
       "failed": 0,
       "includedInMainUnit": true
+    },
+    "lifecycleFollowup": {
+      "agentNodeTests": "370/370 pass",
+      "nativeTypeScript": "pass",
+      "scopedEslint": "pass",
+      "actualProviderFreeNativeProbe": "pass; child stopped and fixture removed",
+      "keyOnlyProbe": "four supported metadata GETs pass; privacy stays unverified; zero inference",
+      "independentReview": "Lifecycle and both probe increments reviewed clean; offline intercepted metadata/error path verified",
+      "applicationBuild": "Prior f02d1f4 application build/type/storefront checks retained; no application import graph change"
     }
   },
   "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation.",
@@ -196,7 +220,7 @@
   },
   "pendingActivation": [
     "Owner retained zero-cost and strict ZDR. Tested native HTTP session retry veto passes, but actual required fees, account/key retention, quota and live output/cost proof remain open.",
-    "Mounted native BFF admission/current-message reconciliation, cancellation dispatch and durable cleanup fencing; unmounted start/status translation has18fixture tests",
+    "Mounted native BFF admission/current-message reconciliation and durable lifecycle callbacks; unmounted start/status18tests and cancel/status/cleanup17tests plus provider-free native lifecycle case pass",
     "Admin access and rendered-state/browser acceptance repaired; native discovery/management still inactive and unsupported controls disabled",
     "Shared full native tool/MCP management, isolated Playground and customer memory remain incomplete"
   ],
@@ -221,7 +245,15 @@
     "status": "unmounted translation",
     "testsPassed": 18,
     "review": "Independent final review clean; exact SQL failure text, durable cancellation flag and dispatch/observe split verified",
-    "limits": "Injected journal/native fixtures only; real admission callback, routes, cancellation, cleanup and migration application remain open"
+    "limits": "Injected journal/native fixtures only; lifecycle translation now separately tested but real admission callback, routes and migration application remain open"
   },
-  "providerKeyFollowup": "Existing key used directly per owner; metadata200 with free quota, non-management key; guardrails GET401. Strict ZDR settings remain unverified, no inference/profile or account-setting change."
+  "providerKeyFollowup": "Supported existing-key /key and /models/user200; candidate eligible, public exact ZDR row safety_retention:false and token prices zero. Effective Safety Retention/logging and required request/image fees remain unverified; no inference/profile/account change.",
+  "nativeLifecycle": {
+    "path": "Panda-agent/src/server/native-lifecycle.ts",
+    "status": "unmounted translation",
+    "testsPassed": 17,
+    "independentReview": "clean",
+    "actualProbe": "opencode-session-probe.json checks.nativeLifecycleAdapter; owned unstarted cancellation, one terminal removal and typed absence; repeated cleanup does not repeat DELETE",
+    "limits": "Synthetic file journal/current callback; not Clerk/SQL integration, active inference cancellation or mounted routes. Late prompt versus early/lost interrupt and consumed-claim recovery remain mount gates."
+  }
 }

@@ -132,6 +132,15 @@ both SQL contract mismatches; the fake store now enforces these predicates.
 Eighteen adapter tests cover CAS races, lost acknowledgements, source withdrawal,
 runtime/owner changes, invalid JSON/citations, dispatch disablement and recovery.
 
-Live runtime admission/binding, HTTP route integration, cancellation dispatch and
-durable cleanup still need integration before mounting. The migration is not
-applied, the provider profile is inactive, and no native customer cutover occurred.
+The unmounted `server/native-lifecycle.ts` now supplies cancellation/status and
+terminal native cleanup through these same dependencies. Cancellation is sticky;
+only a fresh CAS winner can interrupt. Cleanup claims removal once and retires only
+after current ownership/generation/version checks and typed native absence.
+Consumed claims recover by observation, never repeated DELETE. Seventeen fixtures
+and the actual provider-free unstarted-session case pass; the latter uses a
+synthetic file journal, not real Clerk/database integration. See the session
+contract for explicit late-prompt/interrupt and consumed-claim recovery limits.
+
+Live runtime admission/binding, HTTP routes and durable callback integration still
+need completion before mounting. The migration is not applied, the provider
+profile is inactive, and no native customer cutover occurred.

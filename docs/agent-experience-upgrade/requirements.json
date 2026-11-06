@@ -442,12 +442,13 @@
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
         "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin access is repaired and read-only rendered states are browser-verified.",
         "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted.",
-        "nativeTurnAdapter": "Unmounted thin start/status adapter connects existing client/journal/evidence/correlation;18tests+independent review. No new runner, no actual provider or route cutover."
+        "nativeTurnAdapter": "Unmounted thin start/status adapter connects existing client/journal/evidence/correlation;18tests+independent review. No new runner, no actual provider or route cutover.",
+        "nativeLifecycle": "Unmounted cancel/status/cleanup17tests and independent review pass; actual pinned2.2.2 provider-free unstarted cancellation/one removal/typed absence/repeat cleanup pass with synthetic file journal. No route or Clerk/SQL activation."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",
         "record": "docs/agent-experience-upgrade/provider-policy-verification.json",
-        "activation": "Off: existing API key metadata200/quota verified; key is not management key and guardrails read401, so strict privacy unverified. Existing required fee/live output/runtime/lifecycle gates remain.",
+        "activation": "OFF: supported existing-key /key and /models/user succeed; candidate publicly classified safety_retention:false/token prices zero. Effective strict key privacy and required request/image fees remain unverified; zero inference. Guardrails management-only denial not retried.",
         "wireEvidence": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json"
       }
     },

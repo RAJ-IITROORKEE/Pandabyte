@@ -53,7 +53,7 @@ horizontal overflow; DPR about 1.2, override reset. No actual browser zoom,
 new-interface screen-reader speech or reduced-motion switching claim.
 Only the newly created owned disposable chat was archived; old fixtures preserved.
 
-353 Agent Node tests, six development-tool tests and three Admin navigation tests
+370 Agent Node tests, six development-tool tests and three Admin navigation tests
 pass. Native totals include 26 session, 13 store and 16 prepared-evidence tests.
 Scoped ESLint, application TypeScript and dedicated native TypeScript pass.
 Final candidate build result is in p1-implementation-verification.json; it is not
@@ -107,7 +107,9 @@ Continue independent authorized work when another dependency is blocked.
 
 UI dev session 16974: localhost:3001, .next-agent-experience-dev, existing launcher,
 deterministic-mcu-v1 mode. The datumm AWS CLI login is refreshed and its account verified.
-Private SSM tunnel session 6212 listens on localhost:8182, with connection accepted.
+Private SSM tunnel session 27106 listens on localhost:8182; readiness returned200.
+The earlier6212 session ended idle; existing AWS credentials restored the tunnel
+without another sign-in.
 No worker secret/journal rotation or deployed runtime change. Review-only proposal server 36452: localhost:3000.
 Old production session 82471 was stopped after verifying ownership; build retained.
 Candidate: .next-agent-experience-candidate. Generated tsconfig include paths must
@@ -246,8 +248,8 @@ reconstruction must match its saved hash/scopes. Review caught and fixed two
 SQL mismatches: exact unavailable response text and cancellation requiring its
 durable flag; unsolicited interruption is unavailable. Eighteen adapter tests and
 independent final review pass. This is fixture evidence, not mounted integration.
-The migration is NOT APPLIED; real admission callbacks, cancellation dispatch,
-durable native cleanup and route integration still need completion before mount.
+The migration is NOT APPLIED. Cancellation/cleanup translation is added below;
+real admission callbacks and route integration still need completion before mount.
 
 Latest owner steering: use the existing OpenRouter API key directly; account
 sign-in unavailable. Do not request the same browser login or a model-choice
@@ -268,10 +270,63 @@ Isolated candidate build PASS, BUILD_ID -S3hvm2Wt69MUJOOrYqQ-; it is not the
 running localhost server. Generated candidate tsconfig includes were removed.
 No push, merge or deployment. Historical Phase6 and P1.3/P1.4/P1.5 stay IN PROGRESS.
 
-Exact next action: complete verified runtime/policy admission, cancellation and
-durable cleanup, then mount the native BFF against the additive journal only after
-its gates pass. Preserve status-only recovery and old engine kinds. Strict provider
-privacy verification needs an existing authorized management/privacy authority;
-the valid inference key alone did not expose it. Continue permitted independent
-work without enabling inference, weakening zero-cost/ZDR or changing shared-global
-settings. Full native Admin management, Playground and customer memory remain open.
+
+## Existing-key verification and lifecycle follow-up
+
+Owner requested continuing native integration, supported strict-ZDR verification
+with the existing key and no account login, Codex browser checks and this handoff.
+`scripts/openrouter-key-policy-probe.mjs` performs four fixed official metadata
+GETs, bounded by one deadline, without inference, retries, redirects or account
+mutations. Authenticated `/key` and `/models/user` returned200; the latter is a
+supported catalog filtered by user preferences/privacy/guardrails. It returned417
+models including the current candidate. The exact public candidate endpoint has
+zero prompt/completion prices; its matching public ZDR row has explicit
+`safety_retention:false`. Required request/image prices remain absent.
+
+These responses do not expose effective key Safety Retention exclusions or opt-in
+logging. No supported strict-policy read was found for this ordinary inference
+key; management-only guardrails previously returned401 and were not retried.
+Eligibility/public classification must not be promoted to effective policy proof.
+No undocumented retention override, new key, account-wide change or login request.
+Strict ZDR remains UNVERIFIED and profile OFF; zero-cost requirements unchanged.
+Safe projections and response hashes are in provider-policy-verification.json.
+
+`server/native-lifecycle.ts` now reuses the current private store/client to translate
+cancel/status/cleanup. Only a fresh sticky-cancellation CAS winner can interrupt;
+unknown outcomes observe. Durable terminal cleanup claims removal once and needs
+current ownership/generation and typed absence before retirement. Source withdrawal
+or disabled new dispatch does not block owned cleanup. It adds17 fixtures, with
+independent review clean. Actual pinned2.2.2 provider-free lifecycle proof passes:
+owned unstarted cancellation, one removal, typed absence and repeat cleanup with no
+second DELETE. Counts for this case:1create,0prompt,0interrupt,1DELETE. Its synthetic
+file journal/current callback does not certify real Clerk/SQL integration or active
+inference cancellation. Child and fixture were cleaned. No migration was applied.
+
+Mount limits remain explicit: runtime-generation/current-owner callbacks, late
+prompt after early/lost interrupt, and a consumed cleanup claim without confirmed
+deletion. Those outcomes remain unknown instead of silently retrying mutations.
+HTTP routes and real admission integration remain unfinished.
+
+Current source checks:370/370 Agent tests PASS, dedicated native TypeScript PASS,
+scoped ESLint PASS. Independent lifecycle/probe review clean; probe syntax and an
+offline intercepted metadata/error-path check pass. Prior f02d1f4 application
+TypeScript/build/storefront checks above are retained; the unmounted increment
+does not change the application import graph, so no redundant application build.
+
+Real Codex browser at localhost3001: Admin Configuration refresh returned its
+honest unavailable state with Edit disabled. A fresh deterministic MCU question
+saved `Microcontroller: ESP8266` with S1, source section/capture/link and retrieval/
+check/save activity. Answer/citation survived reload. Only this newly created
+terminal test chat was archived; it is absent from recent, composer empty/enabled,
+prior histories and blocked Phase6 fixture preserved. Screenshot:
+`tmp/agent-phase1-lifecycle-baseline.png` (ignored). This proves the preserved
+deterministic browser path, not the unmounted native helper or live inference.
+
+Exact next action: finish current runtime admission and durable route/callback
+integration independently of provider activation, with uncertain lifecycle cases
+kept fail-closed. Mount the native BFF against the additive journal only after its
+gates pass. Supported ordinary-key APIs checked here do not establish strict ZDR;
+keep inference OFF unless authorized effective privacy proof and all remaining
+fee/quota/output gates are obtained. Preserve status-only recovery, old engine
+kinds and zero-cost/ZDR. Full native Admin management, Playground and customer
+memory remain open. P1.3/P1.4/P1.5 and historical Phase6 remain IN PROGRESS.

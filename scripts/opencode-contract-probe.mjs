@@ -3,12 +3,14 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, basename, relative, isAbsolute } from 'node:path';
 import { spawn } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
 import { createNativeInspectionClient } from '../Panda-agent/src/opencode/inspection-client.ts';
 import { createNativeSessionClient } from '../Panda-agent/src/opencode/session-client.ts';
 import { createNativeReceipt } from '../Panda-agent/src/opencode/session-contracts.ts';
+import { createNativeMessageID } from '../Panda-agent/src/opencode/session-contracts.ts';
+import { createNativeLifecycle } from '../Panda-agent/src/server/native-lifecycle.ts';
 
 const executable = resolve('tmp/opencode-2.2.2-review/opencode.exe');
 if (process.argv.slice(2).some(arg => arg !== '--sessions') || process.argv.length > 3) throw Error('invalid_probe_argument');
@@ -102,6 +104,56 @@ try {
     const absent = await native.absence(receipt, access);
     if (removal.status !== 'removed' || absent.absent !== true) throw Error('native_removal_unverified');
     summary.checks.nativeSessionAdapter = {result:'pass', durableFixtureReceipt:true, createAndOwnedRead:true, active:false, historyCount:history.length, unstartedInterrupt:interrupt.status, ownedInactiveRemoval:true, typedAbsence:true, pinnedProcessBeforeAndAfter:true, admission:'disposable file callback with no prompt; not real application ownership or database isolation'};
+    const turn = {thread:'11111111-1111-4111-8111-111111111111',request:'22222222-2222-4222-8222-222222222222'};
+    const lifecycleReceipt = createNativeReceipt('customer', 'c'.repeat(64));
+    const journalPath = join(root, 'lifecycle-journal.json');
+    const runtimeBinding = createHash('sha256').update(`${child.pid}:${password}:${root}`).digest('hex');
+    await writeFile(journalPath, JSON.stringify({receipt:lifecycleReceipt,messageID:createNativeMessageID(),promptHash:'d'.repeat(64),runtimeBinding,scopes:[],phase:'created',version:1,createClaimed:true,promptClaimed:false,cancelRequested:false,terminalReason:null,nativeOutcome:null,responseHash:null,removalClaimed:false,runtimeRetired:false}), {flag:'wx'});
+    const readJournal = async () => JSON.parse(await readFile(journalPath, 'utf8'));
+    const saveJournal = async value => { await writeFile(journalPath, JSON.stringify(value)); return structuredClone(value); };
+    const requireValue = value => { if (!value) throw Error('lifecycle_fixture_contract'); };
+    const fixedCancellation = {outcome:'insufficient',text:'This request was cancelled. Start a new question when ready.',citations:[]};
+    const fileStore = {
+      state:readJournal,
+      async transition(_thread,_request,version,event) {
+        const row=await readJournal(); requireValue(row.version===version && row.phase!=='terminal' && event==='cancel_requested' && !row.cancelRequested);
+        return saveJournal({...row,phase:'cancel_requested',cancelRequested:true,version:version+1});
+      },
+      async complete(_thread,_request,version,answer,outcome,reason) {
+        const row=await readJournal(); requireValue(row.version===version && row.cancelRequested && !row.promptClaimed && outcome===null && reason==='cancelled' && JSON.stringify(answer)===JSON.stringify(fixedCancellation));
+        return saveJournal({...row,phase:'terminal',nativeOutcome:null,terminalReason:reason,responseHash:createHash('sha256').update(JSON.stringify(answer)).digest('hex'),version:version+1});
+      },
+      async claimRemoval(_thread,_request,version) {
+        const row=await readJournal(); requireValue(row.version===version && row.phase==='terminal' && !row.removalClaimed && !row.runtimeRetired);
+        return saveJournal({...row,removalClaimed:true,version:version+1});
+      },
+      async retire(_thread,_request,version) {
+        const row=await readJournal(); requireValue(row.version===version && row.phase==='terminal' && row.removalClaimed && !row.runtimeRetired);
+        return saveJournal({...row,runtimeRetired:true,version:version+1});
+      },
+    };
+    const mutations={creates:0,prompts:0,interrupts:0,deletes:0};
+    const lifecycleNative=createNativeSessionClient({baseUrl:base,password,directory:join(root,'workspace'),expectedPid:child.pid,timeoutMs:5000,fetch:async(url,init)=>{
+      const path=new URL(url).pathname;
+      if(path.endsWith('/prompt')) { mutations.prompts++; throw Error('unexpected_fixture_prompt'); }
+      if(init?.method==='DELETE')mutations.deletes++;
+      if(init?.method==='POST' && path==='/api/session')mutations.creates++;
+      if(init?.method==='POST' && path.endsWith('/interrupt'))mutations.interrupts++;
+      return fetch(url,init);
+    }});
+    const fileAccess=async candidate=>JSON.stringify(candidate)===JSON.stringify((await readJournal()).receipt);
+    await lifecycleNative.create(lifecycleReceipt,fileAccess);
+    const lifecycle=createNativeLifecycle({store:fileStore,native:lifecycleNative,
+      current:async value=>value.thread===turn.thread && value.request===turn.request && (!value.receipt || await fileAccess(value.receipt)),
+      authorizeRuntime:async purpose=>purpose==='observe'?runtimeBinding:null,ownerBinding:async()=>lifecycleReceipt.binding});
+    const cancellation=await lifecycle.cancel(turn);
+    const cleanup=await lifecycle.cleanup(turn);
+    const repeatCleanup=await lifecycle.cleanup(turn);
+    const finalJournal=await readJournal();
+    const finalAbsence=await lifecycleNative.absence(lifecycleReceipt,fileAccess);
+    requireValue(cancellation.status==='saved' && cleanup.status==='retired' && repeatCleanup.status==='retired' && finalJournal.runtimeRetired && finalAbsence.absent);
+    requireValue(mutations.creates===1 && mutations.prompts===0 && mutations.interrupts===0 && mutations.deletes===1);
+    summary.checks.nativeLifecycleAdapter={result:'pass',ownedUnstartedCancellation:true,terminalClaimedRemoval:true,repeatCleanupWithoutSecondDelete:true,typedAbsence:true,mutations,admission:'synthetic file journal/current callback; not Clerk or database integration',activeInferenceCancellation:false};
   }
   summary.result = 'completed';
 } catch (error) { summary.result = 'stopped'; summary.reason = /^[a-z_]+$/.test(error.message) ? error.message : 'probe_error'; }

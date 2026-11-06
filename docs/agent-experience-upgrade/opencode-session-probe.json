@@ -92,6 +92,21 @@
       "typedAbsence": true,
       "pinnedProcessBeforeAndAfter": true,
       "admission": "disposable file callback with no prompt; not real application ownership or database isolation"
+    },
+    "nativeLifecycleAdapter": {
+      "result": "pass",
+      "ownedUnstartedCancellation": true,
+      "terminalClaimedRemoval": true,
+      "repeatCleanupWithoutSecondDelete": true,
+      "typedAbsence": true,
+      "mutations": {
+        "creates": 1,
+        "prompts": 0,
+        "interrupts": 0,
+        "deletes": 1
+      },
+      "admission": "synthetic file journal/current callback; not Clerk or database integration",
+      "activeInferenceCancellation": false
     }
   },
   "noPromptsOrExternalCallsRequested": true,
