@@ -3,6 +3,7 @@
   "compilerOptions": { "incremental": false },
   "include": [
     "src/opencode/**/*.ts",
+    "runtime/opencode/plugins/**/*.ts",
     "src/server/native-*.ts",
     "src/retrieval/prepared-evidence.ts"
   ]

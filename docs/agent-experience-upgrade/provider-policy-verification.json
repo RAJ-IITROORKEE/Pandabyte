@@ -42,7 +42,7 @@
   "remainingGates": [
     "Explicit zero-price proof for every inherited required rate; omitted prices are not silently treated as verified zero",
     "Current account/key guardrail ZDR-only state excluding Safety Retention, without shared-global changes",
-    "Verified supported native retry control; the candidate maxRetries setting did not prevent repeats in the actual mock fixture",
+    "Verify deployed dedicated-instance loading and keep auxiliary generation/websocket recovery outside the accepted HTTP session path until separately proven",
     "Actual structured output, current account quota and reported endpoint/zero usage-cost proof",
     "Previously recorded native BFF/lifecycle/current-message/citation release gates"
   ],
@@ -70,23 +70,34 @@
   "nativeWireProbe": {
     "record": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json",
     "evidenceClass": "Actual isolated OpenCode 2.2.2 to local mock completion endpoint; fake credential and synthetic text only",
-    "policyForwarding": "pass for every captured request",
+    "policyForwarding": "pass for all four captured single-attempt requests",
     "cacheHeader": "X-OpenRouter-Cache:false observed",
-    "mockCompletionAttempts": 3,
-    "scenario": "429 with Retry-After:1",
-    "candidateRetrySetting": "settings.maxRetries:0 did not prevent repeats in this fixture",
-    "retryGate": "failed; native remained active after observation",
-    "cleanup": "Owned child stopped, sink closed, temporary fixture removed",
+    "baseline": "Retained under wire report baseline: settings.maxRetries:0 allowed three HTTP429 attempts and did not reach terminal state in the observation window",
+    "retryControl": "Dependency-free dedicated-instance panda-no-retry plugin uses supported session retry veto; exact owned local-directory integration grant",
+    "scenarios": [
+      "HTTP429",
+      "HTTP503",
+      "Socket dropped after full request body acceptance",
+      "Synthetic SSE success"
+    ],
+    "mockCompletionAttemptsPerCase": 1,
+    "retryGate": "pass for tested HTTP session paths; inactive terminal outcome and current-turn correlation in every case",
+    "terminalCorrelation": "Persisted message ID and prompt SHA, expected user/assistant/idle sequence and bounded ordering; exact synthetic success text, no failure text released",
+    "cleanup": "Every owned child stopped, sink closed, temporary fixture removed",
     "notRun": [
-      "HTTP5xx",
-      "Lost response after acceptance",
-      "Real provider success/structured output"
+      "Real provider pricing/account quota/output/zero cost",
+      "Account/key strict ZDR guardrails",
+      "Auxiliary session generation retry",
+      "Websocket retry-full recovery",
+      "Mounted application caller and active inference cancellation"
     ]
   },
   "staticChecks": {
     "wireProbeSyntax": "pass",
     "wireProbeEslint": "pass",
     "taskValidation": "97 tasks valid",
-    "diffCheck": "pass"
+    "diffCheck": "pass",
+    "nativePluginTypecheck": "pass; included in dedicated native tsconfig",
+    "correlationTests": "6 pass, plus actual four-case native-to-mock correlation"
   }
 }

@@ -185,7 +185,7 @@ export function createLightweightHandler(deps:Dependencies) {
         let answer:ChatAnswer;
         if(scope.kind==='resolved')answer=await deps.answer(actor,{thread:id!,requestId,question,productSku:scope.productSku,store,...(execution?{reconcileOnly:true,execution}:{})},workRequest,progress);
         else if(execution)throw new ChatStoreError('unavailable');
-        else if(scope.kind==='conversation' || scope.kind==='manufacturer')answer={outcome:'clarification',text:'Ask about a PandaByte product and include its model or SKU. Other workflows are available only through their enabled controls.',citations:[]};
+        else if(scope.kind==='conversation' || scope.kind==='manufacturer')answer={outcome:'clarification',text:'This preview answers supported questions from approved PandaByte listings. Include the product model or SKU. General conversational help is not available yet.',citations:[]};
         else answer={outcome:scope.kind,text:scope.text,citations:[]};
         if(workRequest.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
         progress('saving_answer');

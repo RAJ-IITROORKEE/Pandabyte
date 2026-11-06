@@ -5,13 +5,91 @@
   "realProviderCallsRequested": false,
   "realCredentialFilesRead": false,
   "runtimeOrProviderReady": false,
-  "nativeRetrySetting": "settings.maxRetries=0 is a candidate only; observation decides",
-  "observationWindowMs": 10000,
+  "baseline": {
+    "version": "2.2.2",
+    "scope": "isolated native to loopback MOCK provider only",
+    "applicationAdmission": "disposable file receipt callback; not Clerk, database ownership or production isolation",
+    "realProviderCallsRequested": false,
+    "realCredentialFilesRead": false,
+    "runtimeOrProviderReady": false,
+    "nativeRetrySetting": "settings.maxRetries=0 is a candidate only; observation decides",
+    "observationWindowMs": 10000,
+    "cases": [
+      {
+        "scenario": "429",
+        "phase": "observed",
+        "attempts": 3,
+        "rejectedPaths": 0,
+        "wireChecks": [
+          {
+            "cacheDisabled": true,
+            "modelMatches": true,
+            "endpointOnly": true,
+            "noFallback": true,
+            "requireParameters": true,
+            "zdr": true,
+            "dataCollectionDenied": true,
+            "fourZeroCeilings": true,
+            "pluginsEmpty": true
+          },
+          {
+            "cacheDisabled": true,
+            "modelMatches": true,
+            "endpointOnly": true,
+            "noFallback": true,
+            "requireParameters": true,
+            "zdr": true,
+            "dataCollectionDenied": true,
+            "fourZeroCeilings": true,
+            "pluginsEmpty": true
+          },
+          {
+            "cacheDisabled": true,
+            "modelMatches": true,
+            "endpointOnly": true,
+            "noFallback": true,
+            "requireParameters": true,
+            "zdr": true,
+            "dataCollectionDenied": true,
+            "fourZeroCeilings": true,
+            "pluginsEmpty": true
+          }
+        ],
+        "terminal": false,
+        "activeAtEnd": true,
+        "pidVerified": true,
+        "onlyFixtureModel": true,
+        "promptAccepted": true,
+        "observedMs": 10183,
+        "policyForwarded": true,
+        "retryGate": "failed_native_retries_observed",
+        "childStopped": true,
+        "sinkClosed": true
+      }
+    ],
+    "additionalCases": {
+      "http5xx": "not_run",
+      "dropAfterAccept": "not_run"
+    },
+    "policyForwarding": "pass",
+    "retryGate": "failed",
+    "result": "policy_blocked",
+    "childrenStopped": true,
+    "mockSinksClosed": true,
+    "fixtureRemoved": true,
+    "logs": "task-owned stdout/stderr retained under ignored tmp/opencode-provider-wire-probe"
+  },
+  "nativeRetryControl": "dedicated instance local panda-no-retry session retry veto; no provider maxRetries claim",
+  "limitations": [
+    "HTTP session retry path only; auxiliary generation and websocket transport recovery are outside this probe",
+    "Mock policy forwarding does not verify real provider pricing or account/key ZDR guardrails"
+  ],
+  "observationWindowMs": 20000,
   "cases": [
     {
       "scenario": "429",
       "phase": "observed",
-      "attempts": 3,
+      "attempts": 1,
       "rejectedPaths": 0,
       "wireChecks": [
         {
@@ -24,18 +102,73 @@
           "dataCollectionDenied": true,
           "fourZeroCeilings": true,
           "pluginsEmpty": true
-        },
-        {
-          "cacheDisabled": true,
-          "modelMatches": true,
-          "endpointOnly": true,
-          "noFallback": true,
-          "requireParameters": true,
-          "zdr": true,
-          "dataCollectionDenied": true,
-          "fourZeroCeilings": true,
-          "pluginsEmpty": true
-        },
+        }
+      ],
+      "terminal": true,
+      "activeAtEnd": false,
+      "pidVerified": true,
+      "pluginCatalog": {
+        "expectedActive": true,
+        "external": [
+          {
+            "expectedID": true,
+            "status": "active"
+          }
+        ]
+      },
+      "retryPluginActive": true,
+      "onlyFixtureModel": true,
+      "promptAccepted": true,
+      "observedMs": 111,
+      "correlation": {
+        "state": "terminal",
+        "outcome": "failed",
+        "syntheticTextMatches": null
+      },
+      "correlationChecks": {
+        "userIDMatches": true,
+        "promptHashMatches": true,
+        "messageTimesOrdered": true,
+        "busyAtOrAfterUser": false,
+        "idleAtOrAfterBusy": true,
+        "idleMessageAtOrAfterBusy": true,
+        "assistantAtOrAfterUser": true,
+        "assistantAtOrAfterBusy": true,
+        "assistantCompletedAtOrBeforeIdleMessage": true,
+        "assistantCompletedAtOrBeforeSessionIdle": true
+      },
+      "messages": {
+        "types": [
+          "user",
+          "assistant",
+          "idle"
+        ],
+        "hasUser": true,
+        "assistants": [
+          {
+            "completed": true,
+            "failed": true,
+            "retrying": false
+          }
+        ],
+        "idleOutcomes": [
+          "failed"
+        ],
+        "stateOutcome": "failed",
+        "busyPresent": true,
+        "idlePresent": true
+      },
+      "policyForwarded": true,
+      "retryGate": "pass_single_attempt_terminal",
+      "childStopped": true,
+      "sinkClosed": true
+    },
+    {
+      "scenario": "503",
+      "phase": "observed",
+      "attempts": 1,
+      "rejectedPaths": 0,
+      "wireChecks": [
         {
           "cacheDisabled": true,
           "modelMatches": true,
@@ -48,25 +181,224 @@
           "pluginsEmpty": true
         }
       ],
-      "terminal": false,
-      "activeAtEnd": true,
+      "terminal": true,
+      "activeAtEnd": false,
       "pidVerified": true,
+      "pluginCatalog": {
+        "expectedActive": true,
+        "external": [
+          {
+            "expectedID": true,
+            "status": "active"
+          }
+        ]
+      },
+      "retryPluginActive": true,
       "onlyFixtureModel": true,
       "promptAccepted": true,
-      "observedMs": 10183,
+      "observedMs": 90,
+      "correlation": {
+        "state": "terminal",
+        "outcome": "failed",
+        "syntheticTextMatches": null
+      },
+      "correlationChecks": {
+        "userIDMatches": true,
+        "promptHashMatches": true,
+        "messageTimesOrdered": true,
+        "busyAtOrAfterUser": false,
+        "idleAtOrAfterBusy": true,
+        "idleMessageAtOrAfterBusy": true,
+        "assistantAtOrAfterUser": true,
+        "assistantAtOrAfterBusy": true,
+        "assistantCompletedAtOrBeforeIdleMessage": true,
+        "assistantCompletedAtOrBeforeSessionIdle": true
+      },
+      "messages": {
+        "types": [
+          "user",
+          "assistant",
+          "idle"
+        ],
+        "hasUser": true,
+        "assistants": [
+          {
+            "completed": true,
+            "failed": true,
+            "retrying": false
+          }
+        ],
+        "idleOutcomes": [
+          "failed"
+        ],
+        "stateOutcome": "failed",
+        "busyPresent": true,
+        "idlePresent": true
+      },
       "policyForwarded": true,
-      "retryGate": "failed_native_retries_observed",
+      "retryGate": "pass_single_attempt_terminal",
+      "childStopped": true,
+      "sinkClosed": true
+    },
+    {
+      "scenario": "drop",
+      "phase": "observed",
+      "attempts": 1,
+      "rejectedPaths": 0,
+      "wireChecks": [
+        {
+          "cacheDisabled": true,
+          "modelMatches": true,
+          "endpointOnly": true,
+          "noFallback": true,
+          "requireParameters": true,
+          "zdr": true,
+          "dataCollectionDenied": true,
+          "fourZeroCeilings": true,
+          "pluginsEmpty": true
+        }
+      ],
+      "terminal": true,
+      "activeAtEnd": false,
+      "pidVerified": true,
+      "pluginCatalog": {
+        "expectedActive": true,
+        "external": [
+          {
+            "expectedID": true,
+            "status": "active"
+          }
+        ]
+      },
+      "retryPluginActive": true,
+      "onlyFixtureModel": true,
+      "promptAccepted": true,
+      "observedMs": 107,
+      "correlation": {
+        "state": "terminal",
+        "outcome": "failed",
+        "syntheticTextMatches": null
+      },
+      "correlationChecks": {
+        "userIDMatches": true,
+        "promptHashMatches": true,
+        "messageTimesOrdered": true,
+        "busyAtOrAfterUser": false,
+        "idleAtOrAfterBusy": true,
+        "idleMessageAtOrAfterBusy": true,
+        "assistantAtOrAfterUser": true,
+        "assistantAtOrAfterBusy": true,
+        "assistantCompletedAtOrBeforeIdleMessage": true,
+        "assistantCompletedAtOrBeforeSessionIdle": true
+      },
+      "messages": {
+        "types": [
+          "user",
+          "assistant",
+          "idle"
+        ],
+        "hasUser": true,
+        "assistants": [
+          {
+            "completed": true,
+            "failed": true,
+            "retrying": false
+          }
+        ],
+        "idleOutcomes": [
+          "failed"
+        ],
+        "stateOutcome": "failed",
+        "busyPresent": true,
+        "idlePresent": true
+      },
+      "policyForwarded": true,
+      "retryGate": "pass_single_attempt_terminal",
+      "childStopped": true,
+      "sinkClosed": true
+    },
+    {
+      "scenario": "success",
+      "phase": "observed",
+      "attempts": 1,
+      "rejectedPaths": 0,
+      "wireChecks": [
+        {
+          "cacheDisabled": true,
+          "modelMatches": true,
+          "endpointOnly": true,
+          "noFallback": true,
+          "requireParameters": true,
+          "zdr": true,
+          "dataCollectionDenied": true,
+          "fourZeroCeilings": true,
+          "pluginsEmpty": true
+        }
+      ],
+      "terminal": true,
+      "activeAtEnd": false,
+      "pidVerified": true,
+      "pluginCatalog": {
+        "expectedActive": true,
+        "external": [
+          {
+            "expectedID": true,
+            "status": "active"
+          }
+        ]
+      },
+      "retryPluginActive": true,
+      "onlyFixtureModel": true,
+      "promptAccepted": true,
+      "observedMs": 92,
+      "correlation": {
+        "state": "terminal",
+        "outcome": "succeeded",
+        "syntheticTextMatches": true
+      },
+      "correlationChecks": {
+        "userIDMatches": true,
+        "promptHashMatches": true,
+        "messageTimesOrdered": true,
+        "busyAtOrAfterUser": false,
+        "idleAtOrAfterBusy": true,
+        "idleMessageAtOrAfterBusy": true,
+        "assistantAtOrAfterUser": true,
+        "assistantAtOrAfterBusy": true,
+        "assistantCompletedAtOrBeforeIdleMessage": true,
+        "assistantCompletedAtOrBeforeSessionIdle": true
+      },
+      "messages": {
+        "types": [
+          "user",
+          "assistant",
+          "idle"
+        ],
+        "hasUser": true,
+        "assistants": [
+          {
+            "completed": true,
+            "failed": false,
+            "retrying": false
+          }
+        ],
+        "idleOutcomes": [
+          "succeeded"
+        ],
+        "stateOutcome": "succeeded",
+        "busyPresent": true,
+        "idlePresent": true
+      },
+      "policyForwarded": true,
+      "retryGate": "pass_single_attempt_terminal",
       "childStopped": true,
       "sinkClosed": true
     }
   ],
-  "additionalCases": {
-    "http5xx": "not_run",
-    "dropAfterAccept": "not_run"
-  },
+  "offlineHook": "pass_single_retry_hook_unconditional_veto",
   "policyForwarding": "pass",
-  "retryGate": "failed",
-  "result": "policy_blocked",
+  "retryGate": "pass",
+  "result": "completed",
   "childrenStopped": true,
   "mockSinksClosed": true,
   "fixtureRemoved": true,

@@ -100,3 +100,40 @@ safe history. These are fixture checks. No real provider prompt, native live
 cancellation, browser execution, deployment or customer migration is claimed.
 The parent owns the separate disposable provider-free native CRUD probe and
 integration acceptance evidence.
+
+## One-prompt terminal correlation and retry policy
+
+`opencode/turn-result.ts` correlates a private native history with the durable
+message ID and SHA-256 of the exact prepared prompt. The first increment admits
+one user prompt and one assistant output per session, with tools denied. Active
+or non-terminal work remains pending. Wrong/multiple users, a changed prompt,
+repeated/invalid message IDs, incomplete/retrying/failed success output, extra
+assistant output or inconsistent terminal history remain unknown. Failure and
+interruption return only a fixed terminal outcome, never partial provider text.
+
+Pinned 2.2.2 starts a busy period before promoting the inbox user. The accepted
+ordering is session-created <= busy <= expected-user-created <= assistant-created
+<= assistant-completed <= terminal-idle-message, and completed <= session-idle.
+A later busy period cannot settle the earlier prompt. The final idle outcome must
+match the inactive session outcome. This is private correlation, not public answer
+validation: the caller still parses bounded JSON, invokes prepared-evidence
+finalization, rechecks current admission/source grants and persists before release.
+The helper is not mounted in customer execution.
+
+The dependency-free `runtime/opencode/plugins/no-retry.ts` uses the supported
+session `retry` hook to set `event.decision = {retry:false}`. The prior provider
+`settings.maxRetries:0` did not control OpenCode's native retry loop. Loading the
+hook requires an exact local plugin-directory integration grant in a dedicated
+instance; the mock fixture verifies that plugin is active before prompting.
+No global plugin/configuration or deployed runtime was changed.
+
+Pinned source references:
+[retry hook](https://github.com/anomalyco/opencode/blob/f7b4d50940caeb6991d94bfa7ebb66a5542ab0d8/packages/plugin/src/README.md),
+[retry decision](https://github.com/anomalyco/opencode/blob/f7b4d50940caeb6991d94bfa7ebb66a5542ab0d8/packages/core/src/session/runner/retry.ts),
+[busy-before-inbox sequence](https://github.com/anomalyco/opencode/blob/f7b4d50940caeb6991d94bfa7ebb66a5542ab0d8/packages/core/src/session/run-coordinator.ts),
+and [inbox promotion](https://github.com/anomalyco/opencode/blob/f7b4d50940caeb6991d94bfa7ebb66a5542ab0d8/packages/core/src/session/runner/llm.ts).
+The hook is not evidence for the separate `session/generate.ts` retry path or
+`runner/step.ts` transport retry-full recovery. Those paths remain outside this
+HTTP single-prompt acceptance scope. See `opencode-provider-wire-probe.json` for
+the actual mock observations and the retained failing baseline. Account-specific
+strict ZDR, all required fee fields, quota and live output/cost gates stay open.

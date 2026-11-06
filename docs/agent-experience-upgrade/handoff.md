@@ -53,7 +53,7 @@ horizontal overflow; DPR about 1.2, override reset. No actual browser zoom,
 new-interface screen-reader speech or reduced-motion switching claim.
 Only the newly created owned disposable chat was archived; old fixtures preserved.
 
-329 Agent Node tests, six development-tool tests and three Admin navigation tests
+335 Agent Node tests, six development-tool tests and three Admin navigation tests
 pass. Native totals include 26 session, 13 store and 16 prepared-evidence tests.
 Scoped ESLint, application TypeScript and dedicated native TypeScript pass.
 Final candidate build result is in p1-implementation-verification.json; it is not
@@ -104,8 +104,9 @@ Continue independent authorized work when another dependency is blocked.
 ## Local sessions and ownership
 
 UI dev session 16974: localhost:3001, .next-agent-experience-dev, existing launcher,
-deterministic-mcu-v1 mode. Private SSM tunnel 56900: localhost:8182; restored without
-rotating worker secret/journal. Review-only proposal server 36452: localhost:3000.
+deterministic-mcu-v1 mode. Private SSM tunnel 56900 has exited; restoring it fails
+because the existing AWS CLI login expired. Login refresh requested; no worker
+secret/journal rotation or runtime change. Review-only proposal server 36452: localhost:3000.
 Old production session 82471 was stopped after verifying ownership; build retained.
 Candidate: .next-agent-experience-candidate. Generated tsconfig include paths must
 be removed from the checkpoint. Original dirty E: checkout remains preserved.
@@ -118,8 +119,9 @@ identity metadata unavailable; explicit overrides do not prove execution identit
 Owner replied: keep the existing zero-cost and ZDR requirements. The model-choice
 question is resolved as a policy constraint; do not ask it again. Current anonymous
 OpenRouter metadata identified one preliminary free text/JSON ZDR candidate, but
-explicit required fee fields, strict account/key retention settings, native wire
+explicit required fee fields, strict account/key retention settings, deployed native wire
 policy, quota and structured-output/zero-cost execution proof remain unverified.
+Isolated native HTTP mock wire policy/retry checks now pass.
 See provider-policy-verification.json. No model profile was approved or activated.
 The source profile, provider policy, generation identity and durable caller must be
 concrete before native activation. No credentials were requested in chat.
@@ -129,28 +131,54 @@ did not reach them; this dedicated check caught and fixed five compatibility/typ
 errors. It now passes under the existing ES2017 project target without broadening
 that target or changing runtime ID encoding.
 
-## Retained provider policy follow-up
+## Native retry and current-turn follow-up
 
-Owner confirmed zero cost and ZDR unchanged. provider-policy-verification.json
-records anonymous official catalogue checks and all unresolved gates. Preliminary
-free text endpoint is discovery only; required request/image prices were omitted,
-strict account/key retention settings and live quota/output/cost remain unverified.
-Do not label missing prices verified zero. Current OpenRouter documentation makes
-Safety Retention allowance separate from zdr:true; response caching also has its
-own controls. No global account/key changes or real inference were performed.
+Owner retained zero cost and strict ZDR. The original failed probe is preserved
+under `opencode-provider-wire-probe.json` baseline: settings.maxRetries:0 allowed
+three HTTP429 attempts and stayed active. The pinned native retry loop uses its
+session retry hook instead of that provider setting. The new dependency-free
+`Panda-agent/runtime/opencode/plugins/no-retry.ts` vetoes retry proposals. The
+isolated dedicated fixture grants only that exact local plugin directory and
+checks the hook is active before prompting; no global configuration was changed.
 
-The isolated 2.2.2 local mock wire probe observed exact model/provider pinning,
+Actual pinned 2.2.2 -> loopback MOCK results: HTTP429, HTTP503, a socket dropped
+after accepting the full request body, and synthetic SSE success each produced
+one request and a matching inactive terminal outcome. Exact model/provider pin,
 no fallback, required parameters, ZDR, data_collection deny, four zero price caps,
-empty plugins and X-OpenRouter-Cache:false on all three captured requests. Despite
-settings.maxRetries:0, native made three attempts after a synthetic HTTP429 and
-remained active at the end of the 10-second observation. Result: policy_blocked,
-not execution readiness. The owned child/sink/fixture are cleaned up. Five existing
-Python provider-policy fixture tests pass; script syntax and task validation pass.
-HTTP5xx/lost-response cases remain untested. Read opencode-provider-wire-probe.json
-and scripts/opencode-provider-wire-probe.mjs before further native policy work.
+empty provider plugins and X-OpenRouter-Cache:false were retained. Owned children,
+sinks and temporary fixture were cleaned. This verifies those HTTP session paths,
+not auxiliary generation or websocket retry-full recovery. No real provider call,
+credential extraction, account/key privacy change or deployed plugin activation.
 
-Next verify a supported native retry control from the pinned implementation or
-upstream interface; do not build a replacement gateway/runner or treat an arbitrary
-accepted settings property as enforcement. Preserve the established price/privacy
-gates and continue independent integration. The earlier model-choice question is
-answered; do not request it again or automatically select a paid/non-ZDR fallback.
+`opencode/turn-result.ts` adds private current-turn correlation: exact persisted
+message ID/prompt SHA, one user/assistant, ordered native times, terminal idle and
+inactive state. Pinned execution begins busy before inbox promotion, as verified
+by actual observations and source. Independent review found a later-busy stale
+output case; it is rejected and covered. All four actual mock histories correlate;
+synthetic success text matches exactly, failure text is never released. Six unit
+groups, 335 full Agent tests, scoped ESLint and dedicated native TypeScript pass.
+The dedicated TypeScript scope includes the new runtime plugin. The helper remains
+unwired; JSON/evidence validation, admission, persistence and mounted cleanup still
+belong to the next BFF integration. Independent final review has no unresolved
+finding within this bounded contract.
+
+Explicit request/image fee metadata, strict account/key ZDR-only settings, quota
+and real structured-output/reported zero-cost proof remain unverified. Keep the
+provider profile OFF and retain all zero-cost/ZDR requirements. The resolved model
+choice must not be asked again or replaced by a paid/non-ZDR fallback.
+
+Codex browser on localhost:3001 saved the corrected greeting in a new owned
+`Help me get started!!!` chat. It accurately describes this preview instead of
+pointing to removed mode controls. One explicitly sent x8266 MCU question became
+unconfirmed after the private AWS tunnel expired. A status-only check and one
+cancel attempt remained unconfirmed; no replay or success claim. The pending
+chat is retained because terminal cleanup cannot be confirmed. Other/user and
+historical Phase 6 histories remain untouched. Ignored local evidence:
+`tmp/agent-retry-browser-checkpoint.json` (owned IDs/next action) and its PNG.
+
+Exact next action: after the existing datumm AWS CLI sign-in is refreshed, reopen
+the private tunnel, reconcile the owned pending request by status only, confirm
+terminal cancellation/completion and archive only this disposable chat. Then
+continue the gated native BFF integration using the new correlation helper and
+supported dedicated-instance retry policy. P1.3/P1.4/P1.5 and historical Phase 6
+remain IN PROGRESS; no native cutover, push, merge or deployment occurred.

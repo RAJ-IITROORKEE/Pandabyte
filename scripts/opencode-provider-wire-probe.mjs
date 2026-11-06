@@ -7,16 +7,21 @@ import { tmpdir } from 'node:os';
 import { join, resolve, relative, isAbsolute, basename } from 'node:path';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { createNativeSessionClient } from '../Panda-agent/src/opencode/session-client.ts';
 import { createNativeReceipt, createNativeMessageID } from '../Panda-agent/src/opencode/session-contracts.ts';
+import noRetry from '../Panda-agent/runtime/opencode/plugins/no-retry.ts';
+import { correlateNativeTurn } from '../Panda-agent/src/opencode/turn-result.ts';
 
 if (process.argv.length !== 2) throw Error('invalid_probe_argument');
 const executable = resolve('tmp/opencode-2.2.2-review/opencode.exe');
 const output = resolve('docs/agent-experience-upgrade/opencode-provider-wire-probe.json');
 const fixtureRoot = await mkdtemp(join(tmpdir(), 'panda-provider-wire-'));
 const logRoot = resolve('tmp/opencode-provider-wire-probe', basename(fixtureRoot));
-const deadline = Date.now() + 45000;
+const pluginPath = resolve('Panda-agent/runtime/opencode/plugins/no-retry.ts');
+const previousEvidence = JSON.parse(await readFile(output, 'utf8'));
+const baseline = previousEvidence.baseline ?? previousEvidence;
+const deadline = Date.now() + 150000;
 const providerID = 'panda-wire-fixture';
 const modelID = 'xingchen-agi/xing4.0-29b-a4b:free';
 const policy = { only: ['phala'], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: 0, completion: 0, request: 0, image: 0 } };
@@ -24,8 +29,10 @@ const summary = {
   version: '2.2.2', scope: 'isolated native to loopback MOCK provider only',
   applicationAdmission: 'disposable file receipt callback; not Clerk, database ownership or production isolation',
   realProviderCallsRequested: false, realCredentialFilesRead: false, runtimeOrProviderReady: false,
-  nativeRetrySetting: 'settings.maxRetries=0 is a candidate only; observation decides',
-  observationWindowMs: 10000, cases: [], additionalCases: { http5xx: 'not_run', dropAfterAccept: 'not_run' },
+  baseline,
+  nativeRetryControl: 'dedicated instance local panda-no-retry session retry veto; no provider maxRetries claim',
+  limitations: ['HTTP session retry path only; auxiliary generation and websocket transport recovery are outside this probe', 'Mock policy forwarding does not verify real provider pricing or account/key ZDR guardrails'],
+  observationWindowMs: 20000, cases: [],
 };
 const fail = reason => { throw Error(reason); };
 const check = (value, reason) => { if (!value) fail(reason); };
@@ -58,12 +65,15 @@ function inspectWire(headers, body) {
     pluginsEmpty: Array.isArray(body?.plugins) && body.plugins.length === 0,
   };
 }
-async function run429Case() {
-  const scenario = '429';
+async function runCase(scenario) {
   const record = { scenario, phase: 'fixture', attempts: 0, rejectedPaths: 0, wireChecks: [], terminal: false, activeAtEnd: null };
   summary.cases.push(record);
   const work = join(fixtureRoot, scenario);
   for (const directory of ['home', 'programdata', 'tmp', 'config', 'data', 'cache', 'state', 'workspace']) await mkdir(join(work, directory), { recursive: true });
+  const pluginDirectory = join(work, 'retry-plugin');
+  await mkdir(pluginDirectory);
+  await writeFile(join(pluginDirectory, 'no-retry.ts'), await readFile(pluginPath), { flag: 'wx' });
+  await writeFile(join(pluginDirectory, 'package.json'), JSON.stringify({ name: 'panda-no-retry-local', type: 'module', exports: { '.': './no-retry.ts' } }), { flag: 'wx' });
   let child, childExit, sink, stdout, stderr;
   try {
     sink = createServer(async (request, response) => {
@@ -76,8 +86,16 @@ async function run429Case() {
         const fields = inspectWire(request.headers, body);
         record.wireChecks.push(fields);
         if (!Object.values(fields).every(value => value === true)) { response.writeHead(422, { 'content-type': 'application/json' }); response.end('{"error":{"message":"fixture policy violation","type":"invalid_request_error"}}'); return; }
-        response.writeHead(429, { 'content-type': 'application/json', 'retry-after': '1' });
-        response.end('{"error":{"message":"Synthetic local fixture failure","type":"rate_limit_exceeded"}}');
+        if (scenario === 'drop') { request.socket.destroy(); return; }
+        if (scenario === 'success') {
+          response.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' });
+          const chunk = (delta, finish_reason = null) => ({ id: 'chatcmpl-fixture', object: 'chat.completion.chunk', created: 1, model: modelID, choices: [{ index: 0, delta, finish_reason }] });
+          response.write('data: ' + JSON.stringify(chunk({ role: 'assistant', content: 'Synthetic fixture reply.' })) + '\n\n');
+          response.write('data: ' + JSON.stringify(chunk({}, 'stop')) + '\n\n');
+          response.end('data: [DONE]\n\n'); return;
+        }
+        response.writeHead(Number(scenario), { 'content-type': 'application/json', 'retry-after': '1' });
+        response.end(JSON.stringify({ error: { message: 'Synthetic local fixture failure', type: scenario === '429' ? 'rate_limit_exceeded' : 'server_error' } }));
       } catch {
         record.rejectedPaths++;
         if (!response.headersSent) response.writeHead(400, { 'content-type': 'application/json' });
@@ -91,7 +109,7 @@ async function run429Case() {
       model: { providerID, model: modelID },
       providers: { [providerID]: {
         name: 'Local mock wire fixture', package: '@opencode/ai/providers/openai-compatible', env: ['PANDA_WIRE_FIXTURE_TOKEN'],
-        settings: { baseURL: mockURL, encoding: 'none', maxRetries: 0 }, compatibility: { supportsPromptCacheKey: false },
+        settings: { baseURL: mockURL, encoding: 'none' }, compatibility: { supportsPromptCacheKey: false },
         headers: { 'X-OpenRouter-Cache': 'false' }, body: { provider: policy, plugins: [] },
         models: { [modelID]: { modelID, capabilities: { tools: false, input: ['text'], output: ['text'] }, limit: { context: 262144, output: 128 } } },
       } },
@@ -99,8 +117,9 @@ async function run429Case() {
       policies: [
         { action: 'provider.use', resource: '*', effect: 'deny' }, { action: 'provider.use', resource: providerID, effect: 'allow' },
         { action: 'tool.use', resource: '*', effect: 'deny' }, { action: 'integration.use', resource: '*', effect: 'deny' },
+        { action: 'integration.use', resource: `plugin:${pluginDirectory}`, effect: 'allow' },
       ],
-      mcp: { servers: {} }, plugins: [], skills: [], warming: false, snapshots: false, share: 'disabled', update: 'disable',
+      mcp: { servers: {} }, plugins: [pluginDirectory], skills: [], warming: false, snapshots: false, share: 'disabled', update: 'disable',
       experimental: { background_compaction: false, schedules: false, subagent_depth: 0 },
     };
     const configPath = join(work, 'config', 'opencode.json');
@@ -143,6 +162,16 @@ async function run429Case() {
     check(Array.isArray(models.data) && models.data.length === 1 && models.data[0].providerID === providerID && models.data[0].id === modelID, 'fixture_model_catalog');
     const [skills, mcp] = await Promise.all([get('/api/skill'), get('/api/mcp')]);
     check(Array.isArray(skills.data) && skills.data.length === 0 && Array.isArray(mcp.data) && mcp.data.length === 0, 'fixture_capability_catalog');
+    let plugins;
+    const pluginDeadline = Math.min(deadline, Date.now() + 5000);
+    do {
+      plugins = await get('/api/plugin');
+      if (plugins.data?.some(item => item.id === 'panda-no-retry' && item.state?.status === 'active')) break;
+      await sleep(100);
+    } while (Date.now() < pluginDeadline);
+    record.pluginCatalog = { expectedActive: Array.isArray(plugins.data) && plugins.data.some(item => item.id === 'panda-no-retry' && item.state?.status === 'active'), external: Array.isArray(plugins.data) ? plugins.data.filter(item => item.source?.type === 'local').map(item => ({ expectedID: item.id === 'panda-no-retry', status: item.state?.status ?? null })) : [] };
+    check(record.pluginCatalog.expectedActive && record.pluginCatalog.external.length === 1, 'fixture_plugin_catalog');
+    record.retryPluginActive = true;
     record.onlyFixtureModel = true;
     const loaded = await get('/api/config');
     check(Array.isArray(loaded) && loaded.some(entry => {
@@ -156,7 +185,9 @@ async function run429Case() {
     const native = createNativeSessionClient({ baseUrl, password, directory: join(work, 'workspace'), expectedPid: child.pid, timeoutMs: 5000 });
     record.phase = 'session_create'; await native.create(receipt, admission);
     record.phase = 'prompt_ack';
-    const ack = await native.prompt(receipt, { messageID: createNativeMessageID(), text: 'Synthetic local wire probe. Reply with fixture.' }, admission);
+    const messageID = createNativeMessageID(), text = 'Synthetic local wire probe. Reply with fixture.';
+    const promptHash = createHash('sha256').update(text, 'utf8').digest('hex');
+    const ack = await native.prompt(receipt, { messageID, text }, admission);
     check(ack.status === 'accepted', 'fixture_prompt_ack'); record.promptAccepted = true;
     record.phase = 'observe';
     const observationStart = Date.now(), observationEnd = Math.min(deadline, observationStart + summary.observationWindowMs);
@@ -168,10 +199,34 @@ async function run429Case() {
       await sleep(250);
     }
     record.observedMs = Date.now() - observationStart;
+    const messages = await native.messages(receipt, admission);
+    const state = await native.get(receipt, admission);
+    const finalActive = await native.active(receipt, admission);
+    const correlated = correlateNativeTurn({ messageID, promptHash }, state, finalActive.active, messages);
+    record.correlation = { state: correlated.state, outcome: correlated.state === 'terminal' ? correlated.outcome : null, syntheticTextMatches: correlated.state === 'terminal' && correlated.outcome === 'succeeded' ? correlated.serializedAnswer === 'Synthetic fixture reply.' : null };
+    const user = messages.find(message => message.type === 'user'), assistant = messages.find(message => message.type === 'assistant'), idle = messages.at(-1);
+    record.correlationChecks = {
+      userIDMatches: user?.id === messageID, promptHashMatches: user?.type === 'user' && createHash('sha256').update(user.text, 'utf8').digest('hex') === promptHash,
+      messageTimesOrdered: messages.every((message, index) => index === 0 || message.created >= messages[index - 1].created),
+      busyAtOrAfterUser: state.time.busy >= user?.created, idleAtOrAfterBusy: state.time.idle >= state.time.busy,
+      idleMessageAtOrAfterBusy: idle?.created >= state.time.busy, assistantAtOrAfterUser: assistant?.created >= user?.created,
+      assistantAtOrAfterBusy: assistant?.created >= state.time.busy,
+      assistantCompletedAtOrBeforeIdleMessage: assistant?.completed <= idle?.created, assistantCompletedAtOrBeforeSessionIdle: assistant?.completed <= state.time.idle,
+    };
+    record.messages = {
+      types: messages.map(message => message.type), hasUser: messages.some(message => message.type === 'user'),
+      assistants: messages.filter(message => message.type === 'assistant').map(message => ({ completed: message.completed !== undefined, failed: message.failed, retrying: message.retrying })),
+      idleOutcomes: messages.filter(message => message.type === 'idle').map(message => message.outcome),
+      stateOutcome: state.outcome ?? null, busyPresent: state.time.busy !== undefined, idlePresent: state.time.idle !== undefined,
+    };
     check(record.attempts > 0 && record.rejectedPaths === 0, 'fixture_no_completion_wire');
     check(record.wireChecks.every(fields => Object.values(fields).every(value => value === true)), 'wire_policy_not_preserved');
     record.policyForwarded = true;
     record.retryGate = record.attempts > 1 ? 'failed_native_retries_observed' : record.terminal ? 'pass_single_attempt_terminal' : 'unverified_window_ended';
+    check(record.terminal && record.attempts === 1, 'retry_not_single_terminal');
+    check(record.messages.stateOutcome === (scenario === 'success' ? 'succeeded' : 'failed'), 'unexpected_terminal_outcome');
+    check(record.messages.hasUser && record.messages.assistants.length === 1 && record.messages.assistants[0].completed && !record.messages.assistants[0].retrying && record.messages.idleOutcomes.at(-1) === record.messages.stateOutcome, 'terminal_message_evidence');
+    check(record.correlation.state === 'terminal' && record.correlation.outcome === (scenario === 'success' ? 'succeeded' : 'failed') && (scenario !== 'success' || record.correlation.syntheticTextMatches), 'terminal_turn_correlation');
     record.phase = 'observed';
   } finally {
     if (child && child.exitCode === null && child.signalCode === null) child.kill();
@@ -184,7 +239,15 @@ async function run429Case() {
 try {
   check(process.platform === 'win32' && inside(resolve('tmp'), logRoot), 'fixture_platform_or_log_path');
   await mkdir(logRoot, { recursive: true });
-  await run429Case();
+  const hooks = [];
+  await noRetry.setup({ session: { hook: async (name, callback) => { hooks.push({ name, callback }); } } });
+  check(hooks.length === 1 && hooks[0].name === 'retry', 'offline_hook_registration');
+  for (const decision of [{ retry: true, delay: 1000 }, { retry: false }]) {
+    const event = { decision }; hooks[0].callback(event);
+    check(JSON.stringify(event.decision) === '{"retry":false}', 'offline_hook_veto');
+  }
+  summary.offlineHook = 'pass_single_retry_hook_unconditional_veto';
+  for (const scenario of ['429', '503', 'drop', 'success']) await runCase(scenario);
   summary.policyForwarding = 'pass';
   summary.retryGate = summary.cases.every(record => record.retryGate === 'pass_single_attempt_terminal') ? 'pass' : summary.cases.some(record => record.attempts > 1) ? 'failed' : 'unverified';
   summary.result = summary.retryGate === 'pass' ? 'completed' : 'policy_blocked';

@@ -30,7 +30,14 @@
       "General natural-language OpenCode execution",
       "Supported attachment pipeline",
       "Native model selection"
-    ]
+    ],
+    "retryFollowup": {
+      "greeting": "New owned disposable chat saves corrected preview copy; no reference to removed workflow controls",
+      "ragRequest": "One explicit x8266 MCU question remained unconfirmed. Status-only check and cancellation each attempted once; neither confirmed because private AWS tunnel credentials expired.",
+      "cleanup": "Owned Help me get started!!! test chat remains pending and preserved for reconciliation; no forced reset, replay, archive or changes to prior/user histories.",
+      "screenshot": "Local ignored tmp/agent-retry-browser-checkpoint.png",
+      "next": "Refresh existing datumm CLI login, reopen private tunnel, observe this request before any new send; reconcile cancellation/terminal state, then archive only owned disposable chat."
+    }
   },
   "adminBrowser": {
     "route": "http://localhost:3001/admin/agent-skills",
@@ -54,7 +61,7 @@
   },
   "checks": {
     "agentNodeTests": {
-      "passed": 329,
+      "passed": 335,
       "failed": 0
     },
     "developmentToolTests": {
@@ -78,7 +85,8 @@
       "sessions": 26,
       "journalStore": 13,
       "preparedEvidence": 16,
-      "includedInAgentTotal": true
+      "includedInAgentTotal": true,
+      "turnCorrelation": 6
     },
     "adminNavigationTests": {
       "passed": 3,
@@ -87,7 +95,17 @@
     "nativeUnwiredTypecheck": {
       "command": "npm run typecheck:agent-native",
       "result": "pass",
-      "why": "Application typecheck includes only its import graph. Dedicated check caught and fixed ES2017 BigInt literal compatibility and typed error projection in the unwired foundation."
+      "why": "Dedicated check includes unwired native modules, evidence kernel and runtime retry plugin; existing ES2017 target retained."
+    },
+    "retryFollowup": {
+      "agentNodeTests": "335/335 pass on final source",
+      "correlationGroups": "6/6 pass, including later-busy stale reply and idle-bound regressions",
+      "nativeTypeScript": "pass; includes retry plugin",
+      "applicationTypeScript": "npx tsc --noEmit pass",
+      "scopedEslint": "pass, zero warnings",
+      "wireProbeSyntax": "pass",
+      "productionBuild": "Previous candidate build retained; not rerun for this small copy change and unwired native increment",
+      "independentReview": "No unresolved actionable finding within dedicated one-prompt/tested HTTP retry scope"
     }
   },
   "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation.",
@@ -108,10 +126,17 @@
     ]
   },
   "pendingActivation": [
-    "Owner retained existing zero-cost and ZDR requirements. Profile remains inactive pending required fee, strict retention, native retry, quota and output/cost proof.",
+    "Owner retained zero-cost and strict ZDR. Tested native HTTP session retry veto passes, but actual required fees, account/key retention, quota and live output/cost proof remain open.",
     "Native BFF admission, prompt/current-message terminal correlation, status-only recovery and durable cleanup fencing",
     "Admin browser acceptance blocked by existing parent staff-access unavailable",
     "Shared full native tool/MCP management, isolated Playground and customer memory remain incomplete"
   ],
-  "providerPolicyFollowup": "provider-policy-verification.json and opencode-provider-wire-probe.json: actual local mock controls forwarded; native retried429 despite candidate maxRetries0, so activation stays off."
+  "providerPolicyFollowup": "provider-policy-verification.json and opencode-provider-wire-probe.json: supported native session retry veto yields one attempt and inactive correlated terminal state for429/503/full-body disconnect/synthetic success; retained failed baseline; no real provider activation.",
+  "nativeTurnCorrelation": {
+    "status": "unwired private correlation helper",
+    "unitGroupsPassed": 6,
+    "actualNativeEvidence": "All four isolated wire cases correlate to current persisted prompt/message and matching terminal outcome; exact synthetic success text",
+    "reviewFix": "Reject later busy periods/stale output; native busy precedes inbox-user promotion, confirmed by pinned coordinator/projector and actual observations",
+    "limits": "Dedicated one-prompt, one-assistant, tools-denied contract only; caller still must parse JSON, finalize current evidence, authorize and persist before public release"
+  }
 }

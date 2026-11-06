@@ -440,12 +440,13 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503.",
+        "retryFollowup": "Supported native hook and private terminal correlation implemented/reviewed; actual mock retry/correlation checks pass. Browser greeting passes; RAG status/cancel blocked by expired AWS CLI login. No mounted native cutover."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",
         "record": "docs/agent-experience-upgrade/provider-policy-verification.json",
-        "activation": "Off: policy forwarding observed in local mock, native retries observed; price, strict retention, quota and live output gates remain open",
+        "activation": "Off: supported native HTTP session retry veto verified with current-turn correlation in four isolated mock cases; required fees, strict account/key ZDR, quota and live output remain open",
         "wireEvidence": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json"
       }
     },
