@@ -373,7 +373,7 @@
       "dependencies": "P1.1",
       "owner": "Parent + bounded assigned owners",
       "verification": "Requirement-specific acceptance evidence and regression checks.",
-      "status": "blocked",
+      "status": "verified",
       "dependsOn": [
         "P1.1"
       ],
@@ -404,11 +404,15 @@
       "dependencies": "P1.2 approval; P1.1",
       "owner": "Parent + bounded assigned owners",
       "verification": "Requirement-specific acceptance evidence and regression checks.",
-      "status": "partial",
+      "status": "in_progress",
       "dependsOn": [
         "P1.2"
       ],
-      "claim": null
+      "claim": "Parent",
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "P1.4",
@@ -429,11 +433,15 @@
       "dependencies": "P1.1",
       "owner": "Parent + bounded assigned owners",
       "verification": "Requirement-specific acceptance evidence and regression checks.",
-      "status": "partial",
+      "status": "in_progress",
       "dependsOn": [
         "P1.1"
       ],
-      "claim": null
+      "claim": "Parent",
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "P1.5",
@@ -454,12 +462,16 @@
       "dependencies": "P1.1; P0.5; P1.2",
       "owner": "Parent + bounded assigned owners",
       "verification": "Requirement-specific acceptance evidence and regression checks.",
-      "status": "partial",
+      "status": "in_progress",
       "dependsOn": [
         "P1.1",
         "P0.5"
       ],
-      "claim": null
+      "claim": "Parent",
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "P1.6",
@@ -629,7 +641,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.3b",
@@ -654,7 +670,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.3c",
@@ -679,7 +699,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.3d",
@@ -704,7 +728,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.4a",
@@ -728,7 +756,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.4b",
@@ -756,7 +788,7 @@
     },
     {
       "id": "SPEC.5",
-      "requirement": "Real RAG flow: authenticated user → harness routing → approved retrieval → evidence → authorized LLM → citation validation → persistent history; real provider; reuse APIs; source restrictions; natural routing/catalog resolution/clarify ambiguity/evidence validation/no fabrication; cancel/recover/history; server secrets; preserve services/no second runner.",
+      "requirement": "Real RAG flow: authenticated user \u2192 harness routing \u2192 approved retrieval \u2192 evidence \u2192 authorized LLM \u2192 citation validation \u2192 persistent history; real provider; reuse APIs; source restrictions; natural routing/catalog resolution/clarify ambiguity/evidence validation/no fabrication; cancel/recover/history; server secrets; preserve services/no second runner.",
       "source": {
         "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
         "lines": "415-445"
@@ -950,7 +982,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.7.1",
@@ -1119,7 +1155,7 @@
     },
     {
       "id": "SPEC.8d",
-      "requirement": "Demonstrate genuine skill/MCP/RAG/routing configure→execute→inspect flows using actual selected capability evidence.",
+      "requirement": "Demonstrate genuine skill/MCP/RAG/routing configure\u2192execute\u2192inspect flows using actual selected capability evidence.",
       "source": {
         "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
         "lines": "703-721"
@@ -1235,7 +1271,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.10",
@@ -1263,7 +1303,7 @@
     },
     {
       "id": "SPEC.11",
-      "requirement": "Execute Phases A–G: audit/Phase6, design proposal/review, unified UI, real LLM/RAG, skills/MCP admin, isolated Playground, final browser/integration/types/build/responsive/auth/isolation/limitations; no unrelated deployment/publication.",
+      "requirement": "Execute Phases A\u2013G: audit/Phase6, design proposal/review, unified UI, real LLM/RAG, skills/MCP admin, isolated Playground, final browser/integration/types/build/responsive/auth/isolation/limitations; no unrelated deployment/publication.",
       "source": {
         "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
         "lines": "860-925"
@@ -1306,7 +1346,11 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "SPEC.14",
@@ -2226,7 +2270,11 @@
       "verification": "Review handoff completeness and evidence links.",
       "status": "partial",
       "dependsOn": [],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+      }
     },
     {
       "id": "CONTRACT.PRECEDENCE",
@@ -2306,17 +2354,21 @@
           "Panda-agent/src/ui/workspace.module.css",
           "docs/frontend-theme.md"
         ],
-        "observation": "Workspace/style and theme contract exist; a complete upgrade-state proposal is not verified."
+        "observation": "Complete local design proposal and browser review were explicitly approved by the owner on 6 November 2026."
       },
       "plannedReuseChange": "Include each state and accessibility behavior in desktop/mobile light/dark proposal before customer UI replacement.",
       "dependencies": "P1.1; design approval",
       "owner": "Parent + UI owner",
       "verification": "Reviewable proposal plus keyboard/browser checks; distinguish DOM checks from actual screen-reader, zoom and OS motion tests.",
-      "status": "not_started",
+      "status": "verified",
       "dependsOn": [
         "P1.2"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/design-browser-review.json",
+        "limitations": "Approved concrete local proposals; proposed states are not application/live-runtime acceptance."
+      }
     },
     {
       "id": "ACCEPT.PLAYGROUND.01",
@@ -2470,7 +2522,7 @@
         ],
         "observation": "Configuration UI path exists; end-to-end retest loop is not verified."
       },
-      "plannedReuseChange": "Keep the configuration→discovery→test→inspect→correct→retest loop in Admin, with version/concurrency guards.",
+      "plannedReuseChange": "Keep the configuration\u2192discovery\u2192test\u2192inspect\u2192correct\u2192retest loop in Admin, with version/concurrency guards.",
       "dependencies": "ACCEPT.PLAYGROUND.01-06; P1.6",
       "owner": "Parent + Admin owner",
       "verification": "Complete full correction-and-retest loop and save linked evidence.",

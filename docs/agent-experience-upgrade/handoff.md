@@ -1,92 +1,110 @@
 # Agent Experience Upgrade — current handoff
 
-Date: 6 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Start checkpoint: `8360a46`, implementation `fe9f70f`; working tree was clean.
-Assignment: `C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md`, read in full (1,029 lines).
+6 November 2026. Branch: codex/panda-agent-fastapi-replacement.
+Previous foundation checkpoint: b20b7dd. Use git log -1 for this local checkpoint.
+No push, merge or deployment occurred.
 
-## Current stage
+## Authority and stage
 
-P0 VERIFIED with recorded activation limitations. P1.1 audit/contract checkpoint
-VERIFIED. P1.2 proposal is reviewed in Codex browser and BLOCKED on owner approval.
-P1 is not complete. `requirements.json` is the sole task/coverage authority
-for this assignment; the historical Phase 6 handoff remains historical evidence.
-No production customer UI replacement is authorized before the new design review.
+The adopted complete 1,029-line Downloads master is retained verbatim in
+specification.md. requirements.json is the single 97-row task/coverage authority;
+all embedded Original Product Specification requirements remain mandatory.
+P0 VERIFIED with documented activation limits; P1.1 audit/contract VERIFIED.
+P1.2 complete local proposal APPROVED by the owner's “Approved and procced” reply.
+P1.3 customer integration, P1.4 conversational RAG/native execution and P1.5 Admin
+management remain IN PROGRESS, claimed by Parent. Full P1 is not complete.
+Historical Phase 6 remains IN PROGRESS, last full PASS 5; its broad held-out
+multi-hop gate is unestablished. Preserve its evidence and blocked synthetic
+fixture. Do not replay it, clear its journal or relabel this work as Phase 6 PASS.
 
-## Verified starting state
+## Implemented increment
 
-- Historical Phase 6 remains IN PROGRESS, last full PASS 5. Narrow runtime work,
-  recovery, real MCP/source checks and cleanup were reviewed; the broader held-out
-  multi-hop gate is not established. Preserve all evidence and the contained,
-  blocked synthetic fixture; do not replay it or reset its journal.
-- The active customer caller is the replacement FastAPI path, not OpenCode.
-  The new master supersedes that architecture decision for future work, but
-  reconnecting OpenCode requires verified source/runtime interfaces and preservation
-  of current source, ownership and lifecycle protections.
-- Admin RAG intake/review/inspection exist; evaluation currently returns 503.
-- The separate Mem0 plan has not yet been located. Existing intent memory stays intact.
+- Approved customer shell retains the existing assistant-ui external store.
+  Mandatory mode forms/buttons removed from the surface; old services/histories
+  remain. Memory & Context shows existing owner/thread intent read-only;
+  Settings/Account use existing destinations. Unsupported model selection,
+  attachments and Search are clearly disabled. Send/Stop uses existing cancellation
+  and uncertain status recovery. Drawer focus/inert/Escape and drafts retained.
+  Archive clears an old restoration draft; New Chat disables during history mutation.
+- New /admin/agent-skills and sidebar entry: four compact tabs, existing strictly
+  projected native discovery API, manual refresh and honest unsupported states.
+  No fabricated metadata, credentials or mutations. Existing bundled RAG controls
+  remain linked. Parent Admin staff-access 503 blocks child browser acceptance;
+  preserve the guard and storefront backend instead of bypassing it.
+- Native session-client.ts translates pinned 2.2.2 create/get/active/messages/
+  prompt/interrupt. Durable nonce/scope/binding/title/directory ownership, admission
+  checks, strict loopback/no redirects/bounds/deadline and deny-all policy retained.
+  Acknowledgement is pending; unknown calls never repeat. Actual nullable terminal
+  cursors differ from declarations; regression and actual probe now pass.
+- native-run-store.ts and additive migration 20261106090004 implement private
+  signed owner-scoped IDs, immutable prepared hashes/scope/runtime binding, CAS
+  create/prompt claims, unknown/status-only recovery, source/QA epoch fences,
+  completion/replay and retirement-before-delete guards. Migration NOT APPLIED;
+  candidate/fixtures rolled back. No mounted execution caller uses it.
 
-## Ownership and active work
+## Evidence and limitations
 
-Parent: integration, shared config, architecture, acceptance and handoff.
-Bounded workers delivered coverage, development retrieval/task tools, runtime and
-memory audits, and the design proposal. Parent integrated the explicit dependency
-graph. Independent Sol review found a verification guard defect; it was fixed and
-the failing-before/passing-after regression is included in the six passing tooling tests.
-Native tools accepted explicit Luna/Terra model overrides. Actual execution identity
-is not exposed by the collaboration status metadata; do not infer it from self-report.
+p1-implementation-verification.json separates real browser/deterministic RAG,
+actual provider-free native probe, SQL fixtures and unit results.
+Customer browser: history filter, memory/draft/focus, drawer keyboard edges/Escape,
+auto expansion, source disclosure/copy, saved literal x8266 MCU citation/reload,
+Stop cancellation. Light/dark measured CSS widths 320/768/1024/1440 have no document
+horizontal overflow; DPR about 1.2, override reset. No actual browser zoom,
+new-interface screen-reader speech or reduced-motion switching claim.
+Only the newly created owned disposable chat was archived; old fixtures preserved.
 
-## Next action
+307 Agent Node tests, six development-tool tests, and 36 focused native/navigation
+tests pass (focused native tests overlap the 307). Scoped ESLint and TypeScript pass.
+Final candidate build result is in p1-implementation-verification.json; it is not
+the running server. Existing module-type warnings remain.
+Independent Sol review found four SQL defects; all fixed and re-reviewed clean.
 
-P0 evidence: `p0-verification.json`; 260 existing Panda Agent tests and six new
-development-tool tests pass. Scoped lint passes. All 97 coverage rows have explicit
-dependency arrays. Existing skills were reused; Beads/QMD and optional code-analysis
-packages were evaluated/deferred where redundant. README/AGENTS/CLAUDE now point here.
+opencode-session-probe.json: actual isolated 2.2.2 process, anonymous denial,
+deny-all catalogs, create/owned read/inactive/empty history and unknown interruption
+of an unstarted session. No model prompt/provider call or active inference cancel.
+Child stopped and fixture removed. Global CLI 2.1.3 unchanged.
+native-journal-verification.json: nine rollback-only development SQL groups PASS,
+rows/functions/triggers/ACL unchanged, candidate absent. Four expiry replays use
+injected post-entry delay, not real lock contention. UUID-case duplicate check uses
+an injected scope helper. QA grant revocation tested; real source withdrawal not.
 
-The minimal authenticated discovery adapter is implemented and defaults off.
-`GET /api/admin/panda-agent/runtime` uses real ADMIN admission before and after
-discovery, projects counts only, and never switches customer execution. Tests:
-274 Panda Agent regressions, six development-tool tests, scoped lint, TypeScript
-and the full application build pass; see `p1-contract-verification.json`.
-Independent connected-code review found no actionable defect, with live execution
-and mounted signed-in browser acceptance explicitly unverified.
+## Exact next integration
 
-Global CLI 2.1.3 is
-unchanged; a registry-integrity-verified 2.2.2 Windows binary is isolated under ignored
-`tmp/opencode-2.2.2-review`. The provider-free native probe passed authenticated info,
-anonymous denial, reviewed config and list-shape checks. A genuine startup race
-was caught: raw skill discovery initially showed two builtins before final policy
-activation. The adapter now uses the native model-list activation barrier first;
-actual adapter and direct post-barrier catalogs all returned zero under deny-all.
-The builtin identities match pinned upstream source. This proves neither tool
-execution-policy enforcement nor provider/customer readiness. Its child stopped and fixture
-was removed. `opencode-probe.json` records the precise checks.
+Current customer execution is still deterministic FastAPI MCU. Removing mode
+buttons is not native routing. AWS native containers are stopped; preserved
+lightweight container serves. Read-only inventory: about 1,153 MiB RAM available,
+no swap, 12 GiB disk free. No runtime/config/deployment change was made.
 
-The local design preview is `http://localhost:3000` (review-only
-allowlisted server, not the application). Desktop/mobile light/dark and drawer
-keyboard checks are recorded in `design-browser-review.json`; owner review is
-pending through the asynchronous question. Obtain approval before the unified UI.
-Mem0 search found no separate
-plan; the owner authorized locating/configuring it as needed. Read `memory-contract.md`
-before implementation; no new customer-memory processing or provider call is enabled.
+Read persistence-transition.md, native-session-contract.md and capability-contract.md.
+Extract bounded approved retrieval/current-scope validation from retrieval/answers.ts;
+do not make its finite selector or old controllers the native orchestrator.
+Connect one owned native prompt per natural message with eligible context,
+durable receipts and structured citation release. This limited context-fed increment
+is distinct from full tool routing. Verify provider/permission profile, process
+identity, current-message terminal correlation and owned inactive native removal
+before activation. The native leaf has no removal method yet. Journal inherits QA
+capability and fences canonical product scopes; vendor evidence needs its fence.
+Unknown work is observed, never redispatched. Preserve old pending engine kinds.
+For full tool routing verify native extension/MCP support: preserved rag-mcp POST
+/search is not an MCP endpoint. No second runner/MCP client/tool executor/RAG
+engine/Playground backend. Playground needs a separate test-history/memory namespace.
 
-Continue independent work on a blocked dependency. No deploy,
-push, merge, production mutation or new paid service is authorized by this master.
+No separate Mem0 plan found. Owner authorized locating/configuring as needed;
+do not ask again for that plan as the sole blocker. Prepare documented compatible
+configuration within existing service/privacy limits. Current bounded owner/thread
+intent unchanged; no default hosted extraction/embedding or invented retention.
+Continue independent authorized work when another dependency is blocked.
 
-## Exact continuation
+## Local sessions and ownership
 
-Read the pending owner design reply. Approval applies to this new local proposal,
-not an old Phase 6 draft. On approval, verify P1.2 acceptance and implement P1.3
-against the current workspace using the shared state owner and preserved lifecycle.
-Continue P1.4/P1.5 backend work against the capability contract while UI review is
-pending: these requirements remain partial, including approved live-provider
-configuration, isolated native sessions, current-source fencing and supported
-management. Do not mistake the discovery adapter for an execution cutover.
-
-Local review server: task-owned session `36452` on port 3000, launched with
-`node scripts/agent-design-preview.mjs`. Existing application session `82471` on
-3001 was retained. Starting an additional dev server refused occupied 3001;
-no unrelated process was stopped. Candidate build is isolated in ignored
-`.next-agent-experience-build`; it is not the running 3001 build. Auto-added
-candidate type paths were removed from tsconfig after the successful build.
-The reviewed source is checkpointed locally on this branch; use `git log -1` for
-the checkpoint containing this handoff. No push or deployment occurred.
+UI dev session 16974: localhost:3001, .next-agent-experience-dev, existing launcher,
+deterministic-mcu-v1 mode. Private SSM tunnel 56900: localhost:8182; restored without
+rotating worker secret/journal. Review-only proposal server 36452: localhost:3000.
+Old production session 82471 was stopped after verifying ownership; build retained.
+Candidate: .next-agent-experience-candidate. Generated tsconfig include paths must
+be removed from the checkpoint. Original dirty E: checkout remains preserved.
+Parent owns integration/migrations/config/coverage/checkpoints. Bounded Terra UI
+and Sol native/store outputs integrated. Next bounded Sol worker is extracting the
+shared prepared-evidence kernel; Parent owns native retirement and integration.
+Actual collaboration model
+identity metadata unavailable; explicit overrides do not prove execution identity.

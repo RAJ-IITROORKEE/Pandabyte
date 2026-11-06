@@ -65,7 +65,7 @@
 .questionForm button { padding:10px; border:1px solid var(--divider); border-radius:8px; background:var(--surface); color:var(--foreground); }
 .questionForm button:disabled { opacity:.55; cursor:not-allowed; }
 .questionForm p { font-size:13px; color:var(--muted); }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .sidebarOpen { position: fixed; z-index: 21; inset: 0 auto 0 0; max-width: min(85vw, 360px); box-shadow: 0 0 24px #0003; }
   .backdrop { display: block; position: fixed; z-index: 20; inset: 0; border: 0; background: #0008; }
   .resizer { display: none; }
@@ -119,7 +119,7 @@
 .sourceKind { display: block; margin-bottom: 6px; font-size: 12px; }
 .status { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; color: var(--muted); font-size: 13px; }
 .status button { padding: 6px 10px; border: 1px solid var(--divider); border-radius: 6px; background: var(--surface); color: var(--foreground); cursor: pointer; }
-@media (max-width: 700px) { .viewport { padding: 18px 16px; } .intro { margin-top: 50px; } .suggestions { flex-direction: column; } .composerActions span { font-size: 11px; } }
+@media (max-width: 760px) { .viewport { padding: 18px 16px; } .intro { margin-top: 50px; } .suggestions { flex-direction: column; } .composerActions span { font-size: 11px; } }
 .activity { margin: 20px 0 32px; color: var(--muted); font-size: 13px; }
 .activity p { margin: 0 0 8px; font-weight: 600; }
 .activity summary { width: fit-content; cursor: pointer; }
@@ -145,8 +145,8 @@
 .newChat { background: color-mix(in srgb, var(--foreground) 8%, var(--surface)); border-color: transparent; }
 .composer { border-radius: 18px; box-shadow: 0 1px 3px #0002; }
 .intro .logo { vertical-align: middle; }
-.intro h1 { font-family: Georgia, serif; font-weight: 400; letter-spacing: -.025em; }
-@media (max-height: 700px), (max-width: 700px) {
+.intro h1 { font-weight: 600; letter-spacing: -.025em; }
+@media (max-height: 760px), (max-width: 760px) {
   .thread:has(.intro) { justify-content: flex-start; }
   .thread:has(.intro) .viewport { flex: 1; overflow-y: auto; }
   .thread:has(.intro) .intro { margin: 24px auto; }
@@ -241,3 +241,22 @@
 .componentRow { display: grid; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--divider); }
 .structuredHeader { display: flex; justify-content: space-between; align-items: center; }
 .savedTool { padding: 0.5rem; border: 1px solid var(--divider); border-radius: 0.4rem; }
+
+/* Customer navigation and current-chat context */
+.sideNav { display: grid; gap: 2px; padding: 8px 12px; border-top: 1px solid var(--divider); }
+.sideNav a, .sideNav button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--foreground); font: inherit; font-size: 13px; text-align: left; text-decoration: none; cursor: pointer; }
+.sideNav a:hover, .sideNav button:hover, .sideNav button[aria-current] { background: var(--status-soft); }
+.memoryView { flex: 1; width: min(100% - 48px, 768px); margin: 0 auto; padding: 24px 0; overflow-y: auto; line-height: 1.6; }
+.memoryView[hidden], .thread[hidden] { display: none; }
+.memoryView h1 { font-size: 1.6rem; }
+.memoryView p { color: var(--muted); }
+.memoryView button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--divider); border-radius: 8px; background: var(--surface); color: var(--foreground); font: inherit; cursor: pointer; }
+.memoryCard { padding: 18px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); overflow-wrap: anywhere; }
+.memoryCard h2 { margin-top: 0; font-size: 1rem; }
+.memoryCard h3 { font-size: .9rem; }
+.memoryCard dt { margin-top: 10px; font-weight: 600; }
+.memoryCard dd { margin: 0; }
+.closeSidebar, .menuButton, .composerActions .iconAction, .composerActions .sendButton { min-width: 44px; min-height: 44px; }
+@media (max-width: 760px) { .memoryView { width: calc(100% - 32px); } }
+
+.model button { padding: 0; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; text-align: left; opacity: 1; }

@@ -1,5 +1,5 @@
 // Provider-free, isolated 2.2.2 read-only capability probe. Never logs responses or secrets.
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, basename, relative, isAbsolute } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -7,11 +7,15 @@ import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
 import { createNativeInspectionClient } from '../Panda-agent/src/opencode/inspection-client.ts';
+import { createNativeSessionClient } from '../Panda-agent/src/opencode/session-client.ts';
+import { createNativeReceipt } from '../Panda-agent/src/opencode/session-contracts.ts';
 
 const executable = resolve('tmp/opencode-2.2.2-review/opencode.exe');
-const output = resolve('docs/agent-experience-upgrade/opencode-probe.json');
+if (process.argv.slice(2).some(arg => arg !== '--sessions') || process.argv.length > 3) throw Error('invalid_probe_argument');
+const sessionProbe = process.argv[2] === '--sessions';
+const output = resolve(`docs/agent-experience-upgrade/${sessionProbe ? 'opencode-session-probe' : 'opencode-probe'}.json`);
 const root = await mkdtemp(join(tmpdir(), 'panda-opencode-probe-'));
-const summary = {version: '2.2.2', scope: 'isolated provider-free read-only local probe', checks: {}, noPromptsOrExternalCallsRequested: true, runtimeOrProviderReady: false};
+const summary = {version: '2.2.2', scope: sessionProbe ? 'isolated provider-free disposable native session probe' : 'isolated provider-free read-only local probe', checks: {}, noPromptsOrExternalCallsRequested: true, runtimeOrProviderReady: false};
 let child, exited;
 try {
   for (const dir of ['home', 'programdata', 'tmp', 'config', 'data', 'cache', 'state', 'workspace']) await mkdir(join(root, dir));
@@ -72,6 +76,29 @@ try {
   }
   if (inspected.version !== '2.2.2' || inspected.status !== 'discovery_only' || inspected.execution !== 'not_execution_ready' || inspected.counts.skills !== summary.checks.skills.count || inspected.counts.mcpServers !== summary.checks.mcp.count || inspected.counts.models !== summary.checks.models.count) throw Error('adapter_projection_mismatch');
   summary.checks.applicationInspectionAdapter = {result:'pass', projection:inspected};
+  if (sessionProbe) {
+    if (inspected.counts.models !== 0 || inspected.counts.skills !== 0 || inspected.counts.mcpServers !== 0) throw Error('fixture_not_denied');
+    const receipt = createNativeReceipt('playground', 'a'.repeat(64));
+    const receiptPath = join(root, 'session-receipt.json');
+    await writeFile(receiptPath, JSON.stringify(receipt), {flag:'wx'});
+    const access = async candidate => JSON.stringify(candidate) === await readFile(receiptPath, 'utf8');
+    summary.checks.nativeSessionAdapter = {result:'unverified',phase:'create'};
+    const native = createNativeSessionClient({baseUrl:base, password, directory:join(root,'workspace'), timeoutMs:5000});
+    const created = await native.create(receipt, access);
+    summary.checks.nativeSessionAdapter.phase = 'get';
+    const state = await native.get(receipt, access);
+    summary.checks.nativeSessionAdapter.phase = 'active';
+    const active = await native.active(receipt, access);
+    summary.checks.nativeSessionAdapter.phase = 'messages';
+    const wireHistory = await get(`/api/session/${receipt.sessionID}/message?limit=100&order=asc`);
+    summary.checks.nativeSessionAdapter.messageShape = {status:wireHistory.status, keys:Object.keys(wireHistory.data), count:Array.isArray(wireHistory.data.data)?wireHistory.data.data.length:null, cursor:wireHistory.data.cursor === null ? 'null' : typeof wireHistory.data.cursor, cursorFields:wireHistory.data.cursor && Object.fromEntries(Object.entries(wireHistory.data.cursor).map(([key,value])=>[key,value===null?'null':typeof value]))};
+    const history = await native.messages(receipt, access);
+    summary.checks.nativeSessionAdapter.phase = 'interrupt';
+    if (active.active || history.length || created.outcome !== undefined || state.outcome !== undefined) throw Error('unexpected_disposable_session_state');
+    const interrupt = await native.interrupt(receipt, access);
+    if (interrupt.status === 'cancelled') throw Error('unstarted_session_falsely_cancelled');
+    summary.checks.nativeSessionAdapter = {result:'pass', durableFixtureReceipt:true, createAndOwnedRead:true, active:false, historyCount:history.length, unstartedInterrupt:interrupt.status, admission:'disposable file callback; not real application ownership or database isolation'};
+  }
   summary.result = 'completed';
 } catch (error) { summary.result = 'stopped'; summary.reason = /^[a-z_]+$/.test(error.message) ? error.message : 'probe_error'; }
 finally {

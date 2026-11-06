@@ -1,0 +1,24 @@
+{
+  "migrationSha256": "3811c01c0fad629d560cf427e016df71649ee3733710741d4a40f744faf47d78",
+  "evidenceClass": "synthetic SQL roles and disposable records; rollback only",
+  "expiryDelayEvidence": "injected after entry verification; not real lock contention",
+  "sourceWithdrawalTested": false,
+  "passed": [
+    "exact_admission_cas_and_unknown_never_redispatch",
+    "cancel_requires_matching_native_outcome_and_retire_before_delete",
+    "completion_replay_and_qa_grant_revocation",
+    "qa_epoch_change_denies_prompt_even_without_scopes",
+    "nonexistent_source_scope_denied",
+    "scope_uuid_case_duplicate_rejected_with_injected_scope",
+    "foreign_unsigned_raw_table_and_helper_denied",
+    "legacy_cancel_prepare_and_unretired_delete_blocked",
+    "injected_post_verify_delay_rejects_expired_replays"
+  ],
+  "failed": null,
+  "cleanup": {
+    "rolledBack": true,
+    "rowsUnchanged": true,
+    "schemaFunctionsTriggersAclRestored": true,
+    "candidateTableAbsent": true
+  }
+}

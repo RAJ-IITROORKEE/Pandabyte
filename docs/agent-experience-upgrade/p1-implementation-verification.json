@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-06",
+  "milestone": "Agent Experience Upgrade / P1 implementation increment",
+  "status": "partial",
+  "designApproval": "Owner explicitly approved the local complete proposal: Approved and procced.",
+  "customerBrowser": {
+    "surface": "Codex built-in browser, signed-in real development session, localhost:3001/panda-agent",
+    "implementation": "Approved conversation shell; existing assistant-ui external store retained",
+    "passed": [
+      "History filter non-match and clear",
+      "Memory view hides conversation and preserves typed composer draft",
+      "Back to conversation focuses composer",
+      "Mobile drawer excludes main from accessibility tree, traps edge Tab/Shift-Tab, closes with Escape and returns focus",
+      "Composer expands from approximately 44px to 96px for four lines",
+      "Literal x8266 MCU result, citation and current source disclosure",
+      "Saved result and citation survive reload",
+      "Copy action yields the displayed answer and citation marker",
+      "Send changes to Stop request; stop confirms cancellation before evidence selection and restores draft",
+      "Light and dark layouts have no horizontal document overflow at measured CSS widths 320, 768, 1024 and 1440",
+      "Unavailable model selection, web search and attachments are clearly disabled",
+      "Disposable fixture restore/rearchive preserves new typed draft; temporary draft cleared and fixture absent from recent chats"
+    ],
+    "viewportMeasurement": "Browser DPR about 1.2; requested physical widths 384, 922, 1229 and 1728 measured CSS widths 320, 768, 1024 and 1440. Temporary override reset.",
+    "runtimeEvidenceClass": "Current deterministic MCU RAG and persistence only; this is not native LLM generation or token streaming acceptance.",
+    "cleanup": "Only the newly created owned disposable chat was archived. Prior Phase 6 histories and blocked fixtures were preserved.",
+    "notClaimed": [
+      "Actual browser zoom",
+      "Screen-reader speech for the new interface",
+      "Runtime reduced-motion switching",
+      "General natural-language OpenCode execution",
+      "Supported attachment pipeline",
+      "Native model selection"
+    ]
+  },
+  "adminBrowser": {
+    "route": "http://localhost:3001/admin/agent-skills",
+    "observed": "Existing parent Admin layout returns Staff access is unavailable before rendering the child page.",
+    "acceptance": "blocked; rendered tabs, keyboard interaction and actual discovery states not browser-verified",
+    "preserved": "No auth bypass, backend switch, role mutation or fake discovery response was introduced to pass this check."
+  },
+  "nativeSessions": {
+    "record": "opencode-session-probe.json",
+    "evidenceClass": "Actual pinned 2.2.2 disposable provider-free process with file receipt callback; not real Clerk/database integration",
+    "limits": "No prompt or provider call, live active inference cancellation, customer cutover, runtime cleanup API or permission certification"
+  },
+  "nativeJournal": {
+    "record": "native-journal-verification.json",
+    "groupsPassed": 9,
+    "applied": false,
+    "evidenceClass": "Selected development PostgreSQL, synthetic authenticated SQL subjects and isolated fixtures; candidate migration and fixtures rolled back",
+    "limits": "Injected post-entry expiry delay is not real lock contention; UUID duplicate check uses an injected scope helper; real canonical-source withdrawal was not performed."
+  },
+  "checks": {
+    "agentNodeTests": {
+      "passed": 307,
+      "failed": 0
+    },
+    "developmentToolTests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "nativeAndAdminNavigationFocusedTests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "coverage": "97 tasks validate; P1.3, P1.4 and P1.5 remain in progress",
+    "finalLintTypesBuild": {
+      "scopedEslint": "pass",
+      "typescript": "pass",
+      "productionBuild": "pass",
+      "dist": ".next-agent-experience-candidate",
+      "buildId": "fqJuLqkWN80eb0Z6Oli4_",
+      "runningBuild": false
+    },
+    "sharedInspectionProjectionTests": {
+      "passed": 14,
+      "failed": 0
+    }
+  },
+  "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation."
+}

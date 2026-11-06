@@ -4,27 +4,23 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, useSyncExternalSt
 import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {parseVendorCitation,parseCompositeVendorCitation,type VendorCitation} from "../diagnostics/contracts";
 import type {ToolActivity} from '../agentic/contracts';
-import {StructuredTaskForm} from './structured-task-form';
 import { AssistantRuntimeProvider, ComposerPrimitive, MessagePrimitive, ThreadPrimitive, useAui, useAuiState, useExternalStoreRuntime, WebSpeechDictationAdapter, type AppendMessage, type ThreadMessageLike } from "@assistant-ui/react";
-import { Archive, ArchiveRestore, ArrowUp, Check, ChevronDown, Copy, ExternalLink, Globe, LogOut, Menu, MoreHorizontal, Search, Settings, SquarePen, Trash2, UserRound, X, Plus, Mic, MicOff, FileText, Volume2, Square } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowUp, Brain, Check, ChevronDown, Copy, ExternalLink, Globe, LogOut, Menu, MoreHorizontal, Search, Settings, SquarePen, Trash2, UserRound, X, Plus, Mic, MicOff, FileText, Volume2, Square } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import styles from "./workspace.module.css";
 import { readChatStream, type ContextSummary, type Stage } from "./chat-stream";
 import { publicSearchCitationUrl, webSearchSection } from "../search/citation-url";
 import { MarkdownText } from "./markdown-text";
 import { CitedMarkdown } from "./cited-markdown";
-import { validateLocalFiles } from "./composer-helpers";
 import { createGuardedDictation } from "./guarded-dictation";
 import { Shimmer } from "./ai-elements/shimmer";
 import { createReadAloud } from "./read-aloud";
 import { clearActiveChat, readActiveChat, writeActiveChat } from "./active-chat";
 import { completedAttempt, createAttemptGuard } from "./cancel-attempt";
-import { GuideForm, type ProjectMemory } from "./guide-form";
+import type { ProjectMemory } from "./guide-form";
 import { guideDisabled, diagnosticDisabled, messagePayload, messageQuestion, type MessageInput } from "./guide-input";
-const DiagnosticForm=dynamic(()=>import("./diagnostic-form").then(module=>module.DiagnosticForm),{loading:()=> <p role="status">Loading diagnostics…</p>});
 
 type Citation = { id: string; title: string; sourceUrl: string; quote: string; sectionPath: string[]; capturedAt: string } | VendorCitation;
 type ChatMessage = { id: string; role: "user" | "assistant"; text: string; createdAt: string; citations: Citation[]; toolCards?: {toolId:ToolActivity['toolId'];state:'complete'|'unknown'}[] };
@@ -44,10 +40,10 @@ async function readJson(response: Response): Promise<unknown> {
 const MIN_WIDTH = 220, MAX_WIDTH = 360;
 const clampWidth = (width: number) => Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
 const convertMessage = (message: ChatMessage): ThreadMessageLike => ({ id: message.id, role: message.role, content: [{ type: "text", text: message.text }], createdAt: new Date(message.createdAt) });
-const subscribeMobile = (callback: () => void) => { const media = window.matchMedia("(max-width: 700px)"); media.addEventListener("change", callback); return () => media.removeEventListener("change", callback); };
+const subscribeMobile = (callback: () => void) => { const media = window.matchMedia("(max-width: 760px)"); media.addEventListener("change", callback); return () => media.removeEventListener("change", callback); };
 const subscribeVoiceSupport = () => () => {};
 const speechSupported = () => "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
-const isMobile = () => window.matchMedia("(max-width: 700px)").matches;
+const isMobile = () => window.matchMedia("(max-width: 760px)").matches;
 const suggestions = ["What is the Cytron Maker UNO?", "Tell me about the xC5 board", "What does the WS2812B ring listing say?"];
 function tabStorage(): Storage | null { try { return window.sessionStorage; } catch { return null; } }
 
@@ -73,16 +69,9 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
   const [selected, setSelected] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [projectMemory, setProjectMemory] = useState<ProjectMemory | null>(null);
-  const [guideOpen, setGuideOpen] = useState(false);
-  const [diagnosticOpen,setDiagnosticOpen]=useState(false);
-  const [structuredOpen,setStructuredOpen]=useState(false);
-  const structuredTrigger=useRef<HTMLButtonElement>(null);
-  const restoreStructuredFocus=useRef(false);
-  const previousMode=useRef<'guide'|'diagnostic'|null>(null);
+  const [view, setView] = useState<"chat" | "memory">("chat");
+  const viewTitle = useRef<HTMLHeadingElement>(null);
   const [toolActivity,setToolActivity]=useState<ToolActivity[]>([]);
-  const closeStructured=()=>{setStructuredOpen(false);setGuideOpen(previousMode.current==='guide');setDiagnosticOpen(previousMode.current==='diagnostic');structuredTrigger.current?.focus();};
-  const [transferring,setTransferring]=useState(false);
-  const transferRef=useRef(false);
   const [activity, setActivity] = useState<Stage[]>([]);
   const [restoreDraft, setRestoreDraft] = useState<{ text: string; id: number } | null>(null);
   const requestController = useRef<AbortController | null>(null);
@@ -109,7 +98,6 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
   const [error, setError] = useState("");
   const [uncertain, setUncertain] = useState(false);
   useEffect(() => { if (!busy && uncertain) statusButton.current?.focus(); }, [busy, uncertain]);
-  useEffect(() => { if (!busy && !mutating && !uncertain && restoreStructuredFocus.current) { restoreStructuredFocus.current=false; structuredTrigger.current?.focus(); } }, [busy,mutating,uncertain]);
   const generation = useRef(0);
   const busyRef = useRef(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -144,9 +132,9 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
   }, [archived, user.id]);
 
   async function loadChat(id: string) {
-    if (busyRef.current || transferRef.current || cancelBusy.current || chatLoading.current) return;
+    if (busyRef.current || cancelBusy.current || chatLoading.current) return;
     chatLoading.current = true;
-    if (selected?.id !== id) { setRestoreDraft(null); currentAttempt.current = null; setGuideOpen(false); setDiagnosticOpen(false); setStructuredOpen(false); setProjectMemory(null); }
+    if (selected?.id !== id) { setRestoreDraft(null); currentAttempt.current = null; setProjectMemory(null); }
     const queried = currentAttempt.current?.threadId === id ? currentAttempt.current : null;
     speech?.stop();
     dictation.cancel();
@@ -168,19 +156,6 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
     finally { chatLoading.current = false; if (active.current && ticket === generation.current) setLoading(false); }
   }
 
-  async function ensureDiagnosticThread(signal?:AbortSignal):Promise<string>{
-    if(previewReadOnly||busyRef.current||cancelBusy.current||chatLoading.current||loading||mutating||uncertain||selectedArchived||(selected&&selected.status!=="idle"))throw Error("Chat unavailable");
-    if(selected)return selected.id;
-    const ticket=generation.current,controller=new AbortController(),abort=()=>controller.abort();requestController.current=controller;
-    signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
-    try{
-      const response=await fetch("/api/panda-agent/chats",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({}),cache:"no-store",signal:controller.signal});
-      if(!response.ok)throw Error("Chat unavailable");
-      const {thread}=await readJson(response) as {thread:Chat};
-      if(!active.current||controller.signal.aborted||ticket!==generation.current||!thread||typeof thread.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(thread.id)||thread.status!=="idle")throw Error("Chat unavailable");
-      writeActiveChat(tabStorage(),user.id,thread.id);setSelected(thread);setThreads(previous=>[thread,...previous.filter(item=>item.id!==thread.id)]);return thread.id;
-    }finally{signal?.removeEventListener('abort',abort);if(requestController.current===controller)requestController.current=null;}
-  }
   async function onNew(message: AppendMessage) {
     const question = message.content.filter(part => part.type === "text").map(part => part.text).join("\n").trim();
     await sendMessage({ question, webSearch });
@@ -188,7 +163,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
   async function sendMessage(input: MessageInput) {
     if (("guide" in input && !guidesEnabled)||("diagnostic" in input&&!diagnosticsEnabled)||('agentic' in input&&!agenticEnabled)) return;
     const question = messageQuestion(input);
-    if (!question || previewReadOnly || busyRef.current || transferRef.current || loading || mutating || selectedArchived || uncertain || (selected && selected.status !== "idle")) return;
+    if (!question || previewReadOnly || busyRef.current || loading || mutating || selectedArchived || uncertain || (selected && selected.status !== "idle")) return;
     if (question.length > 2000) { setError("Messages must be 2,000 characters or fewer. Shorten your message and try again."); return; }
     if ("question" in input && input.webSearch && question.length > 400) { setError("Web search accepts up to 400 characters. Shorten your public question or turn Web search off."); return; }
     const optimisticId = crypto.randomUUID();
@@ -243,7 +218,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
     } finally { if (!attempt || attempts.current.current(attempt)) { if (completed) currentAttempt.current = null; requestController.current = null; busyRef.current = false; if (active.current) setBusy(false); } }
   }
   async function cancelRequest() {
-    if (cancelBusy.current || transferRef.current || loading || chatLoading.current) return;
+    if (cancelBusy.current || loading || chatLoading.current) return;
     const attempt = currentAttempt.current;
     if (!attempt && busyRef.current) { requestController.current?.abort(); return; }
     const threadId = attempt?.threadId ?? selected?.id;
@@ -264,20 +239,20 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
     } catch {
       if (active.current) { setError("Cancellation could not be confirmed. Check status or cancel the pending request again."); setUncertain(true); }
     } finally {
-      if (confirmed) { currentAttempt.current = null; if(structuredOpen) restoreStructuredFocus.current=true; }
+      if (confirmed) currentAttempt.current = null;
       requestController.current = null; busyRef.current = false; cancelBusy.current = false;
       if (active.current) { setBusy(false); setMutating(false); }
     }
   }
   const baseDisabled = previewReadOnly || loading || mutating || selectedArchived || uncertain || selected?.status === "pending" || selected?.status === "blocked";
-  const composerDisabled=baseDisabled||transferring;
-  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: composerDisabled || guideOpen || diagnosticOpen || structuredOpen, adapters: { dictation: dictation.adapter } });
+  const composerDisabled=baseDisabled;
+  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: composerDisabled, adapters: { dictation: dictation.adapter } });
 
   useEffect(() => {
     if (!sidebarOpen && restoreFocus.current) { restoreFocus.current = false; toggleRef.current?.focus(); }
-    if (sidebarOpen && window.matchMedia("(max-width: 700px)").matches) closeRef.current?.focus();
+    if (sidebarOpen && window.matchMedia("(max-width: 760px)").matches) closeRef.current?.focus();
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (!sidebarOpen || !window.matchMedia("(max-width: 700px)").matches) return;
+      if (!sidebarOpen || !window.matchMedia("(max-width: 760px)").matches) return;
       if (event.key === "Tab") {
         const items = [...(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), summary, [tabindex="0"]') ?? [])].filter(item => {
           const closedMenu=item.closest('details:not([open])');
@@ -300,9 +275,9 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
   }
   function resizeWithPointer(event: PointerEvent<HTMLDivElement>) { if (event.buttons === 1) { event.currentTarget.setPointerCapture(event.pointerId); setWidth(clampWidth(event.clientX)); } }
   async function handleSignOut() { setSigningOut(true); setSignOutError(""); try { await signOut({ redirectUrl: "/" }); } catch { setSigningOut(false); setSignOutError("Could not sign you out. Please try again."); } }
-  function newChat() { if (busyRef.current || transferRef.current || loading || mutating) return; resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setProjectMemory(null); setGuideOpen(false); setDiagnosticOpen(false); setStructuredOpen(false); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
+  function newChat() { if (busyRef.current || loading || mutating) return; setView("chat"); if (mobile) { restoreFocus.current = true; setSidebarOpen(false); } resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setProjectMemory(null); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
   async function changeChat(thread: Chat, action: "archive" | "restore" | "delete") {
-    if (busyRef.current || transferRef.current || loading || mutating || thread.status !== "idle") return;
+    if (busyRef.current || loading || mutating || thread.status !== "idle") return;
     if (action === "delete" && !window.confirm(`Permanently delete "${thread.title || "New chat"}"? This cannot be undone.`)) return;
     setMutating(true); setHistoryError("");
     try {
@@ -315,7 +290,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
       if (selected?.id === thread.id) {
         clearActiveChat(tabStorage(), user.id);
         speech?.stop();
-        dictation.cancel(); generation.current++; setComposerEpoch(previous => previous + 1); setSelected(null); setProjectMemory(null); setGuideOpen(false); setDiagnosticOpen(false); setStructuredOpen(false); setSelectedArchived(false); setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(false); setWebSearch(false);
+        dictation.cancel(); generation.current++; setRestoreDraft(null); setComposerEpoch(previous => previous + 1); setSelected(null); setProjectMemory(null); setSelectedArchived(false); setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(false); setWebSearch(false);
       }
     } catch { if (active.current) setHistoryError(`Could not ${action} this chat. Please try again.`); }
     finally { if (active.current) setMutating(false); }
@@ -326,24 +301,24 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, a
     {sidebarOpen && <button className={styles.backdrop} type="button" aria-label="Close conversation sidebar" onClick={() => { restoreFocus.current = true; setSidebarOpen(false); }} />}
     <aside onKeyDownCapture={event => { if (event.key !== "Escape" || !(event.target instanceof Element)) return; const menu = event.target.closest("details[open]"); if (menu instanceof HTMLDetailsElement) { event.preventDefault(); event.stopPropagation(); menu.open = false; menu.querySelector<HTMLElement>("summary")?.focus(); } }} ref={sidebarRef} id="agent-sidebar" className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`} style={{ width }} role={mobile && sidebarOpen ? "dialog" : undefined} aria-modal={mobile && sidebarOpen ? true : undefined} aria-label="Conversation sidebar">
       <div className={styles.sidebarTop}><div className={styles.sidebarHeading}><Link href="/" className={styles.brand} aria-label="PandaByte home"><span className={styles.logoSmall}><Image src="/brand/pandabyte-logo.png" alt="" width={558} height={564} /></span><span>PandaByte</span></Link><button ref={closeRef} className={styles.closeSidebar} type="button" aria-label="Close sidebar" onClick={() => { restoreFocus.current = true; setSidebarOpen(false); }}><X size={19} /></button></div>
-        <button className={styles.newChat} disabled={busy || loading || transferring} type="button" onClick={newChat}><SquarePen size={18} /> New chat</button>
+        <button className={styles.newChat} disabled={busy || loading || mutating} type="button" onClick={newChat}><SquarePen size={18} /> New chat</button>
         <label className={styles.search}><Search size={16} aria-hidden="true"/><span className={styles.srOnly}>Search chats</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search chats" /></label>
-        <div className={styles.historyHeading}><p className={styles.sidebarLabel}>{archived ? "Archived chats" : "Recent chats"}</p><button type="button" disabled={busy || loading || mutating || transferring} onClick={() => { setThreads([]); setLoading(true); setArchived(!archived); setQuery(""); setHistoryError(""); }}>{archived ? "Back to chats" : "Archived"}</button></div>
+        <div className={styles.historyHeading}><p className={styles.sidebarLabel}>{archived ? "Archived chats" : "Recent chats"}</p><button type="button" disabled={busy || loading || mutating} onClick={() => { setThreads([]); setLoading(true); setArchived(!archived); setQuery(""); setHistoryError(""); }}>{archived ? "Back to chats" : "Archived"}</button></div>
         {historyError && <p className={styles.error} role="alert">{historyError}</p>}
         <nav className={styles.history} aria-label={archived ? "Archived chats" : "Recent chats"}>{threads.filter(thread => thread.title.toLowerCase().includes(query.toLowerCase())).map(thread => <div className={styles.historyRow} key={thread.id}>
-          <button className={styles.historySelect} type="button" disabled={busy || mutating || transferring} aria-current={selected?.id === thread.id ? "page" : undefined} onClick={() => { void loadChat(thread.id); if (window.matchMedia("(max-width: 700px)").matches) { restoreFocus.current = true; setSidebarOpen(false); } }}><span className={styles.historyTitle}>{thread.title || "New chat"}</span>{thread.status !== "idle" && <span className={styles.historyStatus}>{thread.status}</span>}</button>
+          <button className={styles.historySelect} type="button" disabled={busy || mutating} aria-current={selected?.id === thread.id ? "page" : undefined} onClick={() => { setView("chat"); void loadChat(thread.id); if (window.matchMedia("(max-width: 760px)").matches) { restoreFocus.current = true; setSidebarOpen(false); } }}><span className={styles.historyTitle}>{thread.title || "New chat"}</span>{thread.status !== "idle" && <span className={styles.historyStatus}>{thread.status}</span>}</button>
           <details className={styles.chatMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.menuTrigger} aria-label={`Actions for ${thread.title || "New chat"}`}><MoreHorizontal size={18} /></summary><div className={styles.menuPanel}>
-            <button type="button" aria-label={archived ? "Restore chat" : "Archive chat"} disabled={busy || loading || mutating || transferring || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, archived ? "restore" : "archive"); }}>{archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}{archived ? "Restore" : "Archive"}</button>
-            <button type="button" aria-label="Delete chat" disabled={busy || loading || mutating || transferring || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, "delete"); }}><Trash2 size={16} />Delete</button>
+            <button type="button" aria-label={archived ? "Restore chat" : "Archive chat"} disabled={busy || loading || mutating || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, archived ? "restore" : "archive"); }}>{archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}{archived ? "Restore" : "Archive"}</button>
+            <button type="button" aria-label="Delete chat" disabled={busy || loading || mutating || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, "delete"); }}><Trash2 size={16} />Delete</button>
           </div></details></div>)}{!loading && !historyError && !threads.length && <p>{archived ? "No archived chats." : "No saved chats yet."}</p>}{!loading && threads.length > 0 && !threads.some(thread => thread.title.toLowerCase().includes(query.toLowerCase())) && <p>No chats match your search.</p>}</nav>
-      </div><div className={styles.account}><details className={styles.accountMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.accountTrigger} aria-label="Account menu"><span className={styles.avatar} aria-hidden="true"><UserAvatar rounded /></span><span className={styles.accountName}>{displayName}</span><MoreHorizontal size={18} /></summary><div className={styles.accountPanel}><div className={styles.identity}><span className={styles.identityText}><strong>{displayName}</strong><span>{user.primaryEmailAddress?.emailAddress ?? "Signed in"}</span></span></div><nav className={styles.accountLinks} aria-label="Account"><Link href="/account"><UserRound size={16} /> Account</Link><Link href="/account/settings"><Settings size={16} /> Settings</Link>{canManageSkills && <><Link href="/panda-agent/skills"><Settings size={16} /> Manage agent skills</Link><Link href="/panda-agent/documentation"><FileText size={16}/> Review vendor documentation</Link></>}</nav>{signOutError && <p className={styles.error} role="alert">{signOutError}</p>}<button className={styles.logout} type="button" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut size={16} />{signingOut ? "Signing out…" : "Logout"}</button></div></details></div>
+      </div><nav className={styles.sideNav} aria-label="Workspace"><button type="button" aria-current={view === "memory" ? "page" : undefined} onClick={() => { setView("memory"); if (mobile) setSidebarOpen(false); requestAnimationFrame(() => viewTitle.current?.focus()); }}><Brain size={17} aria-hidden="true" /> Memory &amp; context</button><Link href="/account/settings"><Settings size={17} aria-hidden="true" /> Settings</Link><Link href="/account"><UserRound size={17} aria-hidden="true" /> Account</Link></nav><div className={styles.account}><details className={styles.accountMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.accountTrigger} aria-label="Account menu"><span className={styles.avatar} aria-hidden="true"><UserAvatar rounded /></span><span className={styles.accountName}>{displayName}</span><MoreHorizontal size={18} /></summary><div className={styles.accountPanel}><div className={styles.identity}><span className={styles.identityText}><strong>{displayName}</strong><span>{user.primaryEmailAddress?.emailAddress ?? "Signed in"}</span></span></div><nav className={styles.accountLinks} aria-label="Account"><Link href="/account"><UserRound size={16} /> Account</Link><Link href="/account/settings"><Settings size={16} /> Settings</Link>{canManageSkills && <><Link href="/panda-agent/skills"><Settings size={16} /> Manage agent skills</Link><Link href="/panda-agent/documentation"><FileText size={16}/> Review vendor documentation</Link></>}</nav>{signOutError && <p className={styles.error} role="alert">{signOutError}</p>}<button className={styles.logout} type="button" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut size={16} />{signingOut ? "Signing out…" : "Logout"}</button></div></details></div>
     </aside>
     {sidebarOpen && <div className={styles.resizer} role="separator" aria-label="Resize conversation sidebar" aria-controls="agent-sidebar" aria-orientation="vertical" aria-valuemin={MIN_WIDTH} aria-valuemax={MAX_WIDTH} aria-valuenow={width} tabIndex={0} onKeyDown={resizeWithKeyboard} onPointerDown={resizeWithPointer} onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) setWidth(clampWidth(event.clientX)); }} onPointerUp={event => event.currentTarget.releasePointerCapture(event.pointerId)} />}
-    <main id="main" tabIndex={-1} className={styles.main} inert={mobile && sidebarOpen}><header className={styles.header}><div className={styles.headerStart}><button ref={toggleRef} className={styles.menuButton} type="button" aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen} aria-controls="agent-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><div className={styles.model}><strong>Panda Agent</strong></div><span className={styles.badge}>Preview</span></div><ThemeToggle /></header>
-      <ThreadPrimitive.Root className={styles.thread}><ThreadPrimitive.Viewport className={styles.viewport}>
-        {!messages.length && !busy && <Welcome disabled={Boolean(composerDisabled || guideOpen || diagnosticOpen || structuredOpen)} />}
+    <main id="main" tabIndex={-1} className={styles.main} inert={mobile && sidebarOpen}><header className={styles.header}><div className={styles.headerStart}><button ref={toggleRef} className={styles.menuButton} type="button" aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen} aria-controls="agent-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><div className={styles.model}><strong>Panda Agent</strong><button type="button" disabled title="Model selection is unavailable">Model selection unavailable</button></div><span className={styles.badge}>Preview</span></div><ThemeToggle /></header>
+      <section className={styles.memoryView} hidden={view !== "memory"} aria-labelledby="memory-title"><h1 id="memory-title" ref={viewTitle} tabIndex={-1}>Memory &amp; context</h1><p>Review the project context saved with the selected conversation.</p>{!selected ? <p>Select a saved chat to review its project context.</p> : loading ? <p role="status">Loading chat context...</p> : projectMemory ? <div className={styles.memoryCard}><h2>Current chat project context</h2><p>These details were supplied in this chat and are not verified hardware facts.</p><dl><dt>Goal</dt><dd>{projectMemory.intent.goal}</dd><dt>Board or model</dt><dd>{projectMemory.intent.board}</dd>{projectMemory.intent.revision && <><dt>Revision</dt><dd>{projectMemory.intent.revision}</dd></>}{projectMemory.intent.components.length > 0 && <><dt>Components</dt><dd>{projectMemory.intent.components.join(", ")}</dd></>}</dl>{projectMemory.questions.length > 0 && <><h3>Open questions</h3><ul>{projectMemory.questions.map((question, index) => <li key={index}>{question}</li>)}</ul></>}</div> : <p>No project context is saved for this chat.</p>}<p>Editing individual memories is not available here. Chat history can be archived or deleted from its menu.</p><button type="button" onClick={() => { setView("chat"); requestAnimationFrame(() => { const input = document.querySelector<HTMLTextAreaElement>('[aria-label="Message Panda Agent"]'); if (input && !input.disabled) input.focus(); else document.getElementById("main")?.focus(); }); }}>Back to conversation</button></section><ThreadPrimitive.Root className={styles.thread} hidden={view !== "chat"}><ThreadPrimitive.Viewport className={styles.viewport}>
+        {!messages.length && !busy && <Welcome disabled={Boolean(composerDisabled)} />}
         <div className={styles.messageList}><ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage: () => <AssistantMessage messages={messages} speech={speech} speaking={speaking} /> }} />{busy && toolActivity.length > 0 && <ToolProgress tools={toolActivity} />}{(busy || activity.length > 0) && <Activity stages={activity} context={context} busy={busy} complete={activityComplete} />}</div>
-      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <div className={styles.status} role="status"><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result."}</span><button ref={statusButton} type="button" disabled={busy || mutating || transferring} onClick={() => void loadChat(selected.id)}>Check status</button>{(uncertain || selected.status === "pending") && <button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button>}</div>}{busy && <button type="button" disabled={loading || mutating} onClick={() => void cancelRequest()}>Cancel request</button>}{guidesEnabled && <button className={styles.workflowToggle} type="button" aria-expanded={guideOpen} disabled={busy || composerDisabled} onClick={() => {setDiagnosticOpen(false);setStructuredOpen(false);setGuideOpen(!guideOpen);}}>{guideOpen ? "Hide project guide" : "Project guide"}</button>}{guideOpen && <GuideForm memory={projectMemory} disabled={Boolean(busy || composerDisabled)} onClose={() => setGuideOpen(false)} onSubmit={guide => void sendMessage({ guide })} />}{diagnosticsEnabled && <button className={styles.workflowToggle} type="button" aria-expanded={diagnosticOpen} disabled={busy || composerDisabled} onClick={()=>{setGuideOpen(false);setStructuredOpen(false);setDiagnosticOpen(!diagnosticOpen);}}>{diagnosticOpen?"Hide diagnostics":"Diagnose error"}</button>}{diagnosticOpen && <DiagnosticForm disabled={Boolean(busy || baseDisabled)} threadId={selected?.id??null} ensureThread={ensureDiagnosticThread} onTransferStateChange={value=>{transferRef.current=value;setTransferring(value);}} onClose={()=>setDiagnosticOpen(false)} onSubmit={diagnostic=>sendMessage({diagnostic})}/>}{agenticEnabled && <button ref={structuredTrigger} className={styles.workflowToggle} type="button" aria-expanded={structuredOpen} disabled={busy || composerDisabled} onClick={()=>{if(structuredOpen){closeStructured();}else{previousMode.current=guideOpen?'guide':diagnosticOpen?'diagnostic':null;setGuideOpen(false);setDiagnosticOpen(false);setStructuredOpen(true);}}}>{structuredOpen?'Hide structured task':'Structured task'}</button>}<div hidden={!structuredOpen}><StructuredTaskForm disabled={Boolean(busy || composerDisabled)} onClose={closeStructured} onSubmit={agentic=>void sendMessage({agentic})}/></div><div hidden={guideOpen || diagnosticOpen || structuredOpen}><ChatComposer key={composerEpoch} restoreDraft={restoreDraft} webSearch={webSearch} disabled={busy || composerDisabled || guideOpen || diagnosticOpen || structuredOpen} cancelDictation={dictation.cancel} /></div><p className={styles.disclaimer}>Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
+      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <div className={styles.status} role="status"><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result."}</span><button ref={statusButton} type="button" disabled={busy || mutating} onClick={() => void loadChat(selected.id)}>Check status</button>{(uncertain || selected.status === "pending") && <button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button>}</div>}<ChatComposer key={composerEpoch} restoreDraft={restoreDraft} webSearch={webSearch} disabled={busy || composerDisabled} running={busy} cancelDisabled={loading || mutating} onCancel={() => void cancelRequest()} cancelDictation={dictation.cancel} /><p className={styles.disclaimer}>Responses may be limited. Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
     </main></div></AssistantRuntimeProvider>;
 }
 
@@ -354,36 +329,24 @@ function closeMenuOnEscape(event: KeyboardEvent<HTMLDetailsElement>) {
   event.currentTarget.querySelector<HTMLElement>("summary")?.focus();
 }
 
-function ChatComposer({ restoreDraft, webSearch, disabled, cancelDictation }: { restoreDraft: { text: string; id: number } | null; webSearch: boolean; disabled: boolean; cancelDictation: () => void }) {
+function ChatComposer({ restoreDraft, webSearch, disabled, running, cancelDisabled, onCancel, cancelDictation }: { restoreDraft: { text: string; id: number } | null; webSearch: boolean; disabled: boolean; running: boolean; cancelDisabled: boolean; onCancel: () => void; cancelDictation: () => void }) {
   const text = useAuiState(state => state.composer.text);
   const listening = useAuiState(state => state.composer.dictation != null);
   const aui = useAui();
-  const [files, setFiles] = useState<File[]>([]);
-  const [fileError, setFileError] = useState("");
   const voiceSupported = useSyncExternalStore(subscribeVoiceSupport, WebSpeechDictationAdapter.isSupported, () => false);
-  const fileInput = useRef<HTMLInputElement>(null);
   useEffect(() => { if (restoreDraft) aui.thread.composer().setText(restoreDraft.text); }, [aui, restoreDraft]);
   useEffect(() => { if (disabled) cancelDictation(); }, [disabled, cancelDictation]);
   const tooLong = text.trim().length > 2000;
   const invalidSearch = webSearch && (text.trim().length > 400 || /[\r\n]/.test(text.trim()));
-  function selectFiles(list: FileList | null) {
-    if (!list?.length) return;
-    const incoming = Array.from(list);
-    if (!validateLocalFiles(files.length, incoming)) {
-      setFileError("Choose up to 3 PNG, JPEG, WebP or text files, each 5 MB or less."); return;
-    }
-    setFiles(previous => [...previous, ...incoming]); setFileError("");
-  }
-  return <ComposerPrimitive.Root className={styles.composer} onSubmit={event => { if (invalidSearch || tooLong || files.length) event.preventDefault(); else cancelDictation(); }}>
-    {files.length > 0 && <div className={styles.attachments} aria-label="Selected files">{files.map((file, index) => <span className={styles.attachment} key={`${file.name}-${file.lastModified}-${index}`}><FileText size={16} aria-hidden="true"/><span>{file.name}</span><button type="button" aria-label={`Remove ${file.name}`} onClick={() => setFiles(previous => previous.filter((_, i) => i !== index))}><X size={14}/></button></span>)}</div>}
-    <ComposerPrimitive.Input autoFocus={Boolean(restoreDraft) && !disabled} aria-label="Message Panda Agent" aria-describedby="composer-notice" aria-invalid={invalidSearch || tooLong || undefined} placeholder={webSearch ? "Ask a public web question…" : "Ask anything…"} maxLength={webSearch ? 400 : 2000} rows={2} onKeyDown={event => { if ((invalidSearch || tooLong || files.length > 0) && event.key === "Enter" && !event.shiftKey) event.preventDefault(); }} />
-    <div className={styles.composerActions}><div className={styles.actionGroup}><input ref={fileInput} className={styles.srOnly} tabIndex={-1} aria-hidden="true" type="file" accept="image/png,image/jpeg,image/webp,text/plain" multiple onChange={event => { selectFiles(event.target.files); event.target.value = ""; }} /><button className={styles.iconAction} type="button" aria-label="Add files" title="Add files" disabled={disabled} onClick={() => fileInput.current?.click()}><Plus size={19}/></button><button className={styles.webSearchToggle} type="button" aria-pressed={false} aria-describedby="composer-notice" title="Web search is unavailable" disabled><Globe size={16} aria-hidden="true" /> Search</button></div><div className={styles.actionGroup}>{listening ? <ComposerPrimitive.StopDictation className={styles.iconAction} aria-label="Stop dictation" aria-describedby="voice-notice" disabled={disabled}><MicOff size={18}/></ComposerPrimitive.StopDictation> : voiceSupported ? <ComposerPrimitive.Dictate className={styles.iconAction} aria-label="Start voice dictation" aria-describedby="voice-notice" disabled={disabled}><Mic size={18}/></ComposerPrimitive.Dictate> : <button className={styles.iconAction} type="button" aria-label="Voice dictation unavailable" aria-describedby="voice-notice" disabled><Mic size={18}/></button>}<ComposerPrimitive.Send className={styles.sendButton} aria-label="Send message" disabled={disabled || invalidSearch || tooLong || files.length > 0}><ArrowUp size={19} /></ComposerPrimitive.Send></div></div>
-    <p className={styles.searchNotice} id="composer-notice" role="status">{fileError || (tooLong ? "Messages must be 2,000 characters or fewer. Shorten your message to send." : files.length ? "Files stay on this device. File messages are not supported yet; remove them to send." : invalidSearch ? "Use one public question, on one line, up to 400 characters. Shorten it or turn Search off." : "Web search is unavailable. Files stay local and cannot be sent yet.")}</p>
+  return <ComposerPrimitive.Root className={styles.composer} onSubmit={event => { if (invalidSearch || tooLong) event.preventDefault(); else cancelDictation(); }}>
+    <ComposerPrimitive.Input autoFocus={Boolean(restoreDraft) && !disabled} aria-label="Message Panda Agent" aria-describedby="composer-notice" aria-invalid={invalidSearch || tooLong || undefined} placeholder={webSearch ? "Ask a public web question…" : "Ask anything…"} maxLength={webSearch ? 400 : 2000} rows={2} onKeyDown={event => { if ((invalidSearch || tooLong) && event.key === "Enter" && !event.shiftKey) event.preventDefault(); }} />
+    <div className={styles.composerActions}><div className={styles.actionGroup}><button className={styles.iconAction} type="button" aria-label="Attachments unavailable" title="Attachments are unavailable" aria-describedby="composer-notice" disabled><Plus size={19}/></button><button className={styles.webSearchToggle} type="button" aria-pressed={false} aria-describedby="composer-notice" title="Web search is unavailable" disabled><Globe size={16} aria-hidden="true" /> Search</button></div><div className={styles.actionGroup}>{listening ? <ComposerPrimitive.StopDictation className={styles.iconAction} aria-label="Stop dictation" aria-describedby="voice-notice" disabled={disabled}><MicOff size={18}/></ComposerPrimitive.StopDictation> : voiceSupported ? <ComposerPrimitive.Dictate className={styles.iconAction} aria-label="Start voice dictation" aria-describedby="voice-notice" disabled={disabled}><Mic size={18}/></ComposerPrimitive.Dictate> : <button className={styles.iconAction} type="button" aria-label="Voice dictation unavailable" aria-describedby="voice-notice" disabled><Mic size={18}/></button>}{running ? <button className={styles.sendButton} type="button" aria-label="Stop request" title="Stop request" disabled={cancelDisabled} onClick={onCancel}><Square size={17} aria-hidden="true" /></button> : <ComposerPrimitive.Send className={styles.sendButton} aria-label="Send message" disabled={disabled || invalidSearch || tooLong}><ArrowUp size={19} /></ComposerPrimitive.Send>}</div></div>
+    <p className={styles.searchNotice} id="composer-notice" role="status">{tooLong ? "Messages must be 2,000 characters or fewer. Shorten your message to send." : invalidSearch ? "Use one public question, on one line, up to 400 characters. Shorten it or turn Search off." : "Web search and attachments are unavailable."}</p>
     <p className={styles.searchNotice} id="voice-notice" role="status">{voiceSupported ? listening ? "Listening. Stop dictation before editing if needed. Speech may use an online browser service." : "Voice dictation may use an online browser service. If it stops, check microphone permission." : "Voice dictation is unavailable in this browser. Type your message instead."}</p>
   </ComposerPrimitive.Root>;
 }
 
-function Welcome({ disabled }: { disabled: boolean }) { const aui = useAui(); return <section className={styles.intro} aria-labelledby="panda-agent-title"><span className={styles.logo}><Image src="/brand/pandabyte-logo.png" alt="PandaByte" width={558} height={564} /></span><h1 id="panda-agent-title">How can I help you today?</h1><p>Ask about your ideas, projects or PandaByte products.</p><div className={styles.suggestions}>{suggestions.map(text => <button type="button" disabled={disabled} key={text} onClick={() => { aui.thread.composer().setText(text); }}>{text}</button>)}</div></section>; }
+function Welcome({ disabled }: { disabled: boolean }) { const aui = useAui(); return <section className={styles.intro} aria-labelledby="panda-agent-title"><span className={styles.logo}><Image src="/brand/pandabyte-logo.png" alt="PandaByte" width={558} height={564} /></span><h1 id="panda-agent-title">What are you working on?</h1><p>Ask about PandaByte products and their approved documentation.</p><div className={styles.suggestions}>{suggestions.map(text => <button type="button" disabled={disabled} key={text} onClick={() => { aui.thread.composer().setText(text); }}>{text}</button>)}</div></section>; }
 function UserMessage() { return <MessagePrimitive.Root className={styles.userMessage}><MessagePrimitive.Parts /></MessagePrimitive.Root>; }
 const toolNames:Record<ToolActivity['toolId'],string>={panda_scoped_rag:'Approved sources',fetch_public_docs_mcp:'Official documentation',convert_units:'Unit conversion',format_bom:'Component outline'};
 function ToolProgress({tools}:{tools:ToolActivity[]}) {

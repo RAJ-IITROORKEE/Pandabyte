@@ -41,6 +41,7 @@ export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
     label: "Workspace",
     items: [
       { href: "/admin/rag-control-room", label: "RAG Control Room", icon: IconBook2, capability: "staff.manage", group: "Workspace" },
+      { href: "/admin/agent-skills", label: "Agent Skills", icon: IconBoxMultiple, capability: "staff.manage", group: "Workspace" },
     ],
   },
   {

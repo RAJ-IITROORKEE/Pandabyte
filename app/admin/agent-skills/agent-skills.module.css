@@ -1,0 +1,18 @@
+.screen { display: grid; gap: 20px; width: min(100%, 1440px); margin: auto; }
+.heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.heading h1 { margin: 2px 0 8px; font-size: clamp(27px, 3vw, 34px); letter-spacing: -.03em; }
+.heading p, .panel p, .screen > p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+.eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 11px !important; font-weight: 700; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; padding: 3px; }
+.tabs button, .heading button, .actions button { flex: none; min-height: 44px; padding: 9px 12px; border: 1px solid var(--divider); background: var(--surface); color: var(--foreground); font: inherit; font-size: 13px; }
+.tabs button, .heading button:not(:disabled) { cursor: pointer; }
+.tabs button[aria-selected="true"] { border-color: var(--accent-ink); background: var(--status-soft); color: var(--accent-ink); font-weight: 600; }
+.screen button:focus-visible, .screen a:focus-visible, .panel:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.screen button:disabled { opacity: .65; cursor: not-allowed; }
+.notice, .panel { border: 1px solid var(--divider); background: var(--surface); padding: 20px; line-height: 1.6; }
+.notice { font-size: 14px; }
+.panel[hidden] { display: none; }
+.panel h2 { margin: 0 0 8px; font-size: 18px; }
+.panel a { color: var(--accent-ink); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+@media (max-width: 700px) { .panel, .notice { padding: 16px; } }

@@ -3,7 +3,7 @@
   "milestone": "P1.2 proposal review",
   "surface": "Codex in-app browser; local allowlisted preview on localhost:3000",
   "artifact": "docs/agent-experience-upgrade/design-proposal.html",
-  "ownerApproval": "pending; asynchronous review requested",
+  "ownerApproval": "Approved and procced \u2014 explicit owner reply, 6 November 2026",
   "observations": [
     "Customer conversation rendered in light and dark at 1280x720; exact local logo loaded",
     "Customer conversation and Playground inspected visually at 390x844",
@@ -14,6 +14,15 @@
     "Mobile navigation Escape closed the drawer and returned focus to Menu; Memory destination closed drawer and focused the page title",
     "Temporary viewport override reset; proposal tab marked as deliverable"
   ],
-  "fixedDuringReview": ["Conversation region was too short", "Playground composer obscured response illustration", "Mobile overlay obscured its close trigger"],
-  "limits": ["Prototype only; no runtime request or mutation", "No actual zoom, screen-reader speech or full contrast/conformance claim", "Not every illustrative subpanel received visual inspection", "Production regression and accessibility acceptance remain in P1.8"]
+  "fixedDuringReview": [
+    "Conversation region was too short",
+    "Playground composer obscured response illustration",
+    "Mobile overlay obscured its close trigger"
+  ],
+  "limits": [
+    "Prototype only; no runtime request or mutation",
+    "No actual zoom, screen-reader speech or full contrast/conformance claim",
+    "Not every illustrative subpanel received visual inspection",
+    "Production regression and accessibility acceptance remain in P1.8"
+  ]
 }

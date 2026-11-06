@@ -1,4 +1,8 @@
-# Panda Agent design proposal — review required
+# Panda Agent design proposal — approved
+
+The owner explicitly approved this local proposal on 6 November 2026: “Approved
+and procced.” This clears P1.2 for local implementation. Remaining prototype and
+accessibility limitations below are verification work, not a repeated design gate.
 
 Open [the local interactive proposal](design-proposal.html) in a browser. Use the view buttons, theme toggle, section buttons and state selectors; resize the window to inspect the proposed desktop and mobile arrangements. Every record, answer and status is illustrative; admin detail panels and disabled operations are design examples rather than discovered capabilities. The Admin state picker illustrates loading, empty, error and unavailable states for every section. Disabled controls do not invoke services. This proposal is not approval to replace the customer UI.
 
