@@ -104,9 +104,9 @@ Continue independent authorized work when another dependency is blocked.
 ## Local sessions and ownership
 
 UI dev session 16974: localhost:3001, .next-agent-experience-dev, existing launcher,
-deterministic-mcu-v1 mode. Private SSM tunnel 56900 has exited; restoring it fails
-because the existing AWS CLI login expired. Login refresh requested; no worker
-secret/journal rotation or runtime change. Review-only proposal server 36452: localhost:3000.
+deterministic-mcu-v1 mode. The datumm AWS CLI login is refreshed and its account verified.
+Private SSM tunnel session 6212 listens on localhost:8182, with connection accepted.
+No worker secret/journal rotation or deployed runtime change. Review-only proposal server 36452: localhost:3000.
 Old production session 82471 was stopped after verifying ownership; build retained.
 Candidate: .next-agent-experience-candidate. Generated tsconfig include paths must
 be removed from the checkpoint. Original dirty E: checkout remains preserved.
@@ -167,18 +167,49 @@ and real structured-output/reported zero-cost proof remain unverified. Keep the
 provider profile OFF and retain all zero-cost/ZDR requirements. The resolved model
 choice must not be asked again or replaced by a paid/non-ZDR fallback.
 
-Codex browser on localhost:3001 saved the corrected greeting in a new owned
-`Help me get started!!!` chat. It accurately describes this preview instead of
-pointing to removed mode controls. One explicitly sent x8266 MCU question became
-unconfirmed after the private AWS tunnel expired. A status-only check and one
-cancel attempt remained unconfirmed; no replay or success claim. The pending
-chat is retained because terminal cleanup cannot be confirmed. Other/user and
-historical Phase 6 histories remain untouched. Ignored local evidence:
-`tmp/agent-retry-browser-checkpoint.json` (owned IDs/next action) and its PNG.
+## AWS refresh and resumed Phase 1 browser verification
 
-Exact next action: after the existing datumm AWS CLI sign-in is refreshed, reopen
-the private tunnel, reconcile the owned pending request by status only, confirm
-terminal cancellation/completion and archive only this disposable chat. Then
-continue the gated native BFF integration using the new correlation helper and
-supported dedicated-instance retry policy. P1.3/P1.4/P1.5 and historical Phase 6
-remain IN PROGRESS; no native cutover, push, merge or deployment occurred.
+After the owner's MFA confirmation, the existing datumm CLI profile was refreshed
+through the official AWS remote-login flow in Codex browser. The CLI reported
+profile update; STS confirmed the existing expected account (boolean only in
+evidence). The displayed CLI verification format was used; the browser clipboard
+had returned an older code. Earlier invalid attempts terminated. The one-time
+transfer file was consumed/deleted, authentication tabs closed and task-owned
+clipboard cleared. No login URL/code, credential, ARN or account identifier was
+written to tracked evidence. No role/policy, service configuration or deployment
+changed. The private SSM tunnel is restored on port 8182.
+
+Codex browser, real signed-in localhost:3001 session:
+- Checked only the existing owned pending test by status; no resend. It became
+  review-blocked, then explicit cancellation succeeded. The saved cancellation
+  states that it occurred before evidence selection; composer became usable.
+- A fresh query adding "Quote the captured source" returned insufficient evidence.
+  The preserved deterministic MCU selector accepts only its exact query patterns;
+  this is a known baseline limitation, not conversational native acceptance.
+- Explicitly sent a new supported "Which MCU does the x8266 use?" question. It
+  saved the literal "Microcontroller: ESP8266" with S1, the approved listing link,
+  section and capture timestamp. Activity showed actual retrieval/check/save
+  stages and supplied-context counts. Answer and citation survived reload.
+- Archived only the owned `Help me get started!!!` chat after every turn was
+  terminal. It is absent from recent chats; composer draft is empty. Historical
+  Phase 6 blocked fixture and user histories were preserved. No journal reset.
+- Rechecked /admin/agent-skills: parent still displays "Staff access is
+  unavailable." Full Admin tabs remain unverified; no authorization bypass.
+
+Ignored local screenshots: `tmp/agent-phase1-restored-browser.png`,
+`tmp/agent-phase1-cleanup-browser.png`, `tmp/agent-phase1-admin-guard.png`.
+`tmp/agent-retry-browser-checkpoint.json` records completed cleanup, and
+`tmp/agent-aws-signin-handoff.json` records refreshed CLI/tunnel state without
+secrets. These checks exercised the deterministic FastAPI RAG path, not native
+LLM generation. Zero-cost and strict ZDR requirements are unchanged; provider
+profile remains OFF. The 335-test/unit/type/lint evidence belongs to source
+checkpoint 3543477; this follow-up changes documentation/evidence only.
+
+Exact next action: continue P1.4 mounted native BFF integration using the prepared
+evidence kernel, current-turn correlation, durable admission/status-only recovery
+and dedicated-instance retry hook. Complete required fee metadata and strict
+account/key ZDR verification before any real provider activation; preserve other
+quota/output/cost/runtime-generation/cleanup gates. Resolve parent Admin service
+availability through its existing backend to resume its browser acceptance.
+P1.3/P1.4/P1.5 and historical Phase 6 remain IN PROGRESS. No native cutover, push,
+merge or deployment occurred.

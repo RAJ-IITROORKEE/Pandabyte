@@ -441,7 +441,7 @@
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
         "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503.",
-        "retryFollowup": "Supported native hook and private terminal correlation implemented/reviewed; actual mock retry/correlation checks pass. Browser greeting passes; RAG status/cancel blocked by expired AWS CLI login. No mounted native cutover."
+        "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",

@@ -31,19 +31,40 @@
       "Supported attachment pipeline",
       "Native model selection"
     ],
-    "retryFollowup": {
+    "priorRetryCheckpoint": {
       "greeting": "New owned disposable chat saves corrected preview copy; no reference to removed workflow controls",
       "ragRequest": "One explicit x8266 MCU question remained unconfirmed. Status-only check and cancellation each attempted once; neither confirmed because private AWS tunnel credentials expired.",
       "cleanup": "Owned Help me get started!!! test chat remains pending and preserved for reconciliation; no forced reset, replay, archive or changes to prior/user histories.",
       "screenshot": "Local ignored tmp/agent-retry-browser-checkpoint.png",
       "next": "Refresh existing datumm CLI login, reopen private tunnel, observe this request before any new send; reconcile cancellation/terminal state, then archive only owned disposable chat."
+    },
+    "retryFollowup": {
+      "sourceCheckpoint": "3543477; follow-up source unchanged",
+      "awsSignIn": "Owner completed MFA in Codex browser; official CLI remote verification refreshed existing datumm profile; STS matched expected account without recording its identifier",
+      "tunnel": "Restored existing private SSM localhost8182 forwarding; no runtime/container/configuration change",
+      "recovery": "Status-only observation of existing owned request; review-blocked state retained until explicit cancellation succeeded and saved before-evidence-selection cancellation appeared",
+      "unsupportedQuery": "Additional quote instruction produced insufficient response under exact-pattern deterministic selector; known baseline limitation, not native conversational acceptance",
+      "supportedQuery": "Explicit new Which MCU does the x8266 use? returned literal Microcontroller: ESP8266 and S1",
+      "sourceDisclosure": "Approved PandaByte listing title/link, listing section and capture timestamp; source quote matches answer",
+      "activity": "Retrieval/check/save stages and supplied-context counts visible; no token-streaming claim",
+      "persistence": "Saved answer/citation and cancellation survive reload; composer enabled, no pending controls",
+      "cleanup": "Owned Help me get started!!! chat archived after terminal checks, absent from recent; empty draft; original histories and historical blocked Phase6 fixture preserved",
+      "screenshots": [
+        "tmp/agent-phase1-restored-browser.png",
+        "tmp/agent-phase1-cleanup-browser.png"
+      ],
+      "evidenceClass": "Real existing Clerk/InsForge/browser/private FastAPI deterministic RAG integration; not native inference",
+      "secrets": "One-time transfer file deleted; authentication tabs closed; no authorization codes/URLs, credentials or account identifiers in tracked evidence",
+      "policy": "Zero-cost and strict ZDR unchanged; live native provider remains off"
     }
   },
   "adminBrowser": {
     "route": "http://localhost:3001/admin/agent-skills",
     "observed": "Existing parent Admin layout returns Staff access is unavailable before rendering the child page.",
     "acceptance": "blocked; rendered tabs, keyboard interaction and actual discovery states not browser-verified",
-    "preserved": "No auth bypass, backend switch, role mutation or fake discovery response was introduced to pass this check."
+    "preserved": "No auth bypass, backend switch, role mutation or fake discovery response was introduced to pass this check.",
+    "retest": "After AWS refresh, same parent Staff access is unavailable guard observed; no bypass",
+    "screenshot": "Local ignored tmp/agent-phase1-admin-guard.png"
   },
   "nativeSessions": {
     "record": "opencode-session-probe.json",
@@ -106,7 +127,8 @@
       "wireProbeSyntax": "pass",
       "productionBuild": "Previous candidate build retained; not rerun for this small copy change and unwired native increment",
       "independentReview": "No unresolved actionable finding within dedicated one-prompt/tested HTTP retry scope"
-    }
+    },
+    "awsBrowserFollowup": "Documentation/evidence only; task/JSON/diff validation. 335 Agent tests and type/lint results retained from unchanged source checkpoint3543477; no redundant build rerun."
   },
   "scope": "Local source and tests only; no deployment, push, merge, new paid service or product memory provider activation.",
   "preparedEvidence": {
