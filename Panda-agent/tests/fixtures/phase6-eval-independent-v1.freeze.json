@@ -1,0 +1,30 @@
+{
+  "classification": "independent_postimplementation_frozen_evaluation",
+  "preImplementationHeldOut": false,
+  "createdAt": "2026-11-06T01:44:36.030Z",
+  "datasetSha256": "8fa6cc763cb16d0e78959c73b66b1828bd8999fd5500ff3cecec301d5b308c23",
+  "gitHead": "1359f95eb608fb54cdcab17542ca0aa8225fcdb8",
+  "sourceHashes": {
+    "Panda-agent/src/agentic/contracts.ts": "d3c6bcb4cd26f05fd3a2926d9478e9ba61c7483c1f7294749e0a9d1bca4f64e1",
+    "Panda-agent/src/agentic/plan.ts": "1b225e72e80d93b9cf87b8058d446b63c443adc1e98bb7644c817f12c131b4c4",
+    "Panda-agent/src/agentic/controller.ts": "110c341884c8e6d36f45b2130567ce05e9fcad5e03a47601f0b9f9ca6085cb48",
+    "Panda-agent/src/agentic/helpers.ts": "feca4570c075a4d1efa71d5ab95075668caf9ee32b811039cee9029897ef0794",
+    "Panda-agent/src/agentic/skills.ts": "b08e775f4b7304b0043d648d2ead5e62cc0a7b17c01d132dc317b6dc2e536274",
+    "Panda-agent/src/agentic/manifests.ts": "7ee66f213d9984c05f6107e3557f2fbcd7328f5633ecaf5397ff4b84af5ce05a",
+    "Panda-agent/src/agentic/mcp-client.ts": "bec2994f71e24b43588c0b964359e5c4abe406ff63510994c35888e177ca1542",
+    "Panda-agent/src/agentic/budget.ts": "68bf4d06b924eee18a7420aeb990fdcd00d7557a58fd0093e22485907ccee7e8",
+    "Panda-agent/src/server/agentic-answer.ts": "bb5f1384b082af322f026f3b24fd9a5856768e3f617cbae8f0fd19b01614f688",
+    "Panda-agent/src/server/agentic-store.ts": "27b7d1d9000ef0449b8b002cf44b2a63193cce4a7e67946b2d7bfe06304d2941",
+    "Panda-agent/src/server/lightweight-handler.ts": "b08d6983911dd0d650d25d2a5ed65ea428cfbc383fb75a5de81fc3e864dbf532",
+    "Panda-agent/src/lightweight/evidence.ts": "3819c8d2345591c1c36dafaaa8a503c7a4ca051559e7c21dfee679fd8dc195d6",
+    "Panda-agent/src/lightweight/client.ts": "6fd466a63c6a041ef6769890643a37fbfaeefd76b5a120837f41e79ce8f0bd8e",
+    "Panda-agent/src/retrieval/answers.ts": "76349249a3854c4e834b03a585956d827fa44b5994dcd7845d115311c37469ff",
+    "Panda-agent/services/lightweight/lightweight/mcp_fetch.py": "e30ce894237b4996e12c1f5003d24b7e287f33acf83cbf8e11ffc0a7bb68b1eb",
+    "Panda-agent/services/lightweight/lightweight/mcp_fetch_server.py": "19c1b0e3585b49a03c7b04fc8ac1d6b8683bd2a88b07767ac82a3e7b31d0de7e",
+    "Panda-agent/services/lightweight/lightweight/app.py": "a7bec442b3a71eef8f80c6360ba26edc5cc079e3244d46ecb8083bf0f7d25531"
+  },
+  "baselineLabel": "current_preserved_Phase2_ordinary_path_not_historical_build",
+  "candidateWorkerImage": "fe8f22081ae852ba67e52edaf0f4dfb1fe3d75c0b524f52cbe6d34bc9947d95a",
+  "candidateWorkerPackage": "c2c4ca93cda04b99902a9eb33ff11ad3d53c1769d4614583ea1098675b744134",
+  "noCandidateTuningAfterFreeze": true
+}

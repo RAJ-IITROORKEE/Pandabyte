@@ -12,8 +12,13 @@ import type {GuideWire} from '../guide/client.ts';
 import {parseDiagnosticInput,diagnosticQuestion} from '../diagnostics/contracts.ts';
 import {DiagnosticDisabledError,type createDiagnosticStore} from './diagnostic-store.ts';
 import type {createDiagnosticAnswer} from './diagnostic-answer.ts';
+import {parseAgenticInput} from '../agentic/contracts.ts';
+import {buildPlan} from '../agentic/plan.ts';
+import {validAgenticCatalog,type createAgenticAnswer} from './agentic-answer.ts';
+import type {createAgenticStore,CompositeExecution} from './agentic-store.ts';
+import {parseToolActivity} from '../agentic/tool-activity.ts';
 
-type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>;diagnostic?:ReturnType<typeof createDiagnosticStore>};
+type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>;diagnostic?:ReturnType<typeof createDiagnosticStore>;agentic?:ReturnType<typeof createAgenticStore>};
 type Dependencies = {
   enabled():boolean;
   authenticate():Promise<ChatActor|null>;
@@ -29,6 +34,9 @@ type Dependencies = {
   diagnosticEnabled?():boolean;
   diagnosticDeadlineMs?:number;
   diagnosticAnswer?:ReturnType<typeof createDiagnosticAnswer>;
+  agenticEnabled?():boolean;
+  agenticAnswer?:ReturnType<typeof createAgenticAnswer>;
+  agenticCancel?(actor:ChatActor,execution:CompositeExecution,signal:AbortSignal):Promise<void>;
 };
 const json = (value:unknown,status=200) => new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store'}});
 const status = (e:unknown) => e instanceof ChatStoreError ? ({not_found:404,conflict:409,invalid:400,unauthenticated:401,quota:429,unavailable:503})[e.code] : typeof e==='number' ? e : 503;
@@ -68,7 +76,10 @@ export function createLightweightHandler(deps:Dependencies) {
       if(action==='cancel' && (Object.keys(input).some(k=>k!=='requestId') || (input.requestId!==undefined && (!uuid(input.requestId) || input.requestId!==input.requestId.toLowerCase()))))throw 400;
       const guideInput=action==='message'&&Object.hasOwn(input,'guide')?parseGuideInput(input.guide):undefined;
       const diagnosticInput=action==='message'&&Object.hasOwn(input,'diagnostic')?parseDiagnosticInput(input.diagnostic):undefined;
-      if(action==='message' && (diagnosticInput!==undefined
+      const agenticInput=action==='message'&&Object.hasOwn(input,'agentic')?parseAgenticInput(input.agentic):undefined;
+      if(action==='message' && (agenticInput!==undefined
+        ? !agenticInput || buildPlan(agenticInput).kind!=='planned' || Object.keys(input).some(k=>!['requestId','agentic'].includes(k)) || !uuid(input.requestId)
+        : diagnosticInput!==undefined
         ? !diagnosticInput || Object.keys(input).some(k=>!['requestId','diagnostic'].includes(k)) || !uuid(input.requestId)
         : guideInput!==undefined
         ? !guideInput || Object.keys(input).some(k=>!['requestId','guide'].includes(k)) || !uuid(input.requestId)
@@ -92,6 +103,7 @@ export function createLightweightHandler(deps:Dependencies) {
         return {...publicRead(saved),attemptStatus:matches[0]?.status ?? 'absent'};
       };
       const release=async () => project(await safeRead());
+      let agenticObserveOnly=false;
       if(action==='cancel') {
         for(let attempt=0;attempt<2;attempt++) {
           const saved=await safeRead(), pending=saved.turns.filter(t=>t.status==='pending');
@@ -105,7 +117,18 @@ export function createLightweightHandler(deps:Dependencies) {
             try {await store.cancel(id!,requested,null);} catch(e) {if(attempt===0 && e instanceof ChatStoreError && e.code==='conflict')continue; throw e;}
             return json(await release());
           }
-          const turn=pending[0], execution=await store.execution(id!,turn.requestId);
+          const turn=pending[0];
+          if(turn.workflow==='agentic'){
+            if(!store.agentic||!deps.agenticCancel)throw new ChatStoreError('unavailable');
+            const composite=await store.agentic.execution(id!,turn.requestId);if(!composite)throw new ChatStoreError('unavailable');
+            await store.agentic.cancel(id!,turn.requestId,composite.planHash);
+            const fenced=await store.agentic.execution(id!,turn.requestId);if(!fenced)throw new ChatStoreError('unavailable');
+            await deps.agenticCancel(actor,fenced,request.signal);
+            if(!await deps.current(actor))throw new ChatStoreError('unauthenticated');
+            await store.agentic.finish(id!,turn.requestId,fenced.planHash,{outcome:'insufficient',text:'This request was cancelled. Start a new question when ready.',citations:[]},'cancelled');
+            return json(await release());
+          }
+          const execution=await store.execution(id!,turn.requestId);
           if(execution.prepared) {
             let result:WireResult|GuideWire;
             const guide=await store.guide?.execution(id!,turn.requestId);
@@ -122,6 +145,14 @@ export function createLightweightHandler(deps:Dependencies) {
       }
       const work=async(start:ChatRead,question:string,requestId:string,progress:ActivityReporter,execution?:Execution,workRequest:Request=request) => {
         progress('routing_question');
+        if(start.turns.find(t=>t.requestId===requestId)?.workflow==='agentic'){
+          if(!store.agentic||!store.diagnostic||!deps.agenticAnswer)throw new ChatStoreError('unavailable');
+          const composite=await store.agentic.execution(id!,requestId);if(!composite)throw new ChatStoreError('unavailable');
+          const result=deps.agenticEnabled?.()?await deps.agenticAnswer(actor,id!,requestId,composite,store.agentic,store,store.diagnostic,workRequest,progress,action==='read'||agenticObserveOnly):{answer:{outcome:'insufficient' as const,text:'Structured assistance is disabled. Ordinary product chat remains available.',citations:[]},terminalReason:'unavailable',pending:false};
+          if(result.pending)throw new ChatStoreError('unavailable');
+          if(workRequest.signal.aborted||!await deps.current(actor))throw new ChatStoreError('unauthenticated');
+          progress('saving_answer');await store.agentic.finish(id!,requestId,composite.planHash,result.answer,composite.cancelled?'cancelled':result.terminalReason);return release();
+        }
         const diagnostic=question.startsWith('Diagnostic (')?await store.diagnostic?.execution(id!,requestId):null;
         if(diagnostic){
           if(!deps.diagnosticAnswer||!store.diagnostic)throw new ChatStoreError('unavailable');
@@ -167,18 +198,21 @@ export function createLightweightHandler(deps:Dependencies) {
         if(pending.length===1) {
           const turn=pending[0], execution=await store.execution(id!,turn.requestId);
           const diagnostic=turn.question.startsWith('Diagnostic (')?await store.diagnostic?.execution(id!,turn.requestId):null;
-          if(execution.prepared||diagnostic) {
+          if(execution.prepared||diagnostic||turn.workflow==='agentic') {
             try { return json(await work(start,turn.question,turn.requestId,()=>{},execution)); }
             catch(e) { if(!(e instanceof ChatStoreError) || e.code!=='unavailable')throw e; return json(await release()); }
           }
         }
         return json(pending.length ? await release() : project(start));
       }
-      const question=diagnosticInput?diagnosticQuestion(diagnosticInput):guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
+      const question=agenticInput?agenticInput.question:diagnosticInput?diagnosticQuestion(diagnosticInput):guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
       if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unavailable');
       if(guideInput&&(!deps.guideEnabled?.()||!store.guide))throw new ChatStoreError('unavailable');
       if(diagnosticInput&&(!deps.diagnosticEnabled?.()||!store.diagnostic))throw new ChatStoreError('unavailable');
-      const start=diagnosticInput?await store.diagnostic!.begin(id!,requestId,diagnosticInput):guideInput?await store.guide!.begin(id!,requestId,guideInput):await store.begin(id!,requestId,question);
+      if(agenticInput&&(!deps.agenticEnabled?.()||!store.agentic))throw new ChatStoreError('unavailable');
+      if(agenticInput&&!validAgenticCatalog(agenticInput,await deps.products(actor)))throw new ChatStoreError('invalid');
+      const start=agenticInput?await store.agentic!.begin(id!,requestId,agenticInput):diagnosticInput?await store.diagnostic!.begin(id!,requestId,diagnosticInput):guideInput?await store.guide!.begin(id!,requestId,guideInput):await store.begin(id!,requestId,question);
+      agenticObserveOnly=!!agenticInput&&start.admitted===false;
       const turn=start.turns.find(t=>t.requestId===requestId);
       if(!turn || turn.question!==question)throw new ChatStoreError('unavailable');
       if(turn.status==='complete')return json(await release());
@@ -189,7 +223,7 @@ export function createLightweightHandler(deps:Dependencies) {
       const workRequest=new Request(request.url,{method:request.method,headers:request.headers,signal:workController.signal});
       const stream=new ReadableStream<Uint8Array>({start(controller){
         const send=(value:unknown)=>{if(!closed){try{controller.enqueue(encoder.encode(`data: ${JSON.stringify(value)}\n\n`));}catch{closed=true;}}};
-        const progress:ActivityReporter=(stage,context)=>{if(context && !contextSent){contextSent=true;send({type:'context',...context});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
+        const progress:ActivityReporter=(stage,context,tool)=>{if(tool){const checked=parseToolActivity(tool);if(!checked)throw new ChatStoreError('unavailable');send({type:'tool',tool:checked});}if(context && !contextSent){contextSent=true;send({type:'context',...context});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
         void work(start,question,requestId,progress,undefined,workRequest).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
       },cancel(){closed=true;workController.abort();}});
       return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});

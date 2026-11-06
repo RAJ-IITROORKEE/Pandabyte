@@ -1,0 +1,32 @@
+{
+  "classification": "recovery_rerun_after_disclosed_runtime_fix",
+  "createdAt": "2026-11-06T03:29:00.251796+00:00",
+  "originalFreezeSha256": "8fd42977a228b8a055be7a565e480f4577e00bbaf0e6e69a9ce291a970ad9fcc",
+  "originalAmendmentSha256": "232e353266f2b0cd53bcc95466dbc64905899824dd59e54c9e4f4524aef6de31",
+  "datasetSha256": "8fa6cc763cb16d0e78959c73b66b1828bd8999fd5500ff3cecec301d5b308c23",
+  "datasetAndGoldUnchanged": true,
+  "originalEvaluationAlreadyObserved": true,
+  "preImplementationHeldOut": false,
+  "newIndependentHeldOutEvaluation": false,
+  "reason": "Disclosed failure/cancellation acceptance exposed terminal FetchError recovery, premature cancellation confirmation, repeated-cancel child cleanup and shutdown completion defects. Only the two private-worker runtime source hashes below change; no case labels, gold or scoring changes. Rerun every original case as fresh work after the recovery image replacement. Preserve the original evaluation as historical evidence.",
+  "sourceChanges": {
+    "Panda-agent/services/lightweight/lightweight/app.py": {
+      "originalSha256": "a7bec442b3a71eef8f80c6360ba26edc5cc079e3244d46ecb8083bf0f7d25531",
+      "recoverySha256": "b8ccf4f5c58c0016263e285a2ee799dce04a4db8244d20a4f13ffcb9a16731a3"
+    },
+    "Panda-agent/services/lightweight/lightweight/mcp_fetch.py": {
+      "originalSha256": "e30ce894237b4996e12c1f5003d24b7e287f33acf83cbf8e11ffc0a7bb68b1eb",
+      "recoverySha256": "d99bca43472e4ad894ab15f93273aec4a12e791ab7b1793b980fbda8f1459d3e"
+    }
+  },
+  "unchangedScoringSha256": "4cca6cc5242d5600364517e10ed5a004cde3a7f2491d32809773ade6102085da",
+  "originalReport": {
+    "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-5e5021be-f243-4a98-950a-d6c280d4cb79.json",
+    "sha256": "c32402c9fb9bc1dcfd3c0c3180ba5c4bbdaea19e17984b4b87d5d95388246f54",
+    "preserved": true
+  },
+  "candidateWorkerImage": "9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+  "candidateWorkerPackage": "d7f2ffcdafa0a52d90a250c82fc55ce738b686c46fb25233a42c878f43985ff5",
+  "executionPolicy": "Fresh runId, chat and requestId per attempt; no replay or work retry. Stop on unresolved work and use original-request observation only.",
+  "countersAndManualReview": "New run requires its own manual full-claim review and private execution/zero-paid reconciliation; original counters cannot certify the recovery run."
+}

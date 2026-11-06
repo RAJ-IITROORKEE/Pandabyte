@@ -9,5 +9,5 @@ export default async function PandaAgentPage() {
     redirect("/sign-in?redirect_url=%2Fpanda-agent");
   }
   const admin=await guideAdminAccess();
-  return <PandaAgentWorkspace previewReadOnly={process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED !== "true"} guidesEnabled={process.env.PANDA_AGENT_GUIDES_ENABLED === "true"} diagnosticsEnabled={process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED === "true"} canManageSkills={admin.allowed} />;
+  return <PandaAgentWorkspace previewReadOnly={process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED !== "true"} guidesEnabled={process.env.PANDA_AGENT_GUIDES_ENABLED === "true"} diagnosticsEnabled={process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED === "true"} agenticEnabled={process.env.PANDA_AGENT_AGENTIC_ENABLED === "true"} canManageSkills={admin.allowed} />;
 }

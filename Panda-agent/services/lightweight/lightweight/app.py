@@ -14,6 +14,7 @@ from fastapi.responses import Response
 from starlette.exceptions import HTTPException
 from starlette.requests import ClientDisconnect
 from .images import create_image_router
+from .mcp_fetch import FetchError
 
 MAX_BODY = 98304
 HEX = re.compile(r'^[0-9a-f]{64}$')
@@ -78,7 +79,7 @@ def authentication(header, action, secret, now):
     if not hmac.compare_digest(decode(signature), hmac.new(secret, segment.encode('ascii'), hashlib.sha256).digest()): raise ValueError('auth')
     claim = parse(decode(segment))
     if not isinstance(claim, dict) or set(claim) != CLAIMS: raise ValueError('auth')
-    audience = 'panda-lightweight-guide-v1' if action in ('runguide','readguide','cancelguide') else 'panda-lightweight-evidence-v1'
+    audience = 'panda-lightweight-mcp-v1' if action in ('runmcp','readmcp','cancelmcp') else 'panda-lightweight-guide-v1' if action in ('runguide','readguide','cancelguide') else 'panda-lightweight-evidence-v1'
     if type(claim['v']) is not int or claim['v'] != 1 or claim['aud'] != audience or claim['action'] != action: raise ValueError('auth')
     if not all(isinstance(claim[k], str) and HEX.fullmatch(claim[k]) for k in ('sub', 'sid', 'bodySha256')): raise ValueError('auth')
     if not valid_uuid(claim['turnId']) or not valid_uuid(claim['nonce']) or not valid_text(claim['sku'], 128): raise ValueError('auth')
@@ -164,7 +165,8 @@ class Journal:
     def state(self, actor, turn, state, value=None):
         self.db.execute('UPDATE turns SET state=?,result=? WHERE actor=? AND turn_id=?', (state, json.dumps(value, separators=(',', ':')) if value else None, actor, turn))
 
-def create_app(*, secret, journal_path, provider=None, selector_mode='model', guide_enabled=False, image_enabled=False, image_root=None, clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
+def create_app(*, secret, journal_path, provider=None, selector_mode='model', guide_enabled=False, image_enabled=False, image_root=None, mcp_enabled=False, clock=time.time, ingress_limit=32, body_timeout=5, execution_timeout=30):
+    if type(mcp_enabled) is not bool:raise ValueError('invalid MCP flag')
     if type(guide_enabled) is not bool:raise ValueError('invalid guide flag')
     if type(image_enabled) is not bool:raise ValueError('invalid image flag')
     if selector_mode not in ('model', 'deterministic-mcu-v1') or (selector_mode != 'model' and provider is not None): raise ValueError('invalid selector mode')
@@ -179,7 +181,7 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
         raise
     queue = asyncio.Queue(maxsize=5)
     ingress = asyncio.Semaphore(ingress_limit)
-    waiters = {}; shutting_down = False; policy_stopped = journal.db.execute("SELECT 1 FROM settings WHERE key='policy_stopped'").fetchone() is not None
+    waiters = {}; mcp_tasks = {}; shutting_down = False; policy_stopped = journal.db.execute("SELECT 1 FROM settings WHERE key='policy_stopped'").fetchone() is not None
 
     async def worker():
         nonlocal policy_stopped
@@ -198,7 +200,14 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
                 else:
                     journal.state(*key, 'dispatch')
                     try:
-                        if row[4]=='guide':
+                        if row[4]=='mcp':
+                            from .mcp_fetch import fetch_document
+                            operation=asyncio.create_task(fetch_document(payload['documentId']))
+                            mcp_tasks[key]=operation
+                            document=await asyncio.wait_for(operation,min(10,remaining))
+                            value={'version':1,'state':'complete','document':{'documentId':document.document_id,'url':document.url,'title':'ESP-IDF v5.5.1 ESP32 GPIO','framework':'esp-idf','chip':'esp32','version':'5.5.1','fetchedAt':document.fetched_at,'bodySha256':document.body_sha256,'header':'#include "driver/gpio.h"'},'usage':{'modelCalls':0,'inputTokens':0,'outputTokens':0,'costNanoUsd':0}}
+                            if '#include "driver/gpio.h"' not in document.text:raise ValueError('invalid document')
+                        elif row[4]=='guide':
                             from .guide import run_guide
                             value = await asyncio.wait_for(run_guide(payload), remaining)
                         elif selector_mode == 'deterministic-mcu-v1':
@@ -206,11 +215,13 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
                             value = {'selections': select_mcu(payload['question'], payload['fragments']), 'usage': {'modelCalls': 0, 'inputTokens': 0, 'outputTokens': 0, 'costNanoUsd': 0}}
                         else:
                             value = await asyncio.wait_for(provider(payload['question'], payload['fragments']), remaining)
-                        if time.monotonic() >= deadline:
+                        if shutting_down or time.monotonic() >= deadline:
                             journal.state(*key, 'unknown')
+                            if shutting_down: return
                             continue
                         try:
-                            if row[4]=='guide':
+                            if row[4]=='mcp':final=value
+                            elif row[4]=='guide':
                                 from .guide import validate_result
                                 final=validate_result(value,payload['fragments'])
                             else:final = validate_output(value, payload['fragments'], deterministic=selector_mode == 'deterministic-mcu-v1')
@@ -219,19 +230,28 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
                                 policy_stopped = True
                                 journal.db.execute("INSERT OR REPLACE INTO settings VALUES ('policy_stopped','1')")
                             final = result('invalid_selection')
-                        journal.state(*key, 'complete' if final['state'] == 'complete' else 'rejected', final)
+                        if journal.turn(*key)[2]!='rejected':journal.state(*key, 'complete' if final['state'] == 'complete' else 'rejected', final)
+                    except FetchError:
+                        current = journal.turn(*key)
+                        if current and current[2] == 'dispatch':
+                            if time.monotonic() >= deadline: journal.state(*key, 'unknown')
+                            else: journal.state(*key, 'rejected', result('provider_unavailable'))
+                        elif current and current[2] == 'rejected': journal.state(*key, 'unknown')
                     except ProviderRejected as exc:
                         if time.monotonic() >= deadline: journal.state(*key, 'unknown')
                         else: journal.state(*key, 'rejected', result(exc.code))
                     except asyncio.CancelledError:
-                        journal.state(*key, 'unknown')
-                        raise
+                        if row[4]!='mcp' or shutting_down:
+                            journal.state(*key, 'unknown')
+                            raise
                     except Exception:
                         journal.state(*key, 'unknown')
             finally:
+                mcp_tasks.pop(key,None)
                 waiter = waiters.pop(key, None)
                 if waiter and not waiter.done(): waiter.set_result(journal.turn(*key))
                 queue.task_done()
+            if shutting_down: return
 
     @asynccontextmanager
     async def lifespan(_app):
@@ -279,8 +299,9 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
 
     async def endpoint(request, action):
         is_guide=action in ('runguide','readguide','cancelguide')
-        is_cancel=action in ('cancelturn','cancelguide')
-        is_read=action in ('readturn','readguide')
+        is_mcp=action in ('runmcp','readmcp','cancelmcp')
+        is_cancel=action in ('cancelturn','cancelguide','cancelmcp')
+        is_read=action in ('readturn','readguide','readmcp')
         if request.headers.get('content-type', '').split(';', 1)[0].strip().lower() != 'application/json': return respond(result('invalid'), 400)
         try: claim = authentication(request.headers.get('authorization'), action, secret, int(clock()))
         except (ValueError, TypeError, UnicodeError, KeyError, RecursionError): return respond(result('unauthorized'), 401)
@@ -303,7 +324,14 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
         if issue: return respond(result(issue), 409 if issue == 'capability_replayed' else 429, claim)
         try:
             value = parse(raw)
-            if action=='runguide':
+            if is_mcp:
+                if action=='runmcp':
+                    if not isinstance(value,dict) or set(value)!={'version','turnId','documentId'} or type(value['version']) is not int or value['version']!=1 or value['turnId']!=claim['turnId'] or value['documentId']!='espressif-esp-idf-5.5.1-esp32-gpio' or claim['sku']!=value['documentId']:raise ValueError('input')
+                    payload=value
+                else:
+                    payload=status_input(value,claim)
+                    if claim['sku']!='espressif-esp-idf-5.5.1-esp32-gpio':raise ValueError('input')
+            elif action=='runguide':
                 from .guide import validate_input
                 payload=validate_input(value,claim)
             elif is_guide:
@@ -313,7 +341,7 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
         except OverflowError: return respond(result('budget_exceeded'), 422, claim)
         except (ValueError, TypeError, UnicodeError, KeyError, RecursionError): return respond(result('invalid'), 400, claim)
         row = journal.turn(claim['sub'], claim['turnId'])
-        expected_kind='guide' if is_guide else 'evidence'
+        expected_kind='mcp' if is_mcp else 'guide' if is_guide else 'evidence'
         if row and (row[4]!=expected_kind or (is_guide and row[5]!=payload['threadId'])):
             return respond(result('turn_conflict' if is_cancel or not is_read else 'not_found'),409 if is_cancel or not is_read else 404,claim)
         if is_cancel:
@@ -322,6 +350,15 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
                 journal.db.execute('INSERT INTO turns(actor,turn_id,sku,digest,state,result,kind,thread_id) VALUES (?,?,?,?,?,?,?,?)', (claim['sub'], claim['turnId'], claim['sku'], payload['requestBodySha256'], 'rejected', json.dumps(result('cancelled'), separators=(',', ':')),expected_kind,payload.get('threadId')))
                 return respond(result('cancelled'), 409, claim)
             if row[0] != claim['sku'] or row[1] != payload['requestBodySha256']: return respond(result('turn_conflict'), 409, claim)
+            if is_mcp and row[2]=='dispatch':
+                task=mcp_tasks.get((claim['sub'],claim['turnId']))
+                if task:
+                    journal.state(claim['sub'],claim['turnId'],'unknown')
+                    task.cancel()
+                    try:await task
+                    except asyncio.CancelledError:journal.state(claim['sub'],claim['turnId'],'rejected',result('cancelled'))
+                    except Exception:journal.state(claim['sub'],claim['turnId'],'unknown')
+                    row=journal.turn(claim['sub'],claim['turnId'])
             if row[2] == 'pending':
                 journal.state(claim['sub'], claim['turnId'], 'rejected', result('cancelled'))
                 row = journal.turn(claim['sub'], claim['turnId'])
@@ -336,7 +373,7 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
         if row:
             if row[0] != claim['sku'] or row[1] != claim['bodySha256']: return respond(result('turn_conflict'), 409, claim)
             answer, status = read_turn(row); return respond(answer, status, claim)
-        if (is_guide and not guide_enabled) or (not is_guide and ((not provider and selector_mode == 'model') or policy_stopped)): return respond(result('disabled'), 503, claim)
+        if (is_mcp and not mcp_enabled) or (is_guide and not guide_enabled) or (not is_mcp and not is_guide and ((not provider and selector_mode == 'model') or policy_stopped)): return respond(result('disabled'), 503, claim)
         count = journal.db.execute("SELECT count(*) FROM turns WHERE state IN ('pending','dispatch')").fetchone()[0]
         actor_pending = journal.db.execute("SELECT count(*) FROM turns WHERE actor=? AND state IN ('pending','dispatch')", (claim['sub'],)).fetchone()[0]
         if count >= 5 or queue.full() or actor_pending or journal.db.execute('SELECT count(*) FROM turns').fetchone()[0] >= 100000: return respond(result('busy'), 429, claim)
@@ -344,6 +381,10 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
         key = (claim['sub'], claim['turnId']); waiter = asyncio.get_running_loop().create_future(); waiters[key] = waiter
         def cancel_queued():
             if shutting_down: return
+            task=mcp_tasks.get(key)
+            if task:
+                journal.state(*key,'unknown')
+                task.cancel()
             updated = journal.db.execute("UPDATE turns SET state='rejected',result=? WHERE actor=? AND turn_id=? AND state='pending'", (json.dumps(result('provider_unavailable'), separators=(',', ':')), *key)).rowcount
             if updated and not waiter.done(): waiter.set_result(journal.turn(*key))
         async def watch_disconnect():
@@ -380,4 +421,10 @@ def create_app(*, secret, journal_path, provider=None, selector_mode='model', gu
     async def guide_status(request: Request): return await endpoint(request, 'readguide')
     @app.post('/v1/guides/cancel')
     async def guide_cancel(request: Request): return await endpoint(request, 'cancelguide')
+    @app.post('/v1/mcp/run')
+    async def mcp_run(request: Request): return await endpoint(request,'runmcp')
+    @app.post('/v1/mcp/status')
+    async def mcp_status(request: Request): return await endpoint(request,'readmcp')
+    @app.post('/v1/mcp/cancel')
+    async def mcp_cancel(request: Request): return await endpoint(request,'cancelmcp')
     return app

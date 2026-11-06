@@ -17,7 +17,7 @@ async function handle(request:Request){
    let v:Record<string,unknown>;
    try{v=strictJson(new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks))) as Record<string,unknown>;}
    catch{return json({error:'invalid'},400);}
-   if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).sort().join(',')!=='action,bundleVersion,expectedVersion,reason,skillId'||!['product-evidence-qa','embedded-project-guide'].includes(v.skillId as string)||!['review','enable','disable','rollback'].includes(v.action as string)||!Number.isSafeInteger(v.bundleVersion)||(v.bundleVersion as number)<1||!Number.isSafeInteger(v.expectedVersion)||(v.expectedVersion as number)<0||typeof v.reason!=='string'||!v.reason.trim()||v.reason.length>300||/\p{Surrogate}/u.test(v.reason))return json({error:'invalid'},400);
+   if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).sort().join(',')!=='action,bundleVersion,expectedVersion,reason,skillId'||!['product-evidence-qa','embedded-project-guide','panda-documented-firmware-help','panda-error-triage','panda-project-planner'].includes(v.skillId as string)||!['review','enable','disable','rollback'].includes(v.action as string)||!Number.isSafeInteger(v.bundleVersion)||(v.bundleVersion as number)<1||!Number.isSafeInteger(v.expectedVersion)||(v.expectedVersion as number)<0||typeof v.reason!=='string'||!v.reason.trim()||v.reason.length>300||/\p{Surrogate}/u.test(v.reason))return json({error:'invalid'},400);
    args={p_input:v};
   }
   const {data,error}=await actor.client.database.rpc(request.method==='GET'?'panda_agent_skills_read':'panda_agent_skill_change',args);

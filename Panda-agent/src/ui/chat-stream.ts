@@ -1,10 +1,12 @@
+import {parseToolActivity} from '../agentic/tool-activity.ts';
+import type {ToolActivity} from '../agentic/contracts.ts';
 export const stages = ['routing_question', 'resolving_product', 'reading_sources', 'searching_sources', 'searching_web', 'selecting_evidence', 'checking_citations', 'saving_answer'] as const;
 export type Stage = typeof stages[number];
 const limit = 4 * 1024 * 1024;
 type Final = { type: 'complete'; data: unknown } | { type: 'error'; error: string };
 
 // A malformed or incomplete stream has an unknown outcome; callers must not resend it.
-export async function readChatStream(body: ReadableStream<Uint8Array>, onActivity: (stage: Stage) => void, onContext?: (context: ContextSummary) => void): Promise<Final> {
+export async function readChatStream(body: ReadableStream<Uint8Array>, onActivity: (stage: Stage) => void, onContext?: (context: ContextSummary) => void, onTool?: (tool: ToolActivity) => void): Promise<Final> {
   const reader = body.getReader();
   const decoder = new TextDecoder('utf-8', { fatal: true });
   let buffer = '', size = 0, count = 0, final: Final | undefined;
@@ -28,6 +30,10 @@ export async function readChatStream(body: ReadableStream<Uint8Array>, onActivit
     if (value.type === 'activity' && Object.keys(value).length === 2 && typeof value.stage === 'string' && stages.includes(value.stage as Stage)) {
       if (++count > 64) throw new Error('Too many events');
       onActivity(value.stage as Stage);
+    } else if (value.type === 'tool') {
+      const tool = Object.keys(value).length === 2 ? parseToolActivity(value.tool) : null;
+      if (!tool || ++count > 64) throw new Error('Invalid tool event');
+      onTool?.(tool);
     } else if (value.type === 'context') {
       const summary = { ...value };
       delete summary.type;

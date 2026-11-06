@@ -10,6 +10,9 @@ import {createGuideAnswer} from './guide-answer';
 import {createGuideClient} from '../guide/client';
 import {createDiagnosticStore} from './diagnostic-store';
 import {createDiagnosticAnswer} from './diagnostic-answer';
+import {createAgenticStore} from './agentic-store';
+import {createAgenticAnswer} from './agentic-answer';
+import {createMcpClient} from '../agentic/mcp-client';
 
 const configuredMode=process.env.PANDA_AGENT_LIGHTWEIGHT_MODE;
 if(configuredMode && configuredMode!=='deterministic-mcu-v1')throw Error('Unsupported Agent mode');
@@ -19,7 +22,16 @@ export const lightweightChatHandlers=createLightweightHandler({
   enabled:()=>process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED==='true',
   authenticate:authenticateLightweight,
   current:actor=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false),
-  store:actor=>({...createLightweightStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),guide:createGuideStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),diagnostic:createDiagnosticStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'')}),
+  store:actor=>({...createLightweightStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),guide:createGuideStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),diagnostic:createDiagnosticStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??''),agentic:createAgenticStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'')}),
+  agenticEnabled:()=>process.env.PANDA_AGENT_AGENTIC_ENABLED==='true',
+  agenticAnswer:createAgenticAnswer({current:currentLightweightSession,baseUrl:process.env.PANDA_AGENT_LIGHTWEIGHT_URL??'',secret:process.env.PANDA_AGENT_LIGHTWEIGHT_SECRET??''}),
+  agenticCancel:async(actor,execution,signal)=>{
+    for(const call of execution.calls){if(!call.digest)continue;
+      const args={subject:actor.subject,sessionId:actor.sessionId!,turnId:call.id,requestBodySha256:call.digest,signal};
+      const result=call.toolId==='fetch_public_docs_mcp'?await createMcpClient({baseUrl:process.env.PANDA_AGENT_LIGHTWEIGHT_URL??'',secret:process.env.PANDA_AGENT_LIGHTWEIGHT_SECRET??''}).cancel(args):call.scope?await createLightweightClient({baseUrl:process.env.PANDA_AGENT_LIGHTWEIGHT_URL??'',secret:process.env.PANDA_AGENT_LIGHTWEIGHT_SECRET??'',mode:'deterministic-mcu-v1'}).cancel({...args,productSku:call.scope.sku}):null;
+      if(result&&!(result.state==='complete'||(result.state==='rejected'&&result.code==='cancelled')))throw Error('Cancellation outcome unknown');
+    }
+  },
   diagnosticEnabled:()=>process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED==='true',
   diagnosticAnswer:createDiagnosticAnswer({current:currentLightweightSession,externalEnabled:()=>process.env.PANDA_AGENT_VENDOR_SEARCH_ENABLED==='true'}),
   guideEnabled:()=>process.env.PANDA_AGENT_GUIDES_ENABLED==='true',

@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-06T02:05:39.825399+00:00",
+  "originalFreezeSha256": "8fd42977a228b8a055be7a565e480f4577e00bbaf0e6e69a9ce291a970ad9fcc",
+  "datasetUnchanged": true,
+  "evaluationExecutedBeforeFix": false,
+  "candidateChangedAfterOriginalFreeze": true,
+  "reason": "Known acceptance execution exposed SQL ambiguous alias n; independent frozen questions/gold were not used to tune the correction. Forward migration preserves all validation and current-source/grant guards.",
+  "migration": "Panda-agent/migrations/20261106090003_panda-agent-composite-vendor-guard.sql",
+  "migrationSha256": "679a3cc4ebaf1b14052bea06fd27ee8ace873f84bf55654e4fe5e83f14056bee",
+  "guardRegression": {
+    "originalFails": true,
+    "singleAliasFixPasses": true,
+    "rollbackChecks": 17
+  },
+  "prohibitsPreImplementationHeldOutClaim": true,
+  "scoringBeforeExecution": {
+    "datasetAndGoldUnchanged": true,
+    "canonicalIdentityCheck": "Bind canonical citation to the accepted x8266 product path, not any PandaByte product with the same ESP8266 MCU quote.",
+    "selfCheckCount": 16,
+    "countCorrection": "Earlier self9 label undercounted the ten existing assertions; same-MCU leakage, safe-refusal/service-failure and old-versus-current saved-observation contracts make sixteen. No observed evaluation answer was used to change scoring.",
+    "acceptedBaselineRefusalTemplates": "Recognize established Phase2 does-not-establish/model-revision/conflicting-identities refusals from source/acceptance records. Explicit service-failure text cannot count as correct semantic abstention."
+  },
+  "baselineSelection": {
+    "selectedBeforeAnyEvaluationRun": true,
+    "datasetAndGoldUnchanged": true,
+    "acceptedBuildDirectory": ".next-lightweight-phase2-acceptance",
+    "acceptedBuildId": "KPC7SFoEOTmBR4tkZIb9C",
+    "acceptedSourceCheckpoint": "c704da1aa6699af91889879cdc3b5e4f24bf6fae",
+    "provenance": "lightweight-phase2-attempt2-20261105.json tests.build and handoff final Phase2 signoff; retained local BUILD_ID independently matches",
+    "baselineBase": "http://localhost:3000",
+    "candidateBase": "http://localhost:3001",
+    "candidateBuildDirectory": ".next-lightweight-phase6-browser",
+    "candidateBuildId": "e9bFRTEQf1PgtAkJZIxfe",
+    "baselineSavedObservation": "Accepted Phase2 handler rejects requestId query. Use plain owned GET after POST and require same fresh thread, exactly one user/assistant pair, original user question and identical POST/GET messages. Candidate additionally requires current requestId status complete.",
+    "preflightInterruptedByTunnel": "Root positive baseline probe encountered ended SSM tunnel49972/8182 connection refused. Preserve and explicitly fence original uncertain attempt; fresh distinct positive control after tunnel45073 readiness. This is not an evaluation run or a source/case change.",
+    "limitation": "Actual accepted Phase2 BFF binary against current approved DB/corpus and Phase6 backward-compatible deterministic worker. Historical Phase2 worker, DB state, current dependencies and complete historical environment are not replayed.",
+    "supersedesOriginalFreezeBaselineChoice": "Current-preserved-Phase2-path fallback replaced by retained accepted Phase2 BFF before execution; original freeze remains immutable."
+  }
+}

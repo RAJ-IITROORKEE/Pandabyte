@@ -9,6 +9,7 @@ type EvidenceInput = {
   subject:string; sessionId:string; turnId:string; productSku:string; question:string; physicalRevision?:string;
   ragClient:RagClient | null; client:Pick<Client,'select'>;
   beforeDispatch: (metadata:{requestBodySha256:string;productSku:string}) => Promise<void>;
+  observeContext?: (counts:{fragments:number;units:number}) => Promise<void>;
   activity?: Adapters['activity'];
   mode?:SelectionMode;
 };
@@ -20,6 +21,7 @@ export async function answerWithLightweight(input:EvidenceInput):Promise<{outcom
   const adapters = createInsforgeAdapters(input.ragClient, async (question, fragments, context) => {
     if (!context || (input.mode==='deterministic-mcu-v1' && !context.completeEligibleScope) || !await context.revalidate()) throw Error('Source no longer current');
     const prepared = prepareSelect({turnId:input.turnId,productSku:input.productSku,question,fragments,...(input.mode ? {mode:input.mode} : {})});
+    await input.observeContext?.({fragments:prepared.input.fragments.length,units:prepared.input.fragments.reduce((n,f)=>n+f.text.length,0)});
     await input.beforeDispatch({requestBodySha256:prepared.requestBodySha256,productSku:input.productSku});
     if (!await context.revalidate()) throw Error('Source no longer current');
     try { wire = await input.client.select({subject:input.subject,sessionId:input.sessionId,prepared}); }

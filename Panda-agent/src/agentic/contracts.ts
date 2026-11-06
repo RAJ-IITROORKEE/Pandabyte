@@ -1,0 +1,14 @@
+export type SkillId='panda-documented-firmware-help'|'panda-error-triage'|'panda-project-planner';
+export type Component={name:string;quantity:number;unit?:string};
+export type ToolActivity={toolId:'panda_scoped_rag'|'fetch_public_docs_mcp'|'convert_units'|'format_bom'}&({state:'running';origin:'execution'}|{state:'complete';origin:'execution'|'recorded'}|{state:'unknown';origin:'execution'|'existing'});
+export type AgenticInput={skillId:SkillId;question:string;products:string[];frameworkVersion:string|null;task:'mcu-comparison'|'firmware-gpio'|'project-outline'|'unit-conversion';components?:Component[];conversion?:{value:number;from:string;to:string}};
+const obj=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
+const text=(v:unknown,max:number):v is string=>typeof v==='string'&&v===v.trim()&&v.length>0&&v.length<=max&&!/\p{Surrogate}/u.test(v);
+export function parseAgenticInput(v:unknown):AgenticInput|null{
+ if(!obj(v)||Object.keys(v).some(k=>!['skillId','question','products','frameworkVersion','task','components','conversion'].includes(k))||!['panda-documented-firmware-help','panda-error-triage','panda-project-planner'].includes(v.skillId as string)||!text(v.question,2000)||!Array.isArray(v.products)||v.products.length>2||v.products.some(x=>!text(x,128)||!/^[A-Za-z0-9_-]+$/.test(x))||new Set(v.products.map(x=>x.toLowerCase())).size!==v.products.length||(v.frameworkVersion!==null&&!text(v.frameworkVersion,80))||!['mcu-comparison','firmware-gpio','project-outline','unit-conversion'].includes(v.task as string))return null;
+ if(v.components!==undefined&&(!Array.isArray(v.components)||v.components.length>12||v.components.some(x=>!obj(x)||Object.keys(x).some(k=>!['name','quantity','unit'].includes(k))||!text(x.name,80)||typeof x.quantity!=='number'||!Number.isFinite(x.quantity)||x.quantity<0||x.quantity>1e12||(x.unit!==undefined&&!text(x.unit,12)))))return null;
+ if(v.conversion!==undefined&&(!obj(v.conversion)||Object.keys(v.conversion).sort().join(',')!=='from,to,value'||typeof v.conversion.value!=='number'||!Number.isFinite(v.conversion.value)||Math.abs(v.conversion.value)>1e12||!text(v.conversion.from,12)||!text(v.conversion.to,12)))return null;
+ if((v.task==='unit-conversion')!==(v.conversion!==undefined)||v.task!=='project-outline'&&v.components!==undefined)return null;
+ const conversion=v.conversion as AgenticInput['conversion'];
+ return {skillId:v.skillId as SkillId,question:v.question,products:[...v.products],frameworkVersion:v.frameworkVersion as string|null,task:v.task as AgenticInput['task'],...(v.components===undefined?{}:{components:(v.components as Component[]).map(c=>({name:c.name,quantity:c.quantity,...(c.unit===undefined?{}:{unit:c.unit})}))}),...(conversion===undefined?{}:{conversion:{value:conversion.value,from:conversion.from,to:conversion.to}})};
+}

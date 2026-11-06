@@ -1,5 +1,5 @@
 import type { InsForgeClient } from '@insforge/sdk';
-import {parseVendorCitation} from '../diagnostics/contracts.ts';
+import {parseVendorCitation,parseCompositeVendorCitation} from '../diagnostics/contracts.ts';
 import { publicSearchCitationUrl, webSearchSection } from '../search/citation-url.ts';
 import {parseProjectMemory} from '../guide/contracts.ts';
 import { uuid, type ChatAnswer, type ChatCitation, type ChatMessage, type ChatRead, type ChatThread, type ChatTurn } from './chat-contracts.ts';
@@ -15,7 +15,7 @@ const bad = (): never => { throw new ChatStoreError('unavailable'); };
 function citations(value: unknown): ChatCitation[] {
   if (!Array.isArray(value) || value.length > 4) return bad();
   return value.map(c => {
-    if(record(c) && Object.hasOwn(c,'kind')) { const vendor=parseVendorCitation(c);return vendor??bad(); }
+    if(record(c) && Object.hasOwn(c,'kind')) { const vendor=parseVendorCitation(c)??parseCompositeVendorCitation(c);return vendor??bad(); }
     if (!record(c) || !string(c.id, 40) || !string(c.title, 300) || !string(c.sourceUrl, 500) || !date(c.capturedAt) || !string(c.quote, 600) || !Array.isArray(c.sectionPath) || c.sectionPath.length > 12 || c.sectionPath.some((p: unknown) => !string(p, 200))) return bad();
     try {
       const u = new URL(c.sourceUrl);
@@ -42,12 +42,15 @@ function message(v: unknown): ChatMessage {
   if (!record(v) || !uuid(v.id) || !['user', 'assistant'].includes(v.role as string) || !string(v.text, 8000) || !date(v.createdAt)) return bad();
   const cs = citations(v.citations);
   if (v.role === 'user' && cs.length) return bad();
-  return { id: v.id, role: v.role as ChatMessage['role'], text: v.text, createdAt: v.createdAt, citations: cs };
+  if(v.toolCards!==undefined&&(!Array.isArray(v.toolCards)||v.toolCards.length>4||v.role!=='assistant'||v.toolCards.some(c=>!record(c)||Object.keys(c).sort().join(',')!=='state,toolId'||!['panda_scoped_rag','fetch_public_docs_mcp','convert_units','format_bom'].includes(c.toolId as string)||!['complete','unknown'].includes(c.state as string))))return bad();
+  if(v.terminalReason!==undefined&&(v.role!=='assistant'||!['answered','clarification','insufficient','unavailable','budget_exhausted','cancelled'].includes(v.terminalReason as string)))return bad();
+  return { id: v.id, role: v.role as ChatMessage['role'], text: v.text, createdAt: v.createdAt, citations: cs,...(v.toolCards===undefined?{}:{toolCards:v.toolCards as ChatMessage['toolCards']}),...(v.terminalReason===undefined?{}:{terminalReason:v.terminalReason as ChatMessage['terminalReason']}) };
 }
 function turn(v: unknown): ChatTurn {
   if (!record(v) || !uuid(v.requestId) || !string(v.question, 2000) || !date(v.createdAt) || !['pending', 'complete'].includes(v.status as string)) return bad();
   if ((v.status === 'pending') !== (v.response === null)) return bad();
-  return { requestId: v.requestId, question: v.question, status: v.status as ChatTurn['status'], response: v.response === null ? null : cleanAnswer(v.response), createdAt: v.createdAt };
+  if(v.workflow!==undefined&&v.workflow!=='agentic')return bad();
+  return { requestId: v.requestId, question: v.question, status: v.status as ChatTurn['status'], response: v.response === null ? null : cleanAnswer(v.response), createdAt: v.createdAt,...(v.workflow===undefined?{}:{workflow:'agentic' as const}) };
 }
 export function parseChatRead(v: unknown): ChatRead {
   if (!record(v) || !Array.isArray(v.messages) || v.messages.length > 200 || !Array.isArray(v.turns) || v.turns.length > 100) return bad();

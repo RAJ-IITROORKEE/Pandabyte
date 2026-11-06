@@ -14,7 +14,8 @@
 .panel h2 { margin:0 0 8px; font-size:18px; }
 .panelHead > div:first-child { flex:1 1 220px; }
 .actions { display:flex; gap:8px; flex-wrap:wrap; }
-.panel button { min-height:40px; border:1px solid var(--divider); color:var(--muted); background:transparent; padding:8px 12px; font:inherit; font-size:13px; cursor:not-allowed; }
+.panel button { min-height:44px; border:1px solid var(--divider); color:var(--muted); background:transparent; padding:8px 12px; font:inherit; font-size:13px; cursor:not-allowed; }
+.panel button:not(:disabled) { cursor:pointer; }
 .empty { display:grid; justify-items:center; text-align:center; gap:8px; margin-top:22px; border:1px dashed var(--border); padding:24px 16px; }
 .empty svg { color:var(--muted); }
 .empty strong { font-size:14px; }

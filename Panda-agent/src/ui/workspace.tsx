@@ -5,7 +5,9 @@ import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import {parseVendorCitation,type VendorCitation} from "../diagnostics/contracts";
+import {parseVendorCitation,parseCompositeVendorCitation,type VendorCitation} from "../diagnostics/contracts";
+import type {ToolActivity} from '../agentic/contracts';
+import {StructuredTaskForm} from './structured-task-form';
 import { AssistantRuntimeProvider, ComposerPrimitive, MessagePrimitive, ThreadPrimitive, useAui, useAuiState, useExternalStoreRuntime, WebSpeechDictationAdapter, type AppendMessage, type ThreadMessageLike } from "@assistant-ui/react";
 import { Archive, ArchiveRestore, ArrowUp, Check, ChevronDown, Copy, ExternalLink, Globe, LogOut, Menu, MoreHorizontal, Search, Settings, SquarePen, Trash2, UserRound, X, Plus, Mic, MicOff, FileText, Volume2, Square } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -25,7 +27,7 @@ import { guideDisabled, diagnosticDisabled, messagePayload, messageQuestion, typ
 const DiagnosticForm=dynamic(()=>import("./diagnostic-form").then(module=>module.DiagnosticForm),{loading:()=> <p role="status">Loading diagnostics…</p>});
 
 type Citation = { id: string; title: string; sourceUrl: string; quote: string; sectionPath: string[]; capturedAt: string } | VendorCitation;
-type ChatMessage = { id: string; role: "user" | "assistant"; text: string; createdAt: string; citations: Citation[] };
+type ChatMessage = { id: string; role: "user" | "assistant"; text: string; createdAt: string; citations: Citation[]; toolCards?: {toolId:ToolActivity['toolId'];state:'complete'|'unknown'}[] };
 type Chat = { id: string; title: string; updatedAt: string; status: "idle" | "pending" | "blocked" };
 type Detail = { thread: Chat; messages: ChatMessage[]; projectMemory?: ProjectMemory | null };
 const activityLabels: Record<Stage, string> = { routing_question: "Understanding your question", resolving_product: "Resolving product", reading_sources: "Reading sources", searching_sources: "Searching sources", searching_web: "Searching the web with Tavily", selecting_evidence: "Selecting evidence", checking_citations: "Checking citations", saving_answer: "Saving answer" };
@@ -49,13 +51,13 @@ const isMobile = () => window.matchMedia("(max-width: 700px)").matches;
 const suggestions = ["What is the Cytron Maker UNO?", "Tell me about the xC5 board", "What does the WS2812B ring listing say?"];
 function tabStorage(): Storage | null { try { return window.sessionStorage; } catch { return null; } }
 
-export function PandaAgentWorkspace({ previewReadOnly = false, guidesEnabled = false, diagnosticsEnabled = false, canManageSkills = false }: { previewReadOnly?: boolean; guidesEnabled?: boolean; diagnosticsEnabled?: boolean; canManageSkills?: boolean }) {
+export function PandaAgentWorkspace({ previewReadOnly = false, guidesEnabled = false, diagnosticsEnabled = false, agenticEnabled = false, canManageSkills = false }: { previewReadOnly?: boolean; guidesEnabled?: boolean; diagnosticsEnabled?: boolean; agenticEnabled?: boolean; canManageSkills?: boolean }) {
   const { user, isLoaded } = useUser();
   if (!isLoaded || !user) return <p className={styles.loading}>Loading account…</p>;
-  return <Workspace key={user.id} user={user} previewReadOnly={previewReadOnly} guidesEnabled={guidesEnabled} diagnosticsEnabled={diagnosticsEnabled} canManageSkills={canManageSkills} />;
+  return <Workspace key={user.id} user={user} previewReadOnly={previewReadOnly} guidesEnabled={guidesEnabled} diagnosticsEnabled={diagnosticsEnabled} agenticEnabled={agenticEnabled} canManageSkills={canManageSkills} />;
 }
 
-function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, canManageSkills }: { user: NonNullable<ReturnType<typeof useUser>["user"]>; previewReadOnly: boolean; guidesEnabled: boolean; diagnosticsEnabled: boolean; canManageSkills: boolean }) {
+function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, agenticEnabled, canManageSkills }: { user: NonNullable<ReturnType<typeof useUser>["user"]>; previewReadOnly: boolean; guidesEnabled: boolean; diagnosticsEnabled: boolean; agenticEnabled:boolean; canManageSkills: boolean }) {
   const { signOut } = useClerk();
   const mobile = useSyncExternalStore(subscribeMobile, isMobile, () => true);
   const [sidebarOverride, setSidebarOpen] = useState<boolean | null>(null);
@@ -73,6 +75,12 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
   const [projectMemory, setProjectMemory] = useState<ProjectMemory | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [diagnosticOpen,setDiagnosticOpen]=useState(false);
+  const [structuredOpen,setStructuredOpen]=useState(false);
+  const structuredTrigger=useRef<HTMLButtonElement>(null);
+  const restoreStructuredFocus=useRef(false);
+  const previousMode=useRef<'guide'|'diagnostic'|null>(null);
+  const [toolActivity,setToolActivity]=useState<ToolActivity[]>([]);
+  const closeStructured=()=>{setStructuredOpen(false);setGuideOpen(previousMode.current==='guide');setDiagnosticOpen(previousMode.current==='diagnostic');structuredTrigger.current?.focus();};
   const [transferring,setTransferring]=useState(false);
   const transferRef=useRef(false);
   const [activity, setActivity] = useState<Stage[]>([]);
@@ -101,6 +109,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
   const [error, setError] = useState("");
   const [uncertain, setUncertain] = useState(false);
   useEffect(() => { if (!busy && uncertain) statusButton.current?.focus(); }, [busy, uncertain]);
+  useEffect(() => { if (!busy && !mutating && !uncertain && restoreStructuredFocus.current) { restoreStructuredFocus.current=false; structuredTrigger.current?.focus(); } }, [busy,mutating,uncertain]);
   const generation = useRef(0);
   const busyRef = useRef(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -137,7 +146,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
   async function loadChat(id: string) {
     if (busyRef.current || transferRef.current || cancelBusy.current || chatLoading.current) return;
     chatLoading.current = true;
-    if (selected?.id !== id) { setRestoreDraft(null); currentAttempt.current = null; setGuideOpen(false); setDiagnosticOpen(false); setProjectMemory(null); }
+    if (selected?.id !== id) { setRestoreDraft(null); currentAttempt.current = null; setGuideOpen(false); setDiagnosticOpen(false); setStructuredOpen(false); setProjectMemory(null); }
     const queried = currentAttempt.current?.threadId === id ? currentAttempt.current : null;
     speech?.stop();
     dictation.cancel();
@@ -177,13 +186,13 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
     await sendMessage({ question, webSearch });
   }
   async function sendMessage(input: MessageInput) {
-    if (("guide" in input && !guidesEnabled)||("diagnostic" in input&&!diagnosticsEnabled)) return;
+    if (("guide" in input && !guidesEnabled)||("diagnostic" in input&&!diagnosticsEnabled)||('agentic' in input&&!agenticEnabled)) return;
     const question = messageQuestion(input);
     if (!question || previewReadOnly || busyRef.current || transferRef.current || loading || mutating || selectedArchived || uncertain || (selected && selected.status !== "idle")) return;
     if (question.length > 2000) { setError("Messages must be 2,000 characters or fewer. Shorten your message and try again."); return; }
     if ("question" in input && input.webSearch && question.length > 400) { setError("Web search accepts up to 400 characters. Shorten your public question or turn Web search off."); return; }
     const optimisticId = crypto.randomUUID();
-    busyRef.current = true; setBusy(true); setMessages(previous => [...previous, { id: optimisticId, role: "user", text: question, createdAt: new Date().toISOString(), citations: [] }]); setActivity([]); setContext(null); setActivityComplete(false); setError("");
+    busyRef.current = true; setBusy(true); setMessages(previous => [...previous, { id: optimisticId, role: "user", text: question, createdAt: new Date().toISOString(), citations: [] }]); setActivity([]); setToolActivity([]); setContext(null); setActivityComplete(false); setError("");
     const controller = new AbortController(); requestController.current = controller;
     const requestId = crypto.randomUUID();
     attemptQuestion.current = question;
@@ -204,7 +213,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
       attempt = attempts.current.begin(thread.id, requestId); currentAttempt.current = attempt;
       const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(thread.id)}/messages`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "text/event-stream" }, body: JSON.stringify(messagePayload(requestId, input)), cache: "no-store", signal: controller.signal });
       if (!response.ok) {
-        if (response.status===409 && !("question" in input) && ("guide" in input ? guideDisabled(response.status,await readJson(response)) : diagnosticDisabled(response.status,await readJson(response)))) {
+        if (response.status===409 && ('guide' in input || 'diagnostic' in input) && ("guide" in input ? guideDisabled(response.status,await readJson(response)) : diagnosticDisabled(response.status,await readJson(response)))) {
           if (!active.current || !attempts.current.current(attempt)) return;
           completed = true; setUncertain(false); setMessages(previous => previous.filter(message => message.id !== optimisticId));
           setError("guide" in input?"Project guides are disabled. You can continue with ordinary product chat.":"Diagnostics are disabled. Your error text is preserved; you can continue with ordinary product chat.");
@@ -215,7 +224,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
       let data: Detail;
       if (response.headers.get("content-type")?.toLowerCase().startsWith("text/event-stream")) {
         if (!response.body) throw new Error("Missing stream");
-        const result = await readChatStream(response.body, stage => { if (active.current && attempt && attempts.current.current(attempt)) setActivity(previous => [...previous, stage]); }, summary => { if (active.current && attempt && attempts.current.current(attempt)) setContext(summary); });
+        const result = await readChatStream(response.body, stage => { if (active.current && attempt && attempts.current.current(attempt)) setActivity(previous => [...previous, stage]); }, summary => { if (active.current && attempt && attempts.current.current(attempt)) setContext(summary); }, tool => {if(active.current && attempt && attempts.current.current(attempt)) setToolActivity(previous=>[...previous,tool]);});
         if (result.type !== "complete") throw new Error("Unconfirmed");
         data = result.data as Detail;
       } else data = await readJson(response) as Detail;
@@ -255,14 +264,14 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
     } catch {
       if (active.current) { setError("Cancellation could not be confirmed. Check status or cancel the pending request again."); setUncertain(true); }
     } finally {
-      if (confirmed) currentAttempt.current = null;
+      if (confirmed) { currentAttempt.current = null; if(structuredOpen) restoreStructuredFocus.current=true; }
       requestController.current = null; busyRef.current = false; cancelBusy.current = false;
       if (active.current) { setBusy(false); setMutating(false); }
     }
   }
   const baseDisabled = previewReadOnly || loading || mutating || selectedArchived || uncertain || selected?.status === "pending" || selected?.status === "blocked";
   const composerDisabled=baseDisabled||transferring;
-  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: composerDisabled || guideOpen || diagnosticOpen, adapters: { dictation: dictation.adapter } });
+  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: composerDisabled || guideOpen || diagnosticOpen || structuredOpen, adapters: { dictation: dictation.adapter } });
 
   useEffect(() => {
     if (!sidebarOpen && restoreFocus.current) { restoreFocus.current = false; toggleRef.current?.focus(); }
@@ -270,7 +279,10 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (!sidebarOpen || !window.matchMedia("(max-width: 700px)").matches) return;
       if (event.key === "Tab") {
-        const items = [...(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), summary, [tabindex="0"]') ?? [])].filter(item => item.getClientRects().length > 0);
+        const items = [...(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), summary, [tabindex="0"]') ?? [])].filter(item => {
+          const closedMenu=item.closest('details:not([open])');
+          return item.getClientRects().length > 0 && (!closedMenu || closedMenu.querySelector('summary')?.contains(item));
+        });
         if (!items?.length) return;
         const first = items[0], last = items[items.length - 1];
         if (event.shiftKey && (document.activeElement === first || !sidebarRef.current?.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
@@ -288,7 +300,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
   }
   function resizeWithPointer(event: PointerEvent<HTMLDivElement>) { if (event.buttons === 1) { event.currentTarget.setPointerCapture(event.pointerId); setWidth(clampWidth(event.clientX)); } }
   async function handleSignOut() { setSigningOut(true); setSignOutError(""); try { await signOut({ redirectUrl: "/" }); } catch { setSigningOut(false); setSignOutError("Could not sign you out. Please try again."); } }
-  function newChat() { if (busyRef.current || transferRef.current || loading || mutating) return; resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setProjectMemory(null); setGuideOpen(false); setDiagnosticOpen(false); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
+  function newChat() { if (busyRef.current || transferRef.current || loading || mutating) return; resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setProjectMemory(null); setGuideOpen(false); setDiagnosticOpen(false); setStructuredOpen(false); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
   async function changeChat(thread: Chat, action: "archive" | "restore" | "delete") {
     if (busyRef.current || transferRef.current || loading || mutating || thread.status !== "idle") return;
     if (action === "delete" && !window.confirm(`Permanently delete "${thread.title || "New chat"}"? This cannot be undone.`)) return;
@@ -303,7 +315,7 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
       if (selected?.id === thread.id) {
         clearActiveChat(tabStorage(), user.id);
         speech?.stop();
-        dictation.cancel(); generation.current++; setComposerEpoch(previous => previous + 1); setSelected(null); setProjectMemory(null); setGuideOpen(false); setDiagnosticOpen(false); setSelectedArchived(false); setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(false); setWebSearch(false);
+        dictation.cancel(); generation.current++; setComposerEpoch(previous => previous + 1); setSelected(null); setProjectMemory(null); setGuideOpen(false); setDiagnosticOpen(false); setStructuredOpen(false); setSelectedArchived(false); setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(false); setWebSearch(false);
       }
     } catch { if (active.current) setHistoryError(`Could not ${action} this chat. Please try again.`); }
     finally { if (active.current) setMutating(false); }
@@ -329,9 +341,9 @@ function Workspace({ user, previewReadOnly, guidesEnabled, diagnosticsEnabled, c
     {sidebarOpen && <div className={styles.resizer} role="separator" aria-label="Resize conversation sidebar" aria-controls="agent-sidebar" aria-orientation="vertical" aria-valuemin={MIN_WIDTH} aria-valuemax={MAX_WIDTH} aria-valuenow={width} tabIndex={0} onKeyDown={resizeWithKeyboard} onPointerDown={resizeWithPointer} onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) setWidth(clampWidth(event.clientX)); }} onPointerUp={event => event.currentTarget.releasePointerCapture(event.pointerId)} />}
     <main id="main" tabIndex={-1} className={styles.main} inert={mobile && sidebarOpen}><header className={styles.header}><div className={styles.headerStart}><button ref={toggleRef} className={styles.menuButton} type="button" aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen} aria-controls="agent-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><div className={styles.model}><strong>Panda Agent</strong></div><span className={styles.badge}>Preview</span></div><ThemeToggle /></header>
       <ThreadPrimitive.Root className={styles.thread}><ThreadPrimitive.Viewport className={styles.viewport}>
-        {!messages.length && !busy && <Welcome disabled={Boolean(composerDisabled || guideOpen || diagnosticOpen)} />}
-        <div className={styles.messageList}><ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage: () => <AssistantMessage messages={messages} speech={speech} speaking={speaking} /> }} />{(busy || activity.length > 0) && <Activity stages={activity} context={context} busy={busy} complete={activityComplete} />}</div>
-      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <div className={styles.status} role="status"><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result."}</span><button ref={statusButton} type="button" disabled={busy || mutating || transferring} onClick={() => void loadChat(selected.id)}>Check status</button>{(uncertain || selected.status === "pending") && <button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button>}</div>}{busy && <button type="button" disabled={loading || mutating} onClick={() => void cancelRequest()}>Cancel request</button>}{guidesEnabled && <button className={styles.workflowToggle} type="button" aria-expanded={guideOpen} disabled={busy || composerDisabled} onClick={() => {setDiagnosticOpen(false);setGuideOpen(!guideOpen);}}>{guideOpen ? "Hide project guide" : "Project guide"}</button>}{guideOpen && <GuideForm memory={projectMemory} disabled={Boolean(busy || composerDisabled)} onClose={() => setGuideOpen(false)} onSubmit={guide => void sendMessage({ guide })} />}{diagnosticsEnabled && <button className={styles.workflowToggle} type="button" aria-expanded={diagnosticOpen} disabled={busy || composerDisabled} onClick={()=>{setGuideOpen(false);setDiagnosticOpen(!diagnosticOpen);}}>{diagnosticOpen?"Hide diagnostics":"Diagnose error"}</button>}{diagnosticOpen && <DiagnosticForm disabled={Boolean(busy || baseDisabled)} threadId={selected?.id??null} ensureThread={ensureDiagnosticThread} onTransferStateChange={value=>{transferRef.current=value;setTransferring(value);}} onClose={()=>setDiagnosticOpen(false)} onSubmit={diagnostic=>sendMessage({diagnostic})}/>}<div hidden={guideOpen || diagnosticOpen}><ChatComposer key={composerEpoch} restoreDraft={restoreDraft} webSearch={webSearch} disabled={busy || composerDisabled || guideOpen || diagnosticOpen} cancelDictation={dictation.cancel} /></div><p className={styles.disclaimer}>Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
+        {!messages.length && !busy && <Welcome disabled={Boolean(composerDisabled || guideOpen || diagnosticOpen || structuredOpen)} />}
+        <div className={styles.messageList}><ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage: () => <AssistantMessage messages={messages} speech={speech} speaking={speaking} /> }} />{busy && toolActivity.length > 0 && <ToolProgress tools={toolActivity} />}{(busy || activity.length > 0) && <Activity stages={activity} context={context} busy={busy} complete={activityComplete} />}</div>
+      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <div className={styles.status} role="status"><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result."}</span><button ref={statusButton} type="button" disabled={busy || mutating || transferring} onClick={() => void loadChat(selected.id)}>Check status</button>{(uncertain || selected.status === "pending") && <button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button>}</div>}{busy && <button type="button" disabled={loading || mutating} onClick={() => void cancelRequest()}>Cancel request</button>}{guidesEnabled && <button className={styles.workflowToggle} type="button" aria-expanded={guideOpen} disabled={busy || composerDisabled} onClick={() => {setDiagnosticOpen(false);setStructuredOpen(false);setGuideOpen(!guideOpen);}}>{guideOpen ? "Hide project guide" : "Project guide"}</button>}{guideOpen && <GuideForm memory={projectMemory} disabled={Boolean(busy || composerDisabled)} onClose={() => setGuideOpen(false)} onSubmit={guide => void sendMessage({ guide })} />}{diagnosticsEnabled && <button className={styles.workflowToggle} type="button" aria-expanded={diagnosticOpen} disabled={busy || composerDisabled} onClick={()=>{setGuideOpen(false);setStructuredOpen(false);setDiagnosticOpen(!diagnosticOpen);}}>{diagnosticOpen?"Hide diagnostics":"Diagnose error"}</button>}{diagnosticOpen && <DiagnosticForm disabled={Boolean(busy || baseDisabled)} threadId={selected?.id??null} ensureThread={ensureDiagnosticThread} onTransferStateChange={value=>{transferRef.current=value;setTransferring(value);}} onClose={()=>setDiagnosticOpen(false)} onSubmit={diagnostic=>sendMessage({diagnostic})}/>}{agenticEnabled && <button ref={structuredTrigger} className={styles.workflowToggle} type="button" aria-expanded={structuredOpen} disabled={busy || composerDisabled} onClick={()=>{if(structuredOpen){closeStructured();}else{previousMode.current=guideOpen?'guide':diagnosticOpen?'diagnostic':null;setGuideOpen(false);setDiagnosticOpen(false);setStructuredOpen(true);}}}>{structuredOpen?'Hide structured task':'Structured task'}</button>}<div hidden={!structuredOpen}><StructuredTaskForm disabled={Boolean(busy || composerDisabled)} onClose={closeStructured} onSubmit={agentic=>void sendMessage({agentic})}/></div><div hidden={guideOpen || diagnosticOpen || structuredOpen}><ChatComposer key={composerEpoch} restoreDraft={restoreDraft} webSearch={webSearch} disabled={busy || composerDisabled || guideOpen || diagnosticOpen || structuredOpen} cancelDictation={dictation.cancel} /></div><p className={styles.disclaimer}>Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
     </main></div></AssistantRuntimeProvider>;
 }
 
@@ -373,16 +385,30 @@ function ChatComposer({ restoreDraft, webSearch, disabled, cancelDictation }: { 
 
 function Welcome({ disabled }: { disabled: boolean }) { const aui = useAui(); return <section className={styles.intro} aria-labelledby="panda-agent-title"><span className={styles.logo}><Image src="/brand/pandabyte-logo.png" alt="PandaByte" width={558} height={564} /></span><h1 id="panda-agent-title">How can I help you today?</h1><p>Ask about your ideas, projects or PandaByte products.</p><div className={styles.suggestions}>{suggestions.map(text => <button type="button" disabled={disabled} key={text} onClick={() => { aui.thread.composer().setText(text); }}>{text}</button>)}</div></section>; }
 function UserMessage() { return <MessagePrimitive.Root className={styles.userMessage}><MessagePrimitive.Parts /></MessagePrimitive.Root>; }
+const toolNames:Record<ToolActivity['toolId'],string>={panda_scoped_rag:'Approved sources',fetch_public_docs_mcp:'Official documentation',convert_units:'Unit conversion',format_bom:'Component outline'};
+function ToolProgress({tools}:{tools:ToolActivity[]}) {
+ const latest=tools[tools.length-1];
+ return <p className={styles.status} role="status">{toolNames[latest.toolId]}: {latest.state==='running'?'Working':latest.state==='unknown'?'Outcome unknown':latest.origin==='recorded'?'Previously recorded result':'Complete'}</p>;
+}
+function SavedToolCards({cards}:{cards:NonNullable<ChatMessage['toolCards']>}) {
+ return <div className={styles.sources}><strong>Observed tools</strong>{cards.map((card,index)=><div className={styles.savedTool} key={index}>{toolNames[card.toolId]} · {card.state==='complete'?'Complete':'Outcome unknown'}</div>)}</div>;
+}
+const externalReferenceUrl='https://docs.espressif.com/projects/esp-idf/en/v5.5.1/esp32/api-reference/peripherals/gpio.html';
+function ExternalReference({text}:{text:string}) {
+ const match=text.match(/Unreviewed external reference: GPIO & RTC GPIO \(([^)]+)\) https:\/\/docs\.espressif\.com\/projects\/esp-idf\/en\/v5\.5\.1\/esp32\/api-reference\/peripherals\/gpio\.html/);
+ if(!match || !Number.isFinite(Date.parse(match[1]))) return null;
+ return <details className={styles.sourceCard}><summary>External reference · ESP-IDF 5.5.1 <ChevronDown size={16} aria-hidden="true" /></summary><div className={styles.sourceContent}><strong>GPIO &amp; RTC GPIO</strong><small>docs.espressif.com · retrieved {match[1]}</small><p>This reference does not establish board applicability or wiring.</p><a href={externalReferenceUrl} target="_blank" rel="noopener noreferrer">Open reference <ExternalLink size={13} aria-hidden="true" /></a></div></details>;
+}
 function AssistantMessage({ messages, speech, speaking }: { messages: ChatMessage[]; speech: ReturnType<typeof createReadAloud> | null; speaking: string | null }) {
   const id = useAuiState(state => state.message.id);
   const item = messages.find(message => message.id === id);
   const [copied, setCopied] = useState(false);
-  return <MessagePrimitive.Root className={styles.assistantMessage}><div className={styles.messageLabel}>Panda Agent</div><div className={styles.messageText}><MessagePrimitive.Parts components={{ Text: item?.citations.length ? () => <CitedMarkdown messageId={item.id} citationIds={item.citations.map(citation => citation.id)} /> : MarkdownText }} /></div>{!!item?.citations.length && <div className={styles.sources}><strong>Sources</strong>{item.citations.map(citation => <SourceCitation key={citation.id} citation={citation} messageId={item.id} />)}</div>}{item && <div className={styles.messageActions}><button className={styles.copy} type="button" onClick={() => { void navigator.clipboard.writeText(item.text).then(() => setCopied(true)).catch(() => setCopied(false)); }}><Copy size={15} /> {copied ? "Copied" : "Copy"}</button><button className={styles.copy} type="button" disabled={!speech} title={speech ? undefined : "Read aloud is unavailable in this browser"} onClick={() => speaking === item.id ? speech?.stop() : speech?.play(item.id, item.text)}>{speaking === item.id ? <Square size={15} aria-hidden="true" /> : <Volume2 size={15} aria-hidden="true" />} {speaking === item.id ? "Stop reading" : speech ? "Read aloud" : "Read aloud unavailable"}</button></div>}</MessagePrimitive.Root>;
+  return <MessagePrimitive.Root className={styles.assistantMessage}><div className={styles.messageLabel}>Panda Agent</div><div className={styles.messageText}><MessagePrimitive.Parts components={{ Text: item?.citations.length ? () => <CitedMarkdown messageId={item.id} citationIds={item.citations.map(citation => citation.id)} /> : MarkdownText }} /></div>{!!item?.toolCards?.length && <SavedToolCards cards={item.toolCards} />}{!!item?.citations.length && <div className={styles.sources}><strong>Sources</strong>{item.citations.map(citation => <SourceCitation key={citation.id} citation={citation} messageId={item.id} />)}</div>}{item && <ExternalReference text={item.text} />}{item && <div className={styles.messageActions}><button className={styles.copy} type="button" onClick={() => { void navigator.clipboard.writeText(item.text).then(() => setCopied(true)).catch(() => setCopied(false)); }}><Copy size={15} /> {copied ? "Copied" : "Copy"}</button><button className={styles.copy} type="button" disabled={!speech} title={speech ? undefined : "Read aloud is unavailable in this browser"} onClick={() => speaking === item.id ? speech?.stop() : speech?.play(item.id, item.text)}>{speaking === item.id ? <Square size={15} aria-hidden="true" /> : <Volume2 size={15} aria-hidden="true" />} {speaking === item.id ? "Stop reading" : speech ? "Read aloud" : "Read aloud unavailable"}</button></div>}</MessagePrimitive.Root>;
 }
 
 function SourceCitation({ citation, messageId }: { citation: Citation; messageId: string }) {
   const webExcerpt = citation.sectionPath.length === 1 && citation.sectionPath[0] === webSearchSection;
-  const vendor="kind" in citation?parseVendorCitation(citation):null;
+  const vendor="kind" in citation?(parseVendorCitation(citation)??parseCompositeVendorCitation(citation)):null;
   const href = ("kind" in citation?!!vendor:publicSearchCitationUrl(citation.sourceUrl)) ? citation.sourceUrl : undefined;
   const domain = href ? new URL(href).hostname : "Link unavailable";
   return <details className={styles.sourceCard} id={`source-${messageId}-${citation.id}`}>

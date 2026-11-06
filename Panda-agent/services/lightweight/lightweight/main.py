@@ -16,4 +16,4 @@ if profile_name in PROFILES_V1:
     api_key = os.environ.get('PANDA_LIGHTWEIGHT_OPENROUTER_KEY', '')
     if api_key and len(configured) >= 32:
         provider = configured_profile(profile_name, api_key)
-app = create_app(secret=secret, journal_path=os.environ.get('PANDA_LIGHTWEIGHT_JOURNAL', '/data/lightweight.sqlite'), provider=provider, selector_mode=selector_mode, guide_enabled=os.environ.get('PANDA_LIGHTWEIGHT_GUIDE_ENABLED')=='true' and len(configured)>=32, image_enabled=os.environ.get('PANDA_LIGHTWEIGHT_IMAGES_ENABLED')=='true' and len(configured)>=32, image_root='/tmp/panda-diagnostic-images')
+app = create_app(secret=secret, journal_path=os.environ.get('PANDA_LIGHTWEIGHT_JOURNAL', '/data/lightweight.sqlite'), provider=provider, selector_mode=selector_mode, guide_enabled=os.environ.get('PANDA_LIGHTWEIGHT_GUIDE_ENABLED')=='true' and len(configured)>=32, image_enabled=os.environ.get('PANDA_LIGHTWEIGHT_IMAGES_ENABLED')=='true' and len(configured)>=32, image_root='/tmp/panda-diagnostic-images',mcp_enabled=os.environ.get('PANDA_LIGHTWEIGHT_MCP_ENABLED')=='true' and len(configured)>=32)

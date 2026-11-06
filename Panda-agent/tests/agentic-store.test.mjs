@@ -1,0 +1,20 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {createHmac} from 'node:crypto';
+import {createAgenticStore,agenticResultHash,stableJson} from '../src/server/agentic-store.ts';
+import {buildPlan} from '../src/agentic/plan.ts';
+import {agenticManifests} from '../src/agentic/manifests.ts';
+import {agenticSkills} from '../src/agentic/skills.ts';
+const thread='11111111-1111-4111-8111-111111111111',request='22222222-2222-4222-8222-222222222222',callId='33333333-3333-4333-8333-333333333333',key='ab'.repeat(32);
+const input={skillId:'panda-project-planner',question:'Build a sensor project',products:[],frameworkVersion:null,task:'project-outline',components:[{name:'sensor',quantity:1}]};
+const p=buildPlan(input);const call={id:callId,toolId:'format_bom',needId:'project-bom',inputHash:'a'.repeat(64),state:'complete',digest:null,scope:null,result:{items:[{name:'sensor',quantity:1}]},resultHash:null};call.resultHash=agenticResultHash(call.result);
+const execution={input,plan:p.plan,planHash:p.planHash,deadlineAt:Date.now()+30000,cancelled:false,terminalReason:null,skill:{id:input.skillId,bundleVersion:1,hash:'b'.repeat(64),epoch:1},toolGrants:[{id:'format_bom',hash:agenticManifests.find(x=>x.id==='format_bom').hash,epoch:1,enabled:true}],calls:[call]};
+function fixture(data){const calls=[];const actor={subject:'fixture-owner',sessionId:'fixture-session',client:{database:{rpc:async(name,args)=>{calls.push({name,args});return {data,error:null}}}}};return {store:createAgenticStore(actor,key),calls};}
+test('execution RPC is signed for actor, thread and request and never sends a bare authority',async()=>{const f=fixture(null);assert.equal(await f.store.execution(thread,request),null);const x=f.calls[0];assert.equal(x.name,'panda_agent_composite_execution');assert.deepEqual(Object.keys(x.args).sort(),['p_mac','p_payload']);const payload=JSON.parse(x.args.p_payload);assert.equal(payload.subject,'fixture-owner');assert.equal(payload.thread,thread);assert.equal(payload.request,request);assert.equal(payload.action,'execution');assert.equal(x.args.p_mac,createHmac('sha256',Buffer.from(key,'hex')).update('panda-composite-db-v1\n'+x.args.p_payload).digest('hex'));});
+test('stable result hashing ignores JSON object key order',()=>{assert.equal(stableJson({b:1,a:{z:2,y:3}}),stableJson({a:{y:3,z:2},b:1}));assert.equal(agenticResultHash({b:1,a:2}),agenticResultHash({a:2,b:1}));});
+test('tampered and oversized cached results fail closed',async()=>{const valid=fixture(execution);assert.equal((await valid.store.execution(thread,request)).calls.length,1);const tampered=fixture({...execution,calls:[{...call,resultHash:'0'.repeat(64)}]});await assert.rejects(tampered.store.execution(thread,request));const result={items:[{name:'x'.repeat(25000),quantity:1}]};const large=fixture({...execution,calls:[{...call,result,resultHash:agenticResultHash(result)}]});await assert.rejects(large.store.execution(thread,request));});
+test('descriptor hydrates exactly one selected pinned skill and rejects body/hash/permission/manifest tampering',async()=>{
+ const bundle=agenticSkills['panda-project-planner'][0];
+ const descriptor={skill:{id:bundle.id,bundleVersion:bundle.bundleVersion,hash:bundle.hash,epoch:1,permissions:[...bundle.permissions]},tools:bundle.permissions.map(id=>({id,hash:agenticManifests.find(m=>m.id===id).hash,epoch:1,enabled:true}))};
+ const good=fixture(descriptor),loaded=await good.store.grants(bundle.id);
+ assert.equal(loaded.skill.body,bundle.body);assert.equal(good.calls.length,1);assert.deepEqual(good.calls[0].args,{p_skill:bundle.id});assert.equal(Object.hasOwn(descriptor.skill,'body'),false);
+ for(const bad of [{...descriptor,skill:{...descriptor.skill,hash:'0'.repeat(64)}},{...descriptor,skill:{...descriptor.skill,permissions:['shell']}},{...descriptor,skill:{...descriptor.skill,body:bundle.body}},{...descriptor,tools:[{...descriptor.tools[0],hash:'0'.repeat(64)}]}])await assert.rejects(fixture(bad).store.grants(bundle.id));
+});

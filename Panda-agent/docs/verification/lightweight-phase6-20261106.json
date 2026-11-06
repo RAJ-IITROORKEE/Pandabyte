@@ -1,0 +1,1522 @@
+{
+  "phase": 6,
+  "date": "2026-11-06",
+  "timezone": "Asia/Calcutta",
+  "result": "IN_PROGRESS",
+  "stage": "NARROW_IMPLEMENTATION_REVIEW_PASS_BROAD_HELD_OUT_MULTIHOP_GATE_NOT_ESTABLISHED_CHECKPOINT_PENDING",
+  "lastPassingPhase": 5,
+  "phase7": "PENDING",
+  "phase8": "PENDING",
+  "authorization": "Explicit user next-phase continuation after Phase5 local checkpoint; no repeat approval gate",
+  "branch": "codex/panda-agent-fastapi-replacement",
+  "phase5SourceCommit": "a1c5b140a6fcaedd4639220b9893be919f089d86",
+  "startHead": "1359f95eb608fb54cdcab17542ca0aa8225fcdb8",
+  "startHeadVerifiedLocally": true,
+  "cleanBeforePhase6ReportedByRoot": true,
+  "contract": "../lightweight-phase6-contract.md",
+  "retrievalPreflight": "../lightweight-phase6-retrieval-preflight.md",
+  "brief": {
+    "path": "C:/Users/rajra/Downloads/prompt (1).md",
+    "section": "Phase6 - Enable free tools, MCP and bounded agentic RAG",
+    "exactSectionRead": true,
+    "sha256": "4a52dfa572d8538e4517d6f3fe3ad120f0ace71a34dba706e3d2c6b45e5e7e92"
+  },
+  "ownership": {
+    "root": "Dependency/broker review, exact wire/plan, SQL/locks/shared integration/runtime/provider/Git operations",
+    "sol": "Phase6 contract, handoff, sanitized verification, independent review and final gate signoff",
+    "implementationWorkersAssigned": true,
+    "reviewLeadConfiguration": {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "evidence": "Parent worker configuration; not independent model introspection"
+    }
+  },
+  "currentControl": {
+    "webBuild": "e9bFRTEQf1PgtAkJZIxfe",
+    "ownedWebExecLastReported": null,
+    "workerImage": "9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+    "workerPackage": "d7f2ffcdafa0a52d90a250c82fc55ce738b686c46fb25233a42c878f43985ff5",
+    "guideVersion": 1,
+    "guideRegistryEpoch": 7,
+    "searchVendorDocsEnabled": false,
+    "searchVendorDocsEpoch": 2,
+    "vendorVersionState": "withdrawn, permitted rights, document epoch3/current null",
+    "openRouterEnabled": false,
+    "visionEnabled": false,
+    "phase6RuntimeChange": true,
+    "privateTunnelExecLastReported": 45073,
+    "phase6DatabaseInstalled": true,
+    "phase6CustomerFlagsEnabled": true,
+    "servingWorkerRemainsPhase5": false,
+    "controlObservation": "Root reports current Phase6 production Web on3001, selected-target private runtime, all three reviewed skills and all four tools enabled; MCP epoch3/other tool epochs1",
+    "modelsEnabled": false,
+    "mcpEnabled": true,
+    "webBuildObservation": "Root reports served final closed-details focus-fix production build; actual mobile Green receipt independently read",
+    "phase6ToolEpochs": {
+      "panda_scoped_rag": 1,
+      "fetch_public_docs_mcp": 3,
+      "convert_units": 1,
+      "format_bom": 1
+    },
+    "recoveryRerunInProgress": false,
+    "postCleanupControlObservation": "Root observed three new skills and four tools enabled through genuine guarded Admin UI; no new privilege or authentication change."
+  },
+  "sourceFindings": {
+    "canonicalPrimaryReuse": [
+      "src/retrieval/answers.ts",
+      "src/retrieval/insforge-adapters.ts",
+      "src/lightweight/evidence.ts"
+    ],
+    "existingWireAndPersistence": "Accepted simple path remains one SKU; new distinct composite turn/call authority is implemented and installed default OFF",
+    "standaloneLegacyRagBroker": "Absent from current checkout; original reference tied to removed native verifyExecution authority; no wholesale copy/fallback",
+    "existingHttpToolIsMcp": false,
+    "newSkillRegistryGap": "Resolved by applied forward schema/seed: three new OFF skills, six unreviewed versions; actual Admin lifecycle acceptance pending",
+    "typedUnitAndBomToolsFound": true,
+    "sourceVisibleEngineeringCases": {
+      "count": 20,
+      "heldOut": false
+    },
+    "newPhase6FailingTestsRun": true
+  },
+  "upstreamReadOnlyObservation": {
+    "date": "2026-11-06",
+    "fetchReadme": "https://raw.githubusercontent.com/modelcontextprotocol/servers/main/src/fetch/README.md",
+    "license": "https://raw.githubusercontent.com/modelcontextprotocol/servers/main/LICENSE",
+    "mcpToolsSpecReviewed": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools",
+    "unadoptedCurrentMain": true,
+    "findings": [
+      "README declares MCP SDK2.x",
+      "Optional Node/npm first-use extraction must be disabled/reviewed",
+      "README acknowledges DNS check does not prevent rebinding/proxy-only resolution",
+      "Current repo license is Apache2/MIT transition with separate documentation terms",
+      "Tool listing differs from actual protocol invocation"
+    ],
+    "actualPinLicenseDependencyProofComplete": "Pinned wheel/license review and ARM installation/tests proved; image-level notice-file evidence tracked separately",
+    "observationScope": "Historical initial reference review; stock reference remains unadopted",
+    "stockReferencePackageInstalled": false,
+    "officialSdkInstalledInArmCandidate": true
+  },
+  "implementationRuling": {
+    "date": "2026-11-06",
+    "decision": "Original first-party restricted Fetch MCP is consistent with the brief's reference-candidate requirement",
+    "basis": "Exact Phase6 brief calls the reference the first candidate, requires restricted adaptation, pin/license review and actual allowed MCP execution; it does not mandate copied source",
+    "genuineWireRequired": [
+      "initialize",
+      "notifications/initialized",
+      "tools/list",
+      "tools/call with actual child HTTP"
+    ],
+    "sourceCopy": false,
+    "runtimeAcceptance": false,
+    "dependencyStaticPreflight": "57 exact pins preserve44/add13;17 additional notice/author hashes reviewed; actual ARM install and77 tests pass",
+    "compoundAuthority": "Implemented signed begin/claim/bind/record/finish/execution/cancel plus current safe read; new records installed default OFF"
+  },
+  "budget": {
+    "maxEvidenceNeeds": 3,
+    "maxTotalToolInvocations": 4,
+    "briefModelCallCeiling": 2,
+    "configuredModelCallAllowance": 0,
+    "paidAllowance": 0,
+    "maxReformulations": 1,
+    "maxConcurrentReadonlyTasks": 2,
+    "sharedDeadlineMs": 30000,
+    "questionUtf16Units": 2000,
+    "publicRequestBytes": 8192,
+    "wholeFragments": 8,
+    "contextUtf16Units": 20000,
+    "maxSelections": 4,
+    "maxQuoteUtf16Units": 600,
+    "nestedRetriesShareBudget": true,
+    "aggregateContextAccountingFreezeRequired": false,
+    "statusAndCancelCannotRedispatchOrRefillBudget": true,
+    "aggregateContextAccountingFrozen": true,
+    "maxTotalQuoteUtf16Units": 600,
+    "metadataOnlyMcpReference": {
+      "canonicalFragments": 0,
+      "canonicalContextUnits": 0,
+      "previousConservativeReservation": {
+        "fragments": 1,
+        "units": 22
+      },
+      "reason": "Only fixed dated title/URL/resultHash released; fetched header/body discarded privately, not selector/model context or final technical claim",
+      "chargedSeparately": [
+        "shared invocation",
+        "aggregate262144 HTTP body bytes",
+        "4096-byte wire/result",
+        "deadline and child resources",
+        "bounded final answer/reference metadata"
+      ],
+      "fetchedExcerptRequiresActualContextCharge": true,
+      "approvedVendorPassagesCount": true,
+      "twoEightFragmentProductScopesStillExceedLimit": true
+    }
+  },
+  "authorityRequirements": [
+    "Distinct composite kind and immutable ordered scope-set/need-plan binding",
+    "Current reviewed skill and every used tool grant/version/hash intersection",
+    "One-use per-call capability and receipt; shared durable spent budget",
+    "One protected durable answer with literal/source-set final-save and history/replay fences",
+    "Unknown dispatch status-only; cancellation/tombstone prevents delayed execution",
+    "Preserve current lock ordering/NOWAIT availability behavior and revoked raw helpers",
+    "External output untrusted/labeled; no automatic canonical publication or corpus widening",
+    "Real MCP tool call required; no HTTP or listing relabel",
+    "Child processes/environment/stdout/network bounded and reaped; all resources inside container budget"
+  ],
+  "evaluation": {
+    "state": "RECOVERY_RERUN_MANUAL_USAGE_CLEANUP_QUIESCENT_INVENTORY_REVIEWED_FINAL_CHECKPOINT_SIGNOFF_PENDING",
+    "heldOutPartitionFrozen": false,
+    "baseline": "Actual accepted Phase2 BFF KPC7SFoEOTmBR4tkZIb9C onlocalhost3000, same question/current approved DB/corpus/current dependencies/Phase6 private deterministic worker; complete historical stack not replayed",
+    "sourceVisibleSetIsHeldOut": false,
+    "requiredMetrics": [
+      "support",
+      "correct abstention",
+      "wrong-product/stale-source leakage",
+      "tool executions/status/cache reads",
+      "model/cost counters",
+      "sample count",
+      "empirical p50/p95"
+    ],
+    "p50Ms": null,
+    "p95Ms": null,
+    "actualMcpFetches": null,
+    "phase6ModelCalls": null,
+    "phase6PaidCalls": null,
+    "independentPostImplementationPartitionFrozen": true,
+    "preImplementationHeldOut": false,
+    "dataset": "../../tests/fixtures/phase6-eval-independent-v1.json",
+    "datasetSha256": "8fa6cc763cb16d0e78959c73b66b1828bd8999fd5500ff3cecec301d5b308c23",
+    "freeze": "../../tests/fixtures/phase6-eval-independent-v1.freeze.json",
+    "cases": 10,
+    "answerableCases": 4,
+    "abstentionCases": 6,
+    "twoSourceCases": 2,
+    "runner": "../../scripts/phase6-eval.mjs",
+    "selfChecks": 20,
+    "selfCheckNetworkCalls": 0,
+    "actualToolExecutions": null,
+    "statusReads": null,
+    "cacheReads": null,
+    "manualFullClaimSupport": null,
+    "usageReconciliationRequired": true,
+    "limitation": "Fresh questions exercise already implemented narrow tasks. Two-source cases combine one checked listing MCU and independent official-document reference metadata, not two canonical technical claims or general multi-hop.",
+    "candidateSourceFreezeIsFullTree": false,
+    "typedRejections": "Expected candidate400/invalid+owned absent request+zero messages are counted separately without saved answer or completed-answer latency;503 does not pass",
+    "freezeAmendment": "../../tests/fixtures/phase6-eval-independent-v1.amendment.json",
+    "preEvaluationSqlGuardCorrectionDisclosed": true,
+    "baselineBuildId": "KPC7SFoEOTmBR4tkZIb9C",
+    "baselineSourceCheckpoint": "c704da1aa6699af91889879cdc3b5e4f24bf6fae",
+    "candidateBuildId": "e9bFRTEQf1PgtAkJZIxfe",
+    "baselineBase": "http://localhost:3000",
+    "candidateBase": "http://localhost:3001",
+    "baselineChoiceAmendedBeforeAnyRun": true,
+    "acceptedBuildProvenanceIndependentlyMatched": true,
+    "completeHistoricalStackReplay": false,
+    "scoringCanonicalIdentity": "Exact accepted x8266 URL path plus literal MCU field; rejects same-MCU citations from another product",
+    "scoringCorrectionsBeforeExecution": "Known accepted Phase2 safe refusal templates recognized; explicit service failure cannot count as correct semantic abstention; exact x8266 URL rejects same-MCU wrong product. No eval answer used to change questions/gold/scoring.",
+    "baselineQualification": {
+      "positiveProbe": "POST non200; no repeat POST; original durable attempt status-only observed",
+      "oldObserverQuery": "Accepted P2 handler forbids requestId query; GET with query400 is expected contract mismatch, use plain owned GET",
+      "currentObserver": "Current3001 owner-scoped GET shows blocked thread/one user message/no MCU literal",
+      "cause": "Root found ended SSM tunnel49972 and8182 refused connections; source core protocol compatibility remains supported. Restarted45073; original uncertain work fenced/status-only before distinct fresh positive control.",
+      "action": "Root inspect original prepared execution and private status/journal; no evaluation or target fallback until cause established",
+      "oldSavedObservation": "Baseline plainGET requires same fresh owned thread, original user question, one exact pair and POST/GET identical messages; candidate additionally requires requestId status complete"
+    },
+    "recoveryAmendment": "../../tests/fixtures/phase6-eval-independent-v1.recovery-amendment.json",
+    "rerunClassification": "recovery_rerun_after_disclosed_runtime_fix",
+    "newIndependentHeldOutEvaluation": false,
+    "rerunManualAndUsageReconciliationPending": false,
+    "recoveryReport": "phase6-eval-recovery-f0628e24-6a6c-42ef-82a1-181b66fd6cf8.json"
+  },
+  "checks": {
+    "phase5PassBeforeStart": true,
+    "phase6StartRecordedBeforeCode": true,
+    "exactBriefSectionRead": true,
+    "sourceAndSkillReview": true,
+    "dependencyLicenseResourceGate": "ACTUAL_RECOVERY_ARM83_PASS_PRIOR_PIN_NOTICE_PROOF_RETAINED_PHASE7_RESOURCE_MEASUREMENTS_PENDING",
+    "wireAndPlanFreeze": "FROZEN_BACKEND_IMPLEMENTED_INTEGRATION_REVIEW",
+    "actualMcpAllowedFetch": "PASS_REAL_SDK_STDIO_SIGNED_HTTP_AND_ROOT_CUSTOMER_RELOAD_ON_RECOVERY_IMAGE",
+    "ssrfRedirectCancellationBudgetFixtures": "LINUX_FIXTURE_SUITE_AND_ACTUAL_HTTP_TOMBSTONE_CHILD_CLEANUP_PASS_MAPPING_REVIEW_PENDING",
+    "newSkillAdminLifecycleAndCrossSkillDenial": "ACTUAL_ADMIN_THREE_V1_REVIEW_ENABLE_FIRMWARE_V2_REVIEW_ENABLE_ROLLBACK_V1_DISABLE_ENABLE_ROOT_OBSERVED_GENUINE_API_DENIALS_PASS",
+    "currentGrantScopeSetCommitReplayRaces": "BROWSER_MCP_DISABLE_MASKS_OLD_ANSWER_BLOCKS_NEXT_REENABLE_DOES_NOT_REVIVE_PROOF_SQL_FIXTURES_PASS_COMBINED_LIVE_SOURCE_RACES_NOT_CLAIMED",
+    "genuineApiIsolationAndBrowserToolCards": "36_GENUINE_ENABLED_API_CHECKS_PASS_AND_ROOT_BROWSER_TWO_SOURCE_TOOL_CARDS_RELOAD_WITHDRAWAL_CORE_PASS",
+    "heldOutComparison": "NARROW_POSTIMPLEMENTATION_COMPARISON_REVIEWED_ORIGINAL_MANDATED_HELD_OUT_MULTIHOP_GATE_NOT_ESTABLISHED_PHASE_PASS_BLOCKED",
+    "finalSourceImageCleanupCheckpoint": "RECOVERY_IMAGE22_HASHES_MATCH_2USERS20CHATS_REMOVED_EIGHT_TABLES_ZERO_ADMIN_CONTROLS_OBSERVED_QUIESCENT_HOST_PASS_LOCAL_CHECKPOINT_SIGNOFF_PENDING",
+    "coreBrowserAfterAdditiveDb": "PASS_PHASE5_OWNER_QUOTE_SOURCE_RELOAD",
+    "descriptorCustomerBodyExclusion": "RED_GREEN_ROLLBACK_THEN_EXACT_FORWARD_APPLY_READBACK_PASS",
+    "installedDependenciesAndNotices": "ACTUAL_ARM_IMAGE_57_VERSIONS_17_RETAINED_NOTICE_FILES_MATCH",
+    "fullLocalAgentNode": "260_PASS_0_FAIL_0_SKIP_58_FILES_INTEGRATED_LOG_INDEPENDENTLY_REVIEWED_SUPERSEDES_OVERLAPPING_258",
+    "typecheck": "PASS_REPORTED_BY_ROOT",
+    "targetedLint": "PASS_REPORTED_BY_ROOT",
+    "installedSqlRollback": "17_PASS_AFTER_FORWARD_ALIAS_GUARD_RED16_GREEN17_ALL_STATE_RESTORED_SYNTHETIC_SQL_ACTORS",
+    "fullRepositoryLint": "PASS_QUIET_WARNING_SUPPRESSED_FOLLOWUP_FINAL_SOURCE_LINT_PENDING",
+    "productionBuild": "FINAL_e9bFRTEQf1PgtAkJZIxfe_BUILD_AND_ACTUAL_MOBILE_FOCUS_GREEN"
+  },
+  "scopeExclusions": [
+    "No new corpus publication",
+    "No commerce changes",
+    "No public deployment",
+    "No paid/model/vision activation",
+    "No legacy executor fallback",
+    "No current performance/capacity or Phase7PASS claim",
+    "Private Phase6 runtime activated for development; no public deployment, production cutover or Phase6 PASS"
+  ],
+  "pending": [
+    "Qualify actual retained Phase2 BFF baseline positive probe without repeat execution; evaluation remains NOT RUN",
+    "Independent frozen10-case current ordinary versus typed candidate evaluation, manual full-claim adjudication and private execution/model/paid/status/cache reconciliation",
+    "Any required combined live source/grant race not covered by observed browser disable or synthetic rollback fixtures must stay explicitly scoped",
+    "Cleanup current two disposable actors/owned chats and recoverably archive only marked owner test chat; verify current target rows while preserving owner/history",
+    "Final integrated source/image manifests and local checkpoint; independent signoff before Phase7"
+  ],
+  "implementationPlan": "../../../docs/superpowers/plans/2026-11-06-panda-agent-phase6.md",
+  "independentReview": {
+    "focusedNodeCommand": "node --test Panda-agent/tests/agentic-contracts.test.mjs Panda-agent/tests/agentic-controller.test.mjs Panda-agent/tests/agentic-handler.test.mjs Panda-agent/tests/agentic-store.test.mjs",
+    "focusedNode": {
+      "pass": 29,
+      "fail": 0,
+      "skip": 0,
+      "exitCode": 0,
+      "evidenceClass": "independent local focused run; overlapping older runs not summed"
+    },
+    "heldCallbackRepro": {
+      "deadlineMs": 20,
+      "callbackDelayMs": 80,
+      "terminalReason": "budget_exhausted",
+      "callbackCompletedAtReturn": false,
+      "callbackCompletedLater": true,
+      "callbackReceivedAbortSignal": false,
+      "evidenceClass": "offline injected dependency; no provider/network",
+      "currentResolution": "Fixed by linked turn AbortSignal; regression passes"
+    },
+    "findingResolution": "Observed original REDs preserved historically; signed execution/deadline/helper/active-cap/mandatory coverage fixed in source and rollback checks, linked abort/pending/duplicate/status/progress/descriptor hydration regression tests pass; actual combined race/browser gates pending",
+    "databaseAppliedByReviewer": false,
+    "historicalFocusedRuns": [
+      {
+        "pass": 10,
+        "scope": "contracts/controller before signal fix"
+      },
+      {
+        "pass": 11,
+        "scope": "contracts/controller with linked signal"
+      },
+      {
+        "pass": 23,
+        "scope": "four files before subsequent integration fixes"
+      },
+      {
+        "pass": 14,
+        "scope": "contracts/controller after pending/progress fixes"
+      }
+    ],
+    "historicalSqlFindings": [
+      "Authenticated composite execution RPC returns raw cached quote-bearing results without current source/grant projection",
+      "First completion lacks admitted-deadline guard",
+      "Helper conversation outputs conflict with SQL outcome allowlist",
+      "Durable active-call limit absent despite present sequential controller"
+    ],
+    "sqlRollbackCheckerCaveats": [
+      "private_rows_and_helpers label directly tests RLS/calls-table SELECT; helper ACL proof comes from source/apply readback",
+      "partial_two_need case has unrecorded first call; it does not isolate one-complete/one-missing coverage"
+    ],
+    "finalSourceReview": {
+      "scope": [
+        "structured-task-form",
+        "workspace/stream/citation DTO",
+        "ADMIN skills/tools DTO and standalone route",
+        "evaluator refusal accounting",
+        "forward vendor guard SQL"
+      ],
+      "actionableFinding": "Missing structuredOpen assistant runtime disable guard was reported and fixed",
+      "newUnresolvedSourceFindings": 0,
+      "focusAfterCancel": "Source effect restores trigger only after confirmed cancel, idle/not-uncertain state",
+      "closedDetailsFocus": "Filter excludes nonsummary descendants of a closed details from mobile trap candidates; actual browser Green pending",
+      "focusedNode": {
+        "pass": 7,
+        "fail": 0,
+        "overlapsFullSuite": true
+      },
+      "evaluatorSelfChecks": {
+        "pass": 9,
+        "networkCalls": 0
+      },
+      "freezeVerified": true,
+      "sqlGuardIndependentExactComparison": "90003 function differs from90000 only vendor-loop SQL alias n\u2192plan_need; CREATE OR REPLACE preserves existing ACL/owner",
+      "reviewerPerformedLiveEvaluation": false
+    }
+  },
+  "design": {
+    "contract": "../lightweight-phase6-ui.md",
+    "draftUrl": "https://p.superdesign.dev/draft/29d01e1c-c3c8-4ef0-8415-b9b527308427",
+    "version": 2,
+    "previousApprovedDraftsPreserved": true,
+    "model": "gemini-3.1-pro",
+    "designCreditsReported": 31,
+    "directCorrectionFurtherGeneration": false,
+    "exactLogoDeduplicated": true,
+    "userApproval": "APPROVED_BY_USER",
+    "renderReview": "Root reports actual Codex browser v2 rendered/screenshot; this worker verified saved HTML only",
+    "applicationUiEdited": true,
+    "implementationState": "Approved v2 implemented; actual customer task/reference/reload and selected-target standalone ADMIN lifecycle observed by Root; final mobile focus regression acceptance pending"
+  },
+  "tools": [
+    {
+      "id": "panda_scoped_rag",
+      "state": "IMPLEMENTED_NEW_MANIFEST_INSTALLED_OFF",
+      "transport": "in_process",
+      "authority": "genuine scoped client and current literal/source checks"
+    },
+    {
+      "id": "fetch_public_docs_mcp",
+      "state": "IMPLEMENTED_INSTALLED_OFF_ISOLATED_PROOF_PASS",
+      "implementationPin": "ARM package c2c4ca93cda04b99902a9eb33ff11ad3d53c1769d4614583ea1098675b744134",
+      "protocolPin": "2025-11-25",
+      "implementationDecision": "Original first-party restricted MCP server on pinned official SDK; no upstream Fetch source copy or stock package",
+      "sdkVersion": "2.3.0",
+      "sdkWheelSha256": "dd0c44c089d16453e8ae31a3877a0054d7a2314caaa81f5e0541b9b1734b2377",
+      "referenceCandidateCommit": "36380287ed3b15d115b55f546617d723072b1296",
+      "referenceCandidateDisposition": "Reviewed and rejected for this runtime boundary; not adopted or copied",
+      "realMcpCallVerified": true,
+      "allowedUrlCatalogFreezePending": false,
+      "catalog": [
+        "espressif-esp-idf-5.5.1-esp32-gpio"
+      ],
+      "customerActivated": false
+    },
+    {
+      "id": "convert_units",
+      "state": "IMPLEMENTED_TYPED_HELPER_INSTALLED_OFF",
+      "schemasFreezePending": false
+    },
+    {
+      "id": "format_bom",
+      "state": "IMPLEMENTED_TYPED_HELPER_INSTALLED_OFF",
+      "schemasFreezePending": false
+    },
+    {
+      "id": "context7",
+      "state": "OFF",
+      "reason": "Current schemas, library/version coverage, account quota/privacy/zero-cost proof unverified"
+    },
+    {
+      "id": "markitdown",
+      "state": "OFF",
+      "reason": "No identified approved Phase6 input requiring new ingestion parser; conditional Admin-only on-demand preflight"
+    }
+  ],
+  "skills": [
+    {
+      "id": "panda-documented-firmware-help",
+      "state": "CREATED_OFF_TWO_UNREVIEWED_VERSIONS",
+      "versions": [
+        1,
+        2
+      ],
+      "permissions": [
+        "panda_scoped_rag",
+        "fetch_public_docs_mcp",
+        "convert_units"
+      ]
+    },
+    {
+      "id": "panda-error-triage",
+      "state": "CREATED_OFF_TWO_UNREVIEWED_VERSIONS",
+      "versions": [
+        1,
+        2
+      ],
+      "permissions": [
+        "panda_scoped_rag",
+        "fetch_public_docs_mcp"
+      ]
+    },
+    {
+      "id": "panda-project-planner",
+      "state": "CREATED_OFF_TWO_UNREVIEWED_VERSIONS",
+      "versions": [
+        1,
+        2
+      ],
+      "permissions": [
+        "panda_scoped_rag",
+        "convert_units",
+        "format_bom"
+      ]
+    }
+  ],
+  "receiptReferences": [
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-sql-guard-result.json",
+      "sha256": "fdbabd137453fc84faab15ef3547aa4585dead3dbc4fc8a49813e243006446e0",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-sql-apply-readback.json",
+      "sha256": "bec67008f1bbbbe833880e1b439bc073a19472b3a22bdaa086324c6f4ca740cb",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-descriptor-check.json",
+      "sha256": "6d5223714bff308fc7a831335c982e0b9d5ca6ce8506db09baf93a0d026093a5",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-descriptor-apply-readback.json",
+      "sha256": "4dd3f6e9626e5c8edc42d133f039a1a6186625ac67854d2b22d53c76f45c06a6",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-build-phase6-result.json",
+      "sha256": "bad440cf208483f782c07d3d3021d3602c1ef369c472826dd3466b5a8b7ed1e6",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-build-phase6-manifest.json",
+      "sha256": "e37808935028ba127def3d4949c2902ebb11ec75513098c853ee58502164e140",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-live-mcp-result.json",
+      "sha256": "6368bd5bbc1098afa990165e2a46957a63f74ddc961563205b4e539ac5e0613f",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-http-mcp-result.json",
+      "sha256": "a19d06ec79a9bfa4e87f3be3ac437ffd390b51fba7cc375aa88b38b2216436a4",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-http-mcp-v2-result.json",
+      "sha256": "4f521c1036627fd1f9210112e39daba7a9226dcd3c1b70b12fdf08fe72c255a2",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-core-browser.json",
+      "sha256": "1344a1c5ecf7f386b7684d8604dc6a238124ebcd018c1d7bb5503719cea3c508",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-auth-core-guards-result.json",
+      "sha256": "5b09c540cbbb911982bd0fb52d67d3093eacd0176f3d0697279faf2c9ce4fa36",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-auth-cleanup-result.json",
+      "sha256": "874311707b1f870b10c9170c9211c1b5a28a98ecb095a9f99e74d9321a084ba3",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-cleanup-verification.json",
+      "sha256": "cd3e75e02df864722f0bd637b41e8b3023738f0f0db4e196885ff46205da18d1",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-installed-dependencies-result.json",
+      "sha256": "8b18b1be14008e3e3950d79377add2675c6f4103135069b632850ca26fad69f9",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-sql-installed-guards-result.json",
+      "sha256": "8509db9f256382d8d394b1499700cebf12f354752855ce01b22b0263716892b0",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-replace-result.json",
+      "sha256": "207a00d2ee92eb315a0725b26fc525557a29ccb3b42709a6633d56a89ee78f0d",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-node-integrated.json",
+      "sha256": "7a7060960d581c1287d4b9d805279cbd80a196c6b4c5c2bd3b649e3f8775d121",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-node-integrated.log",
+      "sha256": "be2e2d9db5890c7ed5cc13d17171ecaefaf5f47a017bad5e09572681f3a0030e",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-vendor-guard-red.json",
+      "sha256": "5532f891d06d296b8556ecb40e036be41019644c70c2a05b293be55a29003b78",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-vendor-guard-green.json",
+      "sha256": "f79ad409818f73dcc6c344376bfa9dcab315aa2725d1a2a84a5d152bb5639232",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-vendor-fix-apply-readback.json",
+      "sha256": "e42834131cbc249a590a195f88c0a7f7029cd7c6bdc69e6c82540cf3fc837bd6",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-auth-enabled-check-result.json",
+      "sha256": "d1422de873ac5cfc0cbee36e7924b9c0f4b6c34e3a3cab8a8f872b6844376f63",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-full-lint.json",
+      "sha256": "41fc302d6f5a1b101fc276927fa2706d6e834ac31a53bd081e28a826d206b119",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-browser-evidence.json",
+      "sha256": "a8a7e1abd62cf873275efddcfccabeffc86d59f898be9acbf7831ff4d0b17c7a",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-5e5021be-f243-4a98-950a-d6c280d4cb79.json",
+      "sha256": "c32402c9fb9bc1dcfd3c0c3180ba5c4bbdaea19e17984b4b87d5d95388246f54",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-answer-review-private.json",
+      "sha256": "f64f39217c86e00c9545eaaf9693c3348e59ad01ddbf6b60c19be8561e1f81f1",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-db-counts.json",
+      "sha256": "e3e5c7f6decc5e2f89cce6ab7ccc15c57279e214f9a073e311be4088c56dc0a3",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-eval-journal-result.json",
+      "sha256": "dc4373d2bfa1e25525ba1b3a5aec26bab531fe96d179ad5f997139871f0a4ebc",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-build-phase6-recovery-result.json",
+      "sha256": "7c7afcf33566b5b95ac40d0479cad734059fc812efcd453aa6d08f131e264aef",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-build-phase6-recovery-manifest.json",
+      "sha256": "98f06e626d31060b15ecfcd999e149f17503cb40b1c4f9f088b70318cecba8a1",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-recovery-replace-result.json",
+      "sha256": "49440680f2a19dc92ed05432e44a7a0fdda6ece310638318bfe3d3f83fd388df",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-recovery-live-mcp-reloaded.png",
+      "sha256": "3e1b246f7ef976cc8c40bb65183d5cc7808267ae6e9ec58589c83ad0551883e7",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-recovery-live-qa.png",
+      "sha256": "415f9d50c16c8cfba43b29b5ea770c20d64ba0132df4a45957199733040b9ab0",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-fault-worker-events-fixed.json",
+      "sha256": "34b6a367513b6c48d03bdcea0aa589d2688adbf7393c85a680f7ceee848519fa",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-three-simulated-failures.png",
+      "sha256": "639b0f5f76ce7686eba0310e0070aba4965220d4c1d0dc78cbe8077f9970993e",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-recovery-f0628e24-6a6c-42ef-82a1-181b66fd6cf8.json",
+      "sha256": "d6833e767511b75b5fcd3ff240805a6df26e98372ebeef86c9513313a50299f8",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-recovery-answer-review-private.json",
+      "sha256": "c8d5ff7dad7909efde88cd8b107484e0de3fba600aa1c76622db478a45d36471",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-recovery-db-counts.json",
+      "sha256": "e3e5c7f6decc5e2f89cce6ab7ccc15c57279e214f9a073e311be4088c56dc0a3",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-eval-recovery-journal-result.json",
+      "sha256": "b7d6d53ba4acc429bc8383878cc156bc21de427189c75067298142a03c776794",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-eval-recovery-run-result.json",
+      "sha256": "4f9ceec9db2f5e1f7ba206477ed5cfc23f78e48fd7eacae4e195fe7379ef91b5",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-final-cleanup.log",
+      "sha256": "bfad767652ab7caa99f3d492556cda768bc1709dc8cf7a8a04791d0cc6032270",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-final-cleanup-result.json",
+      "sha256": "8d792569453c8a04408db02cf983dd1ff716ef0d9a544345a1c03ce747ba0d9b",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-final-cleanup-verification.json",
+      "sha256": "87f1f4954871d0c5e2bc980760d4cc9eea8cb4e9b25c655d6a59bab717ff2aa0",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-initial-final-cleanup-result.json",
+      "sha256": "8d792569453c8a04408db02cf983dd1ff716ef0d9a544345a1c03ce747ba0d9b",
+      "tracked": false
+    },
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/aws-phase6-recovery-inventory-result.json",
+      "sha256": "e1afd0121200436b38c0309be8e06381c7084c1e203ec7752d6364a67df3cdec",
+      "tracked": false
+    }
+  ],
+  "database": {
+    "evidenceClass": "synthetic SQL roles/rollback followed by controlled additive development apply/readback; not genuine Clerk isolation",
+    "applied": true,
+    "immutableMigrationSha256": {
+      "20261106090000_panda-agent-composite-turns.sql": "5258ffef57fe1f4e15582d45d83d7a4e757c3064d2ef0fb37a95709a807b6994",
+      "20261106090001_panda-agent-composite-registry.sql": "cf690a4707031198894f8606df7426b900411ce2134d4cae6929d7ca3ccb3f90",
+      "20261106090002_panda-agent-composite-skill-descriptors.sql": "7b288f4fd3f5c5dae57e03a8e400282865a41902c2e8570b343e34db7ff4e6bf"
+    },
+    "rollbackChecks": 15,
+    "rollbackFailed": null,
+    "rollbackCleanup": {
+      "rolledBack": true,
+      "stateUnchanged": true,
+      "functionsAclOwnersRestored": true,
+      "candidateTablesAbsentAfterRollback": true
+    },
+    "matchedFunctionBodiesInitialApply": 14,
+    "skillsOff": 3,
+    "unreviewedSkillVersions": 6,
+    "newToolsOff": 4,
+    "rawTablesAndHelpersPrivate": true,
+    "descriptorRedBodyPresent": true,
+    "descriptorGreenMetadataOnly": true,
+    "descriptorExactApplyBodyMatched": true,
+    "oldSourceHistoryOwnerControlsSignerUnchanged": true,
+    "customerRuntimeActivated": false,
+    "vendorGuardForward": {
+      "migration": "20261106090003_panda-agent-composite-vendor-guard.sql",
+      "sha256": "679a3cc4ebaf1b14052bea06fd27ee8ace873f84bf55654e4fe5e83f14056bee",
+      "originalFailure": "ambiguous SQL alias n (42702) in vendor scope branch; exception converted it to fail-closed answer mask",
+      "redPassedBeforeNewCase": 16,
+      "newCaseRed": true,
+      "greenPassed": 17,
+      "rollbackRestoresStateFunctionsAclOwners": true,
+      "appliedBy": "Root through official selected-target CLI",
+      "exactBodyMatched": true,
+      "allRowsSignerAclOwnerPreserved": true,
+      "corpusMutation": false,
+      "priorMigrationsEdited": false
+    }
+  },
+  "candidateBuild": {
+    "evidenceClass": "Actual ARM recovery image built/tested and replaced on same private host; rerun/final acceptance pending",
+    "imageId": "sha256:9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+    "packageFingerprint": "d7f2ffcdafa0a52d90a250c82fc55ce738b686c46fb25233a42c878f43985ff5",
+    "imageBytes": 238450528,
+    "architecture": "arm64",
+    "uid": 10001,
+    "gid": 10001,
+    "linuxTests": {
+      "pass": 83,
+      "exitCode": 0
+    },
+    "currentPackageFilesCompared": 22,
+    "currentPackageHashMismatches": 0,
+    "requirementsPins": 57,
+    "existingPinsPreserved": 44,
+    "newPins": 13,
+    "additionalNoticeAuthorFilesReviewed": 17,
+    "imageNoticeRetentionVerified": true,
+    "gatewayActive": true,
+    "installedVersionsMatched": 57,
+    "retainedNoticeFilesMatched": 17,
+    "noticeVerificationIsLegalCertification": false,
+    "sdkWheelToSourceAttestationVerified": false
+  },
+  "actualMcpProof": {
+    "evidenceClass": "actual allowed public HTTP executed through official SDK stdio, then separate signed private HTTP operator fixture",
+    "protocol": "2025-11-25",
+    "sdkVersion": "2.3.0",
+    "catalogId": "espressif-esp-idf-5.5.1-esp32-gpio",
+    "sourceBodySha256": "0e77aea9e5d0b61684039b319b51c5e0756e913481b8f6575d9b8853a507a993",
+    "standaloneStdioRun": {
+      "success": true,
+      "liveFetches": 1
+    },
+    "privateHttpV2": {
+      "success": true,
+      "checks": 5,
+      "liveFetches": 1,
+      "signedStatusExactCached": true,
+      "repeatRunNoRefetch": true,
+      "cancelBeforeLateRunTombstone": true,
+      "childrenRemaining": 0,
+      "proofContainerRemoved": true,
+      "existingServingImageUnchanged": true,
+      "highestSampleMiB": 73.11,
+      "sampleIsPeakOrLoadProof": false
+    },
+    "privateHttpV1": {
+      "acceptedProof": false,
+      "failureType": "RuntimeError",
+      "causeReportedByRoot": "child detector matched its own command line; corrected strict argv instrumentation in v2",
+      "proofContainerRemoved": true,
+      "servingImageUnchanged": true
+    },
+    "customerClerkFlow": false,
+    "modelCalls": 0,
+    "apiFees": 0
+  },
+  "coreBrowserAfterDatabase": {
+    "evidenceClass": "genuine owner Codex browser; accepted Phase5 web/private worker after additive Phase6 SQL",
+    "literalQuote": "Microcontroller: ESP8266",
+    "sourceExpanded": true,
+    "reloadRetainedAnswer": true,
+    "initialAttempt": "ended SSM tunnel; status-only observation and confirmed cancellation before fresh question",
+    "restoredTunnelExec": 31642,
+    "markedChatArchiveRequested": true,
+    "markedChatArchiveVerified": true,
+    "phase6StructuredUiTested": false,
+    "ownerSessionPreserved": true
+  },
+  "readonlyScopePreflight": {
+    "evidenceClass": "genuine disposable Clerk/current canonical adapter; readonly, no answer execution",
+    "x8266Fragments": 8,
+    "x8266ContextUtf16Units": 2819,
+    "previousMcpOneFragmentBudgetFit": false,
+    "otherInspectedCandidatesEightFragments": true,
+    "xLoRaUnique": false,
+    "sourceMutation": false,
+    "ownerSessionChanged": false,
+    "amendedBudgetLiveAnswerProved": false
+  },
+  "backendCheckpointCompleteWithinRecordedScope": true,
+  "phaseComplete": false,
+  "localFullSuite": {
+    "command": "node --test Panda-agent/tests/*.test.mjs",
+    "pass": 260,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0,
+    "provenance": "Root run; independent log inspection",
+    "log": "Panda-agent/infra/lightweight/artifacts/phase6-node-integrated.log",
+    "durationMs": 25203.0215,
+    "overlappingFocusedCountsNotSummed": true,
+    "typecheck": "PASS reported by Root",
+    "targetedLint": "PASS reported by Root",
+    "files": 58,
+    "receipt": "Panda-agent/infra/lightweight/artifacts/phase6-node-integrated.json",
+    "scope": "Current Phase6 backend/customer UI source checkpoint; local fixtures/source contracts, not browser acceptance",
+    "historical258": "Observed earlier; raw backend log was superseded by integrated runner and renamed. Do not sum runs or use its old hash as current evidence."
+  },
+  "genuineCoreIsolation": {
+    "result": "PASS",
+    "passed": 20,
+    "evidenceClass": "genuine independent Clerk API sessions, current Phase5 app/private runtime after additive Phase6 SQL; not enabled composite acceptance",
+    "isolatedApiSessions": 2,
+    "realClerk": true,
+    "realInsforge": true,
+    "checks": [
+      "genuine_nonadmin_panda_agent_skills_read_a",
+      "genuine_nonadmin_panda_agent_composite_tools_read_a",
+      "genuine_unsigned_recovery_denied_a",
+      "genuine_private_call_table_denied_a",
+      "genuine_nonadmin_panda_agent_skills_read_b",
+      "genuine_nonadmin_panda_agent_composite_tools_read_b",
+      "genuine_unsigned_recovery_denied_b",
+      "genuine_private_call_table_denied_b",
+      "genuine_core_literal_after_schema",
+      "core-guards_same_request_replay",
+      "core-guards_one_saved_pair",
+      "core_foreign_read_b_to_a",
+      "core_foreign_delete_b_to_a",
+      "core_foreign_cancel_b_to_a",
+      "core_foreign_write_b_to_a",
+      "core_foreign_read_a_to_b",
+      "core_foreign_delete_a_to_b",
+      "core_foreign_cancel_a_to_b",
+      "core_foreign_write_a_to_b",
+      "core_foreign_request_not_visible"
+    ],
+    "sourceMutation": false,
+    "ownerSessionChanged": false,
+    "enabledCompositeAcceptance": false,
+    "twoBrowserProfiles": false,
+    "initialEndedTunnelFailureRetained": true
+  },
+  "backendCleanup": {
+    "result": "PASS",
+    "removedUsers": 2,
+    "removedOwnedChats": 3,
+    "readOnlyVerifiedDevTarget": true,
+    "ownedAppRowsRemaining": {
+      "panda_agent_chats": 0,
+      "panda_agent_lightweight_turns": 0,
+      "panda_agent_lightweight_cancelled_requests": 0,
+      "panda_agent_guide_turns": 0,
+      "panda_agent_project_memory": 0,
+      "panda_agent_project_skills": 0,
+      "panda_agent_composite_turns": 0,
+      "panda_agent_composite_calls": 0
+    },
+    "credentialsRemovedFromState": true,
+    "allZero": true,
+    "newSkillsOff": 3,
+    "newToolsOff": 4,
+    "newRecordEpochsReportedByRoot": 0,
+    "noJournalReset": true,
+    "ownerSessionPreserved": true,
+    "onlyMarkedOwnerRegressionChatRecoverablyArchived": true
+  },
+  "installedSqlRollback": {
+    "evidenceClass": "synthetic SQL roles/fixtures, rollback only, not genuine Clerk or concurrent live source/grant races",
+    "alreadyInstalled": true,
+    "migrationReapplied": false,
+    "pass": 16,
+    "fail": 0,
+    "stateUnchanged": true,
+    "functionsAclOwnersRestored": true,
+    "candidateTablesAbsent": false,
+    "tablePresencePreserved": true,
+    "addedLegacyAliasScope": [
+      "chat_begin",
+      "chat_begin_v2",
+      "chat_finish denial",
+      "optional hosted history read/safe-read exclude withdrawn composite helper answer"
+    ]
+  },
+  "privateRuntimeActivation": {
+    "evidenceClass": "Actual Root-controlled replacement on same approved private8182 host; not public deployment or Phase6 acceptance",
+    "result": "Success",
+    "responseCode": 0,
+    "imageId": "fe8f22081ae852ba67e52edaf0f4dfb1fe3d75c0b524f52cbe6d34bc9947d95a",
+    "package": "c2c4ca93cda04b99902a9eb33ff11ad3d53c1769d4614583ea1098675b744134",
+    "startupToHealthMs": 1536,
+    "idleSampleMiB": 38.13,
+    "cpuSamplePercent": 0.15,
+    "cpuLimit": 1,
+    "memoryLimitMiB": 512,
+    "readOnly": true,
+    "uid": 10001,
+    "modelsEnabled": false,
+    "mcpEnabled": true,
+    "providerEnabled": false,
+    "imageCacheEnabled": true,
+    "journalTurnsNoncesSettingsAndSecretRetained": "Root reports exact preservation; replacement receipt confirms journal/turns/secret",
+    "oldGatewayStillActive": true,
+    "retainedPhase5Container": "panda-lightweight-replacement-superseded-phase5-58888422996b",
+    "isPeakOrCapacityEvidence": false
+  },
+  "genuineEnabledIsolation": {
+    "evidenceClass": "Actual BFF/current InsForge, two genuine Clerk API sessions; not two browser profiles",
+    "passed": 36,
+    "failed": 0,
+    "ownerSessionChanged": false,
+    "sourceRowsChanged": 0,
+    "checks": [
+      "nonADMIN skill/tool API and RPC denial",
+      "unit conversion/exact replay/one saved pair",
+      "firmware/reference observed tool/replay/save",
+      "compound literal MCU+reference/replay/save",
+      "ordinary MCU/replay/save",
+      "bidirectional foreign read/write/delete/cancel denial",
+      "foreign request absent",
+      "unknown chat read/cancel denied",
+      "invalid request bounded"
+    ],
+    "usageCountersPubliclyObservable": false
+  },
+  "adminAcceptance": {
+    "route": "/panda-agent/skills",
+    "evidenceClass": "Actual owner Codex browser actions recorded by Root; current selected Agent backend",
+    "threeNewSkillsV1ReviewedEnabled": true,
+    "firmwareV2ReviewedEnabledRollbackV1": true,
+    "firmwareDisableEnable": true,
+    "fourToolsEnabled": true,
+    "mcpDisableEnable": true,
+    "globalAdminRoute": "Existing /admin/rag-control-room staff backend unavailable; no Admin auth change made; selected-target standalone guarded route used"
+  },
+  "browserEnabledAcceptance": {
+    "evidenceClass": "Root actual Codex browser; user-reported screen reader speech kept separate",
+    "twoSource": "Exact Microcontroller: ESP8266 plus dated unreviewed external reference; canonical and external reference expanded; three complete tool cards; one answer/tool cards survives reload",
+    "grantWithdrawal": "MCP disable masks previous answer/source cards, blocks next lookup with no new MCP card; ordinary exact MCU still works; reenableepoch3 leaves old proof invalid",
+    "longThread": {
+      "messages": 20,
+      "assistantMessages": 10,
+      "unitTurns": 6,
+      "oneSavedPairPerTurn": true,
+      "reloaded": true,
+      "duplicateAnswersObserved": 0
+    },
+    "cancel": "Prior body-focus defect fixed; latest Root reports Hide structured task trigger focus and draft preserved after cancellation",
+    "responsiveReportedByRoot": {
+      "activeTab": 5,
+      "widths": [
+        320,
+        768,
+        1024,
+        1440
+      ],
+      "horizontalOverflow": false,
+      "formAt320": {
+        "width": 288,
+        "clientHeight": 438,
+        "scrollHeight": 655
+      },
+      "themesAt320": [
+        "light",
+        "dark"
+      ],
+      "actualZoom": false
+    },
+    "screenReader": {
+      "evidenceClass": "Explicit user report",
+      "narratorAndNvdaToolProgressAnnounced": true,
+      "independentlyObservedByReviewer": false
+    },
+    "mobileClosedDetailsTrap": {
+      "sourceFixReviewed": true,
+      "actualBrowserGreen": "PASS on e9bFRTEQf1PgtAkJZIxfe: first brand Shift+Tab to Account summary, Tab to brand, Escape to Open sidebar"
+    },
+    "receiptStaleness": "Refreshed receipt independently inspected: actual320/768/1024/1440 widths and320 light/dark; prior ineffective viewport request resolved using active tab5. Different build IDs distinguish earlier two-source proof, focus regression and pending closed-details fix.",
+    "responsiveEvidenceClass": "Root actual browser receipt independently inspected"
+  },
+  "candidateBuildBeforeRecovery": {
+    "evidenceClass": "Actual ARM image built/isolated-proved and now activated on same approved private runtime; application acceptance pending",
+    "imageId": "sha256:fe8f22081ae852ba67e52edaf0f4dfb1fe3d75c0b524f52cbe6d34bc9947d95a",
+    "packageFingerprint": "c2c4ca93cda04b99902a9eb33ff11ad3d53c1769d4614583ea1098675b744134",
+    "imageBytes": 238449092,
+    "architecture": "arm64",
+    "uid": 10001,
+    "gid": 10001,
+    "linuxTests": {
+      "pass": 77,
+      "exitCode": 0
+    },
+    "currentPackageFilesCompared": 22,
+    "currentPackageHashMismatches": 0,
+    "requirementsPins": 57,
+    "existingPinsPreserved": 44,
+    "newPins": 13,
+    "additionalNoticeAuthorFilesReviewed": 17,
+    "imageNoticeRetentionVerified": true,
+    "gatewayActive": true,
+    "installedVersionsMatched": 57,
+    "retainedNoticeFilesMatched": 17,
+    "noticeVerificationIsLegalCertification": false,
+    "sdkWheelToSourceAttestationVerified": false
+  },
+  "privateRuntimeActivationBeforeRecovery": {
+    "evidenceClass": "Actual Root-controlled replacement on same approved private8182 host; not public deployment or Phase6 acceptance",
+    "result": "Success",
+    "responseCode": 0,
+    "imageId": "fe8f22081ae852ba67e52edaf0f4dfb1fe3d75c0b524f52cbe6d34bc9947d95a",
+    "package": "c2c4ca93cda04b99902a9eb33ff11ad3d53c1769d4614583ea1098675b744134",
+    "startupToHealthMs": 1536,
+    "idleSampleMiB": 38.13,
+    "cpuSamplePercent": 0.15,
+    "cpuLimit": 1,
+    "memoryLimitMiB": 512,
+    "readOnly": true,
+    "uid": 10001,
+    "modelsEnabled": false,
+    "mcpEnabled": true,
+    "providerEnabled": false,
+    "imageCacheEnabled": true,
+    "journalTurnsNoncesSettingsAndSecretRetained": "Root reports exact preservation; replacement receipt confirms journal/turns/secret",
+    "oldGatewayStillActive": true,
+    "retainedPhase5Container": "panda-lightweight-replacement-superseded-phase5-58888422996b",
+    "isPeakOrCapacityEvidence": false
+  },
+  "recoveryRuntimeActivation": {
+    "result": "Success",
+    "imageId": "9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+    "sourceFingerprint": "d7f2ffcdafa0a52d90a250c82fc55ce738b686c46fb25233a42c878f43985ff5",
+    "health": 200,
+    "ready": 200,
+    "startupToHealthMs": 1559,
+    "idleSampleMiB": 37.25,
+    "cpuSamplePercent": 0.16,
+    "oomKilled": false,
+    "restarts": 0,
+    "providerEnabled": false,
+    "modelsEnabled": false,
+    "mcpEnabled": true,
+    "imageCacheEnabled": true,
+    "journalTurnsAndSecretRetained": true,
+    "gatewayActive": true,
+    "previousPhase6ContainerRetained": true,
+    "phase7PeakOrCapacityClaim": false
+  },
+  "evaluationBeforeRecoveryUpdate": {
+    "state": "FROZEN_NOT_RUN_BASELINE_POSITIVE_PROBE_NOT_QUALIFIED",
+    "heldOutPartitionFrozen": false,
+    "baseline": "Actual accepted Phase2 BFF KPC7SFoEOTmBR4tkZIb9C onlocalhost3000, same question/current approved DB/corpus/current dependencies/Phase6 private deterministic worker; complete historical stack not replayed",
+    "sourceVisibleSetIsHeldOut": false,
+    "requiredMetrics": [
+      "support",
+      "correct abstention",
+      "wrong-product/stale-source leakage",
+      "tool executions/status/cache reads",
+      "model/cost counters",
+      "sample count",
+      "empirical p50/p95"
+    ],
+    "p50Ms": null,
+    "p95Ms": null,
+    "actualMcpFetches": null,
+    "phase6ModelCalls": null,
+    "phase6PaidCalls": null,
+    "independentPostImplementationPartitionFrozen": true,
+    "preImplementationHeldOut": false,
+    "dataset": "../../tests/fixtures/phase6-eval-independent-v1.json",
+    "datasetSha256": "8fa6cc763cb16d0e78959c73b66b1828bd8999fd5500ff3cecec301d5b308c23",
+    "freeze": "../../tests/fixtures/phase6-eval-independent-v1.freeze.json",
+    "cases": 10,
+    "answerableCases": 4,
+    "abstentionCases": 6,
+    "twoSourceCases": 2,
+    "runner": "../../scripts/phase6-eval.mjs",
+    "selfChecks": 16,
+    "selfCheckNetworkCalls": 0,
+    "actualToolExecutions": null,
+    "statusReads": null,
+    "cacheReads": null,
+    "manualFullClaimSupport": null,
+    "usageReconciliationRequired": true,
+    "limitation": "Fresh questions exercise already implemented narrow tasks. Two-source cases combine one checked listing MCU and independent official-document reference metadata, not two canonical technical claims or general multi-hop.",
+    "candidateSourceFreezeIsFullTree": false,
+    "typedRejections": "Expected candidate400/invalid+owned absent request+zero messages are counted separately without saved answer or completed-answer latency;503 does not pass",
+    "freezeAmendment": "../../tests/fixtures/phase6-eval-independent-v1.amendment.json",
+    "preEvaluationSqlGuardCorrectionDisclosed": true,
+    "baselineBuildId": "KPC7SFoEOTmBR4tkZIb9C",
+    "baselineSourceCheckpoint": "c704da1aa6699af91889879cdc3b5e4f24bf6fae",
+    "candidateBuildId": "e9bFRTEQf1PgtAkJZIxfe",
+    "baselineBase": "http://localhost:3000",
+    "candidateBase": "http://localhost:3001",
+    "baselineChoiceAmendedBeforeAnyRun": true,
+    "acceptedBuildProvenanceIndependentlyMatched": true,
+    "completeHistoricalStackReplay": false,
+    "scoringCanonicalIdentity": "Exact accepted x8266 URL path plus literal MCU field; rejects same-MCU citations from another product",
+    "scoringCorrectionsBeforeExecution": "Known accepted Phase2 safe refusal templates recognized; explicit service failure cannot count as correct semantic abstention; exact x8266 URL rejects same-MCU wrong product. No eval answer used to change questions/gold/scoring.",
+    "baselineQualification": {
+      "positiveProbe": "POST non200; no repeat POST; original durable attempt status-only observed",
+      "oldObserverQuery": "Accepted P2 handler forbids requestId query; GET with query400 is expected contract mismatch, use plain owned GET",
+      "currentObserver": "Current3001 owner-scoped GET shows blocked thread/one user message/no MCU literal",
+      "cause": "Root found ended SSM tunnel49972 and8182 refused connections; source core protocol compatibility remains supported. Restarted45073; original uncertain work fenced/status-only before distinct fresh positive control.",
+      "action": "Root inspect original prepared execution and private status/journal; no evaluation or target fallback until cause established",
+      "oldSavedObservation": "Baseline plainGET requires same fresh owned thread, original user question, one exact pair and POST/GET identical messages; candidate additionally requires requestId status complete"
+    }
+  },
+  "initialEvaluationHistorical": {
+    "report": "phase6-eval-5e5021be-f243-4a98-950a-d6c280d4cb79.json",
+    "immutable": true,
+    "classification": "independent_postimplementation_frozen_evaluation",
+    "originalWorkerImage": "sha256:fe8f22081ae852ba67e52edaf0f4dfb1fe3d75c0b524f52cbe6d34bc9947d95a",
+    "metrics": {
+      "baseline": {
+        "label": "accepted_Phase2_BFF_KPC7SFoEOTmBR4tkZIb9C_current_DB_and_Phase6_private_worker",
+        "samples": 10,
+        "automaticCaseSuccess": 1,
+        "answerableAutomaticSuccess": {
+          "numerator": 0,
+          "denominator": 4
+        },
+        "correctAbstention": {
+          "numerator": 1,
+          "denominator": 6
+        },
+        "typedRequestRejectionsWithoutSavedAnswer": 0,
+        "wrongProductOrCitationLeakage": 0,
+        "persistedExactPairs": 10,
+        "requestToValidatedSavedAnswerMs": {
+          "n": 10,
+          "p50": 5541.31,
+          "p95": 6662,
+          "method": "empirical nearest-rank, sequential single samples, includes authenticated POST and owned GET; rejected requests excluded"
+        },
+        "observedPublicCompletedToolCards": 0,
+        "actualToolExecutions": null,
+        "statusReads": null,
+        "cacheReads": null,
+        "modelCalls": null,
+        "paidCalls": null,
+        "providerCost": null,
+        "privateCountersRequired": true,
+        "manualFullClaimSupport": null
+      },
+      "candidate": {
+        "label": "current_typed_agentic_path",
+        "samples": 10,
+        "automaticCaseSuccess": 10,
+        "answerableAutomaticSuccess": {
+          "numerator": 4,
+          "denominator": 4
+        },
+        "correctAbstention": {
+          "numerator": 6,
+          "denominator": 6
+        },
+        "typedRequestRejectionsWithoutSavedAnswer": 6,
+        "wrongProductOrCitationLeakage": 0,
+        "persistedExactPairs": 4,
+        "requestToValidatedSavedAnswerMs": {
+          "n": 4,
+          "p50": 13256.63,
+          "p95": 32225.65,
+          "method": "empirical nearest-rank, sequential single samples, includes authenticated POST and owned GET; rejected requests excluded"
+        },
+        "observedPublicCompletedToolCards": 8,
+        "actualToolExecutions": null,
+        "statusReads": null,
+        "cacheReads": null,
+        "modelCalls": null,
+        "paidCalls": null,
+        "providerCost": null,
+        "privateCountersRequired": true,
+        "manualFullClaimSupport": null
+      }
+    },
+    "manualAdjudication": {
+      "candidateSupportedSavedAnswers": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "candidateTypedRefusalsNoSavedAnswer": 6,
+      "candidateUnsupportedTechnicalClaimsObserved": 0,
+      "baselineNegativeCasesWithheldUnsupportedFacts": 6,
+      "baselineAutomaticRecognizedAbstentions": 1,
+      "baselineNegativeDenominator": 6,
+      "caveat": "Original automatic scorer misses safe baseline one-product and unsupported-feature refusals. Preserve original scores; no claim baseline leaked facts or candidate improves safety.",
+      "scope": "Manual inspection of marked disposable durable answers; narrow listing/reference and conversions, not general multi-hop"
+    },
+    "privateUsage": {
+      "durableCompositeCalls": 8,
+      "completedCompositeCalls": 8,
+      "tools": {
+        "panda_scoped_rag": 4,
+        "fetch_public_docs_mcp": 2,
+        "convert_units": 2
+      },
+      "workerExecutions": 4,
+      "workerKinds": {
+        "evidence": 2,
+        "mcp": 2
+      },
+      "modelCalls": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costNanoUsd": 0,
+      "providerKeyAbsent": true,
+      "statusReads": null,
+      "cacheReads": null,
+      "statusCacheCountsInstrumented": false,
+      "actualWorkReplaysByRunner": 0
+    },
+    "originalPendingFlagsPreserved": true,
+    "appliesToRecoveryRerun": false
+  },
+  "recoveryBrowserAcceptance": {
+    "evidenceClass": "Root actual owner Codex browser/AX observation after recovery image replacement; reviewer inspected saved screenshots",
+    "webBuild": "e9bFRTEQf1PgtAkJZIxfe",
+    "workerImage": "9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+    "ordinaryLiteralAndSourceVisible": true,
+    "compoundArchivedChatReopenedAfterReload": true,
+    "canonicalAndExternalExpanded": true,
+    "literalMcuAndExactVersionedUrlDateObservedByRoot": true,
+    "completedCardsObservedByRoot": true,
+    "screenshot": "phase6-recovery-live-mcp-reloaded.png",
+    "screenshotLimit": "Canonical quote and completed source cards visible; external URL/date below fold covered by Root AX observation.",
+    "ownerSessionChanged": false
+  },
+  "localSimulatedBrowserFailures": {
+    "evidenceClass": "Explicit local injected fetch/provider fixtures; Root observed saved bounded browser unavailable messages",
+    "cases": [
+      "injected_document",
+      "private_destination",
+      "provider_quota"
+    ],
+    "guardEventReceipt": "phase6-fault-worker-events-fixed.json",
+    "browserScreenshot": "phase6-three-simulated-failures.png",
+    "networkRequestsToPrivateDestination": 0,
+    "providerRequests": 0,
+    "realSdkChildOrProviderExhaustionProof": false,
+    "originalRawValueErrorUnknownAndUnconfirmedCancelRetained": true,
+    "fixedFixtureUsesActualFetchErrorContract": true
+  },
+  "initialEvaluationAndFailureCleanup": {
+    "readOnlyVerifiedDevTarget": true,
+    "disposableActors": 2,
+    "credentialsRemovedFromState": true,
+    "ownedAppRowsRemaining": {
+      "panda_agent_chats": 0,
+      "panda_agent_lightweight_turns": 0,
+      "panda_agent_lightweight_cancelled_requests": 0,
+      "panda_agent_guide_turns": 0,
+      "panda_agent_project_memory": 0,
+      "panda_agent_project_skills": 0,
+      "panda_agent_composite_turns": 0,
+      "panda_agent_composite_calls": 0
+    },
+    "enabledControlsRechecked": false,
+    "allZero": true,
+    "noJournalReset": true,
+    "evidenceScope": "Initial disposable evaluation/failure actors before fresh recovery rerun; does not certify new rerun fixtures"
+  },
+  "remainingAcceptance": [
+    "Establish the original mandated held-out multi-hop evaluation gate; existing narrow post-implementation comparison is insufficient",
+    "Record separate exact local source checkpoint; do not describe checkpointing as overall Phase6 PASS",
+    "Independent full Phase6 gate signoff only after the mandated validation gap is resolved; Phase7 remains blocked"
+  ],
+  "recoveryEvaluationReviewed": {
+    "report": "phase6-eval-recovery-f0628e24-6a6c-42ef-82a1-181b66fd6cf8.json",
+    "immutableRawReport": true,
+    "classification": "recovery_rerun_after_disclosed_runtime_fix",
+    "candidateWorkerImage": "9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+    "baselineBuildId": "KPC7SFoEOTmBR4tkZIb9C",
+    "candidateBuildId": "e9bFRTEQf1PgtAkJZIxfe",
+    "attempts": 20,
+    "distinctChats": 20,
+    "distinctRequestIds": 20,
+    "metrics": {
+      "baseline": {
+        "label": "accepted_Phase2_BFF_KPC7SFoEOTmBR4tkZIb9C_current_DB_and_Phase6_private_worker",
+        "samples": 10,
+        "automaticCaseSuccess": 1,
+        "answerableAutomaticSuccess": {
+          "numerator": 0,
+          "denominator": 4
+        },
+        "correctAbstention": {
+          "numerator": 1,
+          "denominator": 6
+        },
+        "typedRequestRejectionsWithoutSavedAnswer": 0,
+        "wrongProductOrCitationLeakage": 0,
+        "persistedExactPairs": 10,
+        "requestToValidatedSavedAnswerMs": {
+          "n": 10,
+          "p50": 5608.08,
+          "p95": 8062.93,
+          "method": "empirical nearest-rank, sequential single samples, includes authenticated POST and owned GET; rejected requests excluded"
+        },
+        "observedPublicCompletedToolCards": 0,
+        "actualToolExecutions": null,
+        "statusReads": null,
+        "cacheReads": null,
+        "modelCalls": null,
+        "paidCalls": null,
+        "providerCost": null,
+        "privateCountersRequired": true,
+        "manualFullClaimSupport": null
+      },
+      "candidate": {
+        "label": "current_typed_agentic_path",
+        "samples": 10,
+        "automaticCaseSuccess": 10,
+        "answerableAutomaticSuccess": {
+          "numerator": 4,
+          "denominator": 4
+        },
+        "correctAbstention": {
+          "numerator": 6,
+          "denominator": 6
+        },
+        "typedRequestRejectionsWithoutSavedAnswer": 6,
+        "wrongProductOrCitationLeakage": 0,
+        "persistedExactPairs": 4,
+        "requestToValidatedSavedAnswerMs": {
+          "n": 4,
+          "p50": 14611.2,
+          "p95": 30939.65,
+          "method": "empirical nearest-rank, sequential single samples, includes authenticated POST and owned GET; rejected requests excluded"
+        },
+        "observedPublicCompletedToolCards": 8,
+        "actualToolExecutions": null,
+        "statusReads": null,
+        "cacheReads": null,
+        "modelCalls": null,
+        "paidCalls": null,
+        "providerCost": null,
+        "privateCountersRequired": true,
+        "manualFullClaimSupport": null
+      }
+    },
+    "manualClaimReview": {
+      "evidenceClass": "Independent review of marked disposable saved answers in phase6-eval-recovery-answer-review-private.json",
+      "candidateSupportedSavedAnswers": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "candidateTypedRejectionsWithoutSavedAnswer": 6,
+      "candidateIncorrectBoardApplicabilityOrWiringClaimsObserved": 0,
+      "candidateWrongProductOrCitationLeakageObserved": 0,
+      "baselineUnsupportedFactsWithheldNegativeCases": 6,
+      "baselineNegativeCases": 6,
+      "baselineFrozenScorerRecognizedAbstentions": 1,
+      "caveat": "Original automatic scorer misses safe one-product and unsupported-feature refusals. Preserve frozen score; no baseline leakage or demonstrated safety improvement claim.",
+      "narrowCapabilitiesOnly": true
+    },
+    "privateDatabase": {
+      "readOnly": true,
+      "sameMarkedActor": true,
+      "results": {
+        "baseline": {
+          "ownedEvaluationChats": 10,
+          "durableCompositeCalls": 0,
+          "completedCompositeCalls": 0,
+          "tools": {},
+          "singleProductPrepared": 0,
+          "totalContextFragments": 0,
+          "totalContextUnits": 0,
+          "workerBoundCalls": 0
+        },
+        "candidate": {
+          "ownedEvaluationChats": 10,
+          "durableCompositeCalls": 8,
+          "completedCompositeCalls": 8,
+          "tools": {
+            "convert_units": 2,
+            "fetch_public_docs_mcp": 2,
+            "panda_scoped_rag": 4
+          },
+          "singleProductPrepared": 0,
+          "totalContextFragments": 16,
+          "totalContextUnits": 5638,
+          "workerBoundCalls": 4
+        }
+      },
+      "statusReadsNotInstrumented": true,
+      "cacheReadsNotInstrumented": true,
+      "actualWorkReplaysByRunner": 0
+    },
+    "privateWorker": {
+      "scopedWorkerCalls": 4,
+      "complete": 4,
+      "kinds": {
+        "evidence": 2,
+        "mcp": 2
+      },
+      "modelCalls": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costNanoUsd": 0,
+      "exactImageVerified": true,
+      "providerKeyAbsent": true,
+      "oomKilled": false,
+      "restarts": 0,
+      "memoryLimit": 536870912,
+      "nanoCpus": 1000000000,
+      "receiptStatus": "Success",
+      "receiptResponseCode": 0
+    },
+    "statusReads": null,
+    "cacheReads": null,
+    "statusCacheCountsUninstrumented": true,
+    "rawPendingFlagsPreserved": true,
+    "manualAndPrivateUsageAdjudicationComplete": true,
+    "cleanupAndFinalSignoffPending": false,
+    "newIndependentHeldOutEvaluation": false,
+    "finalSignoffPending": true
+  },
+  "recoveryDisposableCleanup": {
+    "evidenceClass": "Recovery-rerun marked disposable actors only; log/result plus read-only selected-target verification",
+    "cleanedUsers": 2,
+    "cleanedChats": 20,
+    "ownerSessionChanged": false,
+    "readOnlyVerifiedDevTarget": true,
+    "disposableActors": 2,
+    "credentialsRemovedFromState": true,
+    "ownedAppRowsRemaining": {
+      "panda_agent_chats": 0,
+      "panda_agent_lightweight_turns": 0,
+      "panda_agent_lightweight_cancelled_requests": 0,
+      "panda_agent_guide_turns": 0,
+      "panda_agent_project_memory": 0,
+      "panda_agent_project_skills": 0,
+      "panda_agent_composite_turns": 0,
+      "panda_agent_composite_calls": 0
+    },
+    "enabledControlsRechecked": false,
+    "allZero": true,
+    "noJournalReset": true,
+    "ownerBlockedUnknownFixtureIncluded": false,
+    "previousInitialRunCleanupSeparatelyPreserved": true,
+    "currentControlReadbackIncluded": false
+  },
+  "retainedOwnerUnknownFixture": {
+    "evidenceClass": "Root reports one marker-owned synthetic local-fault browser fixture retained blocked/unknown; fake worker stopped, no real child dispatched",
+    "retained": true,
+    "blindReexecutionAuthorized": false,
+    "journalResetAuthorized": false,
+    "disposableActorZeroCountsIncludeOwner": false,
+    "localFakeWorkerStoppedReportedByRoot": true,
+    "realChildDispatched": false,
+    "finalPrivateWorkerActiveTurns": 0,
+    "finalPrivateWorkerMcpChildPresent": false,
+    "disposition": "Retain durable blocked/unknown marker; no blind replay/reset/archive guard bypass. Not included in disposable actor zero counts."
+  },
+  "recoveryQuiescentInventory": {
+    "evidenceClass": "Actual read-only private host inventory after recovery-rerun cleanup",
+    "status": "Success",
+    "responseCode": 0,
+    "imageVerified": true,
+    "running": true,
+    "activeTurns": 0,
+    "imageRows": 0,
+    "processCount": 1,
+    "mcpChildPresent": false,
+    "oomKilled": false,
+    "restartCount": 0,
+    "oldGatewayActive": true,
+    "workerImage": "9568f005909144f785ca9fe58b444c532772407d05f0c8a7014d73d1108d14b9",
+    "initialObserverFailure": "Initial docker top format probe failed; corrected read-only observer succeeded. No runtime mutation to force result.",
+    "peakOrCapacityClaim": false
+  },
+  "historicalUnavailableReceiptReferences": [
+    {
+      "path": "Panda-agent/infra/lightweight/artifacts/phase6-auth-inspect-result.json",
+      "expectedOriginalSha256": "e38ff9f548eca7a8b585098a1a9b080521b1e03192873ebabf954149e805e8b7",
+      "originalReceiptAvailable": false,
+      "currentPathWasOverwritten": true,
+      "currentDifferentContentSha256": "1afae55d17196b8777a3cbe3c1321518f58be159c6924e8e6a52c8ba6dbf556a",
+      "currentContentCertifiedAsOriginal": false,
+      "findingStatus": "Earlier inspection finding retained as historical, supported separately by immutable SQL/apply/rollback/genuine API evidence; this missing raw receipt is not current hash-certified proof.",
+      "searchScope": "Root reports only before-metadata-amendment variant and overwritten current inspection found; no original expected-hash match."
+    }
+  ],
+  "independentNarrowImplementationReview": {
+    "result": "PASS_WITHIN_DOCUMENTED_NARROW_SCOPE_NOT_OVERALL_PHASE_PASS",
+    "evidenceEvaluated": [
+      "Reviewed terminal FetchError handling, cancellation-before-reap and repeated-cancellation cleanup fixes, conservative shutdown behavior",
+      "Exact recovery source/package/image identity and actual ARM83 tests",
+      "Real allowed SDK MCP fetch plus Root post-replacement source/tool-card/reload observation",
+      "Guarded Admin activation/withdrawal and genuine API isolation evidence",
+      "Recovery20-attempt evaluation with manually inspected four supported answers and six typed no-answer rejections",
+      "Eight reconciled completed composite calls/four worker executions/zero model tokens and provider cost",
+      "Scoped two-user20-chat cleanup/eight table counts zero and quiescent private host"
+    ],
+    "noRemainingFailingGateWithinThatNarrowImplementationScope": true,
+    "overallPhasePassAuthorizedByThisReview": false,
+    "sourceCheckpointRecorded": false,
+    "sourceCheckpointPendingSeparateLocalCommit": true,
+    "retainedOwnerFixture": "Synthetic local-failure browser fixture remains blocked/unknown; fake worker stopped, no real child dispatched; preserve without replay/reset/archive bypass.",
+    "measurementLimits": "Status/cache reads uninstrumented and remain null. Original baseline automatic refusal score has a documented safe-refusal recognition gap.",
+    "provenanceLimit": "Original expected-hash inspection receipt is unavailable and excluded from current certified references; historical finding and separate supporting evidence retained."
+  },
+  "originalBriefHeldOutMultihopGate": {
+    "result": "NOT_ESTABLISHED",
+    "mandatedByOriginalPrompt": true,
+    "preImplementationHeldOutFreeze": false,
+    "independentPostImplementationFrozenCases": 10,
+    "listingPlusIndependentDocumentationReferenceCases": 2,
+    "trueGeneralUnseenMultiHopCoverageEstablished": false,
+    "reason": "The partition was frozen after implementation, covers already known narrow capabilities, and only two cases combine an independent listing MCU fact with a versioned document reference. A disclosed rerun of observed cases cannot establish the broader held-out multi-hop gate.",
+    "narrowImplementationReviewCannotSubstitute": true,
+    "overallPhase6PassBlocked": true,
+    "phase7AdvancementBlocked": true,
+    "preserveDatasetGoldScoringAndReports": true
+  }
+}

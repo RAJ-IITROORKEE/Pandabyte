@@ -50,3 +50,18 @@ Permissive alternatives are selected where offered. Orjson includes MPL-2.0 AND 
 | charset-normalizer | 3.5.2 | https://pypi.org/project/charset-normalizer/3.5.2/#files |
 | truststore | 0.10.5 | https://pypi.org/project/truststore/0.10.5/#files |
 | urllib3 | 2.8.0 | https://pypi.org/project/urllib3/2.8.0/#files |
+| attrs | 26.1.0 | https://pypi.org/project/attrs/26.1.0/#files |
+| cffi | 2.1.1 | https://pypi.org/project/cffi/2.1.1/#files |
+| cryptography | 50.0.2 | https://pypi.org/project/cryptography/50.0.2/#files |
+| jsonschema | 4.26.0 | https://pypi.org/project/jsonschema/4.26.0/#files |
+| jsonschema-specifications | 2025.9.1 | https://pypi.org/project/jsonschema-specifications/2025.9.1/#files |
+| mcp | 2.3.0 | https://pypi.org/project/mcp/2.3.0/#files |
+| mcp-types | 2.3.0 | https://pypi.org/project/mcp-types/2.3.0/#files |
+| pycparser | 3.12 | https://pypi.org/project/pycparser/3.12/#files |
+| PyJWT | 2.15.1 | https://pypi.org/project/PyJWT/2.15.1/#files |
+| python-multipart | 0.0.33 | https://pypi.org/project/python-multipart/0.0.33/#files |
+| referencing | 0.37.0 | https://pypi.org/project/referencing/0.37.0/#files |
+| rpds-py | 2026.9.1 | https://pypi.org/project/rpds-py/2026.9.1/#files |
+| sse-starlette | 3.6.0 | https://pypi.org/project/sse-starlette/3.6.0/#files |
+
+Phase 6 uses the unmodified official MCP SDK 2.3.0 and original PandaByte restricted server code. The educational Fetch reference was reviewed at commit 36380287ed3b15d115b55f546617d723072b1296 but is not copied or distributed. Its mixed-license transition does not grant a blanket license to its source. All additional installed distribution license/NOTICE files remain in the image; cryptography selects its BSD-3-Clause alternative. No parser, Node runtime or stock Fetch package is added.
