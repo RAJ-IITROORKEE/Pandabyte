@@ -2,6 +2,8 @@
 
 ## Latest continuation — 6 November 2026
 
+Reviewed implementation and evidence checkpoint: local commit `fe9f70f5621ab706a3b1d694e6df1ec617d8b575` on `codex/panda-agent-fastapi-replacement`. It records the bounded Phase 6 implementation and recovery work; it does not close the broader multi-hop gate or authorize Phase 7. No push was performed.
+
 **Browser resumption and recovery finding:** Codex browser reconnected after the owner's restart. On port 3000 an isolated worker fixture rejected an injected document; its deliberately raised raw `ValueError` produced an unknown worker outcome. The browser displayed an interrupted request, status showed pending, and cancellation could not be confirmed. This fixture bypassed the real MCP client's conversion to `FetchError` and child cleanup; it does not prove a live injection or actual child-process behavior. Preserve the marked owner test chat and isolated journal; do not replay the request or claim its cancellation. Screenshot: ignored `phase6-injection-cancel-unconfirmed.png`.
 
 In a fresh isolated journal with the local `FetchError` correction, the same candidate BFF/browser showed saved bounded unavailable results for simulated injected-document denial, private-address denial and quota exhaustion. The fixture records zero blocked-address network requests and zero quota-provider requests. These are injected local failures, not a live malicious page, actual provider quota or real MCP child/network test; all three public cards say outcome unknown, and the copy does not distinguish the reason. See ignored `phase6-fault-worker-events-fixed.json` and `phase6-three-simulated-failures.png`. The fixture worker was started before the latest cancellation changes and does not validate them.
