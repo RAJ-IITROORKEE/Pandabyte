@@ -10,7 +10,7 @@ const outcomeKey = "panda-playground-unknown-outcome";
 
 export function Playground() {
   const [question, setQuestion] = useState("");
-  const [evaluate, setEvaluate] = useState(true);
+  const [evaluate, setEvaluate] = useState(false);
   const [unknownOutcome, setUnknownOutcome] = useState(false);
   const [guardReady, setGuardReady] = useState(false);
   const [capability, setCapability] = useState<Capability | null>(null);
@@ -50,10 +50,12 @@ export function Playground() {
   }, [capabilityAttempt]);
 
   const modelAvailable = capability?.connection === "configured_unverified" && (capability.profile === "mini-two-case-v1" || capability.profile === "product-playground-v1") && capability.transport !== "unconfigured";
+  const canEvaluate = guardReady && !unknownOutcome && modelAvailable;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || (evaluate && (!guardReady || unknownOutcome || !modelAvailable))) return;
+    const query = question.trim();
+    if (!query || busy || (evaluate && !canEvaluate)) return;
     if (evaluate) {
       try {
         evaluationId.current ??= crypto.randomUUID();
@@ -71,7 +73,7 @@ export function Playground() {
     try {
       const response = await fetch("/api/admin/panda-agent/playground", {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
-        body: JSON.stringify({ question: question.trim(), ...(evaluate ? { evaluate: true, requestId: evaluationId.current } : {}) }),
+        body: JSON.stringify({ question: query, ...(evaluate ? { evaluate: true, requestId: evaluationId.current } : {}) }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
@@ -106,12 +108,22 @@ export function Playground() {
       <form className={styles.form} onSubmit={submit}>
         <label>Your query<textarea name="question" autoComplete="off" placeholder="Ask about a product specification…" aria-describedby="query-help" value={question} onChange={event => { if (!unknownOutcome) evaluationId.current = null; setQuestion(event.target.value); setResult(null); setError(""); }} maxLength={2000} required disabled={busy} /></label>
         <p id="query-help">Include one or more exact product names, models or SKUs in your query.</p>
-        <div className={styles.evaluation}><label className={styles.checkOption}><input name="evaluate" type="checkbox" checked={evaluate} onChange={event => { setEvaluate(event.target.checked); setResult(null); setError(""); }} disabled={busy || !guardReady || unknownOutcome} aria-describedby={unknownOutcome ? "model-outcome-guard" : "evaluation-help"} /> <span>Also evaluate with GPT-4o-mini</span></label><p id="evaluation-help">{capability?.profile === "product-playground-v1" && modelAvailable ? "Product questions are allowed within the configured profile allowance." : capability?.profile === "mini-two-case-v1" ? "Only the approved questions below are available for evaluation." : "Evaluation depends on the configured guard and allowance."} Model evaluation may incur usage charges.</p></div>
-        {unknownOutcome && <p id="model-outcome-guard" role="status">Model evaluation is disabled because a request may have an unknown outcome or session storage is unavailable. Reconcile the server-side status before requesting another evaluation. Retrieval remains available.</p>}
-        {!unknownOutcome && <p role="status">{capabilityError ? "Model connection status could not be checked. Uncheck evaluation to inspect retrieval." : !capability ? "Checking model configuration…" : modelAvailable ? result?.model.status === "evaluated" ? "Model response received. Further evaluations remain subject to the approved allowance." : "Guarded profile configured; the live connection is not yet verified." : "Model evaluation is not connected. Uncheck evaluation to inspect retrieval."}</p>}
-        <div className={styles.presets}><button type="button" disabled={busy} onClick={() => { capabilityRequest.current?.abort(); setCapability(null); setCapabilityError(false); setCapabilityAttempt(value => value + 1); }}>Refresh connection</button></div>
+        <div className={styles.evaluation}>
+          <label className={styles.checkOption}>
+            <input name="evaluate" type="checkbox" checked={evaluate} onChange={event => { setEvaluate(event.target.checked); setResult(null); setError(""); }} disabled={busy || !canEvaluate} aria-describedby="evaluation-help" />
+            <span>Also evaluate with GPT-4o-mini</span>
+          </label>
+          <p id="evaluation-help" role="status">{unknownOutcome
+            ? "A previous evaluation may have an unknown outcome, or session storage is unavailable. Check the server-side status before evaluating again. Retrieval remains available."
+            : capabilityError ? "Model status could not be checked. Retrieval remains available."
+            : !capability ? "Checking model availability. You can inspect retrieval now."
+            : !modelAvailable ? "Model evaluation is off pending verification of zero cost and zero data retention. You can inspect retrieval now."
+            : capability.profile === "mini-two-case-v1" ? "Only the approved questions below can be evaluated within the profile allowance."
+            : "Evaluation is optional and subject to the configured profile allowance."}</p>
+        </div>
+        <div className={styles.presets}><button type="button" disabled={busy} onClick={() => { capabilityRequest.current?.abort(); setEvaluate(false); setCapability(null); setCapabilityError(false); setCapabilityAttempt(value => value + 1); }}>Refresh connection</button></div>
         {capability?.profile === "mini-two-case-v1" && capability.approvedQuestions.length > 0 && <div className={styles.presets}><p>Approved evaluation questions. For other queries, uncheck evaluation to inspect retrieval.</p>{capability.approvedQuestions.map(preset => <button key={preset} type="button" disabled={busy} onClick={() => { if (!unknownOutcome) evaluationId.current = null; setQuestion(preset); setResult(null); setError(""); }}>{preset}</button>)}</div>}
-        <button type="submit" disabled={busy || !question.trim() || (evaluate && (!guardReady || !modelAvailable))}>{busy ? "Running…" : evaluate ? "Inspect and evaluate" : "Inspect retrieval"}</button>
+        <button type="submit" disabled={busy || !question.trim() || (evaluate && !canEvaluate)}>{busy ? "Running…" : evaluate ? "Inspect and evaluate" : "Inspect retrieval"}</button>
       </form>
       <div className={styles.output} aria-live="polite" aria-busy={busy}>
         <div className={styles.outputHeading}><h3>Output &amp; evidence</h3>{completedAt && result && <span>Completed at {completedAt} (local time)</span>}</div>

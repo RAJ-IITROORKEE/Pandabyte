@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. The preceding native dispatch checkpoint is `d11a250`. The latest signed-in browser checkpoint is `4abce2e`.
+Use `git log -1` for the local checkpoint. The preceding mounted API checkpoint is `349663c`. The latest automated signed-in browser checkpoint is `4abce2e`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -236,10 +236,9 @@ speech claim. Codex tabs retained for chat, RAG and Agent Skills.
 
 ## Local state and next work
 
-Local built app runs in session67976 on localhost3001 with the development Clerk
-and InsForge services. Build `1VExjmiVpo_AprK2sEvH-` uses
-`.next-agent-experience-rag-candidate`. The original build attempt was interrupted
-during type checks. The second attempt passed compilation and type checking.
+Local built app runs in session81534 on localhost3001 with the development Clerk
+and InsForge services. Build `IMMiNJueGSBKsBd1GET-K` uses
+`.next-agent-experience-browser-fix` and passed compilation and type checking.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
 inspectionON, upload/preparationON, existing server-only signing key and owned
 descriptor path. The local app launch overrides the descriptor path to
@@ -266,6 +265,21 @@ returned two passages in 8313 ms and skipped generation and validation. All six
 responses were private and no-store. There were zero model calls. The latest
 targeted suite passed 38 tests and the 97-task register validated. See
 `p1-implementation-verification.json.phase1MountedHttpFollowup` for the evidence.
+
+The owner confirmed in Codex browser that OpenCode discovery connected and that
+the Playground opened with the evaluation button disabled. The Playground had
+defaulted to evaluation even when the branch reported the model unconfigured.
+The form now opens in retrieval mode and keeps retrieval available while model
+status loads or is unavailable. Evaluation requires explicit opt-in and keeps the
+existing availability and unknown-outcome guards. Agent Skills now describes the
+successful connection as read-only discovery and points to the RAG Playground.
+The legacy GPT-4o-mini evaluator remains gated by the zero-cost and strict ZDR
+requirements. See `p1-implementation-verification.json.phase1PlaygroundRetrievalUx`.
+The rebuilt application passed 34 focused tests, scoped lint and the mounted
+Admin and retrieval checks. The x8266 query returned two passages in 7069 ms
+without generation. Codex browser control was unavailable to the agent. The owner
+can refresh the current Playground tab and use **Inspect retrieval** to check the
+updated form.
 
 Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
 live inference. Remaining acceptance covers the shared native chat and Playground,

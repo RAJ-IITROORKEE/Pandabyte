@@ -1508,5 +1508,113 @@
     "phaseAdvanced": false,
     "liveInferenceEnabled": false,
     "remaining": "Signed-in browser validation of Agent Skills and the retrieval-only Playground on the rebuilt app. Live provider and mounted native execution gates remain open."
+  },
+  "phase1PlaygroundRetrievalUx": {
+    "previousCommit": "349663c",
+    "userBrowserObservation": "Before the fix, the owner observed successful read-only native discovery and a disabled Inspect and evaluate button.",
+    "rootCause": "The Playground initially selected evaluation. That made the submit button depend on an unavailable model even when the user wanted retrieval.",
+    "change": "Retrieval is the default. The evaluation checkbox requires the existing capability and outcome guards. Refreshing availability clears evaluation opt-in. Agent Skills identifies successful read-only discovery and points to retrieval testing.",
+    "focusedTestsPassed": 34,
+    "scopedLint": "pass",
+    "build": "Turbopack production and TypeScript pass",
+    "localState": {
+      "url": "http://localhost:3001",
+      "appSession": 81534,
+      "buildId": "IMMiNJueGSBKsBd1GET-K",
+      "distDir": ".next-agent-experience-browser-fix",
+      "inspectionSupervisorSession": 99409
+    },
+    "mountedHttp": {
+      "surface": "mounted localhost HTTP",
+      "checks": [
+        {
+          "stage": "anonymous runtime",
+          "status": 401,
+          "privateNoStore": true
+        },
+        {
+          "stage": "anonymous playground",
+          "status": 401,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Admin discovery",
+          "status": 200,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Admin discovery rejects caller-controlled selector",
+          "status": 400,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Playground model availability",
+          "status": 200,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Playground retrieval only",
+          "status": 200,
+          "privateNoStore": true
+        }
+      ],
+      "modelCalls": 0,
+      "runtime": {
+        "version": "2.2.2",
+        "status": "discovery_only",
+        "counts": {
+          "skills": 0,
+          "mcpServers": 0,
+          "models": 0
+        },
+        "capabilities": {
+          "install": false,
+          "configure": false,
+          "execute": false
+        }
+      },
+      "playgroundCapability": "not_configured",
+      "retrieval": {
+        "passages": 2,
+        "metrics": {
+          "elapsedMs": 7069,
+          "contextPassages": 2,
+          "contextCharacters": 638,
+          "inputTokens": null,
+          "outputTokens": null,
+          "costUsd": null
+        },
+        "workflow": [
+          {
+            "stage": "authorize",
+            "status": "completed"
+          },
+          {
+            "stage": "retrieve",
+            "status": "completed"
+          },
+          {
+            "stage": "augment",
+            "status": "completed"
+          },
+          {
+            "stage": "generate",
+            "status": "skipped"
+          },
+          {
+            "stage": "validate",
+            "status": "skipped"
+          },
+          {
+            "stage": "release",
+            "status": "completed"
+          }
+        ]
+      },
+      "result": "passed"
+    },
+    "browser": "Agent browser control was unavailable. User observations apply to the prior build. The updated interaction was verified with component tests and the rebuilt localhost API.",
+    "liveInferenceEnabled": false,
+    "phaseAdvanced": false
   }
 }
