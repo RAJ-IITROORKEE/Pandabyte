@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. The preceding native permission checkpoint is `a3fefb3`. The latest signed-in browser checkpoint is `4abce2e`.
+Use `git log -1` for the local checkpoint. The preceding native dispatch checkpoint is `d11a250`. The latest signed-in browser checkpoint is `4abce2e`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -236,15 +236,16 @@ speech claim. Codex tabs retained for chat, RAG and Agent Skills.
 
 ## Local state and next work
 
-Local final built app: session39640, localhost3001, development Clerk/InsForge services,
-output `.next-agent-experience-rag-candidate`; this is local `next start`, no deployment.
+Local built app runs in session67976 on localhost3001 with the development Clerk
+and InsForge services. Build `1VExjmiVpo_AprK2sEvH-` uses
+`.next-agent-experience-rag-candidate`. The original build attempt was interrupted
+during type checks. The second attempt passed compilation and type checking.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
 inspectionON, upload/preparationON, existing server-only signing key and owned
-descriptor path. Original E: environment untouched. Private SSM tunnel session19107
-serves localhost8182 to existing host8182; previous idle tunnel exited cleanly,
-re-established with current existing CLI credentials, no new login. No image/stack/
-role/deployment change. Environment example now documents descriptor-only discovery;
-obsolete unused URL/password entries removed.
+descriptor path. The local app launch overrides the descriptor path to
+`private/native-runtime-browser-validation.json`, published by provider-free
+inspection session99409 after the prior supervisor stopped. The private SSM tunnel
+is currently closed. Existing deterministic chat worker tests require the tunnel.
 
 C: ran out of space during pinned install. Reversible moves preserved old candidate
 and dev build outputs in `E:/CodexTemporary/panda-agent-main-rag-reuse-20261107`.
@@ -254,12 +255,17 @@ source or credentials moved/deleted. Initial recursive old-build deletion was
 rejected by automatic approval review as blocked by policy; the reversible move
 succeeded instead. Disk capacity remains limited; do not delete unrelated files.
 
-Local Codex browser access was disabled in Work settings during the native skill
-and permission follow-ups. The signed-in application checks above are from the
-preceding browser checkpoint. The latest Admin discovery change has focused
-server tests and awaits a signed-in browser check on a fresh build. The Agent and
-Admin suite passed 586 tests with 16 documented private fixture skips. Application
-and native type checks, scoped lint and the 97-task register validation passed.
+Codex reported local browser use disabled in Work settings, then the browser
+control tool became unavailable during the current validation. Signed-in browser
+coverage for this build remains pending. On the mounted localhost APIs, anonymous
+runtime and Playground reads returned 401. The existing development Admin received
+OpenCode 2.2.2 discovery with all three catalogs empty and install, configure and
+execute disabled. A caller-controlled runtime selector was rejected with 400.
+Playground reported model evaluation unconfigured. The x8266 retrieval-only query
+returned two passages in 8313 ms and skipped generation and validation. All six
+responses were private and no-store. There were zero model calls. The latest
+targeted suite passed 38 tests and the 97-task register validated. See
+`p1-implementation-verification.json.phase1MountedHttpFollowup` for the evidence.
 
 Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
 live inference. Remaining acceptance covers the shared native chat and Playground,

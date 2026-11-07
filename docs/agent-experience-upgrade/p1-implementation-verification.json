@@ -1399,5 +1399,114 @@
       "providerFreeMcpProbeRegression": "pass",
       "requirementRegister": "97 valid"
     }
+  },
+  "phase1MountedHttpFollowup": {
+    "appCommit": "d11a250",
+    "buildId": "1VExjmiVpo_AprK2sEvH-",
+    "build": "Turbopack production build and integrated TypeScript pass on retry. The initial attempt ended during type checks without a completed build.",
+    "browser": "Local browser use was disabled in Work settings. The browser control tool then became unavailable in this session. No browser QA was completed in this follow-up.",
+    "localState": {
+      "url": "http://localhost:3001",
+      "appSession": 67976,
+      "inspectionSupervisorSession": 99409,
+      "inspectionDescriptor": "private/native-runtime-browser-validation.json",
+      "privateSsmTunnel": "closed"
+    },
+    "existingDevelopmentAdminSessionUsed": true,
+    "anonymousChatRedirect": 307,
+    "focusedTestsPassed": 38,
+    "registerValidation": "97 valid",
+    "mountedHttp": {
+      "surface": "mounted localhost HTTP",
+      "checks": [
+        {
+          "stage": "anonymous runtime",
+          "status": 401,
+          "privateNoStore": true
+        },
+        {
+          "stage": "anonymous playground",
+          "status": 401,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Admin discovery",
+          "status": 200,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Admin discovery rejects caller-controlled selector",
+          "status": 400,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Playground model availability",
+          "status": 200,
+          "privateNoStore": true
+        },
+        {
+          "stage": "Playground retrieval only",
+          "status": 200,
+          "privateNoStore": true
+        }
+      ],
+      "modelCalls": 0,
+      "runtime": {
+        "version": "2.2.2",
+        "status": "discovery_only",
+        "counts": {
+          "skills": 0,
+          "mcpServers": 0,
+          "models": 0
+        },
+        "capabilities": {
+          "install": false,
+          "configure": false,
+          "execute": false
+        }
+      },
+      "playgroundCapability": "not_configured",
+      "retrieval": {
+        "passages": 2,
+        "metrics": {
+          "elapsedMs": 8313,
+          "contextPassages": 2,
+          "contextCharacters": 638,
+          "inputTokens": null,
+          "outputTokens": null,
+          "costUsd": null
+        },
+        "workflow": [
+          {
+            "stage": "authorize",
+            "status": "completed"
+          },
+          {
+            "stage": "retrieve",
+            "status": "completed"
+          },
+          {
+            "stage": "augment",
+            "status": "completed"
+          },
+          {
+            "stage": "generate",
+            "status": "skipped"
+          },
+          {
+            "stage": "validate",
+            "status": "skipped"
+          },
+          {
+            "stage": "release",
+            "status": "completed"
+          }
+        ]
+      },
+      "result": "passed"
+    },
+    "phaseAdvanced": false,
+    "liveInferenceEnabled": false,
+    "remaining": "Signed-in browser validation of Agent Skills and the retrieval-only Playground on the rebuilt app. Live provider and mounted native execution gates remain open."
   }
 }
