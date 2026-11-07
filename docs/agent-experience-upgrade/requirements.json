@@ -411,10 +411,11 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Live provider generation, full native management/install/tool enforcement and customer memory remain unfinished. RAG uploads/preparation stay off without the existing private bucket/signing configuration. No later-phase advancement.",
+        "limitations": "Live provider generation, full native management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local private RAG upload/preparation/search/withdrawal verified; copied UI withdrawal action still absent. No later-phase advancement.",
         "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
         "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF.",
-        "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF."
+        "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
+        "restoredMainChat": "7 Nov real AWS/owner Codex browser deterministic quote/citation, reload/reopen and owned archive pass; same1021c59 built source, no live LLM. See mainRagReuse.authorizationFollowup."
       }
     },
     {
@@ -443,13 +444,14 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Live provider generation, full native management/install/tool enforcement and customer memory remain unfinished. RAG uploads/preparation stay off without the existing private bucket/signing configuration. No later-phase advancement.",
+        "limitations": "Live provider generation, full native management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local private RAG upload/preparation/search/withdrawal verified; copied UI withdrawal action still absent. No later-phase advancement.",
         "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted.",
         "nativeTurnAdapter": "Private start/status adapter assembled behind hard-disabled inference;18leaf tests plus route/service/owner/runtime tests. No replacement runner or legacy fallback after uncertainty.",
         "nativeLifecycle": "Cancel/status/cleanup assembled;17leaf tests, actual provider-free owned unstarted cleanup using pinned runtime admission; full Clerk/SQL/native active cancellation remains open.",
         "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
         "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF.",
-        "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF."
+        "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
+        "privateIngestion": "7 Nov existing private bucket/policies/source-identical guard/signing-key access verified; local existing-key reuse,187-byte owned Markdown upload/review/preparation/search, guarded API withdrawal and stale-read/search denial, browser reload removes inspect. One withdrawn private fixture/audit retained, previous2uploads preserved; no schema/role/canonical-grant changes."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",
@@ -485,7 +487,7 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Live provider generation, full native management/install/tool enforcement and customer memory remain unfinished. RAG uploads/preparation stay off without the existing private bucket/signing configuration. No later-phase advancement.",
+        "limitations": "Live provider generation, full native management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local private RAG upload/preparation/search/withdrawal verified; copied UI withdrawal action still absent. No later-phase advancement.",
         "adminAccessFix": "Existing configured Clerk JWT template respected; owner browser shell+four tabs, keyboard and CSS320/1200 both themes pass; anon401/customer403 and cleanup verified. Native discovery/management remains incomplete.",
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
         "nativeDiscovery": "Actual owned pinned2.2.2 provider-free supervisor + real signed-in Admin browser discovery pass; all three native catalogs empty, sanitized and generation-fenced. Five existing RAG skill bundles/four tool manifests are real separate API controls; native writes remain unsupported."

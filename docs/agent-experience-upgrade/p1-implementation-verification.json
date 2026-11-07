@@ -846,8 +846,8 @@
     },
     "activation": {
       "localDocumentLibrary": true,
-      "privateUploadsAndPreparation": false,
-      "uploadReason": "Existing original/worktree local environment has no upload enablement or ingestion signing secret; no key rotation/private-source mutation performed.",
+      "privateUploadsAndPreparation": true,
+      "uploadReason": "Configured locally after verifying existing private bucket, all5policies and source-identical storage guard; reused existing active signing key without rotation. Original environment/hosted flags unchanged. Server environment ACL restricted to owner/SYSTEM/local administrators.",
       "historicalPaidReceiver": false,
       "nativeInference": false,
       "openRouterInferenceRequests": 0
@@ -924,15 +924,214 @@
         "Final-build OpenRouter catalog433models; filtered exact Xing4.0 free variant, zero published token rates; local comparison selection only, Run disabled and not configured.",
         "Playground result survives navigation to Evaluation and back; skill unsaved draft cleared."
       ],
-      "mainChatFreshAnswer": "not run this increment: existing datumm CLI credentials expired and private8182tunnel closed; fresh Codex AWS sign-in handed to owner. No new unknown chat/turn created. Prior f5c063f deterministic citation/reload/cleanup evidence retained.",
+      "mainChatFreshAnswer": "PASS after AWS existing-profile authorization: fresh deterministic x8266 MCU quote with S1, source section/capture/link and8fragments/2819characters; reload then explicitly reopen saved chat restores answer/citation. Only the new test chat archived, absent from recent, empty enabled composer; older histories preserved. No LLM inference.",
       "screenshots": [
         "tmp/agent-main-rag-playground.png",
-        "tmp/agent-main-rag-free-model-guard.png"
+        "tmp/agent-main-rag-free-model-guard.png",
+        "tmp/agent-main-rag-chat-restored.png",
+        "tmp/agent-main-rag-upload-cleanup.png"
       ],
       "limits": "No live OpenRouter/native response, token streaming, active cancellation, native tool execution, new real screen-reader speech/zoom/motion claim."
     },
     "review": "Independent bounded source/security/dependency notice review: no new release-safety blockers. DETAIL authorization regression fixed.",
-    "scope": "No deployment/push/merge, paid call, account policy change, schema/data/source grant mutation, secret printing or original main checkout writes.",
-    "comparison": "Selected working-tree bytes, before Git CRLF normalization"
+    "scope": "No deployment/push/merge, paid call, provider policy, schema/role/source-grant mutation or original checkout writes. One self-authored private187-byte Markdown fixture uploaded/reviewed/prepared/searched, then withdrawn via the existing guarded Admin API. Private audit bytes/receipt retained; two earlier uploads preserved.",
+    "comparison": "Selected working-tree bytes, before Git CRLF normalization",
+    "authorizationFollowup": {
+      "date": "2026-11-07",
+      "sourceCheckpoint": "1021c59",
+      "applicationSourceChanged": false,
+      "aws": {
+        "ownerConfirmedSignIn": true,
+        "existingDatummProfileAuthenticated": true,
+        "expectedAccountVerified": true,
+        "privateWorkerReadyStatus": 200,
+        "tunnelSession": 95453,
+        "oneTimeCodePrinted": false,
+        "oneTimeTransferRemoved": true,
+        "awsBrowserTabClosed": true,
+        "cloudRuntimeOrInfrastructureChanged": false
+      },
+      "mainChat": {
+        "surface": "Codex browser, real owner, same final built app localhost3001",
+        "question": "Which MCU does the x8266 use?",
+        "savedAnswer": "The captured listing states: \u201cMicrocontroller: ESP8266\u201d [S1]",
+        "source": "PandaByte NodeMCU x8266 WiFi Development Board; Listing description; captured2026-10-30T03:04:37.128891+00:00; approved source link",
+        "activity": "Understanding/resolving/reading/searching/selecting/checking/saving stages;8fragments,2819characters,20000limit",
+        "persistence": "Reload returns initial view; explicitly reopening newly saved chat restores same answer/citation. No claim of automatic active-chat restoration.",
+        "cleanup": "Only the fresh owned chat archived, absent from recent; composer empty/enabled; other histories untouched.",
+        "modelInference": false,
+        "screenshot": "tmp/agent-main-rag-chat-restored.png"
+      },
+      "uploadConfiguration": {
+        "signingKeyActive": true,
+        "storageRlsEnabled": true,
+        "targetPolicies": [
+          [
+            "panda_agent_intake_storage_boundary",
+            "ALL",
+            "RESTRICTIVE",
+            "{anon,authenticated}"
+          ],
+          [
+            "panda_agent_intake_storage_insert",
+            "INSERT",
+            "PERMISSIVE",
+            "{authenticated}"
+          ],
+          [
+            "panda_agent_intake_storage_no_delete",
+            "DELETE",
+            "RESTRICTIVE",
+            "{anon,authenticated}"
+          ],
+          [
+            "panda_agent_intake_storage_no_update",
+            "UPDATE",
+            "RESTRICTIVE",
+            "{anon,authenticated}"
+          ],
+          [
+            "panda_agent_intake_storage_read",
+            "SELECT",
+            "PERMISSIVE",
+            "{authenticated}"
+          ]
+        ],
+        "storageGuardMatchesSource": true,
+        "signingRawAccessDenied": true,
+        "bucketPrivate": true,
+        "keyRotated": false,
+        "originalEnvironmentChanged": false,
+        "serverOnlyLocalEnvironment": true
+      },
+      "privateFixture": {
+        "content": "Self-authored disposable note; expressly not product documentation or customer evidence",
+        "mediaType": "text/markdown",
+        "originalBytes": 187,
+        "originalHashVerifiedAgainstIntake": true,
+        "browser": "Real file chooser upload, pending review v2, permitted fixture-only rights review, automatic private preparation, one parsed chunk and marker search returned source version1",
+        "publishedOrEnabledForCustomers": false,
+        "anonymousDownload": {
+          "anonymousPrivateDownloadStatus": 401,
+          "bytesReleased": 0,
+          "authorizationSent": false
+        },
+        "anonymousApis": [
+          {
+            "method": "POST",
+            "operation": "intakes/upload",
+            "status": 401,
+            "noStore": true
+          },
+          {
+            "method": "GET",
+            "operation": "documents/:owned-fixture?version=1",
+            "status": 401,
+            "noStore": true
+          },
+          {
+            "method": "POST",
+            "operation": "documents/:owned-fixture/search",
+            "status": 401,
+            "noStore": true
+          },
+          {
+            "method": "POST",
+            "operation": "documents/:owned-fixture/withdraw",
+            "status": 401,
+            "noStore": true
+          }
+        ],
+        "ownerGuards": {
+          "mode": "check",
+          "existingOwnerSessionUsed": true,
+          "sessionsCreated": 0,
+          "roleChanges": 0,
+          "fixtureOnly": true,
+          "checks": [
+            {
+              "method": "GET",
+              "operation": ":owned-fixture?version=1",
+              "status": 200,
+              "noStore": true
+            },
+            {
+              "method": "POST",
+              "operation": ":owned-fixture/withdraw",
+              "status": 403,
+              "noStore": true
+            },
+            {
+              "method": "POST",
+              "operation": ":owned-fixture/withdraw",
+              "status": 409,
+              "noStore": true
+            }
+          ],
+          "credentialsPrinted": false,
+          "modelCalls": 0
+        },
+        "ownerWithdrawal": {
+          "mode": "withdraw",
+          "existingOwnerSessionUsed": true,
+          "sessionsCreated": 0,
+          "roleChanges": 0,
+          "fixtureOnly": true,
+          "checks": [
+            {
+              "method": "POST",
+              "operation": ":owned-fixture/withdraw",
+              "status": 200,
+              "noStore": true
+            },
+            {
+              "method": "GET",
+              "operation": ":owned-fixture?version=1",
+              "status": 503,
+              "noStore": true
+            },
+            {
+              "method": "POST",
+              "operation": ":owned-fixture/search",
+              "status": 503,
+              "noStore": true
+            },
+            {
+              "method": "POST",
+              "operation": ":owned-fixture/withdraw",
+              "status": 409,
+              "noStore": true
+            }
+          ],
+          "credentialsPrinted": false,
+          "modelCalls": 0
+        },
+        "finalState": {
+          "ownedDocumentStatus": "withdrawn",
+          "ownedDocumentVersion": 2,
+          "privateAuditChunksRetained": 1,
+          "priorPreparedDocumentsUnchanged": 2,
+          "signedPreparedReceiptRetained": true
+        },
+        "browserAfterWithdrawal": "Existing cached inspector new search clears old result and reports source/access unavailable; reload shows withdrawn row, no inspect action and no prepared inspector. Library active upload counts return2documents/2chunks; product counts42/282 unchanged.",
+        "withdrawalInterface": "Existing mounted Admin API using a real existing owner Clerk session token, no session/role creation. The copied UI has no withdrawal action; this remains a UI gap.",
+        "screenshots": [
+          "tmp/agent-main-rag-upload-prepared.png",
+          "tmp/agent-main-rag-upload-withdrawn-search.png",
+          "tmp/agent-main-rag-upload-cleanup.png"
+        ]
+      },
+      "inferenceRequests": 0,
+      "designChanges": false,
+      "notClaimed": [
+        "Live native/OpenRouter generation or response quality",
+        "Concurrent in-flight withdrawal or customer memory propagation",
+        "New real non-Admin Clerk upload isolation",
+        "Real PDF upload in this increment",
+        "Complete Phase1"
+      ],
+      "currentApplicationSession": 86366,
+      "next": "Keep strict-ZDR inference gate closed until supported workspace policy proof. Finish native/shared-engine and management requirements without advancing dependency gates."
+    }
   }
 }
