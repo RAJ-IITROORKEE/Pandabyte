@@ -107,8 +107,17 @@ The isolated permission follow-up sent the same fixture tool action to the nativ
 session permission endpoint with two resources. OpenCode allowed the exact control
 resource and denied `*`, the resource the native MCP tool supplies to its permission
 check, even though the fixture session allowed the action. There was no pending
-approval and the fixture logged zero tool calls. The decision path is verified.
-Actual agent tool dispatch and its response handling still require acceptance.
+approval and the fixture logged zero tool calls.
+
+Two further isolated runs exercised the actual native agent dispatcher with a
+scripted loopback model. The model requested the advertised tool in each run. The
+allow case reached MCP exactly once and produced a completed tool record. The deny
+case produced an error record with zero calls reaching MCP, even though the
+session allowed the action. OpenCode maps the permission failure to a generic
+tool execution error. The tool error and zero MCP calls, together with the native
+permission decision and allow control, establish the denial. Turn success alone
+does not establish tool success. Mounted application and remote tool acceptance
+remain open. [Dispatch evidence](opencode-mcp-probe.json)
 [OpenCode permission service](https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/permission.ts) ·
 [OpenCode MCP tool dispatch](https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/tool/mcp.ts)
 

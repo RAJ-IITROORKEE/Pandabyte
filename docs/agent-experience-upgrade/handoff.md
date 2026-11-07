@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. The preceding skill event checkpoint is `3a58315`. The latest signed-in browser checkpoint is `4abce2e`.
+Use `git log -1` for the local checkpoint. The preceding native permission checkpoint is `a3fefb3`. The latest signed-in browser checkpoint is `4abce2e`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -151,6 +151,16 @@ state was cleaned. The mounted Admin discovery endpoint also checks the original
 Clerk subject and session again before release. Both account and session replacement
 return a generic private 403. [MCP permission evidence](opencode-mcp-probe.json)
 
+Actual native tool dispatch now passes in two disposable OpenCode 2.2.2 instances.
+Both used a scripted model on loopback, the same fixture code and a session-level
+allow for the tool. In each case the model saw and requested the tool. The allow
+policy produced exactly one MCP `tools/call` and a saved result. The deny policy
+produced a saved native tool error and zero MCP calls. The overall turn completed
+in both cases, so tool success is checked independently of turn success. All
+owned sessions, processes and temporary state were cleaned. The four model HTTP
+requests went to the local fixture. Live inference remained off.
+[Dispatch evidence and diagnostic attempts](opencode-mcp-probe.json)
+
 ## OpenRouter zero-cost / strict privacy
 
 Supported existing-key GET metadata succeeds: `/key`, `/models/user`, exact model
@@ -254,5 +264,5 @@ and native type checks, scoped lint and the 97-task register validation passed.
 Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
 live inference. Remaining acceptance covers the shared native chat and Playground,
 structured responses and citations, lifecycle and latency, supported native Admin
-management and effective tool permissions, and customer memory. The 97-row register
+management, tool permissions in mounted application flows, and customer memory. The 97-row register
 tracks these gates before Phase 2.

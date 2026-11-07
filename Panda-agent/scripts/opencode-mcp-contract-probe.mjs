@@ -1,4 +1,4 @@
-// One disposable provider-free MCP management attempt; OpenCode is the only MCP client.
+// Disposable native MCP probe. Optional dispatch uses a scripted loopback model.
 import { createReadStream } from 'node:fs';
 import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { createHash, randomBytes } from 'node:crypto';
@@ -10,8 +10,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
 import { createDescriptorLease, inspectionConfig, inspectionEnvironment, matchesPinnedVersion, verifiedConfig } from './start-native-inspection.mjs';
-import { createNativeReceipt } from '../src/opencode/session-contracts.ts';
+import { createNativeMessageID, createNativeReceipt } from '../src/opencode/session-contracts.ts';
 import { createNativeSessionClient } from '../src/opencode/session-client.ts';
+import { fixturePrompt, fixtureToolResult, observeDispatch, startFixtureModel } from './opencode-tool-dispatch-fixture.mjs';
 
 const binaryHash = 'e49134e14f29f0ab586035c3e6e486a7aa9c3e721d556661eff9f4eee0e1dae4';
 const archiveIntegrity = 'tFS9vYp0/+VOeYpcWvAy1e2iMEx6x5/XagVpwtjG33ocvumn5R2qaKGhqhI56Wu8Hfet+VYaw8nwbx9BqxJCqQ==';
@@ -20,11 +21,13 @@ const inside = (parent, path) => { const rel = relative(parent,path); return rel
 const controlResource = 'pandabyte-probe-control';
 const fixtureToolAction = name => `${name}_fixture_readonly`;
 
-export function syntheticReply(message) {
+export function syntheticReply(message, resultText) {
   if (!message || typeof message !== 'object' || message.id === undefined) return null;
   let result;
   if (message.method === 'initialize') result = {protocolVersion:message.params.protocolVersion,capabilities:{tools:{listChanged:false}},serverInfo:{name:'Disposable fixture',version:'1.0.0'}};
-  else if (message.method === 'tools/list') result = {tools:[{name:'fixture_readonly',description:'Harmless capability-discovery fixture; never executed.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false}}]};
+  else if (message.method === 'tools/list') result = {tools:[{name:'fixture_readonly',description:'Read a constant from the disposable local fixture.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false}}]};
+  else if (resultText && message.method === 'tools/call' && message.params?.name === 'fixture_readonly'
+    && Object.keys(message.params.arguments ?? {}).length === 0) result = { content: [{ type: 'text', text: resultText }] };
   else if (message.method === 'resources/list') result = {resources:[]};
   else if (message.method === 'resources/templates/list') result = {resourceTemplates:[]};
   else if (message.method === 'prompts/list') result = {prompts:[]};
@@ -33,14 +36,14 @@ export function syntheticReply(message) {
   return {jsonrpc:'2.0',id:message.id,result};
 }
 
-export function syntheticServerSource() {
+export function syntheticServerSource(dispatch = false) {
   return `import {createInterface} from 'node:readline';
 import {appendFileSync} from 'node:fs';
 const log=process.argv[2],nonce=process.argv[3],reply=${syntheticReply.toString()};
 const record=value=>appendFileSync(log,JSON.stringify(value)+'\\n');
 record({event:'started',pid:process.pid,ppid:process.ppid,nonce});
 const input=createInterface({input:process.stdin,crlfDelay:Infinity});
-input.on('line',line=>{if(Buffer.byteLength(line)>16384)process.exit(1);const message=JSON.parse(line);const methods=['initialize','notifications/initialized','tools/list','tools/call','resources/list','resources/templates/list','prompts/list','ping'];record({event:methods.includes(message.method)?message.method:'other'});const output=reply(message);if(output)process.stdout.write(JSON.stringify(output)+'\\n')});
+input.on('line',line=>{if(Buffer.byteLength(line)>16384)process.exit(1);const message=JSON.parse(line);const methods=['initialize','notifications/initialized','tools/list','tools/call','resources/list','resources/templates/list','prompts/list','ping'];record({event:methods.includes(message.method)?message.method:'other'});const output=reply(message,${JSON.stringify(dispatch ? fixtureToolResult : null)});if(output)process.stdout.write(JSON.stringify(output)+'\\n')});
 input.on('close',()=>process.exit(0));
 setTimeout(()=>process.exit(0),90000).unref();
 `;
@@ -76,21 +79,28 @@ export function permissionFixture(name, receipt, directory) {
   };
 }
 
-export function probeTransport({baseUrl,name,mutations,signal,permission,fetch:transport = fetch}) {
+export function probeTransport({baseUrl,name,mutations,signal,permission,dispatch,fetch:transport = fetch}) {
   const reads = new Set(['/api/info','/api/model','/api/skill','/api/mcp','/api/mcp/resource','/api/config']);
+  let prompted = false;
   return async (input, init = {}) => {
     const url = new URL(input), method = init.method ?? 'GET';
     requireValue(url.origin === baseUrl && !url.username && !url.password && !url.hash);
     const mutation = mutationFor(method,url.pathname,name);
     let check;
+    let dispatchPrompt = false;
     const session = permission ? `/api/session/${permission.create.id}` : undefined;
     if (permission && method === 'POST' && url.pathname === '/api/session' && !url.search) {
       requireValue(isDeepStrictEqual(JSON.parse(init.body), permission.create));
       check = 'create';
+    } else if (dispatch && permission && method === 'POST' && url.pathname === `${session}/prompt` && !url.search) {
+      requireValue(!prompted && permission.counts.create === 1 && permission.counts.blocked === 1 && permission.counts.remove === 0 && mutations.connect === 1);
+      requireValue(isDeepStrictEqual(JSON.parse(init.body), { id: dispatch.messageID, text: fixturePrompt }));
+      prompted = true;
+      dispatchPrompt = true;
     } else if (permission && method === 'POST' && url.pathname === `${session}/permission` && !url.search) {
       requireValue(permission.counts.create === 1 && permission.counts.remove === 0);
       const body = JSON.parse(init.body);
-      check = ['control', 'blocked'].find(key => isDeepStrictEqual(body, permission[key]));
+      check = (dispatch ? ['blocked'] : ['control', 'blocked']).find(key => isDeepStrictEqual(body, permission[key]));
       requireValue(check);
     } else if (permission && method === 'DELETE' && url.pathname === session && !url.search) {
       requireValue(permission.counts.create === 1);
@@ -100,7 +110,9 @@ export function probeTransport({baseUrl,name,mutations,signal,permission,fetch:t
       [session, `${session}/permission`, '/api/session/active'].includes(url.pathname) && !url.search
       || url.pathname === '/api/session' && url.search === `?parentID=${permission.create.id}&limit=1`
     );
-    requireValue(mutation || check || sessionRead || (method === 'GET' && reads.has(url.pathname)));
+    const dispatchRead = dispatch && prompted && method === 'GET' && url.pathname === `${session}/message`
+      && url.searchParams.size === 2 && url.searchParams.get('limit') === '20' && url.searchParams.get('order') === 'asc';
+    requireValue(mutation || check || sessionRead || dispatchRead || dispatchPrompt || (method === 'GET' && reads.has(url.pathname)));
     if (mutation) { requireValue(mutations[mutation] === 0); mutations[mutation]++; }
     if (check) { requireValue(permission.counts[check] === 0); permission.counts[check]++; }
     const bounded = AbortSignal.any([signal,AbortSignal.timeout(12000),...(init.signal ? [init.signal] : [])]);
@@ -147,7 +159,8 @@ $p.Kill();if(!$p.WaitForExit(5000)){exit 1};[Console]::Out.Write('stopped')`;
 }
 
 async function run(args) {
-  requireValue(process.platform==='win32'&&args.length===2&&args[0]==='--client-root'&&isAbsolute(args[1]));
+  const dispatchMode = args[2];
+  requireValue(process.platform==='win32'&&(args.length===2 || (args.length===3 && ['allow','deny'].includes(dispatchMode)))&&args[0]==='--client-root'&&isAbsolute(args[1]));
   const workspace=resolve(dirname(fileURLToPath(import.meta.url)),'..','..');
   const clientRoot=await realpath(args[1]);
   for(const name of ['client','protocol','schema']){
@@ -161,7 +174,13 @@ async function run(args) {
   const attempts=new Set(),signal=AbortSignal.timeout(90000),controller=new AbortController();
   const stop=()=>controller.abort();process.once('SIGINT',stop);process.once('SIGTERM',stop);
   const active=AbortSignal.any([signal,controller.signal]);
-  let reference,guard,permission,permissionReceipt,native,permissionAccess;
+  let reference,guard,permission,permissionReceipt,native,permissionAccess,mock;
+  const dispatch = dispatchMode ? { messageID: createNativeMessageID() } : undefined;
+  if (dispatchMode) {
+    summary.scope = 'actual OpenCode dispatch with a synthetic loopback model and disposable MCP server';
+    summary.dispatchMode = dispatchMode;
+    summary.liveModelRequests = 0;
+  }
   try {
     const assets=join(workspace,'tmp','opencode-2.2.2-review'),executable=join(assets,'opencode.exe');
     requireValue(await digest(executable,'sha256','hex',254943112)===binaryHash&&await digest(join(assets,'opencode-cli-windows-x64-2.2.2.tgz'),'sha512','base64',119436377)===archiveIntegrity);
@@ -171,10 +190,17 @@ async function run(args) {
     nonce=randomBytes(16).toString('hex');name='fixture-'+nonce;node=await realpath(process.execPath);
     requireValue(isAbsolute(node)&&process.release.name==='node'&&Number(process.versions.node.split('.')[0])===24);
     scriptPath=join(root,'fixture-'+nonce+'.mjs');logPath=join(root,'fixture-receipt.jsonl');
-    await writeFile(scriptPath,syntheticServerSource(),{flag:'wx',mode:0o600});
-    const config=probePolicy(name),configBytes=JSON.stringify(config),configPath=join(root,'config','opencode.json'),password=randomBytes(32).toString('hex');
+    await writeFile(scriptPath,syntheticServerSource(!!dispatch),{flag:'wx',mode:0o600});
+    const config = probePolicy(name);
+    if (dispatch) {
+      mock = await startFixtureModel(fixtureToolAction(name), dispatchMode);
+      mock.configure(config);
+      summary.loopbackModel = mock.observed;
+    }
+    const configBytes=JSON.stringify(config),configPath=join(root,'config','opencode.json'),password=randomBytes(32).toString('hex');
     await writeFile(configPath,configBytes,{flag:'wx',mode:0o600});
     const env=inspectionEnvironment(root,password);
+    if (mock) env.PANDA_TOOL_FIXTURE_TOKEN = mock.token;
     stage='version';const version=await promisify(execFile)(executable,['--version'],{env,cwd:join(root,'workspace'),windowsHide:true,timeout:5000,maxBuffer:128,signal:active});requireValue(matchesPinnedVersion(version.stdout));
     const server=createServer();server.listen(0,'127.0.0.1');await once(server,'listening');const port=server.address().port;await new Promise((done,fail)=>server.close(error=>error?fail(error):done()));
     child=spawn(executable,['serve','--hostname','127.0.0.1','--port',String(port)],{env,cwd:join(root,'workspace'),stdio:'ignore',windowsHide:true,detached:true});
@@ -183,15 +209,20 @@ async function run(args) {
     permissionReceipt = createNativeReceipt('playground', randomBytes(32).toString('hex'));
     permission = permissionFixture(name, permissionReceipt, directory);
     summary.permissionRequests = permission.counts;
-    const transport=probeTransport({baseUrl,name,mutations:summary.mutations,signal:active,permission});
+    const transport=probeTransport({baseUrl,name,mutations:summary.mutations,signal:active,permission,dispatch});
     client=OpenCode.make({baseUrl,headers:{Authorization:`Basic ${Buffer.from(`opencode:${password}`).toString('base64')}`,'x-opencode-directory':encodeURIComponent(directory)},fetch:transport});
     guard=async()=>{const info=await client.server.info({signal:active});requireValue(info.version==='2.2.2'&&info.pid===child.pid);};
     stage='identity';const deadline=Date.now()+25000;
     while(true){try{await guard();break;}catch{requireValue(!active.aborted&&child.exitCode===null&&child.signalCode===null&&Date.now()<deadline);await new Promise(done=>setTimeout(done,100));}}
     summary.checks.spawnedProcessPinned=true;
     stage='initial_catalogs';const models=await client.model.list(reference,{signal:active});const skills=await client.skill.list(reference,{signal:active});const initial=await client.mcp.list(reference,{signal:active});
-    requireValue(models.data.length===0&&skills.data.length===0&&initial.data.length===0);requireValue(verifiedConfig(await client.config.get(reference,{signal:active}),config,root));
-    summary.checks.defaultProviderAndToolDenyVerified=true;summary.checks.onlyExactOwnedMcpIntegrationAllowed=true;summary.checks.initialCatalogsEmpty=true;summary.checks.mcpGetApiAvailable=typeof client.mcp.get==='function';summary.checks.ownedReadUsesNativeList=true;
+    requireValue((mock ? mock.matchesCatalog(models.data) : models.data.length===0)&&skills.data.length===0&&initial.data.length===0);
+    const loaded = await client.config.get(reference,{signal:active});
+    requireValue(verifiedConfig(loaded,config,root) && (!mock || mock.matchesConfig(loaded)));
+    summary.checks.defaultProviderAndToolDenyVerified=true;summary.checks.onlyExactOwnedMcpIntegrationAllowed=true;
+    if (mock) summary.checks.onlyLoopbackModelConfigured = true;
+    else summary.checks.initialCatalogsEmpty = true;
+    summary.checks.mcpGetApiAvailable=typeof client.mcp.get==='function';summary.checks.ownedReadUsesNativeList=true;
     const generation=randomBytes(32).toString('hex');lease=await createDescriptorLease(root,join(root,'private','runtime.json'),generation);
     await lease.publish({version:1,generation,pid:child.pid,baseUrl,directory,configHash:createHash('sha256').update(configBytes).digest('hex'),password});summary.checks.privateDescriptor=true;
     native = createNativeSessionClient({ baseUrl, password, directory, expectedPid: child.pid, fetch: transport, timeoutMs: 10000 });
@@ -218,18 +249,35 @@ async function run(args) {
         const created = await client.session.create(permission.create, { signal: active });
         requireValue(created.id === permissionReceipt.sessionID);
         await native.get(permissionReceipt, permissionAccess, active);
-        stage = 'tool_permission_decisions';
-        const control = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.control }, { signal: active });
-        const blocked = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.blocked }, { signal: active });
-        summary.checks.permissionControl = control.effect;
-        summary.checks.toolPermission = blocked.effect;
-        requireValue(control.effect === 'allow' && blocked.effect === 'deny');
+        if (dispatch) {
+          stage = 'dispatch_permission_decision';
+          const decision = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.blocked }, { signal: active });
+          summary.checks.dispatchPermissionDecision = decision.effect;
+          requireValue(decision.effect === dispatchMode);
+          stage = 'agent_dispatch';
+          const ack = await native.prompt(permissionReceipt, { messageID: dispatch.messageID, text: fixturePrompt }, permissionAccess, active);
+          requireValue(ack.status === 'accepted');
+          summary.checks.promptAccepted = true;
+          summary.dispatch = await observeDispatch({ native, receipt: permissionReceipt, access: permissionAccess,
+            signal: active, client, messageID: dispatch.messageID, tool: fixtureToolAction(name) });
+          summary.toolCalls = (await fixtureProcesses(logPath)).filter(item => item.event === 'tools/call').length;
+          requireValue(summary.dispatch.promptCorrelated && summary.dispatch.toolCorrelated && mock.observed.toolCallEmitted && mock.observed.rejected === 0);
+          if (dispatchMode === 'allow') requireValue(summary.dispatch.outcome === 'succeeded' && summary.dispatch.fixtureResultRecorded && mock.observed.resultReturned && summary.toolCalls === 1);
+          else requireValue(summary.dispatch.nativeToolErrorRecorded && summary.toolCalls === 0);
+        } else {
+          stage = 'tool_permission_decisions';
+          const control = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.control }, { signal: active });
+          const blocked = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.blocked }, { signal: active });
+          summary.checks.permissionControl = control.effect;
+          summary.checks.toolPermission = blocked.effect;
+          requireValue(control.effect === 'allow' && blocked.effect === 'deny');
+        }
         const pending = await client.permission.list({ sessionID: permissionReceipt.sessionID }, { signal: active });
         requireValue(pending.length === 0);
         summary.checks.noPendingPermissionRequests = true;
         const state = await native.get(permissionReceipt, permissionAccess, active);
-        requireValue(state.time.busy === undefined && !(await native.active(permissionReceipt, permissionAccess, active)).active);
-        summary.checks.permissionSessionStayedUnstarted = true;
+        requireValue((dispatch || state.time.busy === undefined) && !(await native.active(permissionReceipt, permissionAccess, active)).active);
+        if (!dispatch) summary.checks.permissionSessionStayedUnstarted = true;
         await native.remove(permissionReceipt, permissionAccess, active);
         summary.permissionSessionRemoved = true;
         stage='resources';const resources=await client.mcp.resource.catalog(reference,{signal:active});summary.checks.resourceCatalogEmpty=resources.data.resources.length===0&&resources.data.templates.length===0;
@@ -238,7 +286,9 @@ async function run(args) {
     }
     stage='remove';if(await own())await mutate('remove',()=>client.experimental.mcp.remove({...reference,server:name},{signal:active}));
     summary.checks.ownedEntryAbsent=await own()===null;summary.checks.sourceConfigurationUnchanged=await readFile(configPath,'utf8')===configBytes;
-    requireValue((await client.model.list(reference,{signal:active})).data.length===0);await guard();summary.checks.finalModelsEmpty=true;
+    const finalModels = (await client.model.list(reference,{signal:active})).data;
+    requireValue(mock ? mock.matchesCatalog(finalModels) : finalModels.length===0);await guard();
+    if (!mock) summary.checks.finalModelsEmpty=true;
     summary.result=!unknown&&summary.checks.connected&&summary.checks.toolListRequests>=1&&summary.checks.ownedEntryAbsent?'completed':'partial';
   } catch { summary.reason=stage;summary.result='stopped'; }
   finally {
@@ -253,16 +303,19 @@ async function run(args) {
     let stopped=!child;
     if(child){if(child.exitCode===null&&child.signalCode===null)child.kill();let timer;try{stopped=await Promise.race([exited.then(()=>true),new Promise(done=>{timer=setTimeout(()=>done(false),5000);})]);}finally{clearTimeout(timer);}}
     summary.childStopped=stopped;
+    if (mock) { await mock.close(); summary.loopbackModelStopped = true; }
     let fixtureStopped=true;
     if(logPath){try{const receipt=await fixtureProcesses(logPath);for(const item of receipt.filter(item=>item.event==='started')){requireValue(item.nonce===nonce&&item.ppid===child.pid);fixtureStopped=await stopFixtureProcess({pid:item.pid,parent:child.pid,nonce,executable:node,script:scriptPath})&&fixtureStopped;}summary.toolCalls=receipt.filter(item=>item.event==='tools/call').length;}catch{fixtureStopped=false;}}
     summary.fixtureChildrenStopped=fixtureStopped;
     summary.fixtureRemoved=false;
     if(root&&stopped&&fixtureStopped&&summary.descriptorRemoved){try{const parent=await realpath(tmpdir()),stat=await lstat(root);requireValue(inside(parent,root)&&basename(root).startsWith('pandabyte-native-mcp-probe-')&&!stat.isSymbolicLink()&&stat.dev===rootIdentity.dev&&stat.ino===rootIdentity.ino&&await realpath(root)===root);await rm(root,{recursive:true,force:true});summary.fixtureRemoved=true;}catch{}}
-    summary.modelRequests=0;summary.limitations=['Synthetic local stdio catalog and native permission decisions. No tool invocation or model request.','No dedicated MCP get API in this client; ownership is checked through native list.','No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof.'];
+    summary.modelRequests=0;
+    summary.limitations = dispatch ? ['Actual native agent and MCP dispatch with a scripted local model response. Zero live inference.', 'Fixture permission evidence only. No mounted Admin or customer execution acceptance.']
+      : ['Synthetic local stdio catalog and native permission decisions. No tool invocation or model request.', 'No dedicated MCP get API in this client; ownership is checked through native list.', 'No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof.'];
     process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);
   }
   process.stdout.write(JSON.stringify(summary,null,2)+'\n');
-  if(summary.result!=='completed'||!summary.permissionSessionRemoved||!summary.childStopped||!summary.fixtureChildrenStopped||!summary.descriptorRemoved||!summary.fixtureRemoved||summary.toolCalls!==0)process.exitCode=1;
+  if(summary.result!=='completed'||!summary.permissionSessionRemoved||!summary.childStopped||!summary.fixtureChildrenStopped||!summary.descriptorRemoved||!summary.fixtureRemoved||summary.toolCalls!==(dispatchMode === 'allow' ? 1 : 0))process.exitCode=1;
 }
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))run(process.argv.slice(2)).catch(()=>{process.stderr.write('native MCP probe unavailable\n');process.exitCode=1;});

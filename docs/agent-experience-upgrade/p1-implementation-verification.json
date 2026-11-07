@@ -1381,5 +1381,23 @@
       "scopedLint": "pass",
       "requirementRegister": "97 valid"
     }
+  },
+  "phase1NativeToolDispatchFollowup": {
+    "status": "allow and deny verified through actual isolated native agent dispatch",
+    "previousCommit": "a3fefb3",
+    "record": "docs/agent-experience-upgrade/opencode-mcp-probe.json.agentDispatchFollowup",
+    "allow": "Advertised, requested, sent one MCP tools/call, completed and returned the fixture result to the loopback model.",
+    "deny": "Advertised and requested despite policy deny and the same session-level allow. Native tool error saved and returned. Zero MCP tools/call. Overall turn still reached terminal success.",
+    "liveProviderCalls": 0,
+    "localScriptedModelCalls": 4,
+    "liveInferenceEnabled": false,
+    "phaseAdvanced": false,
+    "limitations": "The test runs native OpenCode and the real MCP dispatch path. The model response is synthetic. Mounted Admin and customer execution, real provider privacy, and remote tools remain open.",
+    "checks": {
+      "focusedTestsPassed": 7,
+      "scopedLint": "pass",
+      "providerFreeMcpProbeRegression": "pass",
+      "requirementRegister": "97 valid"
+    }
   }
 }

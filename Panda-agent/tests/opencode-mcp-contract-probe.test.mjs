@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mutationFor, permissionFixture, probePolicy, probeTransport, syntheticReply, syntheticServerSource } from '../scripts/opencode-mcp-contract-probe.mjs';
+import { fixturePrompt } from '../scripts/opencode-tool-dispatch-fixture.mjs';
 
 const name='fixture-'+'a'.repeat(32),baseUrl='http://127.0.0.1:43210';
 const counters=()=>({add:0,connect:0,disconnect:0,remove:0});
@@ -44,6 +45,30 @@ test('permission probe allows only its exact owned session and one evaluation pe
   await assert.rejects(post(path, permission.blocked));
   assert.equal(calls, 3);
   assert.deepEqual(permission.counts, { create: 1, control: 1, blocked: 1, remove: 0 });
+});
+
+test('dispatch probe sends only one owned fixture prompt after its permission evaluation', async () => {
+  const receipt = { sessionID: 'ses_fixture', title: 'owned', nonce: 'fixture', scope: 'playground', binding: 'fixture' };
+  const permission = permissionFixture(name, receipt, '/fixture');
+  const dispatch = { messageID: 'msg_fixture' };
+  const mutations = counters();
+  const sent = [];
+  const transport = probeTransport({ baseUrl, name, mutations, permission, dispatch, signal: new AbortController().signal,
+    fetch: async (url, init) => { sent.push(`${init.method} ${url.pathname}${url.search}`); return Response.json({}); } });
+  const post = (path, body) => transport(baseUrl + path, { method: 'POST', body: JSON.stringify(body) });
+  const session = `/api/session/${receipt.sessionID}`;
+  const prompt = { id: dispatch.messageID, text: fixturePrompt };
+  await post('/api/session', permission.create);
+  await post(`/api/experimental/mcp/${name}/connect`);
+  await assert.rejects(post(`${session}/prompt`, prompt));
+  await assert.rejects(post(`${session}/permission`, permission.control));
+  await post(`${session}/permission`, permission.blocked);
+  await assert.rejects(post(`${session}/prompt`, { ...prompt, text: 'private text' }));
+  await assert.rejects(post(`${session}/prompt?retry=true`, prompt));
+  await assert.rejects(post('/api/session/other/prompt', prompt));
+  await post(`${session}/prompt`, prompt);
+  await assert.rejects(post(`${session}/prompt`, prompt));
+  assert.deepEqual(sent.filter(item => item.includes('/prompt')), [`POST ${session}/prompt`]);
 });
 
 test('transport rejects outside origins, unrelated integrations, inference and tool execution before network',async()=>{

@@ -164,5 +164,282 @@
       "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/config/plugin/policy.ts",
       "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/tool/mcp.ts"
     ]
+  },
+  "agentDispatchFollowup": {
+    "method": "Two fresh pinned OpenCode 2.2.2 processes used the same fixture code and session-level allow. Each process was configured with one synthetic model on literal loopback and one disposable local MCP server. The reviewed policy decision was checked before dispatching one correlated prompt.",
+    "runs": {
+      "allow": {
+        "version": "2.2.2",
+        "nativeClientVersion": "2.2.2",
+        "scope": "actual OpenCode dispatch with a synthetic loopback model and disposable MCP server",
+        "checks": {
+          "binaryProvenance": true,
+          "spawnedProcessPinned": true,
+          "defaultProviderAndToolDenyVerified": true,
+          "onlyExactOwnedMcpIntegrationAllowed": true,
+          "onlyLoopbackModelConfigured": true,
+          "mcpGetApiAvailable": false,
+          "ownedReadUsesNativeList": true,
+          "privateDescriptor": true,
+          "add": "acknowledged",
+          "ownedEntryAfterAdd": true,
+          "addState": "disabled",
+          "connect": "acknowledged",
+          "connected": true,
+          "initializeRequests": 1,
+          "toolListRequests": 1,
+          "dispatchPermissionDecision": "allow",
+          "promptAccepted": true,
+          "noPendingPermissionRequests": true,
+          "resourceCatalogEmpty": true,
+          "disconnect": "acknowledged",
+          "disconnectedState": "disabled",
+          "remove": "acknowledged",
+          "ownedEntryAbsent": true,
+          "sourceConfigurationUnchanged": true
+        },
+        "mutations": {
+          "add": 1,
+          "connect": 1,
+          "disconnect": 1,
+          "remove": 1
+        },
+        "modelRequests": 0,
+        "toolCalls": 1,
+        "sharedRuntimeChanged": false,
+        "result": "completed",
+        "dispatchMode": "allow",
+        "liveModelRequests": 0,
+        "loopbackModel": {
+          "requests": 2,
+          "rejected": 0,
+          "toolAdvertised": true,
+          "toolCallEmitted": true,
+          "resultReturned": true
+        },
+        "permissionRequests": {
+          "create": 1,
+          "control": 0,
+          "blocked": 1,
+          "remove": 1
+        },
+        "dispatch": {
+          "outcome": "succeeded",
+          "promptCorrelated": true,
+          "toolCorrelated": true,
+          "toolStatus": "completed",
+          "fixtureResultRecorded": true,
+          "nativeToolErrorRecorded": false
+        },
+        "permissionSessionRemoved": true,
+        "descriptorRemoved": true,
+        "childStopped": true,
+        "loopbackModelStopped": true,
+        "fixtureChildrenStopped": true,
+        "fixtureRemoved": true,
+        "limitations": [
+          "Actual native agent and MCP dispatch with a scripted local model response. Zero live inference.",
+          "Fixture permission evidence only. No mounted Admin or customer execution acceptance."
+        ]
+      },
+      "deny": {
+        "version": "2.2.2",
+        "nativeClientVersion": "2.2.2",
+        "scope": "actual OpenCode dispatch with a synthetic loopback model and disposable MCP server",
+        "checks": {
+          "binaryProvenance": true,
+          "spawnedProcessPinned": true,
+          "defaultProviderAndToolDenyVerified": true,
+          "onlyExactOwnedMcpIntegrationAllowed": true,
+          "onlyLoopbackModelConfigured": true,
+          "mcpGetApiAvailable": false,
+          "ownedReadUsesNativeList": true,
+          "privateDescriptor": true,
+          "add": "acknowledged",
+          "ownedEntryAfterAdd": true,
+          "addState": "disabled",
+          "connect": "acknowledged",
+          "connected": true,
+          "initializeRequests": 1,
+          "toolListRequests": 1,
+          "dispatchPermissionDecision": "deny",
+          "promptAccepted": true,
+          "noPendingPermissionRequests": true,
+          "resourceCatalogEmpty": true,
+          "disconnect": "acknowledged",
+          "disconnectedState": "disabled",
+          "remove": "acknowledged",
+          "ownedEntryAbsent": true,
+          "sourceConfigurationUnchanged": true
+        },
+        "mutations": {
+          "add": 1,
+          "connect": 1,
+          "disconnect": 1,
+          "remove": 1
+        },
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "sharedRuntimeChanged": false,
+        "result": "completed",
+        "dispatchMode": "deny",
+        "liveModelRequests": 0,
+        "loopbackModel": {
+          "requests": 2,
+          "rejected": 0,
+          "toolAdvertised": true,
+          "toolCallEmitted": true,
+          "resultReturned": true
+        },
+        "permissionRequests": {
+          "create": 1,
+          "control": 0,
+          "blocked": 1,
+          "remove": 1
+        },
+        "dispatch": {
+          "outcome": "succeeded",
+          "promptCorrelated": true,
+          "toolCorrelated": true,
+          "toolStatus": "error",
+          "fixtureResultRecorded": false,
+          "nativeToolErrorRecorded": true
+        },
+        "permissionSessionRemoved": true,
+        "descriptorRemoved": true,
+        "childStopped": true,
+        "loopbackModelStopped": true,
+        "fixtureChildrenStopped": true,
+        "fixtureRemoved": true,
+        "limitations": [
+          "Actual native agent and MCP dispatch with a scripted local model response. Zero live inference.",
+          "Fixture permission evidence only. No mounted Admin or customer execution acceptance."
+        ]
+      }
+    },
+    "diagnosticAttempts": [
+      {
+        "cause": "The CLI policy schema strips custom message fields, so the original deny run stopped before dispatch. Removed the unsupported field.",
+        "evidence": {
+          "version": "2.2.2",
+          "nativeClientVersion": "2.2.2",
+          "scope": "actual OpenCode dispatch with a synthetic loopback model and disposable MCP server",
+          "checks": {
+            "binaryProvenance": true,
+            "spawnedProcessPinned": true
+          },
+          "mutations": {
+            "add": 0,
+            "connect": 0,
+            "disconnect": 0,
+            "remove": 0
+          },
+          "modelRequests": 0,
+          "toolCalls": 0,
+          "sharedRuntimeChanged": false,
+          "result": "stopped",
+          "dispatchMode": "deny",
+          "loopbackModel": {
+            "requests": 0,
+            "rejected": 0,
+            "toolAdvertised": false,
+            "toolCallEmitted": false,
+            "resultReturned": false
+          },
+          "permissionRequests": {
+            "create": 0,
+            "control": 0,
+            "blocked": 0,
+            "remove": 0
+          },
+          "reason": "initial_catalogs",
+          "descriptorRemoved": true,
+          "childStopped": true,
+          "loopbackModelStopped": true,
+          "fixtureChildrenStopped": true,
+          "fixtureRemoved": true,
+          "limitations": [
+            "Actual native agent and MCP dispatch with a scripted local model response. Zero live inference.",
+            "Fixture permission evidence only. No mounted Admin or customer execution acceptance."
+          ]
+        }
+      },
+      {
+        "cause": "The MCP tool maps permission errors to a generic tool execution error. Replaced the incorrect raw permission message assertion with the exact native tool error, the native permission decision and the MCP receipt count.",
+        "evidence": {
+          "version": "2.2.2",
+          "nativeClientVersion": "2.2.2",
+          "scope": "actual OpenCode dispatch with a synthetic loopback model and disposable MCP server",
+          "checks": {
+            "binaryProvenance": true,
+            "spawnedProcessPinned": true,
+            "defaultProviderAndToolDenyVerified": true,
+            "onlyExactOwnedMcpIntegrationAllowed": true,
+            "onlyLoopbackModelConfigured": true,
+            "mcpGetApiAvailable": false,
+            "ownedReadUsesNativeList": true,
+            "privateDescriptor": true,
+            "add": "acknowledged",
+            "ownedEntryAfterAdd": true,
+            "addState": "disabled",
+            "connect": "acknowledged",
+            "connected": true,
+            "initializeRequests": 1,
+            "toolListRequests": 1,
+            "promptAccepted": true
+          },
+          "mutations": {
+            "add": 1,
+            "connect": 1,
+            "disconnect": 0,
+            "remove": 1
+          },
+          "modelRequests": 0,
+          "toolCalls": 0,
+          "sharedRuntimeChanged": false,
+          "result": "stopped",
+          "dispatchMode": "deny",
+          "loopbackModel": {
+            "requests": 2,
+            "rejected": 0,
+            "toolAdvertised": true,
+            "toolCallEmitted": true,
+            "resultReturned": true
+          },
+          "permissionRequests": {
+            "create": 1,
+            "control": 0,
+            "blocked": 0,
+            "remove": 1
+          },
+          "dispatch": {
+            "outcome": "succeeded",
+            "promptCorrelated": true,
+            "toolCorrelated": true,
+            "toolStatus": "error",
+            "fixtureResultRecorded": false,
+            "managedDenialRecorded": false
+          },
+          "reason": "agent_dispatch",
+          "permissionSessionRemoved": true,
+          "descriptorRemoved": true,
+          "childStopped": true,
+          "loopbackModelStopped": true,
+          "fixtureChildrenStopped": true,
+          "fixtureRemoved": true,
+          "limitations": [
+            "Actual native agent and MCP dispatch with a scripted local model response. Zero live inference.",
+            "Fixture permission evidence only. No mounted Admin or customer execution acceptance."
+          ]
+        }
+      }
+    ],
+    "resultInterpretation": "The denied tool remained advertised and the scripted model requested it. The owned tool record reports an error and the MCP process received zero calls. The turn succeeded after processing the error, so terminal success alone is not tool execution evidence.",
+    "cleanup": "All owned sessions, subprocesses, descriptors, mock HTTP listeners and temporary directories cleaned. The shared application runtime was outside the test.",
+    "sources": [
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/tool/mcp.ts",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/schema/src/config/policy.ts",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/config/plugin/policy.ts"
+    ]
   }
 }
