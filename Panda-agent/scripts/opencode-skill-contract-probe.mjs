@@ -1,6 +1,6 @@
 // Provider-free local skill loading and explicit non-resuming activation; no general installer.
 import { createReadStream } from 'node:fs';
-import { lstat, mkdir, mkdtemp, open, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { createHash, randomBytes } from 'node:crypto';
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -18,6 +18,7 @@ const archiveIntegrity='tFS9vYp0/+VOeYpcWvAy1e2iMEx6x5/XagVpwtjG33ocvumn5R2qaKGh
 const requireValue=value=>{if(!value)throw Error('probe_contract');};
 const inside=(parent,path)=>{const rel=relative(parent,path);return rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!isAbsolute(rel);};
 const body='This document is an inert fixture for local capability inspection.\n';
+const activationEvent = 'session.skill.activated';
 
 export function syntheticSkill(name) {
   requireValue(/^fixture-[a-f0-9]{32}$/.test(name));
@@ -43,9 +44,26 @@ export async function readSkillHistory(list) {
   throw Error('probe_contract');
 }
 
+export async function verifyLiveSkillActivation(events, activate, sessionID, skill) {
+  const iterator = events[Symbol.asyncIterator]();
+  try {
+    const connected = await iterator.next();
+    requireValue(!connected.done && connected.value?.type === 'server.connected');
+    await activate();
+
+    const { value: event, done } = await iterator.next();
+    requireValue(!done && event?.type === activationEvent
+      && event.data?.sessionID === sessionID && event.durable?.aggregateID === sessionID
+      && event.data.id === skill.id && event.data.name === skill.name && event.data.text === skill.content);
+  } finally {
+    await iterator.return?.();
+  }
+}
+
 export function skillTransport({baseUrl,directory,receipt,skillID,mutations,signal,fetch:transport=fetch}) {
   const owned='/api/session/'+receipt.sessionID,activation='/api/experimental/session/'+receipt.sessionID+'/skill',log='/api/experimental/session/'+receipt.sessionID+'/log';
   const reads=new Set(['/api/info','/api/model','/api/skill','/api/mcp','/api/config','/api/session','/api/session/active',owned,owned+'/message',log]);
+  let liveReadStarted = false;
   return async(input,init={})=>{
     const url=new URL(input),method=init.method??'GET';requireValue(url.origin===baseUrl&&!url.username&&!url.password&&!url.hash);
     let mutation;
@@ -56,13 +74,32 @@ export function skillTransport({baseUrl,directory,receipt,skillID,mutations,sign
     }else if(method==='POST'&&url.pathname===activation){
       const input=JSON.parse(init.body);requireValue(Object.keys(input).sort().join(',')==='id,resume'&&input.id===skillID&&input.resume===false);mutation='activate';
     }else if(method==='DELETE'&&url.pathname===owned)mutation='remove';
+    else if (method === 'GET' && url.pathname === '/api/event') {
+      requireValue(!liveReadStarted && !url.search && mutations.create === 1 && mutations.activate === 0);
+      liveReadStarted = true;
+      // OpenCode.make applies its subscription filter client-side. Limit the wire feed too.
+      url.searchParams.set('types', activationEvent);
+    }
     else requireValue(method==='GET'&&reads.has(url.pathname));
     if(url.pathname===log)requireValue(url.searchParams.get('follow')==='false');
     if(mutation){requireValue(mutations[mutation]===0);mutations[mutation]++;}
     const bounded=AbortSignal.any([signal,AbortSignal.timeout(12000),...(init.signal?[init.signal]:[])]);
     const response=await transport(url,{...init,signal:bounded,redirect:'error',credentials:'omit',cache:'no-store'});requireValue(!response.redirected);
     if(response.status===204){void response.body?.cancel().catch(()=>{});return new Response(null,{status:204});}
-    const type=response.headers.get('content-type')??'';requireValue(response.body&&(/^application\/json(?:\s*;[^\r\n]*)?$/i.test(type)||(url.pathname===log&&/^text\/event-stream(?:\s*;[^\r\n]*)?$/i.test(type))));
+    const type=response.headers.get('content-type')??'';
+    const eventStream = /^text\/event-stream(?:\s*;[^\r\n]*)?$/i.test(type);
+    requireValue(response.body&&(/^application\/json(?:\s*;[^\r\n]*)?$/i.test(type)||((url.pathname===log || url.pathname==='/api/event')&&eventStream)));
+    if (url.pathname === '/api/event' && eventStream) {
+      let bytes = 0;
+      const body = response.body.pipeThrough(new TransformStream({
+        transform(chunk, controller) {
+          bytes += chunk.length;
+          requireValue(bytes <= 1_000_000);
+          controller.enqueue(chunk);
+        },
+      }), { signal: bounded });
+      return new Response(body, { status: response.status, headers: { 'content-type': type } });
+    }
     const reader=response.body.getReader(),chunks=[];let size=0;
     try{while(true){const part=await reader.read();bounded.throwIfAborted();if(part.done)break;size+=part.value.length;requireValue(size<=1_000_000);chunks.push(part.value);}}
     finally{void reader.cancel().catch(()=>{});reader.releaseLock();}
@@ -76,23 +113,11 @@ async function digest(path,algorithm,encoding,size) {
 }
 
 async function run(args) {
-  const corrected=args.length===3&&args[2]==='--correct-pagination';
-  requireValue(process.platform==='win32'&&(args.length===2||corrected)&&args[0]==='--client-root'&&isAbsolute(args[1]));
+  requireValue(process.platform==='win32'&&args.length===2&&args[0]==='--client-root'&&isAbsolute(args[1]));
   const workspace=resolve(dirname(fileURLToPath(import.meta.url)),'..','..'),clientRoot=await realpath(args[1]);
   for(const name of ['client','protocol','schema']){const pkg=JSON.parse(await readFile(join(dirname(clientRoot),name,'package.json'),'utf8'));requireValue(pkg.name===`@opencode/${name}`&&pkg.version==='2.2.2');}
   const {OpenCode}=await import(pathToFileURL(join(clientRoot,'dist','promise','index.js')).href);
-  const evidencePath=join(workspace,'docs','agent-experience-upgrade','opencode-skill-probe.json');
-  let priorAttempt;
-  if(corrected){
-    const prior=JSON.parse(await readFile(evidencePath,'utf8'));
-    requireValue(prior.version==='2.2.2'&&prior.result==='stopped'&&prior.reason==='history'&&!prior.priorAttempt
-      &&JSON.stringify(prior.mutations)==='{"create":1,"activate":1,"remove":1}'&&prior.sessionRemoved===true&&prior.descriptorRemoved===true&&prior.childStopped===true&&prior.fixtureRemoved===true
-      &&prior.promptRequests===0&&prior.modelRequests===0&&prior.toolRequests===0&&Object.values(prior.checks).every(value=>value===true));
-    priorAttempt={classification:'invalid_probe_cursor_assertion',explanation:'The first probe incorrectly required no next cursor on a nonempty page; that run did not verify activation state or events.',evidence:prior};
-  }
-  const output=await open(evidencePath,corrected?'r+':'wx');
   const summary={version:'2.2.2',nativeClientVersion:'2.2.2',scope:'disposable provider-free local skill load and non-resuming activation',checks:{},mutations:{create:0,activate:0,remove:0},promptRequests:0,modelRequests:0,toolRequests:0,sharedRuntimeChanged:false,result:'stopped'};
-  if(priorAttempt)summary.priorAttempt=priorAttempt;
   let root,rootIdentity,child,exited,lease,native,access,stage='provenance';
   const controller=new AbortController(),stop=()=>controller.abort();process.once('SIGINT',stop);process.once('SIGTERM',stop);
   const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(90000)]);
@@ -123,17 +148,22 @@ async function run(args) {
     access=async candidate=>JSON.stringify(candidate)===await readFile(receiptPath,'utf8');
     native=createNativeSessionClient({baseUrl,password,directory,expectedPid:child.pid,fetch:transport,timeoutMs:10000});
     stage='create';await native.create(receipt,access,signal);summary.checks.ownedSessionCreated=true;
-    stage='activate';await guard();await writeFile(join(root,'private','activation-claim.json'),JSON.stringify({receipt,skill:name,resume:false}),{flag:'wx',mode:0o600});
-    await client.experimental.session.skill({sessionID:receipt.sessionID,id:skill.id,resume:false},{signal});summary.checks.activationAcknowledged=true;
+    stage='activation_live';await guard();
+    await verifyLiveSkillActivation(client.event.subscribe({ types: [activationEvent], signal }), async () => {
+      await writeFile(join(root,'private','activation-claim.json'),JSON.stringify({receipt,skill:name,resume:false}),{flag:'wx',mode:0o600});
+      await client.experimental.session.skill({sessionID:receipt.sessionID,id:skill.id,resume:false},{signal});
+      summary.checks.activationAcknowledged = true;
+    }, receipt.sessionID, skill);
+    summary.checks.ownedLiveActivationEvent = true;
     stage='history';let pages=0;const messages=await readSkillHistory(cursor=>{pages++;return client.message.list({sessionID:receipt.sessionID,limit:100,...(cursor?{cursor}:{order:'asc'})},{signal});});
     summary.checks.historyPages=pages;requireValue(messages.length===1);const message=messages[0];
     requireValue(message.type==='skill'&&message.skill===skill.id&&message.name===skill.name&&message.text===skill.content);summary.checks.exactSkillMessagePersisted=true;
     stage='inactive';const state=await native.get(receipt,access,signal),active=await native.active(receipt,access,signal);
     requireValue(!active.active&&state.time.busy===undefined&&state.outcome===undefined);summary.checks.sessionStayedUnstarted=true;
-    stage='activation_log';const events=[];for await(const event of client.experimental.session.log({sessionID:receipt.sessionID,follow:false},{signal})){requireValue(events.length<100);events.push(event);}
-    const activated=events.filter(event=>event.type==='session.skill.activated');requireValue(activated.length===1);
-    requireValue(activated[0].data.sessionID===receipt.sessionID&&activated[0].data.id===skill.id&&activated[0].data.name===skill.name&&activated[0].data.text===skill.content&&activated[0].durable.aggregateID===receipt.sessionID);
-    requireValue(!events.some(event=>/^session\.(execution|step|tool|text|reasoning)\./.test(event.type)));summary.checks.ownedDurableActivationEvents=activated.length;summary.checks.noExecutionOrToolEvents=true;
+    stage='activation_log_read';const events=[];for await(const event of client.experimental.session.log({sessionID:receipt.sessionID,follow:false},{signal})){requireValue(events.length<100);events.push(event);}
+    stage='activation_log_watermark';
+    requireValue(events.length === 1 && events[0]?.type === 'log.synced' && events[0].aggregateID === receipt.sessionID);
+    summary.checks.historicalLog = 'watermark_only';
     stage='remove';await native.remove(receipt,access,signal);summary.sessionRemoved=(await native.absence(receipt,access,signal)).absent;
     requireValue((await client.model.list(reference,{signal})).data.length===0);await guard();summary.checks.finalModelsEmpty=true;summary.result='completed';
   }catch{summary.reason=stage;}
@@ -144,9 +174,9 @@ async function run(args) {
     summary.childStopped=stopped;summary.fixtureRemoved=false;
     if(root&&stopped&&summary.descriptorRemoved){try{const parent=await realpath(tmpdir()),stat=await lstat(root);requireValue(inside(parent,root)&&basename(root).startsWith('pandabyte-native-skill-probe-')&&!stat.isSymbolicLink()&&stat.dev===rootIdentity.dev&&stat.ino===rootIdentity.ino&&await realpath(root)===root);await rm(root,{recursive:true,force:true});summary.fixtureRemoved=true;}catch{}}
     summary.limitations=['Synthetic reviewed local skill only; no external installation or shared Admin mutation.',
-      summary.checks.exactSkillMessagePersisted?'Persisted non-resuming activation state verified; dedicated event-log verification remains unverified. No LLM adherence or execution proof.':'Activation acknowledgement alone does not verify persisted activation state or event delivery.',
+      'Live delivery is volatile. Stock serve does not retain historical event payloads. Session history provides activation readback.',
       'No model, tool, restart-persistence, privacy or customer-isolation proof.'];
-    process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);const evidence=JSON.stringify(summary,null,2)+'\n';await output.writeFile(evidence);await output.truncate(Buffer.byteLength(evidence));await output.close();
+    process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);
   }
   process.stdout.write(JSON.stringify(summary,null,2)+'\n');if(summary.result!=='completed'||!summary.sessionRemoved||!summary.descriptorRemoved||!summary.childStopped||!summary.fixtureRemoved)process.exitCode=1;
 }

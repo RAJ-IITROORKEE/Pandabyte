@@ -9,9 +9,12 @@
     "providersToolsAndOtherIntegrationsDenied": true,
     "ownedSessionCreated": true,
     "activationAcknowledged": true,
+    "ownedLiveActivationEvent": true,
     "historyPages": 2,
     "exactSkillMessagePersisted": true,
-    "sessionStayedUnstarted": true
+    "sessionStayedUnstarted": true,
+    "historicalLog": "watermark_only",
+    "finalModelsEmpty": true
   },
   "mutations": {
     "create": 1,
@@ -22,52 +25,136 @@
   "modelRequests": 0,
   "toolRequests": 0,
   "sharedRuntimeChanged": false,
-  "result": "stopped",
-  "priorAttempt": {
-    "classification": "invalid_probe_cursor_assertion",
-    "explanation": "The first probe incorrectly required no next cursor on a nonempty page; that run did not verify activation state or events.",
-    "evidence": {
-      "version": "2.2.2",
-      "nativeClientVersion": "2.2.2",
-      "scope": "disposable provider-free local skill load and non-resuming activation",
-      "checks": {
-        "binaryProvenance": true,
-        "onlyOwnedSyntheticSkillLoaded": true,
-        "autoinvokeDisabled": true,
-        "providersToolsAndOtherIntegrationsDenied": true,
-        "ownedSessionCreated": true,
-        "activationAcknowledged": true
-      },
-      "mutations": {
-        "create": 1,
-        "activate": 1,
-        "remove": 1
-      },
-      "promptRequests": 0,
-      "modelRequests": 0,
-      "toolRequests": 0,
-      "sharedRuntimeChanged": false,
-      "result": "stopped",
-      "reason": "history",
-      "sessionRemoved": true,
-      "descriptorRemoved": true,
-      "childStopped": true,
-      "fixtureRemoved": true,
-      "limitations": [
-        "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
-        "First run verified catalogue loading and activation acknowledgement only; persisted state and event delivery were not verified there.",
-        "No model, tool, restart-persistence, privacy or customer-isolation proof."
-      ]
-    }
-  },
-  "reason": "activation_log",
+  "result": "completed",
   "sessionRemoved": true,
   "descriptorRemoved": true,
   "childStopped": true,
   "fixtureRemoved": true,
   "limitations": [
     "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
-    "Persisted non-resuming activation state verified; dedicated event-log verification remains unverified. No LLM adherence or execution proof.",
+    "Live delivery is volatile. Stock serve does not retain historical event payloads. Session history provides activation readback.",
     "No model, tool, restart-persistence, privacy or customer-isolation proof."
-  ]
+  ],
+  "diagnosis": {
+    "releasedSource": "098aa7fd6e02b03d6fc410f0b052038c7d4c5e81",
+    "reason": "Stock OpenCode 2.2.2 serve uses the default event bus with payload persistence disabled. It updates session history and aggregate sequence, but historical log replay only has the sync watermark.",
+    "correction": "Subscribe to the native event stream with a server-side skill type filter before the single resume:false activation. After the handshake, verify the exact owned live event and read back the matching persisted message. Treat the historical sync marker only as a watermark.",
+    "sources": [
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/cli/src/server-process.ts#L101-L145",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/server/src/routes.ts#L125",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/bus.ts#L397-L430",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/bus.ts#L850-L891",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/server/src/handlers/event.ts#L11-L25"
+    ]
+  },
+  "diagnosticRun": {
+    "version": "2.2.2",
+    "nativeClientVersion": "2.2.2",
+    "scope": "disposable provider-free local skill load and non-resuming activation",
+    "checks": {
+      "binaryProvenance": true,
+      "onlyOwnedSyntheticSkillLoaded": true,
+      "autoinvokeDisabled": true,
+      "providersToolsAndOtherIntegrationsDenied": true,
+      "ownedSessionCreated": true,
+      "activationAcknowledged": true,
+      "historyPages": 2,
+      "exactSkillMessagePersisted": true,
+      "sessionStayedUnstarted": true,
+      "logItems": 1
+    },
+    "mutations": {
+      "create": 1,
+      "activate": 1,
+      "remove": 1
+    },
+    "promptRequests": 0,
+    "modelRequests": 0,
+    "toolRequests": 0,
+    "sharedRuntimeChanged": false,
+    "result": "stopped",
+    "reason": "activation_log_event_count",
+    "sessionRemoved": true,
+    "descriptorRemoved": true,
+    "childStopped": true,
+    "fixtureRemoved": true,
+    "limitations": [
+      "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
+      "Persisted non-resuming activation state verified. Dedicated event-log verification remains open.",
+      "No model, tool, restart-persistence, privacy or customer-isolation proof."
+    ]
+  },
+  "previousCheckpoint": {
+    "version": "2.2.2",
+    "nativeClientVersion": "2.2.2",
+    "scope": "disposable provider-free local skill load and non-resuming activation",
+    "checks": {
+      "binaryProvenance": true,
+      "onlyOwnedSyntheticSkillLoaded": true,
+      "autoinvokeDisabled": true,
+      "providersToolsAndOtherIntegrationsDenied": true,
+      "ownedSessionCreated": true,
+      "activationAcknowledged": true,
+      "historyPages": 2,
+      "exactSkillMessagePersisted": true,
+      "sessionStayedUnstarted": true
+    },
+    "mutations": {
+      "create": 1,
+      "activate": 1,
+      "remove": 1
+    },
+    "promptRequests": 0,
+    "modelRequests": 0,
+    "toolRequests": 0,
+    "sharedRuntimeChanged": false,
+    "result": "stopped",
+    "priorAttempt": {
+      "classification": "invalid_probe_cursor_assertion",
+      "explanation": "The first probe incorrectly required no next cursor on a nonempty page; that run did not verify activation state or events.",
+      "evidence": {
+        "version": "2.2.2",
+        "nativeClientVersion": "2.2.2",
+        "scope": "disposable provider-free local skill load and non-resuming activation",
+        "checks": {
+          "binaryProvenance": true,
+          "onlyOwnedSyntheticSkillLoaded": true,
+          "autoinvokeDisabled": true,
+          "providersToolsAndOtherIntegrationsDenied": true,
+          "ownedSessionCreated": true,
+          "activationAcknowledged": true
+        },
+        "mutations": {
+          "create": 1,
+          "activate": 1,
+          "remove": 1
+        },
+        "promptRequests": 0,
+        "modelRequests": 0,
+        "toolRequests": 0,
+        "sharedRuntimeChanged": false,
+        "result": "stopped",
+        "reason": "history",
+        "sessionRemoved": true,
+        "descriptorRemoved": true,
+        "childStopped": true,
+        "fixtureRemoved": true,
+        "limitations": [
+          "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
+          "First run verified catalogue loading and activation acknowledgement only; persisted state and event delivery were not verified there.",
+          "No model, tool, restart-persistence, privacy or customer-isolation proof."
+        ]
+      }
+    },
+    "reason": "activation_log",
+    "sessionRemoved": true,
+    "descriptorRemoved": true,
+    "childStopped": true,
+    "fixtureRemoved": true,
+    "limitations": [
+      "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
+      "Persisted non-resuming activation state verified; dedicated event-log verification remains unverified. No LLM adherence or execution proof.",
+      "No model, tool, restart-persistence, privacy or customer-isolation proof."
+    ]
+  }
 }

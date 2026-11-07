@@ -494,7 +494,7 @@
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
         "nativeDiscovery": "Actual owned pinned2.2.2 provider-free supervisor + real signed-in Admin browser discovery pass; all three native catalogs empty, sanitized and generation-fenced. Five existing RAG skill bundles/four tool manifests are real separate API controls; native writes remain unsupported.",
         "currentFollowup": "7 Nov: p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup; final built Codex browser PDF withdrawal, disposable real-customer isolation and provider-free chat/Playground checks. Strict workspace privacy proof remains unavailable to ordinary key; inference OFF.",
-        "nativeCapabilities": "Isolated pinned2.2.2 native MCP add/connect/disconnect/remove with real local stdio catalog PASS, no tool calls. Inert local skill load and persisted resume:false activation PASS; dedicated event-log delivery unverified. All owned cleanup verified. These probes do not expose mounted product management; native UI writes stay disabled."
+        "nativeCapabilities": "Isolated pinned OpenCode 2.2.2 native MCP add/connect/disconnect/remove and catalog handshake pass. Inert skill activation with resume:false yields an exact owned live event and matching saved skill message. Stock serve historical event replay returns a sync watermark. See phase1SkillEventFollowup. Mounted native management and effective tool permissions remain open."
       }
     },
     {

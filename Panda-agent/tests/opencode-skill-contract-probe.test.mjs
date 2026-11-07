@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
-import { readSkillHistory, skillPolicy, skillTransport, syntheticSkill } from '../scripts/opencode-skill-contract-probe.mjs';
+import { readSkillHistory, skillPolicy, skillTransport, syntheticSkill, verifyLiveSkillActivation } from '../scripts/opencode-skill-contract-probe.mjs';
 
 const skillID='fixture-'+'a'.repeat(32),baseUrl='http://127.0.0.1:43210',directory=resolve('tmp/skill-fixture');
 const receipt={sessionID:'ses_123456789abcABCDEFGHIJKLMN',nonce:'b'.repeat(32),binding:'c'.repeat(64),scope:'playground',title:'panda-agent-playground-'+'b'.repeat(32)};
@@ -61,4 +61,51 @@ test('native anchor cursors on nonempty pages require one final empty history pa
   assert.deepEqual(messages,[message]);assert.deepEqual(calls,[undefined,'native_anchor']);
   await assert.rejects(readSkillHistory(async()=>({data:[],cursor:{next:'unexpected'}})));
   await assert.rejects(readSkillHistory(async()=>({data:[message],cursor:{next:'repeated'}})));
+});
+
+test('live activation waits for the handshake and closes the iterator on success or mismatch', async () => {
+  const skill = { id: skillID, name: skillID, content: 'inert' };
+  const activation = {
+    type: 'session.skill.activated',
+    data: { sessionID: receipt.sessionID, id: skill.id, name: skill.name, text: skill.content },
+    durable: { aggregateID: receipt.sessionID },
+  };
+  for (const [first, second, expected] of [
+    [{ type: 'server.connected' }, activation, ['connected', 'activate', 'event', 'closed']],
+    [{ type: 'server.connected' }, { ...activation, durable: { aggregateID: 'other' } }, ['connected', 'activate', 'event', 'closed']],
+    [activation, undefined, ['connected', 'closed']],
+  ]) {
+    const steps = [];
+    async function* events() {
+      try { steps.push('connected'); yield first; steps.push('event'); yield second; }
+      finally { steps.push('closed'); }
+    }
+    const verify = verifyLiveSkillActivation(events(), async () => { steps.push('activate'); }, receipt.sessionID, skill);
+    if (second === activation) await verify;
+    else await assert.rejects(verify);
+    assert.deepEqual(steps, expected);
+  }
+});
+
+test('live feed is server-filtered, available before activation, and streams without waiting for EOF', async () => {
+  let cancelled = false;
+  const f = setup(async url => {
+    if (url.pathname !== '/api/event') return new Response(null, { status: 204 });
+    assert.equal(url.search, '?types=session.skill.activated');
+    const body = new ReadableStream({
+      start(controller) { controller.enqueue(new TextEncoder().encode('data: {"type":"server.connected"}\n\n')); },
+      cancel() { cancelled = true; },
+    });
+    return new Response(body, { headers: { 'content-type': 'text/event-stream' } });
+  });
+  const path = baseUrl + '/api/event';
+  await assert.rejects(f.transport(path));
+  await f.transport(baseUrl + '/api/session', { method: 'POST', body: JSON.stringify(create()) });
+  await assert.rejects(f.transport(path + '?types=session.text.delta'));
+  const response = await f.transport(path);
+  const reader = response.body.getReader();
+  assert.match(new TextDecoder().decode((await reader.read()).value), /server\.connected/);
+  await assert.rejects(f.transport(path));
+  await reader.cancel();
+  assert.equal(cancelled, true);
 });

@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint; previous checkpoint `a74af40`.
+Use `git log -1` for the local checkpoint. The preceding RAG and browser checkpoint is `4abce2e`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -132,14 +132,16 @@ add -> disabled, connect -> connected, disconnect -> disabled, remove -> absent
 passed; initialize1/tools-list1/tools-call0. Source config and shared supervisor
 unchanged, all owned child/descriptor/fixture cleanup verified. See opencode-mcp-probe.json.
 
-Inert local SKILL.md loading, autoinvoke:false, explicit resume:false activation,
-exact persisted skill history and unstarted session verified. Dedicated durable
-activation-log assertion remains UNVERIFIED. The first probe incorrectly required
-no next cursor on a nonempty native page; its stopped evidence is preserved, then
-bounded pagination regression and one corrected isolated run established state.
-Both runs independently1create/1activate/1delete, all cleanup verified;0prompt/model/
-tool requests. No further boot. See opencode-skill-probe.json. These are capability
-probes, not mounted Admin management, native execution or LLM adherence acceptance.
+Native live skill delivery now passes in the isolated OpenCode 2.2.2 probe. Stock
+`serve` updates session history with event payload retention disabled. Its historical
+stream returned a `log.synced` watermark. The earlier probe failed because it
+expected the activation payload there. The corrected probe waits for `server.connected`
+on a server-filtered subscription, sends one `resume:false` activation, checks the
+exact owned live event and reads back the saved skill message. The session stayed
+unstarted. Both new runs cleaned all owned state and made zero prompt, model or tool
+requests. Nine focused tests passed. The evidence preserves both earlier attempts
+and the latest diagnostic run. Live delivery is volatile. Product delivery and
+reconnect behavior remain open. See [skill probe evidence](opencode-skill-probe.json).
 
 ## OpenRouter zero-cost / strict privacy
 
@@ -234,12 +236,12 @@ source or credentials moved/deleted. Initial recursive old-build deletion was
 rejected by automatic approval review as blocked by policy; the reversible move
 succeeded instead. Disk capacity remains limited; do not delete unrelated files.
 
-Next: resolve supported workspace privacy proof without account login before
-any live inference; finish native/shared-engine provider admission, structured output/
-citations, lifecycle/latency, supported native management and customer memory.
-Dedicated native skill event delivery remains unverified. No repeated blind probes.
-Keep all remaining mandatory requirements in the97-row register; no Phase2 advancement.
-Preserve unknown histories and all prior source records. Current follow-up changes
-only scoped withdrawal UI/state/tests/styles, metadata projection/example wiring,
-isolated capability probes and evidence. No schema, role, provider policy, dependency,
-commerce, deployment, push or original-checkout change.
+The skill event follow-up changed the isolated probe and its evidence. Local Codex
+browser access was disabled in Work settings during this follow-up. The signed-in
+application checks above are from the preceding checkpoint.
+
+Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
+live inference. Remaining acceptance covers the shared native chat and Playground,
+structured responses and citations, lifecycle and latency, supported native Admin
+management and effective tool permissions, and customer memory. The 97-row register
+tracks these gates before Phase 2.

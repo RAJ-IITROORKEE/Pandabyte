@@ -1345,5 +1345,18 @@
       "Concurrent in-flight withdrawal/customer memory propagation and reviewed Mem0 data flow remain open.",
       "Full P1 and historical Phase6 held-out acceptance remain open."
     ]
+  },
+  "phase1SkillEventFollowup": {
+    "status": "native skill live delivery verified in isolated development probe",
+    "record": "docs/agent-experience-upgrade/opencode-skill-probe.json",
+    "previousCommit": "4abce2e",
+    "diagnosis": "High-reasoning subagent traced default native bus persistence through released v2.2.2 source. A bounded reproduction isolated the old failure to the activation event count after one historical log item.",
+    "verification": "Native filtered subscription waited for server.connected before the single owned resume:false activation. Exact live event, two-page persisted skill history, unstarted session and matching watermark-only historical read verified. One create, one activation and one removal per isolated run. All owned sessions, child processes, descriptors and temporary directories cleaned.",
+    "focusedTests": 9,
+    "browser": "Local Codex browser access disabled in Work settings during this follow-up. Prior signed-in app evidence remains at the previous checkpoint. This change targets the isolated verification probe.",
+    "providerRequests": 0,
+    "liveInferenceEnabled": false,
+    "remaining": "Stock serve historical event replay cannot recover the activation payload. Product event delivery and reconnect behavior, native Admin management, strict workspace ZDR, shared live chat/Playground, customer memory and full Phase 1 acceptance remain open.",
+    "phaseAdvanced": false
   }
 }

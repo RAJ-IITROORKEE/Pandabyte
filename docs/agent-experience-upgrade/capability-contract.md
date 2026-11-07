@@ -18,7 +18,7 @@ The preserved `spikes/opencode-ui/adapter.ts` demonstrates typed `session.create
 
 | Surface | Declared interface | Status and limit |
 | --- | --- | --- |
-| Skills | Native skill list plus explicit session activation | Isolated local SKILL.md loading and persisted resume:false activation verified7Nov. General install/removal, product enablement, LLM adherence and dedicated activation-log delivery remain unverified. No raw instructions/paths exposed. |
+| Skills | Native skill list, explicit session activation and live event feed | Isolated local SKILL.md loading, matching live event and saved resume:false activation verified. General installation and removal, mounted product delivery and LLM adherence remain open. |
 | MCP | Native list, resource catalog, experimental add/remove/connect/disconnect | Actual isolated local stdio add/connect/disconnect/remove and catalog handshake verified7Nov; no tool invocation, remote transport, restart durability or mounted Admin management proof. Errors remain private. |
 | Config | `GET /api/config`; experimental `PATCH /api/experimental/config` (`groups/config.d.ts`) | The declared PATCH body only covers `shell`; it is not a general runtime-configuration API. File-backed changes require a separately verified supported mechanism. |
 | Models | `GET /api/model` and `/api/model/default` (`groups/model.d.ts`) | Discovery declaration only; no customer model-selection policy or provider readiness established. |
@@ -102,12 +102,13 @@ disconnect/remove reached connected local stdio state with1initialize/1tools-lis
 zero tools/call. All owned processes, descriptors and files cleaned; see
 [bounded MCP evidence](opencode-mcp-probe.json). No second MCP execution client was added.
 
-One inert local SKILL.md loaded with autoinvoke:false. An exact owned activation
-with resume:false persisted its skill message while session stayed unstarted.
-The first probe's invalid terminal-cursor assumption was corrected using bounded
-native pagination and a regression; prior stopped evidence is preserved. The
-corrected run still stopped at dedicated durable activation-log verification.
-State proof does not establish event delivery or LLM adherence. Both runs cleaned
-all owned state, each1create/1activate/1delete and0prompt/model/tool requests; see
-[partial skill evidence](opencode-skill-probe.json). No general installer, config
-editor, production tool enforcement or later-phase acceptance follows from these probes.
+One inert local SKILL.md loaded with automatic invocation disabled. The probe
+waited for the live subscription handshake, sent a single owned `resume:false`
+activation, verified the matching live event and read back the saved skill message.
+The session stayed unstarted. The stock CLI leaves event payload retention off,
+so the historical read returns a sync watermark. A client that loses the live
+connection must read the current owned session state for reconciliation. General
+Admin management, live product delivery and LLM adherence remain open.
+[OpenCode event feed](https://github.com/anomalyco/opencode/blob/v2.2.2/packages/server/src/handlers/event.ts#L11-L25) ·
+[Stock CLI startup](https://github.com/anomalyco/opencode/blob/v2.2.2/packages/cli/src/server-process.ts#L101-L145) ·
+[Skill probe evidence](opencode-skill-probe.json)
