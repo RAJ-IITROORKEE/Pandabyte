@@ -75,7 +75,8 @@ No prompt, tool invocation, external MCP or provider request was made by the pro
 ## Integrated read-only Admin adapter
 
 `GET /api/admin/panda-agent/runtime` reuses the real Control Room Clerk/ADMIN
-admission before discovery and again before releasing data. It accepts no routing
+admission before discovery and again before releasing data. Release requires the
+same Clerk subject and session. It accepts no routing
 or configuration fields from the browser. The client fixes the native version,
 requires a literal server-configured loopback origin and opaque server password,
 uses a total deadline and bounded JSON bodies, and follows no redirects. Responses
@@ -101,6 +102,15 @@ fixtures; the shared inspection supervisor was unchanged. Native MCP add/connect
 disconnect/remove reached connected local stdio state with1initialize/1tools-list,
 zero tools/call. All owned processes, descriptors and files cleaned; see
 [bounded MCP evidence](opencode-mcp-probe.json). No second MCP execution client was added.
+
+The isolated permission follow-up sent the same fixture tool action to the native
+session permission endpoint with two resources. OpenCode allowed the exact control
+resource and denied `*`, the resource the native MCP tool supplies to its permission
+check, even though the fixture session allowed the action. There was no pending
+approval and the fixture logged zero tool calls. The decision path is verified.
+Actual agent tool dispatch and its response handling still require acceptance.
+[OpenCode permission service](https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/permission.ts) ·
+[OpenCode MCP tool dispatch](https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/tool/mcp.ts)
 
 One inert local SKILL.md loaded with automatic invocation disabled. The probe
 waited for the live subscription handshake, sent a single owned `resume:false`

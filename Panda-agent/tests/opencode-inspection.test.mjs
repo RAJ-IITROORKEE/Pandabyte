@@ -8,7 +8,8 @@ const baseUrl = 'http://127.0.0.1:43210';
 const skills = [{ id: 'example', name: 'Example skill', description: 'A fixture skill', autoinvoke: false }, { id: 'second', name: 'Second skill' }];
 const model = { id: 'example/model', name: 'Example model', providerID: 'example', status: 'active' };
 const safe = { version: '2.2.2', status: 'discovery_only', execution: 'not_execution_ready', counts: { skills: 2, mcpServers: 0, models: 0 }, skills, mcpServers: [], models: [], capabilities: { install: false, configure: false, execute: false } };
-const allow = async () => ({ allowed: true });
+const admin = { allowed: true, subject: 'fixture-admin', sessionId: 'fixture-session' };
+const allow = async () => admin;
 const request = (suffix = '', options) => new Request('https://local.test/inspection' + suffix, options);
 const nativeJSON = (value, init) => Response.json(value, init);
 function fixture(override, timeoutMs) {
@@ -183,15 +184,26 @@ test('handler rejects methods, browser parameters and declared bodies without in
     assert.equal(calls, 0);
 });
 
+test('a second Admin identity or replacement session cannot receive the first session snapshot', async () => {
+    for (const changed of [{ subject: 'other-admin' }, { sessionId: 'other-session' }]) {
+        let admits = 0;
+        const handler = createRuntimeInspectionHandler(async () => ++admits === 1 ? admin : { ...admin, ...changed }, async () => safe);
+        const response = await handler(request());
+        assert.equal(response.status, 403);
+        assert.equal(response.headers.get('cache-control'), 'private, no-store');
+        assert.deepEqual(await response.json(), { error: { code: 'forbidden' } });
+    }
+});
+
 test('handler rechecks admission before releasing metadata and strips untrusted extra fields', async () => {
     let admits = 0;
-    const revoked = createRuntimeInspectionHandler(async () => ++admits === 1 ? { allowed: true } : { allowed: false, status: 403 }, async () => safe);
+    const revoked = createRuntimeInspectionHandler(async () => ++admits === 1 ? admin : { allowed: false, status: 403 }, async () => safe);
     const denied = await revoked(request());
     assert.equal(denied.status, 403);
     assert.deepEqual(await denied.json(), { error: { code: 'forbidden' } });
     assert.equal(admits, 2);
     let failedAdmits = 0;
-    const failed = await createRuntimeInspectionHandler(async () => ++failedAdmits === 1 ? { allowed: true } : { allowed: false, status: 403 }, async () => { throw new NativeInspectionError('version_mismatch'); })(request());
+    const failed = await createRuntimeInspectionHandler(async () => ++failedAdmits === 1 ? admin : { allowed: false, status: 403 }, async () => { throw new NativeInspectionError('version_mismatch'); })(request());
     assert.equal(failed.status, 403);
     assert.deepEqual(await failed.json(), { error: { code: 'forbidden' } });
     const injected = { ...safe, path: 'PRIVATE_PATH', name: 'PRIVATE_NAME', content: 'PRIVATE_INSTRUCTION', token: 'PRIVATE_TOKEN', counts: { ...safe.counts, actors: 'PRIVATE_CUSTOMER' }, capabilities: { install: true, configure: true, execute: true, raw: 'PRIVATE_PAYLOAD' } };
@@ -264,7 +276,7 @@ test('handler rejects malformed projections and exposes only typed generic failu
 test('caller abort while admission is rechecked prevents successful release', async () => {
     const controller = new AbortController();
     let count = 0;
-    const handler = createRuntimeInspectionHandler(async () => { if (++count === 2) controller.abort(); return { allowed: true }; }, async signal => { assert.equal(signal.aborted, false); return safe; });
+    const handler = createRuntimeInspectionHandler(async () => { if (++count === 2) controller.abort(); return admin; }, async signal => { assert.equal(signal.aborted, false); return safe; });
     const response = await handler(request('', { signal: controller.signal }));
     assert.equal(response.status, 503);
     assert.deepEqual(await response.json(), { error: { code: 'unavailable' } });

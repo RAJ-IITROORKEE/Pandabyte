@@ -9,6 +9,8 @@ type Context = {
         kind: "admin";
     };
     client: Client;
+    subject: string;
+    sessionId: string;
 } | {
     admission: Exclude<Admission, {
         kind: "admin";
@@ -27,7 +29,7 @@ async function adminContext(): Promise<Context> {
             return { admission: { kind: "unavailable" } };
         if (data.length !== 1 || data[0]?.role !== "ADMIN")
             return { admission: { kind: "forbidden" } };
-        return { admission: { kind: "admin" }, client };
+        return { admission: { kind: "admin" }, client, subject: actor.subject, sessionId: actor.sessionId };
     }
     catch {
         return { admission: { kind: "unavailable" } };
@@ -36,13 +38,16 @@ async function adminContext(): Promise<Context> {
 /** Server-page guard; capabilities, browser fields and email are never Admin authority. */
 export async function controlRoomAdminAccess(): Promise<{
     allowed: true;
+    subject: string;
+    sessionId: string;
 } | {
     allowed: false;
     status: 401 | 403 | 503;
 }> {
     const context = await adminContext();
+    if ("client" in context) return { allowed: true, subject: context.subject, sessionId: context.sessionId };
     const kind = context.admission.kind;
-    return kind === "admin" ? { allowed: true } : { allowed: false, status: kind === "unauthorized" ? 401 : kind === "forbidden" ? 403 : 503 };
+    return { allowed: false, status: kind === "unauthorized" ? 401 : kind === "forbidden" ? 403 : 503 };
 }
 function denied(kind: Exclude<Admission["kind"], "admin">): Response {
     return Response.json({ error: { code: kind } }, {

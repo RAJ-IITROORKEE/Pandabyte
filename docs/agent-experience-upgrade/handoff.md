@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. The preceding RAG and browser checkpoint is `4abce2e`.
+Use `git log -1` for the local checkpoint. The preceding skill event checkpoint is `3a58315`. The latest signed-in browser checkpoint is `4abce2e`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -143,6 +143,14 @@ requests. Nine focused tests passed. The evidence preserves both earlier attempt
 and the latest diagnostic run. Live delivery is volatile. Product delivery and
 reconnect behavior remain open. See [skill probe evidence](opencode-skill-probe.json).
 
+The native MCP permission check also passes. With the fixture connected, OpenCode
+allowed a synthetic control resource and denied the resource used by the MCP tool
+despite the same session-level allow. This exercises the native permission evaluator.
+The session stayed unstarted, the fixture received zero tool calls and all owned
+state was cleaned. The mounted Admin discovery endpoint also checks the original
+Clerk subject and session again before release. Both account and session replacement
+return a generic private 403. [MCP permission evidence](opencode-mcp-probe.json)
+
 ## OpenRouter zero-cost / strict privacy
 
 Supported existing-key GET metadata succeeds: `/key`, `/models/user`, exact model
@@ -236,9 +244,12 @@ source or credentials moved/deleted. Initial recursive old-build deletion was
 rejected by automatic approval review as blocked by policy; the reversible move
 succeeded instead. Disk capacity remains limited; do not delete unrelated files.
 
-The skill event follow-up changed the isolated probe and its evidence. Local Codex
-browser access was disabled in Work settings during this follow-up. The signed-in
-application checks above are from the preceding checkpoint.
+Local Codex browser access was disabled in Work settings during the native skill
+and permission follow-ups. The signed-in application checks above are from the
+preceding browser checkpoint. The latest Admin discovery change has focused
+server tests and awaits a signed-in browser check on a fresh build. The Agent and
+Admin suite passed 586 tests with 16 documented private fixture skips. Application
+and native type checks, scoped lint and the 97-task register validation passed.
 
 Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
 live inference. Remaining acceptance covers the shared native chat and Playground,

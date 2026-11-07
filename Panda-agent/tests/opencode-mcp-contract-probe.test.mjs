@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mutationFor, probePolicy, probeTransport, syntheticReply, syntheticServerSource } from '../scripts/opencode-mcp-contract-probe.mjs';
+import { mutationFor, permissionFixture, probePolicy, probeTransport, syntheticReply, syntheticServerSource } from '../scripts/opencode-mcp-contract-probe.mjs';
 
 const name='fixture-'+'a'.repeat(32),baseUrl='http://127.0.0.1:43210';
 const counters=()=>({add:0,connect:0,disconnect:0,remove:0});
@@ -16,12 +16,34 @@ test('synthetic MCP server advertises one readonly tool and refuses all tool exe
   assert.equal(syntheticServerSource().includes("JSON.stringify(output)+'\\n'"),true);
 });
 
-test('isolated policy retains all denies with only one exact owned MCP integration exception',()=>{
+test('isolated policy retains default denies with exact fixture integration and control-resource exceptions',()=>{
   const policy=probePolicy(name);
   assert.deepEqual(policy.permissions,[{action:'*',resource:'*',effect:'deny'}]);
-  assert.deepEqual(policy.policies,[...['tool.use','provider.use','integration.use'].map(action=>({action,resource:'*',effect:'deny'})),{action:'integration.use',resource:'mcp:'+name,effect:'allow'}]);
+  assert.deepEqual(policy.policies,[...['tool.use','provider.use','integration.use'].map(action=>({action,resource:'*',effect:'deny'})),{action:'integration.use',resource:'mcp:'+name,effect:'allow'}, {action:'tool.use',resource:`${name}_fixture_readonly:pandabyte-probe-control`,effect:'allow'}]);
   assert.deepEqual(policy.plugins,[]);assert.deepEqual(policy.skills,[]);assert.deepEqual(policy.mcp,{servers:{}});
   for(const bad of ['*','other','fixture-*','fixture-'+ 'a'.repeat(33)])assert.throws(()=>probePolicy(bad));
+});
+
+test('permission probe allows only its exact owned session and one evaluation per reviewed resource', async () => {
+  const receipt = { sessionID: 'ses_fixture', title: 'owned', nonce: 'fixture', scope: 'playground', binding: 'fixture' };
+  const permission = permissionFixture(name, receipt, '/fixture');
+  let calls = 0;
+  const transport = probeTransport({ baseUrl, name, mutations: counters(), permission, signal: new AbortController().signal,
+    fetch: async () => { calls++; return Response.json({}); } });
+  const post = (path, body) => transport(baseUrl + path, { method: 'POST', body: JSON.stringify(body) });
+  const path = `/api/session/${receipt.sessionID}/permission`;
+  await assert.rejects(post(path, permission.blocked));
+  await assert.rejects(post('/api/session', { ...permission.create, permissions: [] }));
+  await post('/api/session', permission.create);
+  await assert.rejects(post(path.replace(receipt.sessionID, 'other'), permission.blocked));
+  await assert.rejects(post(path, { ...permission.blocked, save: ['*'] }));
+  await assert.rejects(post(path + '/per_fixture/reply', { decision: 'always' }));
+  await assert.rejects(post(path.replace('/permission', '/prompt'), { text: 'fixture' }));
+  await post(path, permission.control);
+  await post(path, permission.blocked);
+  await assert.rejects(post(path, permission.blocked));
+  assert.equal(calls, 3);
+  assert.deepEqual(permission.counts, { create: 1, control: 1, blocked: 1, remove: 0 });
 });
 
 test('transport rejects outside origins, unrelated integrations, inference and tool execution before network',async()=>{

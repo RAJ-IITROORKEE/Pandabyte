@@ -44,5 +44,125 @@
     "Synthetic local stdio catalog only; no tool invocation or model request.",
     "No dedicated MCP get API in this client; ownership is checked through native list.",
     "No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof."
-  ]
+  ],
+  "permissionFollowup": {
+    "verifiedRun": {
+      "version": "2.2.2",
+      "nativeClientVersion": "2.2.2",
+      "scope": "disposable provider-free native MCP capability probe",
+      "checks": {
+        "binaryProvenance": true,
+        "spawnedProcessPinned": true,
+        "defaultProviderAndToolDenyVerified": true,
+        "onlyExactOwnedMcpIntegrationAllowed": true,
+        "initialCatalogsEmpty": true,
+        "mcpGetApiAvailable": false,
+        "ownedReadUsesNativeList": true,
+        "privateDescriptor": true,
+        "add": "acknowledged",
+        "ownedEntryAfterAdd": true,
+        "addState": "disabled",
+        "connect": "acknowledged",
+        "connected": true,
+        "initializeRequests": 1,
+        "toolListRequests": 1,
+        "permissionControl": "allow",
+        "toolPermission": "deny",
+        "noPendingPermissionRequests": true,
+        "permissionSessionStayedUnstarted": true,
+        "resourceCatalogEmpty": true,
+        "disconnect": "acknowledged",
+        "disconnectedState": "disabled",
+        "remove": "acknowledged",
+        "ownedEntryAbsent": true,
+        "sourceConfigurationUnchanged": true,
+        "finalModelsEmpty": true
+      },
+      "mutations": {
+        "add": 1,
+        "connect": 1,
+        "disconnect": 1,
+        "remove": 1
+      },
+      "modelRequests": 0,
+      "toolCalls": 0,
+      "sharedRuntimeChanged": false,
+      "result": "completed",
+      "permissionRequests": {
+        "create": 1,
+        "control": 1,
+        "blocked": 1,
+        "remove": 1
+      },
+      "permissionSessionRemoved": true,
+      "descriptorRemoved": true,
+      "childStopped": true,
+      "fixtureChildrenStopped": true,
+      "fixtureRemoved": true,
+      "limitations": [
+        "Synthetic local stdio catalog and native permission decisions. No tool invocation or model request.",
+        "No dedicated MCP get API in this client; ownership is checked through native list.",
+        "No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof."
+      ]
+    },
+    "initialAttempt": {
+      "cause": "The probe read the public SDK create return as a wire envelope. The SDK already unwraps SessionInfo. Both fixtures were cleaned and no permission evaluation was dispatched on that attempt.",
+      "evidence": {
+        "version": "2.2.2",
+        "nativeClientVersion": "2.2.2",
+        "scope": "disposable provider-free native MCP capability probe",
+        "checks": {
+          "binaryProvenance": true,
+          "spawnedProcessPinned": true,
+          "denyProviderAndTools": true,
+          "onlyExactOwnedMcpIntegrationAllowed": true,
+          "initialCatalogsEmpty": true,
+          "mcpGetApiAvailable": false,
+          "ownedReadUsesNativeList": true,
+          "privateDescriptor": true,
+          "add": "acknowledged",
+          "ownedEntryAfterAdd": true,
+          "addState": "disabled",
+          "connect": "acknowledged",
+          "connected": true,
+          "initializeRequests": 1,
+          "toolListRequests": 1
+        },
+        "mutations": {
+          "add": 1,
+          "connect": 1,
+          "disconnect": 0,
+          "remove": 1
+        },
+        "modelRequests": 0,
+        "toolCalls": 0,
+        "sharedRuntimeChanged": false,
+        "result": "stopped",
+        "permissionRequests": {
+          "create": 1,
+          "control": 0,
+          "blocked": 0,
+          "remove": 1
+        },
+        "reason": "tool_permission",
+        "permissionSessionRemoved": true,
+        "descriptorRemoved": true,
+        "childStopped": true,
+        "fixtureChildrenStopped": true,
+        "fixtureRemoved": true,
+        "limitations": [
+          "Synthetic local stdio catalog and native permission decisions. No tool invocation or model request.",
+          "No dedicated MCP get API in this client; ownership is checked through native list.",
+          "No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof."
+        ]
+      }
+    },
+    "comparison": "Same connected synthetic MCP tool action and same session-level allow. The exact harmless control resource was allowed. The wildcard resource used by the native MCP tool was denied by the managed policy. The session never started and had no pending permission request.",
+    "sources": [
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/server/src/handlers/permission.ts",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/permission.ts",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/config/plugin/policy.ts",
+      "https://github.com/anomalyco/opencode/blob/v2.2.2/packages/core/src/tool/mcp.ts"
+    ]
+  }
 }

@@ -1,20 +1,24 @@
 // One disposable provider-free MCP management attempt; OpenCode is the only MCP client.
 import { createReadStream } from 'node:fs';
-import { lstat, mkdir, mkdtemp, open, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { createHash, randomBytes } from 'node:crypto';
 import { execFile, spawn } from 'node:child_process';
-import { promisify } from 'node:util';
+import { isDeepStrictEqual, promisify } from 'node:util';
 import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from 'node:net';
 import { once } from 'node:events';
 import { createDescriptorLease, inspectionConfig, inspectionEnvironment, matchesPinnedVersion, verifiedConfig } from './start-native-inspection.mjs';
+import { createNativeReceipt } from '../src/opencode/session-contracts.ts';
+import { createNativeSessionClient } from '../src/opencode/session-client.ts';
 
 const binaryHash = 'e49134e14f29f0ab586035c3e6e486a7aa9c3e721d556661eff9f4eee0e1dae4';
 const archiveIntegrity = 'tFS9vYp0/+VOeYpcWvAy1e2iMEx6x5/XagVpwtjG33ocvumn5R2qaKGhqhI56Wu8Hfet+VYaw8nwbx9BqxJCqQ==';
 const requireValue = value => { if (!value) throw Error('probe_contract'); };
 const inside = (parent, path) => { const rel = relative(parent,path); return rel && rel !== '..' && !rel.startsWith('..' + sep) && !isAbsolute(rel); };
+const controlResource = 'pandabyte-probe-control';
+const fixtureToolAction = name => `${name}_fixture_readonly`;
 
 export function syntheticReply(message) {
   if (!message || typeof message !== 'object' || message.id === undefined) return null;
@@ -45,7 +49,10 @@ setTimeout(()=>process.exit(0),90000).unref();
 export function probePolicy(name) {
   requireValue(/^fixture-[a-f0-9]{32}$/.test(name));
   const config = inspectionConfig();
-  config.policies.push({action:'integration.use',resource:`mcp:${name}`,effect:'allow'});
+  config.policies.push(
+    { action: 'integration.use', resource: `mcp:${name}`, effect: 'allow' },
+    { action: 'tool.use', resource: `${fixtureToolAction(name)}:${controlResource}`, effect: 'allow' },
+  );
   return config;
 }
 
@@ -55,14 +62,47 @@ export function mutationFor(method, path, name) {
     : method === 'POST' && path === base + '/connect' ? 'connect' : method === 'POST' && path === base + '/disconnect' ? 'disconnect' : null;
 }
 
-export function probeTransport({baseUrl,name,mutations,signal,fetch:transport = fetch}) {
+export function permissionFixture(name, receipt, directory) {
+  const action = fixtureToolAction(name);
+  return {
+    create: {
+      id: receipt.sessionID, title: receipt.title, location: { directory },
+      metadata: { pandaAgent: { nonce: receipt.nonce, scope: receipt.scope, binding: receipt.binding } },
+      permissions: [{ action: '*', resource: '*', effect: 'deny' }, { action, resource: '*', effect: 'allow' }],
+    },
+    control: { action, resources: [controlResource] },
+    blocked: { action, resources: ['*'] },
+    counts: { create: 0, control: 0, blocked: 0, remove: 0 },
+  };
+}
+
+export function probeTransport({baseUrl,name,mutations,signal,permission,fetch:transport = fetch}) {
   const reads = new Set(['/api/info','/api/model','/api/skill','/api/mcp','/api/mcp/resource','/api/config']);
   return async (input, init = {}) => {
     const url = new URL(input), method = init.method ?? 'GET';
     requireValue(url.origin === baseUrl && !url.username && !url.password && !url.hash);
     const mutation = mutationFor(method,url.pathname,name);
-    requireValue(mutation || (method === 'GET' && reads.has(url.pathname)));
+    let check;
+    const session = permission ? `/api/session/${permission.create.id}` : undefined;
+    if (permission && method === 'POST' && url.pathname === '/api/session' && !url.search) {
+      requireValue(isDeepStrictEqual(JSON.parse(init.body), permission.create));
+      check = 'create';
+    } else if (permission && method === 'POST' && url.pathname === `${session}/permission` && !url.search) {
+      requireValue(permission.counts.create === 1 && permission.counts.remove === 0);
+      const body = JSON.parse(init.body);
+      check = ['control', 'blocked'].find(key => isDeepStrictEqual(body, permission[key]));
+      requireValue(check);
+    } else if (permission && method === 'DELETE' && url.pathname === session && !url.search) {
+      requireValue(permission.counts.create === 1);
+      check = 'remove';
+    }
+    const sessionRead = permission && method === 'GET' && (
+      [session, `${session}/permission`, '/api/session/active'].includes(url.pathname) && !url.search
+      || url.pathname === '/api/session' && url.search === `?parentID=${permission.create.id}&limit=1`
+    );
+    requireValue(mutation || check || sessionRead || (method === 'GET' && reads.has(url.pathname)));
     if (mutation) { requireValue(mutations[mutation] === 0); mutations[mutation]++; }
+    if (check) { requireValue(permission.counts[check] === 0); permission.counts[check]++; }
     const bounded = AbortSignal.any([signal,AbortSignal.timeout(12000),...(init.signal ? [init.signal] : [])]);
     const response = await transport(url,{...init,signal:bounded,redirect:'error',credentials:'omit',cache:'no-store'});
     requireValue(!response.redirected);
@@ -116,13 +156,12 @@ async function run(args) {
   }
   const {OpenCode}=await import(pathToFileURL(join(clientRoot,'dist','promise','index.js')).href);
   requireValue(typeof OpenCode.make==='function');
-  const output=await open(join(workspace,'docs','agent-experience-upgrade','opencode-mcp-probe.json'),'wx');
   const summary={version:'2.2.2',nativeClientVersion:'2.2.2',scope:'disposable provider-free native MCP capability probe',checks:{},mutations:{add:0,connect:0,disconnect:0,remove:0},modelRequests:0,toolCalls:0,sharedRuntimeChanged:false,result:'stopped'};
   let root,rootIdentity,child,exited,lease,client,stage='provenance',name,scriptPath,logPath,nonce,node,unknown=false;
   const attempts=new Set(),signal=AbortSignal.timeout(90000),controller=new AbortController();
   const stop=()=>controller.abort();process.once('SIGINT',stop);process.once('SIGTERM',stop);
   const active=AbortSignal.any([signal,controller.signal]);
-  let reference,guard;
+  let reference,guard,permission,permissionReceipt,native,permissionAccess;
   try {
     const assets=join(workspace,'tmp','opencode-2.2.2-review'),executable=join(assets,'opencode.exe');
     requireValue(await digest(executable,'sha256','hex',254943112)===binaryHash&&await digest(join(assets,'opencode-cli-windows-x64-2.2.2.tgz'),'sha512','base64',119436377)===archiveIntegrity);
@@ -141,7 +180,10 @@ async function run(args) {
     child=spawn(executable,['serve','--hostname','127.0.0.1','--port',String(port)],{env,cwd:join(root,'workspace'),stdio:'ignore',windowsHide:true,detached:true});
     exited=new Promise(done=>{child.once('exit',done);child.once('error',done);});
     const baseUrl=`http://127.0.0.1:${port}`,directory=join(root,'workspace');reference={location:{directory}};
-    const transport=probeTransport({baseUrl,name,mutations:summary.mutations,signal:active});
+    permissionReceipt = createNativeReceipt('playground', randomBytes(32).toString('hex'));
+    permission = permissionFixture(name, permissionReceipt, directory);
+    summary.permissionRequests = permission.counts;
+    const transport=probeTransport({baseUrl,name,mutations:summary.mutations,signal:active,permission});
     client=OpenCode.make({baseUrl,headers:{Authorization:`Basic ${Buffer.from(`opencode:${password}`).toString('base64')}`,'x-opencode-directory':encodeURIComponent(directory)},fetch:transport});
     guard=async()=>{const info=await client.server.info({signal:active});requireValue(info.version==='2.2.2'&&info.pid===child.pid);};
     stage='identity';const deadline=Date.now()+25000;
@@ -149,9 +191,11 @@ async function run(args) {
     summary.checks.spawnedProcessPinned=true;
     stage='initial_catalogs';const models=await client.model.list(reference,{signal:active});const skills=await client.skill.list(reference,{signal:active});const initial=await client.mcp.list(reference,{signal:active});
     requireValue(models.data.length===0&&skills.data.length===0&&initial.data.length===0);requireValue(verifiedConfig(await client.config.get(reference,{signal:active}),config,root));
-    summary.checks.denyProviderAndTools=true;summary.checks.onlyExactOwnedMcpIntegrationAllowed=true;summary.checks.initialCatalogsEmpty=true;summary.checks.mcpGetApiAvailable=typeof client.mcp.get==='function';summary.checks.ownedReadUsesNativeList=true;
+    summary.checks.defaultProviderAndToolDenyVerified=true;summary.checks.onlyExactOwnedMcpIntegrationAllowed=true;summary.checks.initialCatalogsEmpty=true;summary.checks.mcpGetApiAvailable=typeof client.mcp.get==='function';summary.checks.ownedReadUsesNativeList=true;
     const generation=randomBytes(32).toString('hex');lease=await createDescriptorLease(root,join(root,'private','runtime.json'),generation);
     await lease.publish({version:1,generation,pid:child.pid,baseUrl,directory,configHash:createHash('sha256').update(configBytes).digest('hex'),password});summary.checks.privateDescriptor=true;
+    native = createNativeSessionClient({ baseUrl, password, directory, expectedPid: child.pid, fetch: transport, timeoutMs: 10000 });
+    permissionAccess = async candidate => isDeepStrictEqual(candidate, permissionReceipt);
     const own=async()=>{await guard();const result=await client.mcp.list(reference,{signal:active});requireValue(result.location.directory===directory&&result.data.length<=1&&result.data.every(item=>item.name===name));return result.data[0]??null;};
     const mutate=async(key,operation)=>{
       requireValue(!attempts.has(key));attempts.add(key);await guard();
@@ -169,6 +213,25 @@ async function run(args) {
       const receipt=await fixtureProcesses(logPath);summary.checks.initializeRequests=receipt.filter(item=>item.event==='initialize').length;summary.checks.toolListRequests=receipt.filter(item=>item.event==='tools/list').length;summary.toolCalls=receipt.filter(item=>item.event==='tools/call').length;
       requireValue(summary.toolCalls===0);
       if(connected&&current?.status.status==='connected'){
+        stage = 'tool_permission_session';
+        await guard();
+        const created = await client.session.create(permission.create, { signal: active });
+        requireValue(created.id === permissionReceipt.sessionID);
+        await native.get(permissionReceipt, permissionAccess, active);
+        stage = 'tool_permission_decisions';
+        const control = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.control }, { signal: active });
+        const blocked = await client.permission.create({ sessionID: permissionReceipt.sessionID, ...permission.blocked }, { signal: active });
+        summary.checks.permissionControl = control.effect;
+        summary.checks.toolPermission = blocked.effect;
+        requireValue(control.effect === 'allow' && blocked.effect === 'deny');
+        const pending = await client.permission.list({ sessionID: permissionReceipt.sessionID }, { signal: active });
+        requireValue(pending.length === 0);
+        summary.checks.noPendingPermissionRequests = true;
+        const state = await native.get(permissionReceipt, permissionAccess, active);
+        requireValue(state.time.busy === undefined && !(await native.active(permissionReceipt, permissionAccess, active)).active);
+        summary.checks.permissionSessionStayedUnstarted = true;
+        await native.remove(permissionReceipt, permissionAccess, active);
+        summary.permissionSessionRemoved = true;
         stage='resources';const resources=await client.mcp.resource.catalog(reference,{signal:active});summary.checks.resourceCatalogEmpty=resources.data.resources.length===0&&resources.data.templates.length===0;
         stage='disconnect';await mutate('disconnect',()=>client.experimental.mcp.disconnect({...reference,server:name},{signal:active}));current=await own();summary.checks.disconnectedState=current?.status.status??'absent';
       }
@@ -179,6 +242,10 @@ async function run(args) {
     summary.result=!unknown&&summary.checks.connected&&summary.checks.toolListRequests>=1&&summary.checks.ownedEntryAbsent?'completed':'partial';
   } catch { summary.reason=stage;summary.result='stopped'; }
   finally {
+    if (native && permission?.counts.create === 1 && permission.counts.remove === 0 && !active.aborted) {
+      try { await native.remove(permissionReceipt, permissionAccess, active); summary.permissionSessionRemoved = true; }
+      catch { summary.permissionSessionRemoved = false; }
+    }
     if(client&&guard&&reference&&!active.aborted&&!attempts.has('remove')){
       try{await guard();const entries=await client.mcp.list(reference,{signal:active});if(entries.data.some(item=>item.name===name)){attempts.add('remove');await client.experimental.mcp.remove({...reference,server:name},{signal:active});}}catch{summary.checks.cleanupRemovalUnknown=true;}
     }
@@ -191,12 +258,11 @@ async function run(args) {
     summary.fixtureChildrenStopped=fixtureStopped;
     summary.fixtureRemoved=false;
     if(root&&stopped&&fixtureStopped&&summary.descriptorRemoved){try{const parent=await realpath(tmpdir()),stat=await lstat(root);requireValue(inside(parent,root)&&basename(root).startsWith('pandabyte-native-mcp-probe-')&&!stat.isSymbolicLink()&&stat.dev===rootIdentity.dev&&stat.ino===rootIdentity.ino&&await realpath(root)===root);await rm(root,{recursive:true,force:true});summary.fixtureRemoved=true;}catch{}}
-    summary.modelRequests=0;summary.limitations=['Synthetic local stdio catalog only; no tool invocation or model request.','No dedicated MCP get API in this client; ownership is checked through native list.','No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof.'];
+    summary.modelRequests=0;summary.limitations=['Synthetic local stdio catalog and native permission decisions. No tool invocation or model request.','No dedicated MCP get API in this client; ownership is checked through native list.','No durable restart, remote transport, shared Admin mutation, deployment, or privacy proof.'];
     process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);
-    await output.writeFile(JSON.stringify(summary,null,2)+'\n');await output.close();
   }
   process.stdout.write(JSON.stringify(summary,null,2)+'\n');
-  if(summary.result!=='completed'||!summary.childStopped||!summary.fixtureChildrenStopped||!summary.descriptorRemoved||!summary.fixtureRemoved||summary.toolCalls!==0)process.exitCode=1;
+  if(summary.result!=='completed'||!summary.permissionSessionRemoved||!summary.childStopped||!summary.fixtureChildrenStopped||!summary.descriptorRemoved||!summary.fixtureRemoved||summary.toolCalls!==0)process.exitCode=1;
 }
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))run(process.argv.slice(2)).catch(()=>{process.stderr.write('native MCP probe unavailable\n');process.exitCode=1;});

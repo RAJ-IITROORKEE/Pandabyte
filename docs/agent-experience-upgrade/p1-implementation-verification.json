@@ -1358,5 +1358,28 @@
     "liveInferenceEnabled": false,
     "remaining": "Stock serve historical event replay cannot recover the activation payload. Product event delivery and reconnect behavior, native Admin management, strict workspace ZDR, shared live chat/Playground, customer memory and full Phase 1 acceptance remain open.",
     "phaseAdvanced": false
+  },
+  "phase1NativePermissionFollowup": {
+    "status": "isolated native permission decision verified and Admin discovery bound to the original Clerk session",
+    "previousCommit": "3a58315",
+    "record": "docs/agent-experience-upgrade/opencode-mcp-probe.json.permissionFollowup",
+    "mountedCode": "The existing read-only native discovery endpoint now rechecks Admin membership and requires the same Clerk subject and session before releasing discovery. Account or session changes return a generic private 403. No identifier is in the response.",
+    "isolatedProbe": "Native permission endpoint allowed the exact synthetic control resource and denied the real MCP tool resource despite a session-level allow. No pending approval and no execution. Full synthetic MCP lifecycle and owned cleanup verified.",
+    "tests": "37 focused tests pass, including both Admin identity mismatch cases and one-shot native permission transport.",
+    "browser": "Codex local browser access disabled in Work settings. This change has no new mounted browser acceptance.",
+    "providerRequests": 0,
+    "toolCalls": 0,
+    "liveInferenceEnabled": false,
+    "phaseAdvanced": false,
+    "remaining": "Actual agent tool dispatch, installed/remote integration controls, supported durable configuration, live provider acceptance, and full Phase 1 remain open.",
+    "checks": {
+      "agentAdminPassed": 586,
+      "privateFixtureSkips": 16,
+      "failed": 0,
+      "applicationTypecheck": "pass",
+      "nativeTypecheck": "pass",
+      "scopedLint": "pass",
+      "requirementRegister": "97 valid"
+    }
   }
 }
