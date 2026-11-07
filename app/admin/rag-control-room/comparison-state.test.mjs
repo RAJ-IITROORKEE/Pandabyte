@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { parseComparison, parseComparisonCapability, parseOperations } from './comparison-state.ts';
+
+const operations = [{model:'openai/gpt-4o-mini',requestId:'123e4567-e89b-42d3-a456-426614174000'}];
+const result = {context:{digest:'a'.repeat(64),passages:[{rank:1,title:'Listing',sourceUrl:'https://example.com/source',capturedAt:'2026-11-04T00:00:00Z',sectionPath:['Specs'],text:'Flash: 4 MB'}]},results:[{...operations[0],status:'evaluated',answer:'4 MB',evidence:[{rank:1,quote:'4 MB',reason:'The listed flash.'}],metrics:{elapsedMs:5,inputTokens:null,outputTokens:null,costUsd:null}}]};
+test('pending operations require unique bounded model IDs and UUIDs',()=>{assert.deepEqual(parseOperations(operations),operations);assert.equal(parseOperations([...operations,...operations]),null);assert.equal(parseOperations([{...operations[0],requestId:'bad'}]),null);assert.equal(parseOperations([]),null);});
+test('capability is explicit and bounded',()=>{const value={execution:'configured_unverified',models:['openai/gpt-4o-mini'],maxModels:4};assert.deepEqual(parseComparisonCapability(value),value);assert.equal(parseComparisonCapability({...value,maxModels:5}),null);assert.equal(parseComparisonCapability({...value,execution:'ready'}),null);});
+test('response binds each model, request and literal citation to shared context',()=>{assert.deepEqual(parseComparison(result,operations),result);assert.equal(parseComparison({...result,results:[{...result.results[0],requestId:'123e4567-e89b-42d3-a456-426614174001'}]},operations),null);assert.equal(parseComparison({...result,results:[{...result.results[0],evidence:[{rank:1,quote:'8 MB',reason:'wrong'}]}]},operations),null);assert.equal(parseComparison({...result,results:[]},operations),null);});
+test('explicit unknown results remain distinct from evaluated answers',()=>{const unknown={...result,results:[{...operations[0],status:'outcome_unknown'}]};assert.deepEqual(parseComparison(unknown,operations),unknown);assert.equal(parseComparison({...result,context:{...result.context,digest:'invalid'}},operations),null);});

@@ -1,11 +1,19 @@
 const version = '2.2.2' as const;
 const maxBytes = 1_000_000;
+const maxEntries = 500;
+
+export type NativeSkill = { id: string; name: string; description?: string; autoinvoke?: boolean };
+export type NativeMcpServer = { name: string; title?: string; status: 'connected' | 'pending' | 'disabled' | 'failed' | 'needs_auth' };
+export type NativeModel = { id: string; name: string; providerID: string; status: 'alpha' | 'beta' | 'deprecated' | 'active' };
 
 export type NativeInspection = {
     version: typeof version;
     status: 'discovery_only';
     execution: 'not_execution_ready';
     counts: { skills: number; mcpServers: number; models: number };
+    skills: NativeSkill[];
+    mcpServers: NativeMcpServer[];
+    models: NativeModel[];
     capabilities: { install: false; configure: false; execute: false };
 };
 export class NativeInspectionError extends Error {
@@ -17,13 +25,39 @@ export class NativeInspectionError extends Error {
     }
 }
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
+function label(value: unknown, max = 256): string {
+    if (typeof value !== 'string' || !value.trim() || value.length > max || /[\u0000-\u001f\u007f]|\p{Surrogate}/u.test(value)) throw new NativeInspectionError();
+    return value;
+}
+function catalog<T>(value: unknown, project: (item: unknown) => T, key: (item: T) => string): T[] {
+    if (!Array.isArray(value) || value.length > maxEntries) throw new NativeInspectionError();
+    const result = value.map(project);
+    if (new Set(result.map(key)).size !== result.length) throw new NativeInspectionError();
+    return result;
+}
+function skill(value: unknown): NativeSkill {
+    if (!record(value) || (value.autoinvoke !== undefined && typeof value.autoinvoke !== 'boolean')) throw new NativeInspectionError();
+    return { id: label(value.id), name: label(value.name), ...(value.description === undefined || value.description === '' ? {} : { description: label(value.description, 2000) }), ...(value.autoinvoke === undefined ? {} : { autoinvoke: value.autoinvoke }) };
+}
+function mcpServer(value: unknown): NativeMcpServer {
+    if (!record(value) || !['connected', 'pending', 'disabled', 'failed', 'needs_auth'].includes(value.status as string)) throw new NativeInspectionError();
+    return { name: label(value.name), ...(value.title === undefined || value.title === '' ? {} : { title: label(value.title) }), status: value.status as NativeMcpServer['status'] };
+}
+function model(value: unknown): NativeModel {
+    if (!record(value) || !['alpha', 'beta', 'deprecated', 'active'].includes(value.status as string)) throw new NativeInspectionError();
+    return { id: label(value.id), name: label(value.name), providerID: label(value.providerID), status: value.status as NativeModel['status'] };
+}
 
 // Reproject at the HTTP boundary too: injected adapters are not a release authority.
 export function projectNativeInspection(value: unknown): NativeInspection {
     if (!record(value) || value.version !== version || value.status !== 'discovery_only' || value.execution !== 'not_execution_ready' || !record(value.counts)) throw new NativeInspectionError();
-    const { skills, mcpServers, models } = value.counts;
-    if ([skills, mcpServers, models].some(count => !Number.isSafeInteger(count) || (count as number) < 0 || (count as number) > maxBytes)) throw new NativeInspectionError();
-    return { version, status: 'discovery_only', execution: 'not_execution_ready', counts: { skills: skills as number, mcpServers: mcpServers as number, models: models as number }, capabilities: { install: false, configure: false, execute: false } };
+    const skills = catalog(value.skills, skill, item => item.id);
+    const mcpServers = catalog(value.mcpServers, mcpServer, item => item.name);
+    const models = catalog(value.models, model, item => `${item.providerID}\0${item.id}`);
+    const counts = { skills: skills.length, mcpServers: mcpServers.length, models: models.length };
+    const reportedCounts = value.counts;
+    if (Object.entries(counts).some(([key, count]) => reportedCounts[key] !== count)) throw new NativeInspectionError();
+    return { version, status: 'discovery_only', execution: 'not_execution_ready', counts, skills, mcpServers, models, capabilities: { install: false, configure: false, execute: false } };
 }
 
 export function createNativeInspectionClient(config: { baseUrl: string; password: string; fetch?: typeof fetch; timeoutMs?: number }) {
@@ -86,17 +120,21 @@ export function createNativeInspectionClient(config: { baseUrl: string; password
                 const info = await get('/api/info');
                 if (!record(info) || typeof info.version !== 'string') throw new NativeInspectionError();
                 if (info.version !== version) throw new NativeInspectionError('version_mismatch');
-                async function count(path: string) {
+                async function list(path: string): Promise<unknown[]> {
                     const result = await get(path);
                     if (!record(result) || !Array.isArray(result.data)) throw new NativeInspectionError();
-                    return result.data.length;
+                    return result.data;
                 }
                 // Native 2.2.2 model.list waits for plugin/policy activation; skill.list does not.
-                const models = await count('/api/model');
-                const skills = await count('/api/skill');
-                const mcpServers = await count('/api/mcp');
+                const models = catalog(await list('/api/model'), model, item => `${item.providerID}\0${item.id}`);
+                const skills = catalog(await list('/api/skill'), skill, item => item.id);
+                const mcpServers = catalog(await list('/api/mcp'), value => {
+                    if (!record(value) || !record(value.status)) throw new NativeInspectionError();
+                    // MCP error text/configuration can contain credentials; release only its typed status.
+                    return mcpServer({ name: value.name, title: value.title, status: value.status.status });
+                }, item => item.name);
                 controller.signal.throwIfAborted();
-                return projectNativeInspection({ version, status: 'discovery_only', execution: 'not_execution_ready', counts: { skills, mcpServers, models } });
+                return projectNativeInspection({ version, status: 'discovery_only', execution: 'not_execution_ready', counts: { skills: skills.length, mcpServers: mcpServers.length, models: models.length }, skills, mcpServers, models });
             };
             try {
                 return await Promise.race([operation(), interrupted]);

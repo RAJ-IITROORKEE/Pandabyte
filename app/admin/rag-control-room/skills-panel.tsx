@@ -9,7 +9,7 @@ type Skill = { id: string; title: string; enabled: boolean; activeVersion: numbe
 type Action = "review" | "enable" | "disable" | "rollback";
 const endpoint = "/api/admin/panda-agent/skills";
 
-export function SkillsPanel() {
+export function SkillsPanel({ includeTools = true }: { includeTools?: boolean }) {
   const [skills, setSkills] = useState<Skill[] | null>(null);
   const [selection, setSelection] = useState("");
   const [bundleVersion, setBundleVersion] = useState("");
@@ -62,5 +62,5 @@ export function SkillsPanel() {
       <form className={styles.form} onSubmit={submit}><label>Action<select value={action} disabled={busy || blocked} onChange={event => setAction(event.target.value as Action)}><option value="review">Review</option><option value="enable">Enable</option><option value="disable">Disable</option><option value="rollback">Roll back</option></select></label><label>Bundled version<select required value={bundleVersion} disabled={busy || blocked} onChange={event => setBundleVersion(event.target.value)}><option value="">Choose a version</option>{selected.versions.map(version => <option key={version.version} value={version.version}>{version.version}{version.reviewed ? " · reviewed" : " · not reviewed"}</option>)}</select></label><p>Enable requires review; rollback requires a previously active reviewed version. Disable targets the active version.</p><label>Reason<textarea required maxLength={300} value={reason} disabled={busy || blocked} onChange={event => setReason(event.target.value)} /></label><button type="submit" disabled={busy || blocked || !eligible || !reason.trim()}>{busy ? "Saving…" : "Save change"}</button></form>
       <details><summary>Change history</summary>{selected.history.length ? <ul className={styles.list}>{selected.history.map((entry, index) => <li key={index}><div><strong>{entry.action} · {entry.bundleVersion}</strong><p>{entry.at} · {entry.reason}</p></div></li>)}</ul> : <p>No recorded changes.</p>}</details>
     </>}
-  </section><ToolsPanel /></>;
+  </section>{includeTools && <ToolsPanel />}</>;
 }

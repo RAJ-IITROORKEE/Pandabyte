@@ -52,9 +52,12 @@ try {
   report.candidate = { model, provider, endpoints: endpoints.length, zdrRows: matches.length,
     safetyRetentionExplicitlyFalse: matches.length === 1 && matches[0].safety_retention === false,
     tokenPricesZero: endpoints.length === 1 && endpoints[0].pricing?.prompt === '0' && endpoints[0].pricing?.completion === '0',
-    otherRequiredPrices: endpoints.length === 1 && ['request', 'image'].every(name => endpoints[0].pricing?.[name] === '0') ? 'explicit_zero' : 'unverified',
+    optionalPriceFields: Object.fromEntries(['request', 'image'].map(name => [name, endpoints.length === 1 ? endpoints[0].pricing?.[name] ?? 'not_reported' : 'not_reported'])),
+    textOnlyFreeVariant: { documentaryNoBilling: model.endsWith(':free'), source: 'https://openrouter.ai/collections/free-models',
+      constraints: 'Exact free model; pinned currently verified ZDR provider; no fallback, tools, plugins or nontext input; zero provider max_price ceilings and actual returned cost zero required before acceptance',
+      absentFieldsAreExplicitZero: false },
     establishesEffectiveKeyPolicy: false };
-  report.reason = 'Eligible model and public ZDR classification do not expose effective Safety Retention or logging settings. Known management-only guardrail route is not retried.';
+  report.reason = 'Exact public ZDR/safety_retention:false provider metadata supports the candidate endpoint policy. The ordinary inference key does not expose effective workspace input/output logging, data-discount logging or broadcast exclusions. Documented workspace inspection requires a management key; known inaccessible routes are not retried. Missing image/request prices are not a separate text-only :free no-billing blocker.';
   report.result = 'observed_blocked';
 } catch {
   report.result = 'unavailable_blocked'; report.reason = 'Required supported metadata could not be validated; no inference attempted.';

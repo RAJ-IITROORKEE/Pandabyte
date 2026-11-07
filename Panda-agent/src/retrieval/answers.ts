@@ -153,7 +153,12 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
             return { kind: 'unavailable' };
         if (!result.selections.length)
             return { kind: 'insufficient' };
-        return { kind: 'evidence', citations: result.selections.map((s, i) => { const c = byHandle.get(s.handle)!; return { id: `S${i + 1}`, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: s.quote, sectionPath: [...c.sectionPath] }; }) };
+        // A source label identifies provenance but does not answer a question.
+        const isSourceLabel = (s: { handle: string; quote: string }) => s.quote === `Source: ${byHandle.get(s.handle)!.sourceUrl}`;
+        const selections = result.selections.filter(s => !isSourceLabel(s));
+        if (!selections.length)
+            return { kind: 'insufficient' };
+        return { kind: 'evidence', citations: selections.map((s, i) => { const c = byHandle.get(s.handle)!; return { id: `S${i + 1}`, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: s.quote, sectionPath: [...c.sectionPath] }; }) };
     }
     catch {
         return { kind: 'unavailable' };

@@ -18,7 +18,7 @@ const aclScript = `$ErrorActionPreference='Stop';try {
 async function windowsPrivate(path: string): Promise<boolean> {
     return new Promise(resolve => {
         const child = execFile(join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe'),
-            ['-NoProfile', '-NonInteractive', '-Command', aclScript], { windowsHide: true, timeout: 1500, maxBuffer: 64 },
+            ['-NoProfile', '-NonInteractive', '-Command', aclScript], { windowsHide: true, timeout: 5000, maxBuffer: 64 },
             (error, stdout) => resolve(!error && stdout === 'private'));
         // Path travels as stdin data, never interpolated PowerShell code or a credential argument.
         child.stdin?.end(path);

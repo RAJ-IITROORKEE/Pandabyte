@@ -15,4 +15,11 @@
 .panel h2 { margin: 0 0 8px; font-size: 18px; }
 .panel a { color: var(--accent-ink); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.heading .actions { margin-top: 0; align-items: center; }
+.heading a { color: var(--accent-ink); font-size: 14px; min-height: 44px; display: inline-flex; align-items: center; }
+.catalog { display: grid; gap: 12px; padding: 0; list-style: none; margin: 16px 0; }
+.catalog li { border: 1px solid var(--divider); padding: 14px; overflow-wrap: anywhere; }
+.catalog p { margin: 6px 0 0; }
+.runtimeControls { margin-top: 28px; border-top: 1px solid var(--divider); padding-top: 24px; display: grid; gap: 12px; min-width: 0; }
+.runtimeControls > p { margin-top: 0; }
 @media (max-width: 700px) { .panel, .notice { padding: 16px; } }

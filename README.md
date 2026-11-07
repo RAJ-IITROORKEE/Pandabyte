@@ -4,9 +4,12 @@ An India-first IoT hardware catalog and company website with an editable adminis
 
 **Current Agent assignment, 6 November 2026:** the [Agent Experience Upgrade handoff](docs/agent-experience-upgrade/handoff.md) and [requirement register](docs/agent-experience-upgrade/requirements.json) govern the new P0/P1 work. The [complete adopted master specification](docs/agent-experience-upgrade/specification.md) requires OpenCode execution ownership and a design review before replacing the customer UI. Historical Phase 6 remains in progress; its evidence and existing runtime are preserved during the transition. Older roadmap and deployment records describe their own checkpoints.
 
-The new local proposal is approved and its customer shell is implemented. Native
-execution and full Admin management remain in progress; current chat still uses
-the preserved deterministic RAG path. See the handoff for precise acceptance limits.
+The approved customer shell is implemented. The owner's 7 November request reuses
+the main working-tree RAG Control Room, document library and retrieval Playground
+in this branch. Native discovery and existing RAG skill/tool controls are verified;
+native execution and full Admin management remain in progress. Inference stays off
+under the unchanged zero-cost/strict-ZDR gate; current chat retains deterministic
+RAG. See the handoff for current runtime, verification and remaining gates.
 
 **Status: hosted development preview, 29 October 2026.** [Open PandaByte](https://pandabyte-iot.vercel.app). The site uses the selected development Clerk/InsForge services. It is not a production-commerce launch; real payments and invoice issuance remain disabled/deferred. [Deployment and checks](docs/vercel-preview-deployment.md).
 

@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-06",
+  "date": "2026-11-07",
   "milestone": "Agent Experience Upgrade / P1 implementation increment",
   "status": "partial",
   "designApproval": "Owner explicitly approved the local complete proposal: Approved and procced.",
@@ -405,5 +405,534 @@
       ],
       "limits": "Disabled-admission and deterministic FastAPI/SQL browser path only. No live native provider generation, active cancellation or full Clerk/native latency acceptance."
     }
+  },
+  "mainRagReuse": {
+    "date": "2026-11-07",
+    "status": "partial; requested RAG reuse and discovery verified, live LLM/complete Phase1 not certified",
+    "source": "main@a3a4756 plus its owner-selected working tree",
+    "originalCheckoutReadOnly": true,
+    "selectedFiles": 79,
+    "byteIdentical": 61,
+    "sourceFiles": [
+      {
+        "path": "app/admin/rag-control-room/control-room.tsx",
+        "sha256": "ee408b6edb4a8c15731625c0f54274a1675eba0cb1b0f15f35c0bf60baa5d589"
+      },
+      {
+        "path": "app/admin/rag-control-room/corpus-inspector.tsx",
+        "sha256": "7578389db5edb0b700b934038ad7c585cad5e7e6ca766b1842cd935676fa5a71"
+      },
+      {
+        "path": "app/admin/rag-control-room/rag-control-room.module.css",
+        "sha256": "c096ffda6aaf5a0d419b4d76474015a9cf118688b3abd2cc3d7887bc63edf7d3"
+      },
+      {
+        "path": "app/admin/rag-control-room/comparison-state.ts",
+        "sha256": "e5ddde5046e4e9e6b464ca6191a6253f1814db8c0e546c6de788ba2576664368"
+      },
+      {
+        "path": "app/admin/rag-control-room/document-inspector.module.css",
+        "sha256": "7953e756167442a6f0250909165193fd678d5171c6a89d6149fca28631038764"
+      },
+      {
+        "path": "app/admin/rag-control-room/document-library-state.ts",
+        "sha256": "e828f9fa8fcb7603e5e4707cf4a6dcf815ba8fa0bd21e0de4f7719e8165ef3f0"
+      },
+      {
+        "path": "app/admin/rag-control-room/document-library.tsx",
+        "sha256": "118553ee087a587a92ccce02f9f8c1ef25b302336307677fa44faf0350560473"
+      },
+      {
+        "path": "app/admin/rag-control-room/intake-state.ts",
+        "sha256": "61fe4b485a89344d633271640d9418283c7670a1b36fb321dc0b9c52baf4ac6f"
+      },
+      {
+        "path": "app/admin/rag-control-room/model-evaluation.module.css",
+        "sha256": "31bc4fa70476e8dbf430a2998e9b05f0f5fc02f0fa631bdc9a84c5c857cc4b77"
+      },
+      {
+        "path": "app/admin/rag-control-room/model-evaluation.tsx",
+        "sha256": "edc455de976cbc05234058265f2e7516db6a164e67cd8c842df9a06d2d6f364b"
+      },
+      {
+        "path": "app/admin/rag-control-room/playground.module.css",
+        "sha256": "ad0ed3843e04e9019922fb1ef505f72370dff784278b27031df672c59e44ead6"
+      },
+      {
+        "path": "app/admin/rag-control-room/playground.tsx",
+        "sha256": "c4c14ee94899dfb68e553fb5bf8028e7c6414b9f7daf4c3d1366e946f3c802f5"
+      },
+      {
+        "path": "app/admin/rag-control-room/comparison-state.test.mjs",
+        "sha256": "dcb185d6a61c44c8705135fdee5ba5635c8b5ae967c7f7c53a3043e27e7a0127"
+      },
+      {
+        "path": "app/admin/rag-control-room/document-library-state.test.mjs",
+        "sha256": "e84f39a03bfeb1066260b8aaf922ace927c7a386c26ecb94f63626af4edc2376"
+      },
+      {
+        "path": "app/admin/rag-control-room/intake-state.test.mjs",
+        "sha256": "7869021d3ab91b6956703638142096b536ada46340321711c95351135e97ed70"
+      },
+      {
+        "path": "app/api/admin/panda-agent/documents/route.ts",
+        "sha256": "344f969b0690c92dffdfcabb6cfaea915a0478a66140b8d792af139ffca9e1ce"
+      },
+      {
+        "path": "app/api/admin/panda-agent/documents/[reference]/route.ts",
+        "sha256": "19ec1e64bd0e48d1978ffae0aee25e8be407d3398e1ed748d3f612a1136543a0"
+      },
+      {
+        "path": "app/api/admin/panda-agent/documents/[reference]/search/route.ts",
+        "sha256": "8204fc72a842ecc2ebd5c1f22a7b806350bae3a7c23d2aa9a1a90e81d1265aa0"
+      },
+      {
+        "path": "app/api/admin/panda-agent/documents/[reference]/status/route.ts",
+        "sha256": "aadd9ce08eca610d1a229c967ff182add3c23ca32172e309f5103bff853451be"
+      },
+      {
+        "path": "app/api/admin/panda-agent/documents/[reference]/withdraw/route.ts",
+        "sha256": "b776819852d1aac8829c243f77b01c0d6bc09f3542a762208acef3e4f5064e29"
+      },
+      {
+        "path": "app/api/admin/panda-agent/models/route.ts",
+        "sha256": "d4de13267393e835db3d5eaaddb7520c490cf4038f7c4e25a6b2e0beeaadf941"
+      },
+      {
+        "path": "app/api/admin/panda-agent/model-comparisons/route.ts",
+        "sha256": "23d66a3ad23f7f594f96e701dda1d627390351b8d8866d950c7ebd16e27cc15c"
+      },
+      {
+        "path": "app/api/admin/panda-agent/playground/route.ts",
+        "sha256": "f8c1f506395117e942ee29f20c49885eb2734dadac01985b8a0a3c19fa927c16"
+      },
+      {
+        "path": "Panda-agent/src/control-room/documents-clerk.ts",
+        "sha256": "27c4c95fba3e7443bc83f4fb472a97b61faa7755745100e1df8512ee3b41812d"
+      },
+      {
+        "path": "Panda-agent/src/control-room/documents.ts",
+        "sha256": "47ce30a4268e45482f0cd073ca8917e1706e86228bc71da530ac49fd7d1cf311"
+      },
+      {
+        "path": "Panda-agent/src/control-room/model-catalog.ts",
+        "sha256": "9e629a2f93f3ce2407d16587db2054f5f43e80b87f9f1131fe589fee8805497f"
+      },
+      {
+        "path": "Panda-agent/src/control-room/model-comparison-clerk.ts",
+        "sha256": "5b2de108eacc53300f3ccff738ab48708876ba746ae3ae02a2ecdd762df2802d"
+      },
+      {
+        "path": "Panda-agent/src/control-room/model-comparison.ts",
+        "sha256": "b9210ef930bdc573b8c6fec3e61b1f77e0f7f45ed7f11228b8fd2831e503ee64"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-capabilities-clerk.ts",
+        "sha256": "7276df62d142dd2979c32c5baec1c61138e026b3766c72977b9599fdb51b8430"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-capabilities.ts",
+        "sha256": "2b2a5bbc9d0359d0688e89a758f3b23e73d71079b32ff6636ce62badb7a58868"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-clerk.ts",
+        "sha256": "001882335dcab231716d7bdb45324e91464e9b9b06cc704fc93fa495aca655b1"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-configuration.ts",
+        "sha256": "f0d1c5184318dac7428bc985588ad2d26438b1bc82d704cafd03ea730394941c"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-context-proof.ts",
+        "sha256": "c98ea6efa6472c6caeed0d937655f55600b2652dc995d9863667e4715fb5c2fd"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-evaluation.ts",
+        "sha256": "733f48e36b9087286583ec20136066056b3b3e58e616ebe19af186a86f95d14a"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-gateway.ts",
+        "sha256": "c8361027481a080a25d0d111bafa3ea2859bd3c3a94aed8473044da9d49b5d48"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-handler.ts",
+        "sha256": "5b067b59bf7ce46530206086bc62c5c9fb321b01ac880338d24bd954e26c66ec"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-intent.ts",
+        "sha256": "6daf298b0a5e5f8725d4df1d4b4078c7f16b2115b0f791c45ed0579784f3de04"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-local-config.ts",
+        "sha256": "131adff40c5366a37d9dae2d27471725b2e69a721e63d9cabf1fa8ee4107e429"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-local-windows.ts",
+        "sha256": "44ad8d965371d3ce2619a310ee538ecbe717a520f490adb0eb3e188ba26def08"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-local.ts",
+        "sha256": "b9f276edd0151a3d0d3771c80b20d1d7ec3e92fea812dcb0e081f60fd6414f76"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-model.ts",
+        "sha256": "8d007d5e3e6a1e6f3d4c76a6c78998dc2ccef92bdce55b9606dcc66c93ffffde"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-usage.ts",
+        "sha256": "ca35f47c777507cd5408339b12cb3ee5bcde3b98828bc08ebdf04328e198845c"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-workflow-clerk.ts",
+        "sha256": "fd7790ea72e00c2888f4152fc8682e016dc7add0427b903b0c4a8893e2ccfd13"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-workflow-handler.ts",
+        "sha256": "80b3c2d75d2101576bfb85e5bf194e94587af2b4379873219d6ad98c9429bba6"
+      },
+      {
+        "path": "Panda-agent/src/control-room/rag-workflow.ts",
+        "sha256": "6a1980c1369d0703ff0d02ba534a617b85a18f82f9ec9dbdf10dc5dcab08adcf"
+      },
+      {
+        "path": "Panda-agent/src/control-room/validation.ts",
+        "sha256": "e2d2027402e385178c0f381516f7bc4c56c52520ce314eec6235c16537fff8a1"
+      },
+      {
+        "path": "Panda-agent/src/retrieval/insforge-adapters.ts",
+        "sha256": "b9d2d7cd839ef404e6dfeea08ff9aa55920e3c0138760da4aaab8c99a2dfdacf"
+      },
+      {
+        "path": "Panda-agent/src/retrieval/lexical-terms.ts",
+        "sha256": "238ce98efb619b887386dd1b60391a0756c7b6f46280d7b909a4680ed3e84c2e"
+      },
+      {
+        "path": "Panda-agent/src/retrieval/multi-product-identity.ts",
+        "sha256": "bcf869e04fd846068e4ed8456969525c4795fed8734079d55483fc7e79c19e07"
+      },
+      {
+        "path": "Panda-agent/src/retrieval/product-context-set.ts",
+        "sha256": "0db31bbf51a030c5bb214f5fe03c37f6636cfb6c14026c1a21f0b081b02ccdbe"
+      },
+      {
+        "path": "Panda-agent/src/documents/parse-document.mjs",
+        "sha256": "b736802317bdf464f9b2e996737c02afba8fc90bba468d4babaa5cd067c61244"
+      },
+      {
+        "path": "Panda-agent/src/documents/pdf-text-worker.mjs",
+        "sha256": "b67435361ce8f08f83e18a70ac37c8d35e661f7acc1ad5863d343e6dc5917263"
+      },
+      {
+        "path": "Panda-agent/src/ingestion/listings.ts",
+        "sha256": "a77439655e18631389ad6b73c3c77a9d7c90826ea44b8ac23c2a01e330d1f885"
+      },
+      {
+        "path": "Panda-agent/src/ingestion/uploaded-document.ts",
+        "sha256": "915be5f233388d55414bd6631c3d21bf991e459d845f637ed7dcc004c71200c6"
+      },
+      {
+        "path": "Panda-agent/src/server/aws-gateway-signer.ts",
+        "sha256": "477bd8d1378d50f623d5a3621d42c2661861bca47964fe828e57102787621137"
+      },
+      {
+        "path": "Panda-agent/src/server/hosted-bff-config.ts",
+        "sha256": "5f0581053732c7a1b22fed70354c1560817c1c676d8480bb5cf6eccea7df28e9"
+      },
+      {
+        "path": "Panda-agent/tests/control-room-documents.test.mjs",
+        "sha256": "62e76603207a6805de8dd613cff22971267566167eb84ebecc7bd5e1d372d95f"
+      },
+      {
+        "path": "Panda-agent/tests/ingestion-uploaded-document.test.mjs",
+        "sha256": "1762478e8b0d03fc2746c6ab757f225ed567a86e4d713d0c4cc851b2e8e3a947"
+      },
+      {
+        "path": "Panda-agent/tests/lexical-terms.test.mjs",
+        "sha256": "bf2d3081c509ddaf94609d37382ad8a8842beeefcbdc686649edad06cff8e7da"
+      },
+      {
+        "path": "Panda-agent/tests/model-catalog.test.mjs",
+        "sha256": "6c89ee7945091d9b2aff8f73ed5fd53910dadfb1362c3fefcda7f1198ee2fd5f"
+      },
+      {
+        "path": "Panda-agent/tests/model-comparison.test.mjs",
+        "sha256": "2c7685473e45d7870a4afecd252bcf3e0766091a8b0b107629f87eaaec0faa39"
+      },
+      {
+        "path": "Panda-agent/tests/multi-product-context.test.mjs",
+        "sha256": "e1078b8b5db2b1f4794e9a8b1139a879a497d1369b55cadc1d08902c5babc8ae"
+      },
+      {
+        "path": "Panda-agent/tests/parse-document.test.mjs",
+        "sha256": "824376e92bc4240566d8aabac4d71ffaa4e9afdf52553fc1b2071f687c374332"
+      },
+      {
+        "path": "Panda-agent/tests/playground-capabilities.test.mjs",
+        "sha256": "6cdafd56f671d0b38a426a411edc665a8c110fe9b351c07f5e07ff60aedbdffe"
+      },
+      {
+        "path": "Panda-agent/tests/playground-configuration.test.mjs",
+        "sha256": "d28daabdee03f443e6fc27b75e0cd0df3e21ae9302551b10dc586a7aad3b43fe"
+      },
+      {
+        "path": "Panda-agent/tests/playground-gateway.test.mjs",
+        "sha256": "5e43caafbb64d069afa76ab0eb2d2259116524bfc5d4d8d62de6df597820763d"
+      },
+      {
+        "path": "Panda-agent/tests/playground-handler.test.mjs",
+        "sha256": "2580988b244c19e8454056cda40d0e5eb3bc3839eb189aa66851692bf0d7be65"
+      },
+      {
+        "path": "Panda-agent/tests/playground-intent.test.mjs",
+        "sha256": "6795d9384bed387fd17cae69d2cd214ae27ace136df560385a1bfbf913bad60f"
+      },
+      {
+        "path": "Panda-agent/tests/playground-local-windows.test.mjs",
+        "sha256": "57f624dcd0fa67a7e74fd51379d38cd56a1e5df0930c132020c1e543d4303799"
+      },
+      {
+        "path": "Panda-agent/tests/playground-local.test.mjs",
+        "sha256": "a199959ff35ebceecd1993bd5f6cc7fcc088cc966c8a039c29b09538817e52c2"
+      },
+      {
+        "path": "Panda-agent/tests/playground-model.test.mjs",
+        "sha256": "b4b14055f7d42c99c661a01e28223a237e547401caa7bea1e2739cfe45febb10"
+      },
+      {
+        "path": "Panda-agent/tests/playground-usage.test.mjs",
+        "sha256": "96187df44933b335744bedad0e9f854f620d3d4abf1dede688a3916e56de651f"
+      },
+      {
+        "path": "Panda-agent/tests/rag-workflow-observability.test.mjs",
+        "sha256": "bccac177fbcf9deb3d6215963626352e5f16548c7fcda3f7bde5056806797d23"
+      },
+      {
+        "path": "Panda-agent/tests/rag-workflow.test.mjs",
+        "sha256": "873097ba756a03d76d4dcb2c2d3150c7296239d513a9d84cb45839b548bcafba"
+      },
+      {
+        "path": "Panda-agent/tests/retrieval-identity.test.mjs",
+        "sha256": "5b2d7ab7e8239f22e168e5b883cba84972a3c4fe824cf23e4b06054b86cea061"
+      },
+      {
+        "path": "Panda-agent/tests/retrieval-insforge-adapters.test.mjs",
+        "sha256": "cb383b3d3dc01832c6b7c6fbf8b20ddaf358fad86b96c28bbd2047aba2ee49b2"
+      },
+      {
+        "path": "Panda-agent/migrations/20261104170000_panda-agent-external-documents.sql",
+        "sha256": "f78a608b304aabe8f47debbe15970d84d89d0d53ae61793f755089a8b21b4019"
+      },
+      {
+        "path": "docs/licenses/langgraph-sdk-dependencies.txt",
+        "sha256": "b97d10450997edf0888613a2e02c01c8eaaa5f1c5e91d0c0abead6a829a9f336"
+      },
+      {
+        "path": "Panda-agent/evaluation/playground/mini-cases.mjs",
+        "sha256": "c86e8bd5ddb65f5cb976101942bbed221a2718416fcb0e2702ca93ee0bba0ed5"
+      }
+    ],
+    "modifiedSourceFiles": [
+      {
+        "path": "app/admin/rag-control-room/corpus-inspector.tsx",
+        "sourceSha256": "7578389db5edb0b700b934038ad7c585cad5e7e6ca766b1842cd935676fa5a71",
+        "targetSha256": "19d8596b9799e977ac10899b04ee9477afb299e43c310387bf87b5ea2118c837"
+      },
+      {
+        "path": "app/admin/rag-control-room/document-inspector.module.css",
+        "sourceSha256": "7953e756167442a6f0250909165193fd678d5171c6a89d6149fca28631038764",
+        "targetSha256": "6d979dde00d4502dfb6b9c88603f47f6039822dca15ba491e1c82b34a2680004"
+      },
+      {
+        "path": "Panda-agent/src/control-room/documents-clerk.ts",
+        "sourceSha256": "27c4c95fba3e7443bc83f4fb472a97b61faa7755745100e1df8512ee3b41812d",
+        "targetSha256": "51fe09bef4d6dc6aee7e1a23356b8ad9e9fb8624e13820ff76c256819fb91255"
+      },
+      {
+        "path": "Panda-agent/src/control-room/documents.ts",
+        "sourceSha256": "47ce30a4268e45482f0cd073ca8917e1706e86228bc71da530ac49fd7d1cf311",
+        "targetSha256": "138101c2b2c4987cb8f7da7dedcfecdc63532d3089fc98faadd97bafeda298db"
+      },
+      {
+        "path": "Panda-agent/src/control-room/model-comparison-clerk.ts",
+        "sourceSha256": "5b2de108eacc53300f3ccff738ab48708876ba746ae3ae02a2ecdd762df2802d",
+        "targetSha256": "085fbb357c8de58b6a5df75f6ff03d0596dfe61e2b430e44c5c3862bf01c9e07"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-capabilities-clerk.ts",
+        "sourceSha256": "7276df62d142dd2979c32c5baec1c61138e026b3766c72977b9599fdb51b8430",
+        "targetSha256": "a332ac82b81a74efef11f86d531ad886409a00e85a9884a604774bd9fbdc879d"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-clerk.ts",
+        "sourceSha256": "001882335dcab231716d7bdb45324e91464e9b9b06cc704fc93fa495aca655b1",
+        "targetSha256": "6e1a91bae20cd0d381c067de8c19a559b6d923a1c9c93f926e7bfeb3a59fb9f4"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-configuration.ts",
+        "sourceSha256": "f0d1c5184318dac7428bc985588ad2d26438b1bc82d704cafd03ea730394941c",
+        "targetSha256": "46291b7a5c53f68be2a306ef9c12b2bc047b5c7e72bcbca76ddd3ed9980bf40f"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-local-config.ts",
+        "sourceSha256": "131adff40c5366a37d9dae2d27471725b2e69a721e63d9cabf1fa8ee4107e429",
+        "targetSha256": "32ae83d83feb16f89ab3a7e8ba29195de7de0d769db5ca16341e65e1e43a123d"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-local.ts",
+        "sourceSha256": "b9f276edd0151a3d0d3771c80b20d1d7ec3e92fea812dcb0e081f60fd6414f76",
+        "targetSha256": "fd25d03c7042d69f53358e67404566cc9586afc8a3e24023f00fec1918c93057"
+      },
+      {
+        "path": "Panda-agent/src/control-room/playground-workflow-clerk.ts",
+        "sourceSha256": "fd7790ea72e00c2888f4152fc8682e016dc7add0427b903b0c4a8893e2ccfd13",
+        "targetSha256": "9a2e02927a74aafa2c5dce43a2d4cd880d47d3b527e9d745becd4962dcb9d8da"
+      },
+      {
+        "path": "Panda-agent/src/retrieval/insforge-adapters.ts",
+        "sourceSha256": "b9d2d7cd839ef404e6dfeea08ff9aa55920e3c0138760da4aaab8c99a2dfdacf",
+        "targetSha256": "7fae1e8b16e608ff3bde8bb902e21242115668fe7dd41e81d2d28d2426d19917"
+      },
+      {
+        "path": "Panda-agent/src/documents/parse-document.mjs",
+        "sourceSha256": "b736802317bdf464f9b2e996737c02afba8fc90bba468d4babaa5cd067c61244",
+        "targetSha256": "95a4ea913b0e492be5751bf6acdfeb1f28232e1573d49f6e4c0632b5f1d54544"
+      },
+      {
+        "path": "Panda-agent/src/ingestion/uploaded-document.ts",
+        "sourceSha256": "915be5f233388d55414bd6631c3d21bf991e459d845f637ed7dcc004c71200c6",
+        "targetSha256": "a5b176864c5a2bd4fbe62429cb5f13f40762fef5835997304ad33c6999b51ef9"
+      },
+      {
+        "path": "Panda-agent/tests/control-room-documents.test.mjs",
+        "sourceSha256": "62e76603207a6805de8dd613cff22971267566167eb84ebecc7bd5e1d372d95f",
+        "targetSha256": "0431d13b5fa98da36e5031d6251ffc88bd7146b48dd108119f221699b05b79f3"
+      },
+      {
+        "path": "Panda-agent/tests/ingestion-uploaded-document.test.mjs",
+        "sourceSha256": "1762478e8b0d03fc2746c6ab757f225ed567a86e4d713d0c4cc851b2e8e3a947",
+        "targetSha256": "75660d769d091a4746e0bc3e1d5794815add8ec256fcbcd0113cfee9e9e825fc"
+      },
+      {
+        "path": "Panda-agent/tests/playground-configuration.test.mjs",
+        "sourceSha256": "d28daabdee03f443e6fc27b75e0cd0df3e21ae9302551b10dc586a7aad3b43fe",
+        "targetSha256": "080f9103955444f7baa9f250e6b69c3e61607c996aa05c1c976dc2babc9af5c4"
+      },
+      {
+        "path": "Panda-agent/tests/retrieval-identity.test.mjs",
+        "sourceSha256": "5b2d7ab7e8239f22e168e5b883cba84972a3c4fe824cf23e4b06054b86cea061",
+        "targetSha256": "da1bc8b4eaa3179478feec9be1191ba5510689cf28babbf7a3512a8fb2a34497"
+      }
+    ],
+    "exceptions": [
+      "Final same-Admin/same-subject/abort check after document DETAIL final RPC, with regression.",
+      "All four HTTP configuration entries use a branch hard-null resolver, preventing historical paid GPT-4o-mini receiver activation. Added regression; original config parser retained.",
+      "Mojibake punctuation and EOF whitespace repaired; insforge-adapters EOF whitespace only.",
+      "Main source-label-only filtering merged into branch answers while preserving native exports/final evidence check.",
+      "Branch Agent Skills panels, native routes, journal, preparation guards and connection helper retained.",
+      "PDF worker/standard fonts explicitly included in document route build trace.",
+      "Nine additional copied source/test/style files had trailing EOF blank lines normalized; no behavior change."
+    ],
+    "architecture": "Existing main LangGraph retrieval workflow reused; private context remains in request closures, graph state numeric only, ambient tracing rejected. OpenCode remains native execution owner; no competing agent executor added.",
+    "database": {
+      "existingDevelopmentSchemaVerified": true,
+      "tables": [
+        "panda_agent_external_documents",
+        "panda_agent_external_chunks",
+        "panda_agent_ingestion_signing_key"
+      ],
+      "readRpc": "panda_agent_external_document_read(uuid,bigint)",
+      "migrationApplied": false,
+      "sourceMigrationRetained": "Panda-agent/migrations/20261104170000_panda-agent-external-documents.sql"
+    },
+    "activation": {
+      "localDocumentLibrary": true,
+      "privateUploadsAndPreparation": false,
+      "uploadReason": "Existing original/worktree local environment has no upload enablement or ingestion signing secret; no key rotation/private-source mutation performed.",
+      "historicalPaidReceiver": false,
+      "nativeInference": false,
+      "openRouterInferenceRequests": 0
+    },
+    "dependencies": {
+      "directPinnedAdditions": 8,
+      "newLockPaths": 55,
+      "existingPackageVersionsChanged": false,
+      "notices": [
+        "docs/licenses/langgraph-sdk-dependencies.txt",
+        "docs/licenses/main-rag-runtime-dependencies.txt"
+      ],
+      "lifecycleScriptsRun": false
+    },
+    "tests": {
+      "agentAndAdminState": {
+        "passed": 558,
+        "skipped": 16,
+        "failed": 0,
+        "total": 574,
+        "runner": "--conditions=react-server --test-concurrency=1; guarded-dictation excluded"
+      },
+      "dictationSeparateClientCondition": {
+        "passed": 2,
+        "failed": 0
+      },
+      "finalNativeDiscoveryAclFocused": {
+        "passed": 32,
+        "failed": 0
+      },
+      "applicationTypeScript": "pass",
+      "nativeTypeScript": "pass",
+      "scopedEslint": "pass",
+      "taskRegister": "97 valid",
+      "productionBuild": "pass; normal Turbopack; final BUILD_ID 0rNV4X4wOZB3ygMBYtWyn",
+      "pdfTrace": "worker, pdfjs worker and standard fonts present; no private/environment credential files",
+      "webpackBuild": "fails on unchanged commerce CSS-module global print selectors; no commerce files edited",
+      "initialFailures": "Missing empty fixture parent created; server-only/client React conditions separated; Windows ACL tests serialized. No private archive fixtures copied.",
+      "anonymousApi": {
+        "passed": 6,
+        "failed": 0,
+        "result": "Actual final-build models/documents/playground/runtime GET and playground/comparison POST all401,private/no-store"
+      },
+      "taskStoreRegression": {
+        "passed": 5,
+        "failed": 0
+      }
+    },
+    "supervisor": {
+      "version": "2.2.2",
+      "providerFree": true,
+      "nativeCatalogs": {
+        "skills": 0,
+        "models": 0,
+        "mcpServers": 0
+      },
+      "freshBootAndGeneration": true,
+      "descriptorPrivate": true,
+      "dispatchCreatePrompt": "hard denied",
+      "shutdownProbe": "worker-owned actual child/descriptor/temp root removed; unrelated OpenCode process preserved",
+      "readAvailabilityFix": "Windows owner-ACL subprocess deadline5s, Admin inspection identity admission10s; execution defaults and ACL/binding predicates unchanged; no cached identity"
+    },
+    "browser": {
+      "surface": "Codex built-in browser; real owner Clerk session; localhost3001, final local production build against existing development services",
+      "verified": [
+        "Main six-view navigation and actual document library:42product listings/282product chunks plus2existing uploads/2chunks",
+        "Document filter x8266, eight eligible passages, captured/source identity; no corpus changes",
+        "Single-product x8266 flash retrieval:5passages/2672characters/8905ms, literal4MB listing evidence; model not called",
+        "Final-build xC3/xS3 retrieval:4passages/1813characters/9827ms, separate product identities; authorize/retrieve/augment/release completed, generation/validation skipped",
+        "Native2.2.2 discovery; empty catalog status and disabled unsupported install/config/MCP changes",
+        "Existing5RAG bundles with reviewed content/hash/permissions;4tools with actual fixed manifests; native capabilities kept distinct",
+        "End/ArrowLeft tab focus, unsaved skill draft preserved across tabs then cleared; no review/enable/disable writes",
+        "Main chat current build renders unified preview, model selection/attachments/search unavailable; old histories preserved",
+        "Final-build OpenRouter catalog433models; filtered exact Xing4.0 free variant, zero published token rates; local comparison selection only, Run disabled and not configured.",
+        "Playground result survives navigation to Evaluation and back; skill unsaved draft cleared."
+      ],
+      "mainChatFreshAnswer": "not run this increment: existing datumm CLI credentials expired and private8182tunnel closed; fresh Codex AWS sign-in handed to owner. No new unknown chat/turn created. Prior f5c063f deterministic citation/reload/cleanup evidence retained.",
+      "screenshots": [
+        "tmp/agent-main-rag-playground.png",
+        "tmp/agent-main-rag-free-model-guard.png"
+      ],
+      "limits": "No live OpenRouter/native response, token streaming, active cancellation, native tool execution, new real screen-reader speech/zoom/motion claim."
+    },
+    "review": "Independent bounded source/security/dependency notice review: no new release-safety blockers. DETAIL authorization regression fixed.",
+    "scope": "No deployment/push/merge, paid call, account policy change, schema/data/source grant mutation, secret printing or original main checkout writes.",
+    "comparison": "Selected working-tree bytes, before Git CRLF normalization"
   }
 }

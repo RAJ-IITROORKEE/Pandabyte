@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-06",
+  "date": "2026-11-07",
   "ownerDecision": "Keep the existing zero-cost and ZDR requirements",
   "policyChanged": false,
   "activated": false,
@@ -40,18 +40,19 @@
     "approved": false
   },
   "remainingGates": [
-    "Explicit zero-price proof for every inherited required rate; omitted prices are not silently treated as verified zero",
-    "Current account/key guardrail ZDR-only state excluding Safety Retention, without shared-global changes",
-    "Verify deployed dedicated-instance loading and keep auxiliary generation/websocket recovery outside the accepted HTTP session path until separately proven",
-    "Actual structured output, current model/endpoint availability and reported endpoint/zero usage-cost proof; key daily quota metadata is now verified",
-    "Previously recorded native BFF/lifecycle/current-message/citation release gates"
+    "Effective existing-key/workspace content privacy: input/output logging, data-discount logging and broadcast disabled or this exact key excluded; ordinary key cannot read the documented management-only workspace fields.",
+    "Fresh exact pinned provider/variant ZDR membership with safety_retention:false and no provider/model fallback immediately before dispatch.",
+    "Dedicated native provider configuration/retry/auxiliary paths and lifecycle release gates remain incomplete.",
+    "Actual structured output, endpoint identity and returned usage cost zero; quota and catalog eligibility alone are not model-response evidence."
   ],
   "clarifications": [
     "Public catalogue metadata is discovery only, not account-specific routing/quota or execution proof",
     "The models catalogue canonical details link returned a base-model endpoint list without the free-variant row; the documented exact free model ID query returned the row",
     "Current ZDR docs allow Safety Retention when account/guardrail settings permit it; provider.zdr alone does not prove strict ZDR",
     "Response caching has separate controls; X-OpenRouter-Cache:false overrides a caching preset",
-    "Official free-model FAQ states free variants have zero model pricing and are not billed; this is additional documentary evidence, not explicit endpoint request/image rate metadata or strict key privacy verification."
+    "Official free-model FAQ states free variants have zero model pricing and are not billed; this is additional documentary evidence, not explicit endpoint request/image rate metadata or strict key privacy verification.",
+    "7 November correction: the official :free no-billing contract supports a text-only exact free variant; absent request/image price fields are not treated as explicit zero and are not an independent blocker for this bounded route. Require zero max_price ceilings and actual zero-cost receipts before acceptance.",
+    "7 November correction: current matching public provider metadata supports the endpoint safety policy without a global account ZDR-only switch; workspace content logging/broadcast is a separate unresolved privacy gate. No undocumented per-request override was found."
   ],
   "documentation": [
     "https://openrouter.ai/docs/guides/features/zdr",
@@ -63,7 +64,11 @@
     "https://openrouter.ai/collections/free-models",
     "https://openrouter.ai/docs/api/api-reference/models/list-models-filtered-by-user-provider-preferences-privacy-settings-and-guardrails",
     "https://openrouter.ai/docs/guides/privacy/data-collection",
-    "https://github.com/OpenRouterTeam/terraform-provider-openrouter/blob/main/docs/data-sources/guardrails.md"
+    "https://github.com/OpenRouterTeam/terraform-provider-openrouter/blob/main/docs/data-sources/guardrails.md",
+    "https://openrouter.ai/docs/guides/features/input-output-logging",
+    "https://openrouter.ai/docs/guides/features/broadcast/overview",
+    "https://openrouter.ai/docs/api/api-reference/workspaces/get-a-workspace",
+    "https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion"
   ],
   "tooling": "Official primary documentation via built-in web tool; existing-key official GET metadata and anonymous catalogs only; no inference. Firecrawl has0credits and was not used for paid calls.",
   "credentialsExtractedOrPrinted": false,
@@ -129,32 +134,32 @@
     }
   },
   "keyOnlySupportedProbe": {
-    "date": "2026-11-06T15:55:17.789Z",
+    "date": "2026-11-07T05:37:53.951Z",
     "scope": "supported GET metadata with existing inference key; no account login",
     "observations": [
       {
         "path": "/key",
         "authenticated": true,
         "status": 200,
-        "sha256": "5e3712f006781ba9f953a5c3192b2c4c6df6db49bfb91edb8f2cdbb5fa540d57"
+        "sha256": "dfda63bb2a9c21f99aa38f0dc2c1a381ede3bcb3691a36415c2600a0e4eb4b07"
       },
       {
         "path": "/models/user",
         "authenticated": true,
         "status": 200,
-        "sha256": "a4396863686f6344afe74176f5e6345202503569154132e030b203dde2b8c301"
+        "sha256": "b846e4b3b94cd9fb7ca04d3430344b66671b718b88007f0e4f8b62f6c112946d"
       },
       {
         "path": "/models/xingchen-agi/xing4.0-29b-a4b:free/endpoints",
         "authenticated": false,
         "status": 200,
-        "sha256": "1ebb128099c9692db0bf6ae9cfc416b88772c2e4ea4ca557b942dae6e34a97fc"
+        "sha256": "828b8b4be3a0a7db576cc2374ba0e83971d1766c7dbdd02d71639ec0c8f0f58e"
       },
       {
         "path": "/endpoints/zdr",
         "authenticated": false,
         "status": 200,
-        "sha256": "100ea6863a768f37a620f468f8915a33a8c722ec5cc0101de9080922fe87249c"
+        "sha256": "08e71756242569d0ff9f721ada7ac8cef4e73f0adc698bff45065e3d0b59ddbd"
       }
     ],
     "inferenceRequests": 0,
@@ -171,7 +176,7 @@
     "eligibility": {
       "model": "xingchen-agi/xing4.0-29b-a4b:free",
       "present": true,
-      "models": 417,
+      "models": 424,
       "establishesStrictZdr": false
     },
     "candidate": {
@@ -181,10 +186,19 @@
       "zdrRows": 1,
       "safetyRetentionExplicitlyFalse": true,
       "tokenPricesZero": true,
-      "otherRequiredPrices": "unverified",
+      "optionalPriceFields": {
+        "request": "not_reported",
+        "image": "not_reported"
+      },
+      "textOnlyFreeVariant": {
+        "documentaryNoBilling": true,
+        "source": "https://openrouter.ai/collections/free-models",
+        "constraints": "Exact free model; pinned currently verified ZDR provider; no fallback, tools, plugins or nontext input; zero provider max_price ceilings and actual returned cost zero required before acceptance",
+        "absentFieldsAreExplicitZero": false
+      },
       "establishesEffectiveKeyPolicy": false
     },
-    "reason": "Eligible model and public ZDR classification do not expose effective Safety Retention or logging settings. Known management-only guardrail route is not retried.",
+    "reason": "Exact public ZDR/safety_retention:false provider metadata supports the candidate endpoint policy. The ordinary inference key does not expose effective workspace input/output logging, data-discount logging or broadcast exclusions. Documented workspace inspection requires a management key; known inaccessible routes are not retried. Missing image/request prices are not a separate text-only :free no-billing blocker.",
     "result": "observed_blocked"
   }
 }

@@ -40,6 +40,7 @@ test('absent, malformed, extended and unsafe descriptors remain unavailable with
         const f = fixture(); f.state.descriptor = value;
         assert.equal(await f.admission.authorize('observe'), null);
         assert.equal(await f.admission.connection(), null);
+        assert.equal(await f.admission.inspect(), null);
         assert.equal(f.state.calls.length, 0);
     }
 });
@@ -140,4 +141,64 @@ test('invalid server configuration throws only a fixed private-boundary error', 
     for (const patch of [{ key: 'PRIVATE invalid key' }, { readDescriptor: null }, { timeoutMs: 0 }, { timeoutMs: 10001 }]) {
         assert.throws(() => createNativeRuntimeAdmission({ key, readDescriptor: async () => null, ...patch }), { message: 'unavailable' });
     }
+});
+
+function discoveryResponse(state, url) {
+    const path = new URL(url).pathname;
+    if (path === '/api/info') return json({ version: '2.2.2', pid: state.descriptor?.pid, private: 'PRIVATE native info' });
+    if (path === '/api/model') return json({ data: [{ id: 'fixture-model', name: 'Fixture model', providerID: 'fixture-provider', status: 'active', apiKey: 'PRIVATE model secret', endpoint: 'PRIVATE model endpoint' }] });
+    if (path === '/api/skill') return json({ data: [{ id: 'fixture-skill', name: 'Fixture skill', description: 'A safe fixture description.', autoinvoke: false, path: 'PRIVATE skill path', instructions: 'PRIVATE skill instructions' }] });
+    if (path === '/api/mcp') return json({ data: [{ name: 'fixture-mcp', title: 'Fixture MCP', status: { status: 'failed', error: 'PRIVATE MCP error' }, command: 'PRIVATE command', env: { SECRET: 'PRIVATE MCP secret' } }] });
+    throw Error('unexpected_fixture_discovery_request');
+}
+
+test('runtime discovery releases only sanitized metadata after the same process and descriptor are verified', async () => {
+    const f = fixture({ fetch: discoveryResponse });
+    const result = await f.admission.inspect();
+    assert.deepEqual(result, {
+        version: '2.2.2', status: 'discovery_only', execution: 'not_execution_ready', counts: { skills: 1, mcpServers: 1, models: 1 },
+        skills: [{ id: 'fixture-skill', name: 'Fixture skill', description: 'A safe fixture description.', autoinvoke: false }],
+        mcpServers: [{ name: 'fixture-mcp', title: 'Fixture MCP', status: 'failed' }],
+        models: [{ id: 'fixture-model', name: 'Fixture model', providerID: 'fixture-provider', status: 'active' }],
+        capabilities: { install: false, configure: false, execute: false },
+    });
+    assert.deepEqual(f.state.calls.map(call => new URL(call.url).pathname), ['/api/info', '/api/info', '/api/model', '/api/skill', '/api/mcp', '/api/info']);
+    assert.equal(f.state.reads, 4);
+    for (const { url, init } of f.state.calls) {
+        assert.ok(url.startsWith(initial().baseUrl + '/api/'));
+        assert.equal(init.method, 'GET'); assert.equal(init.body, undefined); assert.equal(init.redirect, 'error');
+        assert.equal(init.headers.Authorization, 'Basic ' + Buffer.from('opencode:' + initial().password).toString('base64'));
+    }
+    const serialized = JSON.stringify(result);
+    for (const privateValue of ['PRIVATE', initial().password, initial().directory, initial().baseUrl, initial().generation]) assert.equal(serialized.includes(privateValue), false);
+    const before = f.state.calls.length;
+    assert.equal(await f.admission.authorize('dispatch'), null); assert.equal(f.state.calls.length, before);
+});
+
+test('generation or descriptor PID rotation during any catalog discards the result at the final descriptor fence', async () => {
+    for (const path of ['/api/model', '/api/skill', '/api/mcp']) {
+        for (const patch of [{ generation: '9'.repeat(64) }, { pid: 4321 }]) {
+            const f = fixture({ fetch(state, url) {
+                const response = discoveryResponse(state, url);
+                if (new URL(url).pathname === path) state.descriptor = { ...state.descriptor, ...patch };
+                return response;
+            } });
+            assert.equal(await f.admission.inspect(), null);
+            assert.deepEqual(f.state.calls.map(call => new URL(call.url).pathname), ['/api/info', '/api/info', '/api/model', '/api/skill', '/api/mcp']);
+            assert.equal(f.state.reads, 3);
+        }
+    }
+});
+
+test('a process PID change after discovery cannot release metadata under an unchanged descriptor', async () => {
+    let discoveryComplete = false;
+    const f = fixture({ fetch(state, url) {
+        const path = new URL(url).pathname;
+        if (path === '/api/info' && discoveryComplete) return json({ version: '2.2.2', pid: 4321 });
+        if (path === '/api/mcp') discoveryComplete = true;
+        return discoveryResponse(state, url);
+    } });
+    assert.equal(await f.admission.inspect(), null);
+    assert.deepEqual(f.state.descriptor, initial());
+    assert.equal(f.state.calls.length, 6);
 });

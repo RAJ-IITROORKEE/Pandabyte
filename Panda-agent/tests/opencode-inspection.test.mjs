@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createNativeInspectionClient, NativeInspectionError } from '../src/opencode/inspection-client.ts';
+import { createNativeInspectionClient, NativeInspectionError, projectNativeInspection } from '../src/opencode/inspection-client.ts';
 import { createRuntimeInspectionHandler } from '../src/opencode/inspection-handler.ts';
 
 const password = 'fixture-only-'.repeat(4);
 const baseUrl = 'http://127.0.0.1:43210';
-const safe = { version: '2.2.2', status: 'discovery_only', execution: 'not_execution_ready', counts: { skills: 2, mcpServers: 0, models: 0 }, capabilities: { install: false, configure: false, execute: false } };
+const skills = [{ id: 'example', name: 'Example skill', description: 'A fixture skill', autoinvoke: false }, { id: 'second', name: 'Second skill' }];
+const model = { id: 'example/model', name: 'Example model', providerID: 'example', status: 'active' };
+const safe = { version: '2.2.2', status: 'discovery_only', execution: 'not_execution_ready', counts: { skills: 2, mcpServers: 0, models: 0 }, skills, mcpServers: [], models: [], capabilities: { install: false, configure: false, execute: false } };
 const allow = async () => ({ allowed: true });
 const request = (suffix = '', options) => new Request('https://local.test/inspection' + suffix, options);
 const nativeJSON = (value, init) => Response.json(value, init);
@@ -14,13 +16,13 @@ function fixture(override, timeoutMs) {
     const transport = async (url, init) => {
         calls.push({ url, init });
         if (override) return override(url, init, calls.length);
-        return nativeJSON(url.endsWith('/api/info') ? { version: '2.2.2', pid: 123, cwd: 'PRIVATE_PATH', secret: 'PRIVATE_TOKEN' } : { data: url.endsWith('/api/skill') ? [{ name: 'PRIVATE_NAME', content: 'PRIVATE_INSTRUCTION', path: 'PRIVATE_PATH' }, {}] : [], private: 'PRIVATE_TOKEN' });
+        return nativeJSON(url.endsWith('/api/info') ? { version: '2.2.2', pid: 123, cwd: 'PRIVATE_PATH', secret: 'PRIVATE_TOKEN' } : { data: url.endsWith('/api/skill') ? skills.map(skill => ({ ...skill, content: 'PRIVATE_INSTRUCTION', path: 'PRIVATE_PATH' })) : [], private: 'PRIVATE_TOKEN' });
     };
     return { calls, client: createNativeInspectionClient({ baseUrl, password, fetch: transport, timeoutMs }) };
 }
 const unavailable = error => error instanceof NativeInspectionError && error.code === 'unavailable' && error.message === 'unavailable';
 
-test('native read-only inspection calls only verified paths and releases safe discovery counts', async () => {
+test('native read-only inspection calls only verified paths and releases bounded metadata', async () => {
     const { client, calls } = fixture();
     assert.deepEqual(await client.inspect(), safe);
     assert.deepEqual(calls.map(c => c.url), ['/api/info', '/api/model', '/api/skill', '/api/mcp'].map(p => baseUrl + p));
@@ -42,10 +44,10 @@ test('native model activation barrier settles deny policies before skill discove
             // Pinned model.list awaits activation; the final policy removes the two early builtins.
             await Promise.resolve();
             skillCount = 0;
-            return nativeJSON({ data: [{}] });
+            return nativeJSON({ data: [model] });
         }
-        if (url.endsWith('/api/skill')) return nativeJSON({ data: Array.from({ length: skillCount }, () => ({})) });
-        return nativeJSON({ data: [{}, {}] });
+        if (url.endsWith('/api/skill')) return nativeJSON({ data: skills.slice(0, skillCount) });
+        return nativeJSON({ data: [{ name: 'one', status: { status: 'connected' } }, { name: 'two', status: { status: 'disabled' } }] });
     });
     assert.equal(skillCount, 2);
     assert.deepEqual((await client.inspect()).counts, { skills: 0, mcpServers: 2, models: 1 });
@@ -181,7 +183,7 @@ test('handler rejects methods, browser parameters and declared bodies without in
     assert.equal(calls, 0);
 });
 
-test('handler rechecks admission before releasing counts and strips untrusted extra fields', async () => {
+test('handler rechecks admission before releasing metadata and strips untrusted extra fields', async () => {
     let admits = 0;
     const revoked = createRuntimeInspectionHandler(async () => ++admits === 1 ? { allowed: true } : { allowed: false, status: 403 }, async () => safe);
     const denied = await revoked(request());
@@ -196,6 +198,55 @@ test('handler rechecks admission before releasing counts and strips untrusted ex
     const response = await createRuntimeInspectionHandler(allow, async () => injected)(request());
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), safe);
+});
+
+test('native metadata projection drops instructions, absolute paths, credentials and raw MCP errors', async () => {
+    const statuses = ['connected', 'pending', 'disabled', 'failed', 'needs_auth'];
+    const { client } = fixture(url => nativeJSON(url.endsWith('/api/info') ? { version: '2.2.2' } : {
+        location: { directory: 'PRIVATE_ABSOLUTE_PATH' },
+        data: url.endsWith('/api/skill') ? skills.map(skill => ({ ...skill, path: 'PRIVATE_ABSOLUTE_PATH', content: 'PRIVATE_INSTRUCTIONS', enabled: true, license: 'UNVERIFIED_LICENSE', permissions: ['UNVERIFIED_PERMISSION'] }))
+            : url.endsWith('/api/model') ? [{ ...model, headers: { authorization: 'PRIVATE_CREDENTIAL' }, body: { secret: 'PRIVATE_CREDENTIAL' }, settings: { path: 'PRIVATE_ABSOLUTE_PATH' } }]
+                : statuses.map(status => ({ name: `server-${status}`, title: `Server ${status}`, status: { status, error: 'PRIVATE_ERROR_CREDENTIAL' }, integrationID: 'PRIVATE_INTEGRATION', config: { command: 'PRIVATE_COMMAND', env: { TOKEN: 'PRIVATE_CREDENTIAL' } } })),
+    }));
+    const result = await client.inspect();
+    assert.deepEqual(result.skills, skills);
+    assert.deepEqual(result.models, [model]);
+    assert.deepEqual(result.mcpServers, statuses.map(status => ({ name: `server-${status}`, title: `Server ${status}`, status })));
+    assert.deepEqual(result.counts, { skills: 2, mcpServers: 5, models: 1 });
+    assert.equal(/PRIVATE_|UNVERIFIED_/.test(JSON.stringify(result)), false);
+    assert.deepEqual(result.capabilities, { install: false, configure: false, execute: false });
+
+    const injected = { ...result, skills: result.skills.map(skill => ({ ...skill, path: 'PRIVATE_PATH', content: 'PRIVATE_INSTRUCTIONS' })), mcpServers: result.mcpServers.map(server => ({ ...server, error: 'PRIVATE_ERROR' })), models: [{ ...model, headers: { authorization: 'PRIVATE_CREDENTIAL' } }] };
+    const response = await createRuntimeInspectionHandler(allow, async () => injected)(request());
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), result);
+});
+
+test('empty native catalogs remain a successful discovery snapshot', async () => {
+    const { client } = fixture(url => nativeJSON(url.endsWith('/api/info') ? { version: '2.2.2' } : { data: [] }));
+    const result = await client.inspect();
+    assert.deepEqual(result.counts, { skills: 0, mcpServers: 0, models: 0 });
+    assert.deepEqual([result.skills, result.mcpServers, result.models], [[], [], []]);
+    assert.equal((await createRuntimeInspectionHandler(allow, async () => result)(request())).status, 200);
+});
+
+test('metadata validation rejects malformed, duplicate, overlong and oversized catalogs', async () => {
+    const badSkills = [null, {}, { ...skills[0], id: '' }, { ...skills[0], name: 'line\nbreak' }, { ...skills[0], description: 'x'.repeat(2001) }, { ...skills[0], autoinvoke: 'true' }, { ...skills[0], name: '\ud800' }];
+    const badModels = [{}, { ...model, status: 'ready' }, { ...model, providerID: 'x'.repeat(257) }];
+    const badMcp = [{}, { name: 'one', status: 'connected' }, { name: 'one', status: { status: 'ready' } }, { name: 'one', status: { status: 'connected' }, title: 42 }];
+    for (const [path, entries] of [['/api/skill', badSkills], ['/api/model', badModels], ['/api/mcp', badMcp]]) {
+        for (const entry of entries) {
+            const { client } = fixture(url => nativeJSON(url.endsWith('/api/info') ? { version: '2.2.2' } : { data: url.endsWith(path) ? [entry] : [] }));
+            await assert.rejects(client.inspect(), unavailable);
+        }
+    }
+    for (const [path, entry] of [['/api/skill', skills[0]], ['/api/model', model], ['/api/mcp', { name: 'one', status: { status: 'connected' } }]]) {
+        for (const count of [2, 501]) {
+            const { client } = fixture(url => nativeJSON(url.endsWith('/api/info') ? { version: '2.2.2' } : { data: url.endsWith(path) ? Array.from({ length: count }, () => entry) : [] }));
+            await assert.rejects(client.inspect(), unavailable);
+        }
+    }
+    for (const value of [{ ...safe, skills: undefined }, { ...safe, skills: null }, { ...safe, counts: { ...safe.counts, skills: 3 } }]) assert.throws(() => projectNativeInspection(value), unavailable);
 });
 
 test('handler rejects malformed projections and exposes only typed generic failures', async () => {

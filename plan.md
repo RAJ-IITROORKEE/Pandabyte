@@ -18,6 +18,12 @@
 
 # PandaByte.in — phased delivery plan
 
+Current Agent assignment, 7 November 2026: follow the adopted master and single
+97-row [requirement register](docs/agent-experience-upgrade/requirements.json).
+The owner-selected main working-tree RAG controls/Playground are reused in this
+branch. P1.3–P1.5 remain in progress; inference is off pending strict provider
+privacy proof. Do not advance phases. See the [current handoff](docs/agent-experience-upgrade/handoff.md).
+
 Current bounded continuation, 26 October 2026: integrate 42 real-SKU archive products in development through the existing Admin APIs, reconcile all 44 including two missing-SKU holds, validate non-purchasable source observations and reviewed 2D galleries, verify a no-op rerun and browser/Admin flows, then commit locally. Preserve all archive/design/CAD artifacts. Production content review, operational commerce, recovery and deployment remain separate gates. See [the catalog integration contract](docs/catalog-source-integration.md).
 
 Updated 24 October 2026, Asia/Calcutta. **Current checkpoint: Phase 4 is committed as 80c8685; Phase 5 commerce has started with an independent cart slice.** The existing store is a migration seed, not a limit on new products or content. The user authorized local Git commits and Luna xhigh implementation workers. Initialization is moved ahead of Phase 1 by this latest instruction; Phase 2 retains the remaining identity/data/shared-shell work. Each phase must pass checks and localhost built-in-browser testing for available features, have findings resolved, and receive a local commit before the next dependent phase starts. Development Clerk keys and InsForge CLI access are supplied; the authorized provider setup slice is recorded in [backend-setup.md](docs/backend-setup.md). The registered-user session and JWT identity round trip pass; customer/staff/private-storage checks and the shared frontend pass. Development publication/media models pass runtime verification; dependency remediation and Phase 4 are committed; Phase 5 is now authorized under [its contract](docs/phase-5-contract.md). Production operating policies remain commerce/release gates. No GitHub publication or production deployment is authorized. Read [README.md](README.md) for shared context, [design.md](design.md) for editable page contracts and [development-tooling.md](docs/development-tooling.md) for the researched toolkit.

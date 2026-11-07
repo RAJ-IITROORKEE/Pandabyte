@@ -2,6 +2,7 @@ import { createHash, createHmac } from 'node:crypto';
 import { isAbsolute, resolve } from 'node:path';
 import { createNativeSessionClient } from '../opencode/session-client.ts';
 import { NativeSessionError } from '../opencode/session-contracts.ts';
+import { createNativeInspectionClient } from '../opencode/inspection-client.ts';
 
 type Descriptor = Readonly<{ version: 1; generation: string; pid: number; baseUrl: string; directory: string; configHash: string; password: string }>;
 type Purpose = 'dispatch' | 'observe';
@@ -91,6 +92,12 @@ export function createNativeRuntimeAdmission(config: { key: string; readDescript
     }
     return Object.freeze({
         connection,
+        async inspect(signal?: AbortSignal) {
+            const verified = await verify(undefined, signal);
+            if (!verified) return null;
+            const result = await createNativeInspectionClient({ baseUrl: verified.snapshot.baseUrl, password: verified.snapshot.password, fetch: transport }).inspect(signal);
+            return await verify(verified.binding, signal) ? result : null;
+        },
         async authorize(purpose: Purpose, signal?: AbortSignal) { return purpose === 'observe' ? (await verify(undefined, signal))?.binding ?? null : null; },
     });
 }
