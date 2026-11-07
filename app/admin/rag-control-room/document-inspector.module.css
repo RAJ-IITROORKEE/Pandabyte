@@ -21,7 +21,7 @@
 .table tbody th { font-weight:500; }
 .table tbody tr:last-child > * { border-bottom:0; }
 .table tr[data-selected="true"] { background:color-mix(in srgb, var(--accent-ink) 9%, var(--surface)); }
-.table button,.error button { border:1px solid var(--border); background:var(--surface); color:var(--foreground); border-radius:5px; padding:7px 10px; font:inherit; cursor:pointer; }
+.table button,.error button { min-height:44px; border:1px solid var(--border); background:var(--surface); color:var(--foreground); border-radius:5px; padding:7px 10px; font:inherit; cursor:pointer; }
 .table button[aria-pressed="true"] { color:var(--accent-ink); border-color:var(--accent-ink); }
 .inspector :is(button,summary,a,input):focus-visible,.tableScroll:focus-visible { outline:2px solid var(--accent-ink); outline-offset:2px; }
 .detail { display:grid; gap:14px; margin-top:8px; }
@@ -30,7 +30,7 @@
 .table .passage { margin-top:12px; white-space:pre-wrap; overflow-wrap:anywhere; max-width:70ch; }
 .documentSearch { display:flex; align-items:end; flex-wrap:wrap; gap:10px; }
 .documentSearch .search { flex:1 1 260px; }
-.documentSearch button { min-height:42px; border:1px solid var(--border); border-radius:5px; padding:8px 12px; background:var(--surface); color:var(--foreground); font:inherit; cursor:pointer; }
+.documentSearch button { min-height:44px; border:1px solid var(--border); border-radius:5px; padding:8px 12px; background:var(--surface); color:var(--foreground); font:inherit; cursor:pointer; }
 .documentSearch button:disabled { cursor:not-allowed; opacity:.65; }
 .searchResults { display:grid; gap:8px; }
 .searchResults h4 { margin:0; font-size:14px; }

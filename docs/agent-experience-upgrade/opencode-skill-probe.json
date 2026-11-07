@@ -1,0 +1,73 @@
+{
+  "version": "2.2.2",
+  "nativeClientVersion": "2.2.2",
+  "scope": "disposable provider-free local skill load and non-resuming activation",
+  "checks": {
+    "binaryProvenance": true,
+    "onlyOwnedSyntheticSkillLoaded": true,
+    "autoinvokeDisabled": true,
+    "providersToolsAndOtherIntegrationsDenied": true,
+    "ownedSessionCreated": true,
+    "activationAcknowledged": true,
+    "historyPages": 2,
+    "exactSkillMessagePersisted": true,
+    "sessionStayedUnstarted": true
+  },
+  "mutations": {
+    "create": 1,
+    "activate": 1,
+    "remove": 1
+  },
+  "promptRequests": 0,
+  "modelRequests": 0,
+  "toolRequests": 0,
+  "sharedRuntimeChanged": false,
+  "result": "stopped",
+  "priorAttempt": {
+    "classification": "invalid_probe_cursor_assertion",
+    "explanation": "The first probe incorrectly required no next cursor on a nonempty page; that run did not verify activation state or events.",
+    "evidence": {
+      "version": "2.2.2",
+      "nativeClientVersion": "2.2.2",
+      "scope": "disposable provider-free local skill load and non-resuming activation",
+      "checks": {
+        "binaryProvenance": true,
+        "onlyOwnedSyntheticSkillLoaded": true,
+        "autoinvokeDisabled": true,
+        "providersToolsAndOtherIntegrationsDenied": true,
+        "ownedSessionCreated": true,
+        "activationAcknowledged": true
+      },
+      "mutations": {
+        "create": 1,
+        "activate": 1,
+        "remove": 1
+      },
+      "promptRequests": 0,
+      "modelRequests": 0,
+      "toolRequests": 0,
+      "sharedRuntimeChanged": false,
+      "result": "stopped",
+      "reason": "history",
+      "sessionRemoved": true,
+      "descriptorRemoved": true,
+      "childStopped": true,
+      "fixtureRemoved": true,
+      "limitations": [
+        "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
+        "First run verified catalogue loading and activation acknowledgement only; persisted state and event delivery were not verified there.",
+        "No model, tool, restart-persistence, privacy or customer-isolation proof."
+      ]
+    }
+  },
+  "reason": "activation_log",
+  "sessionRemoved": true,
+  "descriptorRemoved": true,
+  "childStopped": true,
+  "fixtureRemoved": true,
+  "limitations": [
+    "Synthetic reviewed local skill only; no external installation or shared Admin mutation.",
+    "Persisted non-resuming activation state verified; dedicated event-log verification remains unverified. No LLM adherence or execution proof.",
+    "No model, tool, restart-persistence, privacy or customer-isolation proof."
+  ]
+}

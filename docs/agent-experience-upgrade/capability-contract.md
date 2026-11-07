@@ -1,31 +1,31 @@
 # Agent Experience Upgrade: runtime capability contract
 
-Status: **audit and proposed contract, 6 November 2026**. This document does not certify a live OpenCode connection or authorize deployment. The [requirements authority](requirements.json) tracks implementation and acceptance. The historical Panda Agent Phase 6 remains **in progress**, Phase 5 is the last full PASS, and its original held-out multi-hop gate is not established; preserve its [handoff](../../Panda-agent/docs/lightweight-harness-handoff.md) and [verification](../../Panda-agent/docs/verification/lightweight-phase6-20261106.json).
+Status: **contract with bounded development evidence, updated 7 November 2026**. Read-only native discovery and isolated capability probes are verified below; live product execution and deployment are not certified. Historical 6 November audit findings remain labelled by scope. The [requirements authority](requirements.json) tracks implementation and acceptance. The historical Panda Agent Phase 6 remains **in progress**, Phase 5 is the last full PASS, and its original held-out multi-hop gate is not established; preserve its [handoff](../../Panda-agent/docs/lightweight-harness-handoff.md) and [verification](../../Panda-agent/docs/verification/lightweight-phase6-20261106.json).
 
 ## Active and preserved integration
 
 The current customer API mounts `Panda-agent/src/server/lightweight-chat.ts` and `lightweight-handler.ts`: Clerk/InsForge admission, owned chats, durable turn admission, approved scoped retrieval, the private FastAPI worker and finite guide/diagnostic/agentic flows. `retrieval/answers.ts` and `insforge-adapters.ts` constrain product scope, source eligibility and literal citations; the store and migrations fence finalization and replay. The active runtime is identified as `lightweight_fastapi`, not OpenCode. `services/lightweight/README.md` describes an empty model profile and a deterministic MCU path; it is not a general conversational LLM. Current agentic skills and four tools are fixed PandaByte bundles/manifests, with a restricted fixed-document stdio MCP implementation; these are not OpenCode discovery.
 
-The prior OpenCode integration survives on Git branch `codex/panda-agent-lightweight-rag` and in the preserved original checkout `E:/Web development/PROJECTS-FULL STACK/Pandabyte/Panda-agent`. Commit `f5d7419` removed `src/server/opencode-selector.ts` from the replacement path. Its historical selector created nonce-owned temporary native sessions, checked ownership and terminal state, and deleted only after safe completion; it used a fixed model and no tools. It is a reference, not an active integration or a complete implementation of this upgrade. Historical `docs/core-validation/opencode-feature-matrix.md` reports limited genuine session/chat checks, not complete isolation or live token streaming; skills/MCP were disabled or unwired and cancellation of admitted inference was not wired. The current regression `Panda-agent/tests/fresh-harness-handler.test.mjs` asserts no old OpenCode imports: a deliberate transition must update its scope with equivalent protection against unsafe fallback, not silently claim it already passes with the new path.
+The prior OpenCode integration survives on Git branch `codex/panda-agent-lightweight-rag` and in the preserved original checkout `E:/Web development/PROJECTS-FULL STACK/Pandabyte/Panda-agent`. Commit `f5d7419` removed `src/server/opencode-selector.ts` from the replacement path. Its historical selector created nonce-owned temporary native sessions, checked ownership and terminal state, and deleted only after safe completion; it used a fixed model and no tools. It is a reference, not an active integration or a complete implementation of this upgrade. Historical `docs/core-validation/opencode-feature-matrix.md` reports limited genuine session/chat checks, not complete isolation or live token streaming; skills/MCP were disabled or unwired and cancellation of admitted inference was not wired. At the initial audit, `Panda-agent/tests/fresh-harness-handler.test.mjs` protected against old OpenCode imports. The subsequent native journal/routes increment retains equivalent fail-closed protection and no legacy fallback after uncertain dispatch; see current P1 verification.
 
 The master assignment now directs OpenCode to own product execution; it supersedes the earlier instruction prohibiting an OpenCode executor for new work. It does not erase Phase 6 evidence or authorize deployment. The transition must preserve existing user data and behavior, not introduce parallel execution as a permanent fallback or mislabel a past gate as complete.
 
 ## Versioned evidence and capability limits
 
-Local `opencode --version` reported **2.1.3**, installed as global `@opencode/cli@2.1.3`. The preserved original spike pins and has installed `@opencode/client`, `@opencode/protocol` and `@opencode/schema` **2.2.2**. Current application `npm ls @opencode-ai/sdk --depth=0` is empty; `@opencode-ai/sdk` is a different package family and is not evidence for this 2.x contract. No service was started or queried in this audit. The 2.1.3 binary must not be assumed compatible with the 2.2.2 declarations; choose a version-aligned runtime/client and verify actual behavior in an isolated authorized environment before use.
+Local `opencode --version` reported **2.1.3**, installed as global `@opencode/cli@2.1.3`. The preserved original spike pins and has installed `@opencode/client`, `@opencode/protocol` and `@opencode/schema` **2.2.2**. Current application `npm ls @opencode-ai/sdk --depth=0` is empty; `@opencode-ai/sdk` is a different package family and is not evidence for this 2.x contract. No service was started or queried in the initial 6 November audit; later pinned2.2.2 probes and current descriptor-fenced Admin discovery are recorded below. The 2.1.3 binary must not be assumed compatible with the 2.2.2 declarations; choose a version-aligned runtime/client and verify actual behavior in an isolated authorized environment before use.
 
 The preserved `spikes/opencode-ui/adapter.ts` demonstrates typed `session.create`, `session.prompt`, `session.interrupt`, `session.active`, `message.list` and `event.subscribe` for a trusted local spike. It does not implement customer admission. In its installed 2.2.2 protocol declarations:
 
 | Surface | Declared interface | Status and limit |
 | --- | --- | --- |
-| Skills | `GET /api/skill` (`groups/skill.d.ts`) returns ID, name, optional description, path and content | Schema evidence only; runtime list, enablement, install and removal are not verified. Do not expose absolute paths or unreviewed instructions blindly. |
-| MCP | `GET /api/mcp`, resource catalog, experimental PUT/DELETE server and POST connect/disconnect (`groups/mcp.d.ts`) | Location-scoped declarations, not proof of safe persistence, tool discovery, transport availability or current permissions. Treat returned errors as potentially sensitive. |
+| Skills | Native skill list plus explicit session activation | Isolated local SKILL.md loading and persisted resume:false activation verified7Nov. General install/removal, product enablement, LLM adherence and dedicated activation-log delivery remain unverified. No raw instructions/paths exposed. |
+| MCP | Native list, resource catalog, experimental add/remove/connect/disconnect | Actual isolated local stdio add/connect/disconnect/remove and catalog handshake verified7Nov; no tool invocation, remote transport, restart durability or mounted Admin management proof. Errors remain private. |
 | Config | `GET /api/config`; experimental `PATCH /api/experimental/config` (`groups/config.d.ts`) | The declared PATCH body only covers `shell`; it is not a general runtime-configuration API. File-backed changes require a separately verified supported mechanism. |
 | Models | `GET /api/model` and `/api/model/default` (`groups/model.d.ts`) | Discovery declaration only; no customer model-selection policy or provider readiness established. |
 | Events | `groups/event.d.ts` includes session lifecycle, skill activation, tool and MCP status events | Existence of event types does not prove attribution or delivery. The historical spike resynchronizes after reconnect; do not expose reasoning or unfiltered payloads. |
 | Session | Prior selector and typed spike use creation, prompt, active/history and interrupt; events are live-only in the historical integration | Verify chosen version's schemas and real cancel/terminal behavior. Prompt acknowledgement is not an answer or proof of completion. |
 
-The declarations are located under the preserved original `spikes/opencode-ui/node_modules/@opencode/protocol/dist/groups/`; they are not application dependencies or runtime verification. The original `opencode-runtime.md` records the 2.2.2 image and historical provider-free probes, but neither establishes a currently available service. No general skill installer, runtime tool-permission editor, or restart-free change propagation has been demonstrated. Show unsupported/unverified state rather than fabricating controls or statuses.
+The declarations are located under the preserved original `spikes/opencode-ui/node_modules/@opencode/protocol/dist/groups/`; they are not application dependencies or runtime verification. The original `opencode-runtime.md` records the 2.2.2 image and historical provider-free probes; current service availability is established only by the fresh descriptor-fenced inspection below. No general skill installer, runtime tool-permission editor, or restart-free change propagation has been demonstrated. Show unsupported/unverified state rather than fabricating controls or statuses.
 
 ## Required application boundary
 
@@ -41,7 +41,7 @@ The declarations are located under the preserved original `spikes/opencode-ui/no
 
 No separately supplied Mem0 plan was located by filename in Downloads or the original repository, or by text search in their relevant Markdown documents; the master prompt refers to it but does not supply its data-flow. Do not add Mem0 processing until the plan and its isolation/retention/withdrawal contract are available. Existing `Panda-agent/docs/lightweight-phase4-contract.md` defines owner/thread-scoped, versioned structured project intent, not factual source grants; preserve it and refresh evidence. Development task memory stays separate from customer and test memory.
 
-The existing Control Room records private intake and rights review; `control-room/handlers.ts` returns `runtime_unavailable` for evaluation, and its UI explicitly disables evaluation. `Panda-agent/scripts/phase6-eval.mjs` is a separate bounded evaluation, not an Admin execution endpoint. Source ingestion/publication, runtime retrieval testing, live evaluations and shared configuration propagation remain implementation work, not already supported operations.
+The reused main Control Room now supports private upload, rights review, signed preparation, inspection/search and guarded withdrawal; actual PDF/Markdown browser and customer-isolation evidence is recorded in the current P1 verification. These private submissions are not automatically live customer evidence. Lexical Playground retrieval is verified, while live model evaluation remains disabled. `Panda-agent/scripts/phase6-eval.mjs` remains a separate bounded evaluation, not proof of an Admin execution endpoint. Full shared conversational execution, live evaluations and native configuration propagation remain unfinished.
 
 ## First integration increment and gates
 
@@ -83,12 +83,31 @@ are private/no-store and contain only counts and explicit discovery-only status;
 raw configuration, instructions, paths and provider errors are excluded.
 
 The environment example leaves `PANDA_AGENT_OPENCODE_INSPECTION_ENABLED=false`.
-The server-only URL/password settings are separate from existing worker credentials.
+Discovery uses the owner-private generation/PID/config-bound supervisor descriptor, not standalone URL/password environment settings; obsolete example entries are removed.
 Enabling this read-only endpoint does not switch customer execution or enable
 installation, configuration mutation or tool calls. Its fixture tests exercise
 admission/revocation, malformed requests, payload projection, version mismatch,
 limits, abort/deadline behavior and the native activation order. The provider-free
-probe exercises the actual client with the isolated native service. A signed-in
-browser success against the mounted route has not been established: the existing
-localhost:3001 application is retained, and the attempted separate development
-server correctly refused the occupied port. No live runtime configuration was changed.
+probe exercises the actual client with the isolated native service. A real signed-in Admin browser now verifies mounted discovery against the owned
+pinned2.2.2 supervisor. Models/skills/MCP are0under deny policy; generation/PID
+rotation discards results. Existing5RAGbundles/4manifests are explicitly separate.
+Native create/prompt/dispatch and Admin management remain hard-disabled. See current
+handoff and P1 verification for actual local sessions and retained prior attempts.
+
+## Isolated management capability follow-up, 7 November
+
+The actual pinned2.2.2 client and binary were used with fresh isolated provider-free
+fixtures; the shared inspection supervisor was unchanged. Native MCP add/connect/
+disconnect/remove reached connected local stdio state with1initialize/1tools-list,
+zero tools/call. All owned processes, descriptors and files cleaned; see
+[bounded MCP evidence](opencode-mcp-probe.json). No second MCP execution client was added.
+
+One inert local SKILL.md loaded with autoinvoke:false. An exact owned activation
+with resume:false persisted its skill message while session stayed unstarted.
+The first probe's invalid terminal-cursor assumption was corrected using bounded
+native pagination and a regression; prior stopped evidence is preserved. The
+corrected run still stopped at dedicated durable activation-log verification.
+State proof does not establish event delivery or LLM adherence. Both runs cleaned
+all owned state, each1create/1activate/1delete and0prompt/model/tool requests; see
+[partial skill evidence](opencode-skill-probe.json). No general installer, config
+editor, production tool enforcement or later-phase acceptance follows from these probes.

@@ -134,7 +134,7 @@
     }
   },
   "keyOnlySupportedProbe": {
-    "date": "2026-11-07T05:37:53.951Z",
+    "date": "2026-11-07T06:42:54.299Z",
     "scope": "supported GET metadata with existing inference key; no account login",
     "observations": [
       {
@@ -147,7 +147,7 @@
         "path": "/models/user",
         "authenticated": true,
         "status": 200,
-        "sha256": "b846e4b3b94cd9fb7ca04d3430344b66671b718b88007f0e4f8b62f6c112946d"
+        "sha256": "fd12212df08fc4e4c7e6f7c6c60efbde61d321051b40105b05d055506298ff5f"
       },
       {
         "path": "/models/xingchen-agi/xing4.0-29b-a4b:free/endpoints",
@@ -159,7 +159,7 @@
         "path": "/endpoints/zdr",
         "authenticated": false,
         "status": 200,
-        "sha256": "08e71756242569d0ff9f721ada7ac8cef4e73f0adc698bff45065e3d0b59ddbd"
+        "sha256": "17a625b34fcbc54dad5261bf3be7b2602d2564e438ebf265df74c28ce00bd8f5"
       }
     ],
     "inferenceRequests": 0,
@@ -169,7 +169,11 @@
     "inferenceAuthorized": false,
     "key": {
       "authenticated": true,
+      "managementFieldReported": true,
       "management": false,
+      "workspaceAssignmentFieldReported": true,
+      "workspaceBound": true,
+      "workspaceIdExposed": false,
       "freeRequestsRemaining": 1000,
       "strictPolicyFields": []
     },
@@ -198,7 +202,49 @@
       },
       "establishesEffectiveKeyPolicy": false
     },
-    "reason": "Exact public ZDR/safety_retention:false provider metadata supports the candidate endpoint policy. The ordinary inference key does not expose effective workspace input/output logging, data-discount logging or broadcast exclusions. Documented workspace inspection requires a management key; known inaccessible routes are not retried. Missing image/request prices are not a separate text-only :free no-billing blocker.",
+    "reason": "Exact public ZDR/safety_retention:false provider metadata supports the candidate endpoint policy. The supported key response reports workspace assignment but not effective input/output logging, data-discount logging or broadcast exclusions. Workspace policy inspection requires a management key; known inaccessible routes are not retried. Missing image/request prices are not a separate text-only :free no-billing blocker.",
     "result": "observed_blocked"
+  },
+  "keyOnlyDocumentationFollowup": {
+    "date": "2026-11-07",
+    "ordinaryKeyVerified": true,
+    "workspaceAssignmentObserved": true,
+    "workspaceIdentifierRecorded": false,
+    "strictZdr": "unverified",
+    "inferenceRequests": 0,
+    "accountSettingsChanged": false,
+    "managementOnlyApisRetried": false,
+    "sources": [
+      {
+        "url": "https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key",
+        "finding": "Documents workspace_id, not effective content-logging policy."
+      },
+      {
+        "url": "https://openrouter.ai/docs/api/api-reference/workspaces/get-a-workspace",
+        "finding": "Management-key workspace read exposes I/O, data-discount and broadcast flags plus key exclusions. Existing key explicitly reports not management."
+      },
+      {
+        "url": "https://openrouter.ai/docs/guides/features/input-output-logging",
+        "finding": "Workspace-wide I/O logging applies unless key is excluded. Documented regional base URLs skip this I/O logger only; this does not prove data-discount or Broadcast exclusions."
+      },
+      {
+        "url": "https://openrouter.ai/docs/guides/features/broadcast",
+        "finding": "Per-destination exclusions; Privacy Mode still exports some caller metadata. No documented universal request-level opt-out established."
+      },
+      {
+        "url": "https://openrouter.ai/docs/guides/features/zdr",
+        "finding": "provider.zdr follows safety-retention policy; data_collection:deny alone concerns training. Published ZDR has stated caching/legal exceptions; do not promise absolute zero retention."
+      },
+      {
+        "url": "https://openrouter.ai/docs/guides/routing/provider-selection",
+        "finding": "Future admission requires fresh exact endpoint variant checks, only/no-fallback and zero max-price ceilings. Base provider tag alone may include future variants."
+      },
+      {
+        "url": "https://github.com/InsForge/CLI/blob/main/README.md",
+        "finding": "AI setup retrieving an existing key does not attest to effective OpenRouter workspace logging."
+      }
+    ],
+    "decision": "No supported complete ordinary-key proof found. Keep inference off; public endpoint policy and key validity are partial evidence only. Do not ask for the same account login again or silently change routing to a regional endpoint.",
+    "researchTools": "Existing Firecrawl CLI reported zero credits; official public documentation reviewed through available web tool, no paid crawl or installation."
   }
 }

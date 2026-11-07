@@ -36,7 +36,12 @@ try {
   const current = await get('/key', true);
   assert.ok(current.ok && current.body?.data && typeof current.body.data === 'object', 'key_metadata_unavailable');
   const data = current.body.data;
-  report.key = { authenticated: true, management: data.is_management_key === true,
+  report.key = { authenticated: true,
+    managementFieldReported: typeof data.is_management_key === 'boolean',
+    management: typeof data.is_management_key === 'boolean' ? data.is_management_key : null,
+    workspaceAssignmentFieldReported: Object.hasOwn(data, 'workspace_id'),
+    workspaceBound: typeof data.workspace_id === 'string' && data.workspace_id.length > 0 ? true : data.workspace_id === null ? false : null,
+    workspaceIdExposed: false,
     freeRequestsRemaining: Number.isSafeInteger(data.free_model_daily_requests?.remaining) ? data.free_model_daily_requests.remaining : null,
     strictPolicyFields: Object.keys(data).filter(name => /zdr|safety_retention|privacy|logging/.test(name)) };
   const allowed = await get('/models/user', true);
@@ -57,7 +62,7 @@ try {
       constraints: 'Exact free model; pinned currently verified ZDR provider; no fallback, tools, plugins or nontext input; zero provider max_price ceilings and actual returned cost zero required before acceptance',
       absentFieldsAreExplicitZero: false },
     establishesEffectiveKeyPolicy: false };
-  report.reason = 'Exact public ZDR/safety_retention:false provider metadata supports the candidate endpoint policy. The ordinary inference key does not expose effective workspace input/output logging, data-discount logging or broadcast exclusions. Documented workspace inspection requires a management key; known inaccessible routes are not retried. Missing image/request prices are not a separate text-only :free no-billing blocker.';
+  report.reason = 'Exact public ZDR/safety_retention:false provider metadata supports the candidate endpoint policy. The supported key response reports workspace assignment but not effective input/output logging, data-discount logging or broadcast exclusions. Workspace policy inspection requires a management key; known inaccessible routes are not retried. Missing image/request prices are not a separate text-only :free no-billing blocker.';
   report.result = 'observed_blocked';
 } catch {
   report.result = 'unavailable_blocked'; report.reason = 'Required supported metadata could not be validated; no inference attempted.';

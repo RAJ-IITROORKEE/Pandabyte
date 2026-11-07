@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint; previous checkpoint `1021c59`.
+Use `git log -1` for the local checkpoint; previous checkpoint `a74af40`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -63,10 +63,35 @@ release no old marker, repeated stale withdrawal: 409. Cached browser search cle
 old result; reload shows withdrawn row with no inspect control/inspector. Active
 upload counts return to 2 documents / 2 chunks; product counts remain42/282. Original 2 uploads
 preserved. Private fixture bytes/receipt/audit remain retained. No customer publication
-or canonical source grant. Copied interface has no withdrawal button; API is a verified
-supported alternative, while the UI requirement remains open. See authorizationFollowup
-under the existing mainRagReuse verification record. PDF live upload, new non-Admin
-Clerk upload isolation and concurrent withdrawal/customer-memory propagation unclaimed.
+or canonical source grant. This earlier API-only checkpoint is retained under
+mainRagReuse.authorizationFollowup. The current follow-up completes its missing
+withdrawal UI, real PDF upload and non-Admin isolation checks below.
+
+Current guarded withdrawal UI uses the approved P1.2 direction and existing styles.
+It requires exact typed WITHDRAW and an expected document version; persists and
+verifies a sessionStorage recovery receipt before one 30s-bounded POST. Unknown
+outcomes never auto-retry. Status-only readback is bounded to5pages/50rows/10s;
+prepared/absent/fallback states do not resolve uncertainty. Definitive access/version
+rejections need fresh Admin metadata and explicit typed re-review. Dismissal clears
+only the notice, retaining recovery/access/version guards. Local cleanup failure
+retains truthful confirmed state and blocks further mutations. Tests cover these
+branches; no browser network failure is fabricated. Scoped controls use44px minima.
+
+Real Codex browser uploaded a self-authored1619-byte PDF, reviewed rights, prepared
+one page/chunk, inspected and searched its own marker. Empty/lowercase confirmation
+cannot submit; Cancel restores trigger focus and leaves prepared state. Exact
+WITHDRAW confirmed withdrawal; counts return2uploads/2chunks and42listings/282chunks.
+Dismissal/reload preserve withdrawn row, no inspection action. Only this new PDF
+withdrawn, private source bytes/receipt/audit retained, original2sources unchanged.
+Stale mounted owner read/search503 release no old marker; stale withdrawal409.
+
+One real disposable development Clerk user/session had verified InsForge identity,
+no memberships and no role writes. Document list/detail/search/withdraw and upload
+APIs403/private-no-store; private object404/zero bytes and direct read RPC denied.
+User deletion and provider404 verified; owner browser identity preserved. Private
+IDs/tokens stay ignored. Evidence is phase1WithdrawalAndNativeFollowup in the existing
+P1 verification JSON. Concurrent in-flight withdrawal/customer-memory propagation
+remains unverified.
 
 Pinned 8 direct runtime dependencies add 55 lock paths; no existing package version
 changed and no lifecycle scripts run. Notices for 17 packages are retained from
@@ -101,6 +126,21 @@ Prior native journal 0004/0005 and f5c063f off-gate API/isolation/persistence ev
 are retained in `native-journal-verification.json`, installation and P1 records.
 No new native dispatch, active inference cancellation or token-stream claim.
 
+New isolated pinned2.2.2 probes use the actual native client, one exact synthetic
+integration allowance and provider/tool/all-other denies. Native local stdio MCP
+add -> disabled, connect -> connected, disconnect -> disabled, remove -> absent
+passed; initialize1/tools-list1/tools-call0. Source config and shared supervisor
+unchanged, all owned child/descriptor/fixture cleanup verified. See opencode-mcp-probe.json.
+
+Inert local SKILL.md loading, autoinvoke:false, explicit resume:false activation,
+exact persisted skill history and unstarted session verified. Dedicated durable
+activation-log assertion remains UNVERIFIED. The first probe incorrectly required
+no next cursor on a nonempty native page; its stopped evidence is preserved, then
+bounded pagination regression and one corrected isolated run established state.
+Both runs independently1create/1activate/1delete, all cleanup verified;0prompt/model/
+tool requests. No further boot. See opencode-skill-probe.json. These are capability
+probes, not mounted Admin management, native execution or LLM adherence acceptance.
+
 ## OpenRouter zero-cost / strict privacy
 
 Supported existing-key GET metadata succeeds: `/key`, `/models/user`, exact model
@@ -113,19 +153,26 @@ no fallback/tools/plugins, zero max-price ceilings and actual zero-cost receipt.
 
 Remaining privacy blocker: effective workspace input/output logging, data-discount
 logging and broadcast exclusions are not exposed by this ordinary inference key.
+Fresh supported GETs200 show key is not management and workspace assignment exists;
+workspace identifier and credentials are not recorded. Catalog still lists424eligible
+models,1000free requests remaining and one matching free/ZDR endpoint.
 Documented workspace policy reads require a management key. No documented request
-parameter disables those account features. Do not retry known inaccessible routes,
+parameter disables all those account features. Official regional endpoints skip
+this I/O logger only; they do not prove data-discount/Broadcast exclusions or exact
+candidate availability, so no alternate endpoint was activated. Provider base tags
+may include future variants; fresh exact matching metadata is required for admission.
+Do not retry known inaccessible routes,
 invent privacy overrides/proof, change global settings, or activate paid profiles.
 Real inference requests 0; metadata success is not a model-response test. See
 `provider-policy-verification.json` for current primary sources and corrected gates.
 
 ## Verification and browser state
 
-Agent/Admin-state suite: 558 PASS, 16 private-fixture skips, 0 fail, 574 total with
+Agent/Admin-state suite: 582 PASS, 16 private-fixture skips, 0 fail, 598 total with
 server-only condition and concurrency 1. Dictation separately 2 PASS under client
-React condition. Final native discovery/ACL focused 32 PASS. Application/native
+React condition. Native MCP5/skill7 focused cases included. Application/native
 TypeScript, scoped ESLint, 97-task validation and whitespace checks pass.
-Standard Turbopack production build PASS, final BUILD_ID `0rNV4X4wOZB3ygMBYtWyn`.
+Standard Turbopack production build PASS, final BUILD_ID `KXe1M1uW4KmYImU1q49gv`.
 PDF route trace contains parser/worker/fonts and no environment/private credentials.
 Separate webpack build fails on existing unchanged commerce print-module global
 selectors; no commerce source edited. Do not claim webpack parity.
@@ -152,14 +199,32 @@ chat restores answer/citation (automatic active-chat restoration is not claimed)
 Only the new owned chat archived; absent from recent, composer empty/enabled and
 other histories preserved. No LLM inference. Proof: `tmp/agent-main-rag-chat-restored.png`.
 
+Current final-build checks: supported MCU question returned literal ESP8266/S1,
+activity8fragments/2819characters; added test-marker question was safely refused
+by constrained deterministic matching. Only that owned two-turn chat archived;
+absence from Recent and blank enabled composer verified. Playground MCU retrieval:
+2passages/638characters/8784ms, authorize/retrieve/augment/release complete,
+generate/validate skipped. Native discovery still2.2.2/empty catalogs with writes
+disabled. No model response/usage/cost inferred. Proof:
+`tmp/agent-phase1-chat-current.png`, `tmp/agent-phase1-playground-current.png`,
+`tmp/agent-phase1-withdrawal-confirmed.png`.
+
+Withdrawal mobile requested320 measuredCSS267 under existing scale, document254:
+no horizontal overflow, controls~44CSSpx. Default viewport and System theme restored;
+light and System-dark checked. No actual zoom, motion switching or new screen-reader
+speech claim. Codex tabs retained for chat, RAG and Agent Skills.
+
 ## Local state and next work
 
-Local final built app: session86366, localhost3001, development Clerk/InsForge services,
+Local final built app: session39640, localhost3001, development Clerk/InsForge services,
 output `.next-agent-experience-rag-candidate`; this is local `next start`, no deployment.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
 inspectionON, upload/preparationON, existing server-only signing key and owned
-descriptor path. Original E: environment untouched. Private SSM tunnel session95453
-serves localhost8182 to existing host8182; no image/stack/role/deployment change.
+descriptor path. Original E: environment untouched. Private SSM tunnel session19107
+serves localhost8182 to existing host8182; previous idle tunnel exited cleanly,
+re-established with current existing CLI credentials, no new login. No image/stack/
+role/deployment change. Environment example now documents descriptor-only discovery;
+obsolete unused URL/password entries removed.
 
 C: ran out of space during pinned install. Reversible moves preserved old candidate
 and dev build outputs in `E:/CodexTemporary/panda-agent-main-rag-reuse-20261107`.
@@ -171,9 +236,10 @@ succeeded instead. Disk capacity remains limited; do not delete unrelated files.
 
 Next: resolve supported workspace privacy proof without account login before
 any live inference; finish native/shared-engine provider admission, structured output/
-citations, lifecycle/latency, supported native management and customer memory. Copied
-withdrawal UI remains absent; existing guarded API alternative is verified. Keep
-all remaining mandatory requirements in the 97-row register; no Phase2 advancement.
-Preserve unknown histories and all prior source records. Source/types/lint/build
-unchanged and passing from1021c59; this follow-up changes local configuration and
-verification documents only, with the real browser/API checks described above.
+citations, lifecycle/latency, supported native management and customer memory.
+Dedicated native skill event delivery remains unverified. No repeated blind probes.
+Keep all remaining mandatory requirements in the97-row register; no Phase2 advancement.
+Preserve unknown histories and all prior source records. Current follow-up changes
+only scoped withdrawal UI/state/tests/styles, metadata projection/example wiring,
+isolated capability probes and evidence. No schema, role, provider policy, dependency,
+commerce, deployment, push or original-checkout change.

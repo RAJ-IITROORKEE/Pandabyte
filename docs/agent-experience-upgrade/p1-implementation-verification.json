@@ -954,7 +954,7 @@
       "mainChat": {
         "surface": "Codex browser, real owner, same final built app localhost3001",
         "question": "Which MCU does the x8266 use?",
-        "savedAnswer": "The captured listing states: \u201cMicrocontroller: ESP8266\u201d [S1]",
+        "savedAnswer": "The captured listing states: “Microcontroller: ESP8266” [S1]",
         "source": "PandaByte NodeMCU x8266 WiFi Development Board; Listing description; captured2026-10-30T03:04:37.128891+00:00; approved source link",
         "activity": "Understanding/resolving/reading/searching/selecting/checking/saving stages;8fragments,2819characters,20000limit",
         "persistence": "Reload returns initial view; explicitly reopening newly saved chat restores same answer/citation. No claim of automatic active-chat restoration.",
@@ -1133,5 +1133,217 @@
       "currentApplicationSession": 86366,
       "next": "Keep strict-ZDR inference gate closed until supported workspace policy proof. Finish native/shared-engine and management requirements without advancing dependency gates."
     }
+  },
+  "phase1WithdrawalAndNativeFollowup": {
+    "date": "2026-11-07",
+    "status": "partial",
+    "designBasis": "Approved P1.2 document review/publication/withdrawal flow; deterministic correction in existing Control Room styles. No new visual direction.",
+    "changes": [
+      "Guarded document withdrawal UI with exact typed WITHDRAW confirmation, focus handling and dismissible notifications.",
+      "Before mutation persist a versioned sessionStorage receipt with verified readback; one bounded POST, no automatic retry. Unknown/conflict/access/storage guards survive view changes and reload.",
+      "Only correlated success or bounded fresh metadata readback resolves desired withdrawn state; readback is not operation attribution. Definitive rejection needs fresh Admin metadata and explicit typed re-review.",
+      "Existing scoped table/error/search buttons have 44px minimum height. No shared public/Admin theme change.",
+      "OpenRouter metadata report now distinguishes management field, workspace assignment and missing policy proof without exposing key/workspace IDs.",
+      "Removed unused URL/password example settings; descriptor-only native inspection is the actual wiring.",
+      "Added isolated pinned native MCP and inert local skill capability probes; no second MCP client or agent executor."
+    ],
+    "pdfBrowser": {
+      "surface": "Signed-in owner, Codex built-in browser, final local production build at localhost:3001",
+      "fixture": {
+        "title": "Disposable PDF RAG check - 7 Nov 2026",
+        "source": "Self-authored PDFKit-generated PDF; not customer data or product evidence",
+        "bytes": 1619,
+        "hashVerified": true
+      },
+      "verified": [
+        "Real file chooser upload; rights review and accept for preparation; private PDF parse and signed preparation into one page/one chunk.",
+        "Inspector and local passage search return own PDF marker.",
+        "Withdraw confirmation focused heading; empty/lowercase text cannot submit; Cancel restores row trigger focus and leaves prepared state.",
+        "Exact WITHDRAW submission confirms withdrawal, removes inspect/search action, active counts return2uploads/2chunks.",
+        "Dismiss notification preserves withdrawn row; reload preserves withdrawal and no inspect action."
+      ],
+      "responsive": "Requested viewport width320 measured CSS267 (existing DPR/scale); document width254, no horizontal document overflow. Controls measured43.997CSSpx due scale rounding, authored minimum44px. Default viewport restored. Light/System-dark inspected; original System preference restored.",
+      "screenshots": [
+        "tmp/agent-phase1-pdf-prepared.png",
+        "tmp/agent-phase1-withdrawal-confirmed.png"
+      ],
+      "finalState": {
+        "ownedDocumentStatus": "withdrawn",
+        "ownedDocumentVersion": 2,
+        "privateAuditChunksRetained": 1,
+        "priorPreparedDocumentsUnchanged": 2,
+        "signedPreparedReceiptRetained": true
+      },
+      "staleOwnerApis": {
+        "mode": "check",
+        "existingOwnerSessionUsed": true,
+        "sessionsCreated": 0,
+        "roleChanges": 0,
+        "fixtureOnly": true,
+        "checks": [
+          {
+            "method": "GET",
+            "operation": ":owned-fixture?version=1",
+            "status": 503,
+            "noStore": true
+          },
+          {
+            "method": "POST",
+            "operation": ":owned-fixture/search",
+            "status": 503,
+            "noStore": true
+          },
+          {
+            "method": "POST",
+            "operation": ":owned-fixture/withdraw",
+            "status": 409,
+            "noStore": true
+          }
+        ],
+        "credentialsPrinted": false,
+        "modelCalls": 0
+      },
+      "cleanup": "Only this owned PDF withdrawn; original bytes, signed receipt and audit chunk retained. Previous2prepared uploads and42product listings/282chunks unchanged; earlier MD fixture remains withdrawn."
+    },
+    "customerIsolation": {
+      "userCreated": true,
+      "userDeleted": true,
+      "userAbsenceVerified": true,
+      "identityVerified": true,
+      "roleWrites": 0,
+      "modelCalls": 0,
+      "checks": [
+        {
+          "operation": "/documents?limit=1",
+          "method": "GET",
+          "status": 403,
+          "noStore": true
+        },
+        {
+          "operation": "/documents/:owned-pdf?version=1",
+          "method": "GET",
+          "status": 403,
+          "noStore": true
+        },
+        {
+          "operation": "/documents/:owned-pdf/search",
+          "method": "POST",
+          "status": 403,
+          "noStore": true
+        },
+        {
+          "operation": "/documents/:owned-pdf/withdraw",
+          "method": "POST",
+          "status": 403,
+          "noStore": true
+        },
+        {
+          "operation": "/intakes/upload",
+          "method": "POST",
+          "status": 403,
+          "noStore": true
+        }
+      ],
+      "privateObject": {
+        "status": 404,
+        "bytesReleased": 0
+      },
+      "directDocumentRpcDenied": true
+    },
+    "customerIsolationMethod": "Real disposable development Clerk user and provider-issued session; InsForge identity matched real subject, no memberships. Five mounted Admin operations403/private-no-store, private object404/zero bytes, direct read RPC denied. User deletion and provider404 verified, owner browser untouched. Private IDs/credentials not copied to tracked evidence.",
+    "nativeMcp": {
+      "record": "docs/agent-experience-upgrade/opencode-mcp-probe.json",
+      "result": "completed",
+      "scope": "One isolated provider-free pinned2.2.2 Windows runtime, synthetic local stdio MCP only. Native add disabled -> connect connected -> disconnect disabled -> remove absent; initialize1/tools-list1/tools-call0. Exact integration allowance and all other denies; shared inspection/config untouched. All owned child/descriptor/fixture cleanup verified.",
+      "notClaimed": [
+        "Remote transport",
+        "Tool execution",
+        "Restart persistence",
+        "Mounted Admin management",
+        "Provider privacy"
+      ]
+    },
+    "nativeSkill": {
+      "record": "docs/agent-experience-upgrade/opencode-skill-probe.json",
+      "result": "partial",
+      "scope": "Reviewed inert local SKILL.md loaded, autoinvoke disabled, one owned resume:false activation, exact persisted skill message and unstarted session verified in corrected run. Dedicated durable activation-log assertion remains unverified. First attempt had an invalid no-next-cursor assertion; preserved separately, corrected with bounded2-page regression before one authorized rerun.",
+      "attempts": 2,
+      "perAttemptMutations": {
+        "create": 1,
+        "activate": 1,
+        "remove": 1
+      },
+      "allOwnedCleanupVerified": true,
+      "promptModelToolRequests": 0,
+      "sharedRuntimeChanged": false
+    },
+    "browserChat": {
+      "surface": "Final build; existing private SSM tunnel re-established with valid existing CLI session, no new sign-in needed.",
+      "supportedQuestion": "Which MCU does the x8266 use?",
+      "answer": "Literal Microcontroller: ESP8266 with S1 and source card; activity8fragments/2819characters.",
+      "limitation": "Question with appended Phase1 withdrawal test marker was safely refused by the constrained deterministic path; general conversational acceptance remains open.",
+      "cleanup": "Only the newly created two-turn owned test chat archived, absence from Recent verified; blank enabled composer and prior histories preserved.",
+      "screenshot": "tmp/agent-phase1-chat-current.png"
+    },
+    "browserPlayground": {
+      "query": "Which MCU does the x8266 use?",
+      "elapsedMs": 8784,
+      "contextPassages": 2,
+      "contextCharacters": 638,
+      "workflow": {
+        "authorize": "completed",
+        "retrieve": "completed",
+        "augment": "completed",
+        "generate": "skipped",
+        "validate": "skipped",
+        "release": "completed"
+      },
+      "modelEvaluation": "Unavailable/disabled after current configuration check; unchecked for retrieval. No model answer, tokens or cost fabricated.",
+      "screenshot": "tmp/agent-phase1-playground-current.png"
+    },
+    "checks": {
+      "agentAdminTests": {
+        "total": 598,
+        "pass": 582,
+        "skippedPrivateFixtures": 16,
+        "fail": 0,
+        "concurrency": 1,
+        "condition": "react-server"
+      },
+      "dictationSeparate": {
+        "pass": 2,
+        "fail": 0
+      },
+      "applicationTypes": "PASS as part of final build",
+      "nativeTypes": "PASS",
+      "scopedEslint": "PASS",
+      "build": "PASS standard Turbopack",
+      "buildId": "KXe1M1uW4KmYImU1q49gv",
+      "pdfTrace": "Parser, worker and standard fonts present in documents route; no .env/private files",
+      "requirements": "97valid",
+      "diffCheck": "PASS"
+    },
+    "localState": {
+      "applicationSession": 39640,
+      "url": "http://localhost:3001/panda-agent",
+      "output": ".next-agent-experience-rag-candidate",
+      "privateSsmSession": 19107,
+      "inspectionSupervisorSession": 88618,
+      "newNativeMessages": false,
+      "inference": false,
+      "originalEnvironmentChanged": false,
+      "deployment": false
+    },
+    "inferenceRequests": 0,
+    "accountPolicyChanges": 0,
+    "phaseAdvanced": false,
+    "remaining": [
+      "Strict effective workspace I/O/data-discount/Broadcast proof unavailable to the ordinary existing key. No inference.",
+      "Shared native conversational RAG, structured response/citation validation and real active cancellation/latency remain unfinished.",
+      "Native Admin install/config/MCP management and actual tool enforcement remain unfinished; isolated probes do not enable those product controls.",
+      "Dedicated native skill event delivery remains unverified.",
+      "Concurrent in-flight withdrawal/customer memory propagation and reviewed Mem0 data flow remain open.",
+      "Full P1 and historical Phase6 held-out acceptance remain open."
+    ]
   }
 }

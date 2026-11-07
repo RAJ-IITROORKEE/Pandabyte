@@ -411,11 +411,12 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Live provider generation, full native management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local private RAG upload/preparation/search/withdrawal verified; copied UI withdrawal action still absent. No later-phase advancement.",
+        "limitations": "Live provider generation, full native Admin management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local PDF/Markdown upload, preparation, search and guarded withdrawal UI/API verified. No later-phase advancement.",
         "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
         "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF.",
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
-        "restoredMainChat": "7 Nov real AWS/owner Codex browser deterministic quote/citation, reload/reopen and owned archive pass; same1021c59 built source, no live LLM. See mainRagReuse.authorizationFollowup."
+        "restoredMainChat": "7 Nov real AWS/owner Codex browser deterministic quote/citation, reload/reopen and owned archive pass; same1021c59 built source, no live LLM. See mainRagReuse.authorizationFollowup.",
+        "currentFollowup": "7 Nov: p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup; final built Codex browser PDF withdrawal, disposable real-customer isolation and provider-free chat/Playground checks. Strict workspace privacy proof remains unavailable to ordinary key; inference OFF."
       }
     },
     {
@@ -444,19 +445,20 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Live provider generation, full native management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local private RAG upload/preparation/search/withdrawal verified; copied UI withdrawal action still absent. No later-phase advancement.",
+        "limitations": "Live provider generation, full native Admin management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local PDF/Markdown upload, preparation, search and guarded withdrawal UI/API verified. No later-phase advancement.",
         "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted.",
         "nativeTurnAdapter": "Private start/status adapter assembled behind hard-disabled inference;18leaf tests plus route/service/owner/runtime tests. No replacement runner or legacy fallback after uncertainty.",
         "nativeLifecycle": "Cancel/status/cleanup assembled;17leaf tests, actual provider-free owned unstarted cleanup using pinned runtime admission; full Clerk/SQL/native active cancellation remains open.",
         "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
         "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF.",
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
-        "privateIngestion": "7 Nov existing private bucket/policies/source-identical guard/signing-key access verified; local existing-key reuse,187-byte owned Markdown upload/review/preparation/search, guarded API withdrawal and stale-read/search denial, browser reload removes inspect. One withdrawn private fixture/audit retained, previous2uploads preserved; no schema/role/canonical-grant changes."
+        "privateIngestion": "7 Nov existing private bucket/policies/source-identical guard/signing-key access verified; local existing-key reuse,187-byte owned Markdown upload/review/preparation/search, guarded API withdrawal and stale-read/search denial, browser reload removes inspect. One withdrawn private fixture/audit retained, previous2uploads preserved; no schema/role/canonical-grant changes.",
+        "currentFollowup": "7 Nov: p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup; final built Codex browser PDF withdrawal, disposable real-customer isolation and provider-free chat/Playground checks. Strict workspace privacy proof remains unavailable to ordinary key; inference OFF."
       },
       "providerDecision": {
         "owner": "Keep existing zero-cost and ZDR requirements",
         "record": "docs/agent-experience-upgrade/provider-policy-verification.json",
-        "activation": "OFF: existing inference key authenticates; exact free model eligible, matching provider publicly ZDR with safety_retention:false and zero token prices. Official :free no-billing contract supports text-only zero-cost routing; workspace content logging/data-discount/broadcast exclusions remain unverified and management-only. No inference sent.",
+        "activation": "OFF: ordinary key authenticates and exposes workspace assignment, not effective I/O/data-discount/Broadcast policy. Exact free provider publicly ZDR with safety_retention:false/zero token prices; management-key workspace policy read required. No inference or account change.",
         "wireEvidence": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json"
       }
     },
@@ -487,10 +489,12 @@
       "claim": "Parent",
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Live provider generation, full native management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local private RAG upload/preparation/search/withdrawal verified; copied UI withdrawal action still absent. No later-phase advancement.",
+        "limitations": "Live provider generation, full native Admin management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local PDF/Markdown upload, preparation, search and guarded withdrawal UI/API verified. No later-phase advancement.",
         "adminAccessFix": "Existing configured Clerk JWT template respected; owner browser shell+four tabs, keyboard and CSS320/1200 both themes pass; anon401/customer403 and cleanup verified. Native discovery/management remains incomplete.",
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
-        "nativeDiscovery": "Actual owned pinned2.2.2 provider-free supervisor + real signed-in Admin browser discovery pass; all three native catalogs empty, sanitized and generation-fenced. Five existing RAG skill bundles/four tool manifests are real separate API controls; native writes remain unsupported."
+        "nativeDiscovery": "Actual owned pinned2.2.2 provider-free supervisor + real signed-in Admin browser discovery pass; all three native catalogs empty, sanitized and generation-fenced. Five existing RAG skill bundles/four tool manifests are real separate API controls; native writes remain unsupported.",
+        "currentFollowup": "7 Nov: p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup; final built Codex browser PDF withdrawal, disposable real-customer isolation and provider-free chat/Playground checks. Strict workspace privacy proof remains unavailable to ordinary key; inference OFF.",
+        "nativeCapabilities": "Isolated pinned2.2.2 native MCP add/connect/disconnect/remove with real local stdio catalog PASS, no tool calls. Inert local skill load and persisted resume:false activation PASS; dedicated event-log delivery unverified. All owned cleanup verified. These probes do not expose mounted product management; native UI writes stay disabled."
       }
     },
     {
@@ -578,7 +582,12 @@
         "P1.6",
         "P1.7"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup",
+        "verified": "Final local build/types/lint,582Agent/Admin tests +2separate dictation,16private-fixture skips; real owner PDF lifecycle and disposable customer denial/deletion; deterministic chat and retrieval-only Playground.",
+        "limitations": "Full end-to-end live native LLM, active cancellation, tool permissions, privacy, memory and held-out coverage remain open."
+      }
     },
     {
       "id": "SPEC.1",
@@ -808,7 +817,7 @@
     },
     {
       "id": "SPEC.5",
-      "requirement": "Real RAG flow: authenticated user \u2192 harness routing \u2192 approved retrieval \u2192 evidence \u2192 authorized LLM \u2192 citation validation \u2192 persistent history; real provider; reuse APIs; source restrictions; natural routing/catalog resolution/clarify ambiguity/evidence validation/no fabrication; cancel/recover/history; server secrets; preserve services/no second runner.",
+      "requirement": "Real RAG flow: authenticated user → harness routing → approved retrieval → evidence → authorized LLM → citation validation → persistent history; real provider; reuse APIs; source restrictions; natural routing/catalog resolution/clarify ambiguity/evidence validation/no fabrication; cancel/recover/history; server secrets; preserve services/no second runner.",
       "source": {
         "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
         "lines": "415-445"
@@ -1175,7 +1184,7 @@
     },
     {
       "id": "SPEC.8d",
-      "requirement": "Demonstrate genuine skill/MCP/RAG/routing configure\u2192execute\u2192inspect flows using actual selected capability evidence.",
+      "requirement": "Demonstrate genuine skill/MCP/RAG/routing configure→execute→inspect flows using actual selected capability evidence.",
       "source": {
         "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
         "lines": "703-721"
@@ -1323,7 +1332,7 @@
     },
     {
       "id": "SPEC.11",
-      "requirement": "Execute Phases A\u2013G: audit/Phase6, design proposal/review, unified UI, real LLM/RAG, skills/MCP admin, isolated Playground, final browser/integration/types/build/responsive/auth/isolation/limitations; no unrelated deployment/publication.",
+      "requirement": "Execute Phases A–G: audit/Phase6, design proposal/review, unified UI, real LLM/RAG, skills/MCP admin, isolated Playground, final browser/integration/types/build/responsive/auth/isolation/limitations; no unrelated deployment/publication.",
       "source": {
         "file": "C:/Users/rajra/Downloads/Pandabyte_Master_Codex_Prompt.md",
         "lines": "860-925"
@@ -2542,7 +2551,7 @@
         ],
         "observation": "Configuration UI path exists; end-to-end retest loop is not verified."
       },
-      "plannedReuseChange": "Keep the configuration\u2192discovery\u2192test\u2192inspect\u2192correct\u2192retest loop in Admin, with version/concurrency guards.",
+      "plannedReuseChange": "Keep the configuration→discovery→test→inspect→correct→retest loop in Admin, with version/concurrency guards.",
       "dependencies": "ACCEPT.PLAYGROUND.01-06; P1.6",
       "owner": "Parent + Admin owner",
       "verification": "Complete full correction-and-retest loop and save linked evidence.",
