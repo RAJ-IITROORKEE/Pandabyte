@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "./playground.module.css";
+import { PlaygroundToolFixture } from "./playground-tool-fixture";
 
 type Passage = { rank: number; title: string; sourceUrl: string; capturedAt: string; sectionPath: string[]; text: string; productSku?: string; productTitle?: string; lexicalOverlap: { matched: number; total: number } };
 type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; products?: { sku: string; title: string }[]; workflow?: { stage: "authorize" | "retrieve" | "augment" | "generate" | "validate" | "release"; status: "completed" | "skipped"; elapsedMs: number }[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null }; model: { status: "not_requested" | "guard_unavailable" } | { status: "not_run"; reason?: "multi_product_guard_unavailable" | "no_retrieved_context" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
 type Capability = { model: "openai/gpt-4o-mini"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | null; approvedQuestions: string[] };
 const outcomeKey = "panda-playground-unknown-outcome";
 
-export function Playground() {
+export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
   const [question, setQuestion] = useState("");
   const [evaluate, setEvaluate] = useState(false);
   const [unknownOutcome, setUnknownOutcome] = useState(false);
@@ -104,6 +105,7 @@ export function Playground() {
   const metrics = result?.metrics;
   return <section className={styles.playground} id="playground">
     <div className={styles.heading}><div><h2>Retrieval playground</h2><p>Inspect retrieved context before reviewing a model answer.</p></div><span className={styles.tag}>Lexical retrieval</span></div>
+    {toolFixture && <PlaygroundToolFixture />}
     <div className={styles.workbench}>
       <form className={styles.form} onSubmit={submit}>
         <label>Your query<textarea name="question" autoComplete="off" placeholder="Ask about a product specification…" aria-describedby="query-help" value={question} onChange={event => { if (!unknownOutcome) evaluationId.current = null; setQuestion(event.target.value); setResult(null); setError(""); }} maxLength={2000} required disabled={busy} /></label>

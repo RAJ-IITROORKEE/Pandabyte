@@ -236,7 +236,7 @@ speech claim. Codex tabs retained for chat, RAG and Agent Skills.
 
 ## Local state and next work
 
-Local built app runs in session81534 on localhost3001 with the development Clerk
+Local built app runs in session86729 on localhost3001 with the development Clerk
 and InsForge services. Build `IMMiNJueGSBKsBd1GET-K` uses
 `.next-agent-experience-browser-fix` and passed compilation and type checking.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
@@ -283,8 +283,38 @@ product listing identifies the ESP8266. Generation and validation were skipped.
 Agent Skills refreshed to the OpenCode 2.2.2 read-only discovery banner, and native
 tool and configuration controls remained disabled. Both result tabs were left open.
 
+### Mounted tool permission check
+
+On 7 November, the signed-in owner used the local Admin Playground in Codex
+Browser to dispatch both fixed cases through OpenCode 2.2.2. The allowed case
+returned `pandabyte_fixture_tool_result` with one MCP invocation. The denied case
+displayed the native tool permission error with zero MCP invocations. Both
+mounted responses returned 200 and preserved the distinction between a verified
+tool error and a failed request. Reloading and submitting the spent allow case
+returned 409 before dispatch. Anonymous requests returned 401, a foreign origin
+returned 403, and an unknown case or nonempty body returned 400. The first browser
+submission returned 400 before dispatch because Next exposed an empty POST stream.
+The corrected guard checks HTTP framing. The regression covers this behavior.
+
+The launcher `Panda-agent/scripts/start-playground-tool-fixture.mjs` accepts the
+absolute development env path and pinned 2.2.2 SDK path. It requires the verified
+owner's Clerk subject SHA-256 in `PANDA_PLAYGROUND_FIXTURE_OWNER`, the dev Clerk
+instance and localhost:3001. Its loopback relay has a 30-minute lease and spends
+each case once. The browser sends only the fixed case and receives the verified
+tool status and invocation count. The route rechecks the same Admin subject and
+Clerk session before release. After a lost response, reconcile the launcher log
+before considering another test window.
+
+Both disposable sessions, MCP processes and fixture directories were removed by
+the probe. The launcher was stopped, and the normal built preview was restored.
+Codex Browser confirmed the fixture controls were absent. On the fixture build,
+the x8266 query still returned two approved passages identifying ESP8266 with
+GPT-4o-mini disabled and no model answer. The two dispatch cases used only the
+scripted loopback model. There were zero external inference calls. See
+`p1-implementation-verification.json.phase1MountedToolFixture`.
+
 Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
 live inference. Remaining acceptance covers the shared native chat and Playground,
 structured responses and citations, lifecycle and latency, supported native Admin
-management, tool permissions in mounted application flows, and customer memory. The 97-row register
+management, effective permissions in shared execution, and customer memory. The 97-row register
 tracks these gates before Phase 2.

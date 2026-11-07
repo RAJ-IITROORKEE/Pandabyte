@@ -46,5 +46,11 @@
 .json { max-height: 320px; overflow: auto; margin: 12px 0; border: 1px solid var(--divider); border-radius: 6px; padding: 12px; color: var(--foreground); background: var(--surface); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .copy { min-height: 36px; border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; color: var(--foreground); background: var(--surface); font: inherit; font-size: 13px; cursor: pointer; }
 .copyStatus { margin-left: 10px; color: var(--muted); font-size: 12px; }
+.toolFixture { margin-bottom: 16px; padding: 16px; border: 1px solid var(--divider); border-radius: 10px; }
+.toolFixture h3 { margin: 0 0 6px; font-size: 15px; }
+.toolFixtureCase { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; }
+.toolFixtureCase button { min-height: 44px; }
+.toolFixtureCase button[aria-disabled="true"] { opacity: .65; cursor: not-allowed; }
+.toolFixtureCase button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 @media (max-width: 760px) { .workbench { grid-template-columns: 1fr; } .form { border-right: 0; border-bottom: 1px solid var(--divider); } }
 @media (max-width: 420px) { .heading { flex-wrap: wrap; } .form, .output { padding: 18px; } .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -34,6 +34,7 @@ function fixture({ pendingOutcome = false } = {}) {
     fetch: (url, options) => new Promise(resolve => requests.push({ url, options, resolve })),
     require(name) {
       if (name === 'react') return hooks;
+      if (name === './playground-tool-fixture') return { PlaygroundToolFixture: () => null };
       return name.endsWith('.module.css') ? { default: {} } : require(name);
     },
   });
@@ -43,7 +44,7 @@ function fixture({ pendingOutcome = false } = {}) {
   }
   function render() {
     cursor = 0;
-    const tree = exports.Playground();
+    const tree = exports.Playground({});
     effects.splice(0).forEach(effect => effect());
     return nodes(tree);
   }

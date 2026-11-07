@@ -1643,5 +1643,21 @@
       "modelRequests": 0,
       "phaseAdvanced": false
     }
+  },
+  "phase1MountedToolFixture": {
+    "date": "2026-11-07",
+    "surface": "Signed-in development Admin, Codex Browser, localhost:3001 RAG Playground",
+    "openCodeVersion": "2.2.2",
+    "scope": "Windows opt-in local relay, fixed one-shot allow and deny cases, disposable MCP tool, scripted loopback model",
+    "allow": { "httpStatus": 200, "toolStatus": "completed", "result": "pandabyte_fixture_tool_result", "mcpInvocations": 1 },
+    "deny": { "httpStatus": 200, "toolStatus": "error", "nativePermissionDenied": true, "mcpInvocations": 0 },
+    "guards": { "browserReloadReplay": 409, "anonymous": 401, "foreignOrigin": 403, "unknownCase": 400, "nonemptyBody": 400 },
+    "retrieval": { "httpStatus": 200, "approvedPassages": 2, "listingIdentifies": "ESP8266", "modelAnswer": "not requested", "gpt4oMiniEvaluationDisabled": true },
+    "verification": { "focusedTestsPassed": 56, "scopedLint": "passed", "typescript": "passed", "coverageTasksValidated": 97 },
+    "cleanup": { "ownedSessionsRemoved": true, "ownedProcessesStopped": true, "fixtureDirectoriesRemoved": true, "launcherStopped": true, "regularPreviewRestored": true, "fixtureControlsAbsentInRegularPreview": true },
+    "externalInferenceCalls": 0,
+    "liveInferenceEnabled": false,
+    "strictZdrVerified": false,
+    "phaseAdvanced": false
   }
 }
