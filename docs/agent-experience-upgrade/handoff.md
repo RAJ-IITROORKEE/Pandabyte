@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. The preceding mounted API checkpoint is `349663c`. The latest automated signed-in browser checkpoint is `4abce2e`.
+Use `git log -1` for the local checkpoint. The retrieval-first fix is `78707cd`. This checkpoint records its signed-in Codex browser verification.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -254,9 +254,8 @@ source or credentials moved/deleted. Initial recursive old-build deletion was
 rejected by automatic approval review as blocked by policy; the reversible move
 succeeded instead. Disk capacity remains limited; do not delete unrelated files.
 
-Codex reported local browser use disabled in Work settings, then the browser
-control tool became unavailable during the current validation. Signed-in browser
-coverage for this build remains pending. On the mounted localhost APIs, anonymous
+The preceding mounted API checkpoint ran while browser control was unavailable.
+On the mounted localhost APIs, anonymous
 runtime and Playground reads returned 401. The existing development Admin received
 OpenCode 2.2.2 discovery with all three catalogs empty and install, configure and
 execute disabled. A caller-controlled runtime selector was rejected with 400.
@@ -276,10 +275,13 @@ successful connection as read-only discovery and points to the RAG Playground.
 The legacy GPT-4o-mini evaluator remains gated by the zero-cost and strict ZDR
 requirements. See `p1-implementation-verification.json.phase1PlaygroundRetrievalUx`.
 The rebuilt application passed 34 focused tests, scoped lint and the mounted
-Admin and retrieval checks. The x8266 query returned two passages in 7069 ms
-without generation. Codex browser control was unavailable to the agent. The owner
-can refresh the current Playground tab and use **Inspect retrieval** to check the
-updated form.
+Admin and retrieval checks. The explicit Browser plugin tag restored access for
+the signed-in browser check on the same build. The evaluation toggle was disabled
+and unchecked after reload. Entering the x8266 question enabled **Inspect retrieval**
+and returned two passages with 638 context characters in 9522 ms. The retrieved
+product listing identifies the ESP8266. Generation and validation were skipped.
+Agent Skills refreshed to the OpenCode 2.2.2 read-only discovery banner, and native
+tool and configuration controls remained disabled. Both result tabs were left open.
 
 Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
 live inference. Remaining acceptance covers the shared native chat and Playground,

@@ -1615,6 +1615,33 @@
     },
     "browser": "Agent browser control was unavailable. User observations apply to the prior build. The updated interaction was verified with component tests and the rebuilt localhost API.",
     "liveInferenceEnabled": false,
-    "phaseAdvanced": false
+    "phaseAdvanced": false,
+    "browserVerification": {
+      "surface": "Explicit Browser plugin tag, signed-in Codex in-app browser, same localhost:3001 build IMMiNJueGSBKsBd1GET-K",
+      "playground": {
+        "query": "Which MCU does the x8266 use?",
+        "evaluationDisabledAndUnchecked": true,
+        "retrievalEnabledWithQuery": true,
+        "outcome": "retrieved",
+        "product": "ESPX8266",
+        "listingIdentifies": "ESP8266",
+        "contextPassages": 2,
+        "contextCharacters": 638,
+        "elapsedMs": 9522,
+        "generation": "skipped",
+        "validation": "skipped",
+        "modelAnswer": "not requested",
+        "tokenAndCostMetrics": "unavailable"
+      },
+      "agentSkills": {
+        "version": "2.2.2",
+        "readOnlyDiscovery": "connected after refresh",
+        "nativeToolConfigurationDisabled": true,
+        "nativeConfigurationDisabled": true
+      },
+      "tabsRetained": true,
+      "modelRequests": 0,
+      "phaseAdvanced": false
+    }
   }
 }
