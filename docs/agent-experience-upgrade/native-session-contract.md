@@ -120,6 +120,16 @@ validation: the caller still parses bounded JSON, invokes prepared-evidence
 finalization, rechecks current admission/source grants and persists before release.
 The helper is assembled behind the inference-disabled native bridge.
 
+The isolated 2.2.2 wire probe now drives `createNativeTurn` and
+`prepareEvidenceContext` together against the actual native HTTP session client.
+The `turn_success` case prepares a synthetic listing, correlates native JSON,
+revalidates its scope and releases one exact literal citation. The `turn_429`
+case settles the native failure with the fixed unavailable answer. Both cases
+exercise versioned synthetic journal claims and repeat start/status without
+another prompt. Each creates and removes one owned native session. This verifies
+the native adapter pipeline using synthetic ownership and storage. Mounted Clerk,
+SQL and real provider answer acceptance remains open.
+
 The dependency-free `runtime/opencode/plugins/no-retry.ts` uses the supported
 session `retry` hook to set `event.decision = {retry:false}`. The prior provider
 `settings.maxRetries:0` did not control OpenCode's native retry loop. Loading the

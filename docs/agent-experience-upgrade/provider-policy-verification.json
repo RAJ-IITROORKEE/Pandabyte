@@ -43,7 +43,7 @@
     "Refresh the verified workspace privacy and exact route evidence before future native admission; the bounded diagnostic preflight passed on 9 November.",
     "Fresh exact pinned provider/variant ZDR membership with safety_retention:false and no provider/model fallback immediately before dispatch.",
     "Dedicated native provider configuration/retry/auxiliary paths and lifecycle release gates remain incomplete.",
-    "Actual structured output, endpoint identity and returned usage cost zero remain unverified: the single bounded diagnostic returned HTTP 429."
+    "Actual live structured output, endpoint identity and returned usage cost zero remain unverified: both bounded diagnostics returned HTTP 429; the second identified Phala upstream rate limiting."
   ],
   "clarifications": [
     "Public catalogue metadata is discovery only, not account-specific routing/quota or execution proof",
@@ -78,7 +78,7 @@
     "failed": 0,
     "evidenceClass": "Existing Python adapter with injected HTTP transport; not native or live provider proof"
   },
-  "realInferenceRequests": 1,
+  "realInferenceRequests": 2,
   "nativeWireProbe": {
     "record": "docs/agent-experience-upgrade/opencode-provider-wire-probe.json",
     "evidenceClass": "Actual isolated OpenCode 2.2.2 to local mock completion endpoint; fake credential and synthetic text only",
@@ -325,5 +325,41 @@
     "reasoningReturned": false,
     "validJsonAnswer": false,
     "errorCode": 429
+  },
+  "upstream429Diagnosis": {
+    "date": "2026-11-09T15:25:50.484Z",
+    "scope": "Direct OpenRouter connectivity and JSON diagnostic",
+    "model": "xingchen-agi/xing4.0-29b-a4b:free",
+    "provider": "phala",
+    "workspaceMatched": true,
+    "workspaceLoggingVerifiedInBrave": true,
+    "metadataSha256": "26f2a9d0b5be8d349630d47dc7c7bbceb48a0ab8f13c10f813b0a00de0594bc1",
+    "started": true,
+    "outcome": "unverified",
+    "inferenceRequests": 1,
+    "applicationInferenceEnabled": false,
+    "customerDataSent": false,
+    "httpStatus": 429,
+    "retryAfter": null,
+    "rateLimitHeaders": {
+      "x-ratelimit-limit": null,
+      "x-ratelimit-remaining": null,
+      "x-ratelimit-reset": null
+    },
+    "returnedProviderMatches": false,
+    "returnedModelMatches": false,
+    "finishReason": null,
+    "costUsd": null,
+    "inputTokens": null,
+    "outputTokens": null,
+    "reasoningReturned": false,
+    "validJsonAnswer": false,
+    "errorReason": "Provider returned error",
+    "errorFromPhala": true,
+    "upstreamRateLimitReported": true,
+    "errorCode": 429,
+    "currentEligibleFreeStrictZdrRoutes": 1,
+    "furtherInferenceRequestsAfterDiagnosis": 0,
+    "privacyRefreshedInBrave": true
   }
 }

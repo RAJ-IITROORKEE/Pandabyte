@@ -264,15 +264,15 @@ speech claim. Codex tabs retained for chat, RAG and Agent Skills.
 
 ## Local state and next work
 
-Local built app runs in session93344 on localhost3001 with the development Clerk
+Local built app runs in session77432 on localhost3001 with the development Clerk
 and InsForge services. Build `IMMiNJueGSBKsBd1GET-K` uses
 `.next-agent-experience-browser-fix` and passed compilation and type checking.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
 inspectionON, upload/preparationON, existing server-only signing key and owned
-descriptor path. Earlier discovery used
-`private/native-runtime-browser-validation.json`, published by provider-free
-inspection session99409. The latest preview launch has no freshly verified native
-supervisor. Re-establish an owned descriptor before discovery acceptance. The private SSM tunnel
+descriptor path. Provider-free inspection session62226 now publishes
+`private/native-runtime-phase1-20261109.json`. The ignored worktree env and current
+preview launch point to this owned descriptor. Codex Browser verified OpenCode
+2.2.2 discovery after reconnecting. The private SSM tunnel
 is currently closed. Existing deterministic chat worker tests require the tunnel.
 
 C: ran out of space during pinned install. Reversible moves preserved old candidate
@@ -360,6 +360,37 @@ query. The approved listing identifies ESP8266. Model evaluation stayed disabled
 Anonymous runtime and Playground reads returned 401 with private/no-store headers.
 The result tab is retained. See
 `p1-implementation-verification.json.phase1RegressionRecheck`.
+
+### Native integration and upstream rate-limit follow-up
+
+The owner resumed testing after the first 429. A fresh Brave privacy check
+confirmed logging off, no trace destinations, data discount off and public prompt
+publication off. The approved key still matches that workspace. The current
+eligible catalog has only one free route with strict ZDR, the pinned Phala route.
+One additional synthetic diagnostic preserved the same privacy and zero-price
+constraints. Its 429 response identifies Phala and reports an upstream rate
+limit, with no Retry-After or reset headers. No further inference request was
+attempted. External inference requests across the two diagnostic windows total 2.
+Successful response, provider usage and zero-cost receipt acceptance remain open.
+See `provider-policy-verification.json.upstream429Diagnosis`.
+
+The native wire probe now verifies two additional integration cases against
+actual OpenCode 2.2.2. Both use the application turn adapter, prepared evidence
+validation, native HTTP client and a synthetic versioned journal. Success releases
+a literal citation from a disposable synthetic listing. HTTP 429 releases only the
+fixed unavailable answer. Duplicate start/status does not resend. Each case
+records one create, one prompt and one deletion, with no interrupt. All seven
+wire cases and 57 focused turn/evidence/correlation/lifecycle tests passed. Scoped
+lint and syntax checks passed. Shared Clerk/SQL execution remains unverified.
+See `p1-implementation-verification.json.phase1NativeTurnPipelineFollowup`.
+
+The provider-free discovery connection was restored by launching the pinned
+supervisor and restarting the preview with its new owned descriptor. Codex Browser
+confirmed the connected banner and disabled native execution/tool configuration.
+The customer composer retained disabled model, search and attachment controls.
+The post-restart Playground query retrieved two passages and 638 characters in
+7091 ms with model evaluation disabled. The discovery proof is retained locally
+at `tmp/phase1-native-discovery-20261109.png`.
 
 Phase 1 remains open. Workspace privacy and bounded-route preflight are verified
 for the approved key. The live diagnostic is rate limited and has no answer or

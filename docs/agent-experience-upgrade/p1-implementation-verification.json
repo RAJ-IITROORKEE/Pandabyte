@@ -1757,5 +1757,101 @@
     "liveInferenceEnabled": false,
     "strictZdrVerified": false,
     "phaseAdvanced": false
+  },
+  "phase1NativeTurnPipelineFollowup": {
+    "date": "2026-11-09",
+    "scope": "Real isolated OpenCode 2.2.2 HTTP runtime with synthetic ownership, versioned journals and listing evidence",
+    "wireCases": [
+      {
+        "scenario": "429",
+        "attempts": 1
+      },
+      {
+        "scenario": "503",
+        "attempts": 1
+      },
+      {
+        "scenario": "drop",
+        "attempts": 1
+      },
+      {
+        "scenario": "success",
+        "attempts": 1
+      },
+      {
+        "scenario": "cancel",
+        "attempts": 1
+      },
+      {
+        "scenario": "turn_success",
+        "attempts": 1,
+        "nativeTurn": {
+          "phase": "terminal",
+          "outcome": "succeeded",
+          "terminalReason": "answered",
+          "scopesBound": true,
+          "sourceRevalidated": true,
+          "literalCitationReleased": true,
+          "fixedUnavailableReleased": false,
+          "mutations": {
+            "creates": 1,
+            "prompts": 1,
+            "interrupts": 0,
+            "deletes": 1
+          }
+        }
+      },
+      {
+        "scenario": "turn_429",
+        "attempts": 1,
+        "nativeTurn": {
+          "phase": "terminal",
+          "outcome": "failed",
+          "terminalReason": "unavailable",
+          "scopesBound": true,
+          "sourceRevalidated": true,
+          "literalCitationReleased": false,
+          "fixedUnavailableReleased": true,
+          "mutations": {
+            "creates": 1,
+            "prompts": 1,
+            "interrupts": 0,
+            "deletes": 1
+          }
+        }
+      }
+    ],
+    "focusedTestsPassed": 57,
+    "scriptLint": "passed",
+    "scriptSyntax": "passed",
+    "cleanup": {
+      "childrenStopped": true,
+      "sinksClosed": true,
+      "fixtureRemoved": true
+    },
+    "diagnostic": {
+      "additionalProviderRequests": 1,
+      "status": 429,
+      "provider": "Phala",
+      "upstreamRateLimit": true,
+      "retryTimeReported": false
+    },
+    "browser": {
+      "nativeDiscovery": "reconnected",
+      "version": "2.2.2",
+      "nativeExecutionEnabled": false,
+      "nativeToolConfigurationEnabled": false,
+      "customerModelSearchAttachmentsDisabled": true,
+      "playgroundRetrieval": {
+        "outcome": "retrieved",
+        "passages": 2,
+        "characters": 638,
+        "elapsedMs": 7091,
+        "modelEvaluationDisabled": true
+      },
+      "proof": "tmp/phase1-native-discovery-20261109.png"
+    },
+    "limitations": "Synthetic ownership and storage do not establish mounted Clerk/SQL/native execution or a successful live provider answer.",
+    "phaseAdvanced": false
   }
 }
