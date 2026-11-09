@@ -448,7 +448,7 @@
         "limitations": "Live provider generation, full native Admin management/install/tool enforcement, shared conversational engine and customer memory remain unfinished. Local PDF/Markdown upload, preparation, search and guarded withdrawal UI/API verified. No later-phase advancement.",
         "retryFollowup": "Supported native retry/correlation mock checks pass at3543477. AWS login/tunnel restored; real Codex browser status-only recovery, explicit cancellation, fresh supported deterministic RAG quote/citation, reload and owned-chat archive pass. Extra-instruction query remains unsupported. Native answering not mounted.",
         "nativeTurnAdapter": "Private start/status adapter assembled behind hard-disabled inference;18leaf tests plus route/service/owner/runtime tests. No replacement runner or legacy fallback after uncertainty.",
-        "nativeLifecycle": "Cancel/status/cleanup assembled;17leaf tests, actual provider-free owned unstarted cleanup using pinned runtime admission; full Clerk/SQL/native active cancellation remains open.",
+        "nativeLifecycle": "Owned unstarted cleanup passed on pinned native runtime. The loopback wire probe now verifies active interruption and retirement through the application lifecycle adapter with a synthetic versioned journal. One prompt, one interrupt and one deletion. Mounted Clerk and SQL cancellation remains open.",
         "nativeRoutes": "Existing messages/read/cancel/Delete use durable engine classification and fenced native history; same-origin cleanup,10rollback SQLgroups, development migration and cache reload,414Agenttests and actual off-gate Clerk/API checks pass. No live provider inference.",
         "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF.",
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
@@ -592,7 +592,9 @@
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup",
         "verified": "Final local build/types/lint,582Agent/Admin tests +2separate dictation,16private-fixture skips; real owner PDF lifecycle and disposable customer denial/deletion; deterministic chat and retrieval-only Playground.",
-        "limitations": "Full end-to-end live native LLM, active cancellation, tool permissions, privacy, memory and held-out coverage remain open."
+        "activeCancellation": "OpenCode 2.2.2 active loopback cancellation and 49 focused tests passed. See opencode-provider-wire-probe.json, case cancel.",
+        "regressionRecheck": "9 November: 593 Agent/Admin tests passed with 16 private-fixture skips. Two dictation tests, native TypeScript and wire-probe lint passed. Signed-in Codex Browser retrieval passed. Approved earlier key authenticates and its workspace privacy matches Brave. One free ZDR diagnostic returned 429. See p1-implementation-verification.json.phase1RegressionRecheck.",
+        "limitations": "Full end-to-end live native LLM, mounted active cancellation, tool permissions, privacy, memory and held-out coverage remain open."
       }
     },
     {

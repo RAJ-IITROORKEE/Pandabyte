@@ -1,6 +1,6 @@
 # Agent Experience Upgrade — current handoff
 
-7 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
+9 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
 Use `git log -1` for the local checkpoint. The retrieval-first fix is `78707cd`. This checkpoint records its signed-in Codex browser verification.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
@@ -171,20 +171,48 @@ image/request catalog fields are not silently zero and are no longer a separate
 blocker. Future admission still needs fresh exact pinned provider/variant metadata,
 no fallback/tools/plugins, zero max-price ceilings and actual zero-cost receipt.
 
-Remaining privacy blocker: effective workspace input/output logging, data-discount
-logging and broadcast exclusions are not exposed by this ordinary inference key.
-Fresh supported GETs200 show key is not management and workspace assignment exists;
-workspace identifier and credentials are not recorded. Catalog still lists424eligible
-models,1000free requests remaining and one matching free/ZDR endpoint.
-Documented workspace policy reads require a management key. No documented request
-parameter disables all those account features. Official regional endpoints skip
-this I/O logger only; they do not prove data-discount/Broadcast exclusions or exact
-candidate availability, so no alternate endpoint was activated. Provider base tags
-may include future variants; fresh exact matching metadata is required for admission.
-Do not retry known inaccessible routes,
-invent privacy overrides/proof, change global settings, or activate paid profiles.
-Real inference requests 0; metadata success is not a model-response test. See
-`provider-policy-verification.json` for current primary sources and corrected gates.
+The ordinary key cannot inspect management-only workspace policy fields. This
+initially blocked privacy acceptance. The later signed-in Brave check below
+resolves that metadata limitation for the bounded route test. Future admission
+still needs fresh exact model, provider and workspace evidence. See
+`provider-policy-verification.json` for the chronological observations.
+
+On 9 November, the signed-in Brave dashboard showed input and output logging off
+and no configured trace destinations in the Default Workspace. The account's
+workspace data discount permission was off. The selected ESP32 key was present,
+but the project's stored credential had a different masked label, spend limit
+and expiry. The selected key was absent from the checked local project
+environments. Read-only metadata still listed the free Phala route with ZDR,
+`safety_retention:false` and zero token prices. The authorized live test requires
+the selected credential and fresh eligibility checks with that credential.
+No inference request was sent. See
+`provider-policy-verification.json.braveWorkspaceCheck`.
+
+The owner subsequently selected the credential saved in the main checkout's
+`Panda-agent/.env` as the intended default. OpenRouter returned HTTP 401 for
+that credential and HTTP 200 for the previous local default. Keep the previous
+default until the replacement authenticates and its workspace policy is verified.
+The latest recheck confirmed one correctly formatted assignment with no unexpected
+whitespace. OpenRouter returned HTTP 401 and `User not found.`. The replacement
+credential needed correction at that checkpoint. No live inference was submitted.
+
+The owner then explicitly approved the earlier working key. It was copied into
+the ignored worktree `.env.local` and main checkout `Panda-agent/.env`, with
+matching readback. The primary checkout's older `.env.local` was the source.
+The key authenticates with HTTP 200. A fresh dedicated Brave tab worked after the
+existing-tab connection attempts timed out. Its displayed Default Workspace ID
+matched the key's workspace through a SHA-256 comparison. Input and output logging
+was off, no trace destinations were configured, and account permission for workspace
+data discount sharing was off. No privacy settings were changed.
+
+Fresh catalogs showed one eligible exact free Phala endpoint, one matching ZDR
+row with `safety_retention:false`, zero token prices and JSON format support.
+One synthetic direct diagnostic used `only:phala`, no fallback, `zdr:true`,
+`data_collection:deny`, four zero price ceilings, disabled cache and no plugins.
+OpenRouter returned HTTP 429. No model answer, token usage or actual cost receipt
+was available. The one-shot private receipt prevents automatic resubmission.
+This diagnostic sent no customer data and did not enable native application
+inference. See `provider-policy-verification.json.boundedConnectivityDiagnostic`.
 
 ## Verification and browser state
 
@@ -236,14 +264,15 @@ speech claim. Codex tabs retained for chat, RAG and Agent Skills.
 
 ## Local state and next work
 
-Local built app runs in session86729 on localhost3001 with the development Clerk
+Local built app runs in session93344 on localhost3001 with the development Clerk
 and InsForge services. Build `IMMiNJueGSBKsBd1GET-K` uses
 `.next-agent-experience-browser-fix` and passed compilation and type checking.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
 inspectionON, upload/preparationON, existing server-only signing key and owned
-descriptor path. The local app launch overrides the descriptor path to
+descriptor path. Earlier discovery used
 `private/native-runtime-browser-validation.json`, published by provider-free
-inspection session99409 after the prior supervisor stopped. The private SSM tunnel
+inspection session99409. The latest preview launch has no freshly verified native
+supervisor. Re-establish an owned descriptor before discovery acceptance. The private SSM tunnel
 is currently closed. Existing deterministic chat worker tests require the tunnel.
 
 C: ran out of space during pinned install. Reversible moves preserved old candidate
@@ -313,8 +342,28 @@ GPT-4o-mini disabled and no model answer. The two dispatch cases used only the
 scripted loopback model. There were zero external inference calls. See
 `p1-implementation-verification.json.phase1MountedToolFixture`.
 
-Phase 1 remains open. Strict workspace ZDR evidence is required before enabling
-live inference. Remaining acceptance covers the shared native chat and Playground,
+The isolated OpenCode 2.2.2 wire probe now verifies active cancellation using the
+application lifecycle adapter and a synthetic versioned journal. A partial response
+from the loopback model confirmed the session was active. Cancellation closed the
+model connection, recorded the interrupted turn and saved the fixed cancellation
+message. Repeating cancel and cleanup kept the totals at one prompt, one interrupt
+and one deletion. All five wire cases and 49 focused lifecycle, correlation and
+session tests passed. Mounted Clerk and SQL cancellation acceptance remains open.
+See `opencode-provider-wire-probe.json`, case `cancel`.
+
+The latest Agent and Admin regression run passed 593 tests with 16 private-fixture
+skips and no failures. Two dictation tests passed under the client React condition.
+Native TypeScript and scoped wire-probe lint passed. The 97-task register validated.
+The preview was restarted on localhost3001. A fresh signed-in Codex Browser tab
+verified retrieval of two passages and 638 characters in 8435 ms for the x8266
+query. The approved listing identifies ESP8266. Model evaluation stayed disabled.
+Anonymous runtime and Playground reads returned 401 with private/no-store headers.
+The result tab is retained. See
+`p1-implementation-verification.json.phase1RegressionRecheck`.
+
+Phase 1 remains open. Workspace privacy and bounded-route preflight are verified
+for the approved key. The live diagnostic is rate limited and has no answer or
+zero-cost receipt. Remaining acceptance covers shared native chat and Playground,
 structured responses and citations, lifecycle and latency, supported native Admin
 management, effective permissions in shared execution, and customer memory. The 97-row register
 tracks these gates before Phase 2.

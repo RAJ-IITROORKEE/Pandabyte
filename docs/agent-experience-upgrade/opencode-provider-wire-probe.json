@@ -119,7 +119,7 @@
       "retryPluginActive": true,
       "onlyFixtureModel": true,
       "promptAccepted": true,
-      "observedMs": 111,
+      "observedMs": 88,
       "correlation": {
         "state": "terminal",
         "outcome": "failed",
@@ -196,7 +196,7 @@
       "retryPluginActive": true,
       "onlyFixtureModel": true,
       "promptAccepted": true,
-      "observedMs": 90,
+      "observedMs": 87,
       "correlation": {
         "state": "terminal",
         "outcome": "failed",
@@ -273,7 +273,7 @@
       "retryPluginActive": true,
       "onlyFixtureModel": true,
       "promptAccepted": true,
-      "observedMs": 107,
+      "observedMs": 80,
       "correlation": {
         "state": "terminal",
         "outcome": "failed",
@@ -350,7 +350,7 @@
       "retryPluginActive": true,
       "onlyFixtureModel": true,
       "promptAccepted": true,
-      "observedMs": 92,
+      "observedMs": 107,
       "correlation": {
         "state": "terminal",
         "outcome": "succeeded",
@@ -391,6 +391,98 @@
       },
       "policyForwarded": true,
       "retryGate": "pass_single_attempt_terminal",
+      "childStopped": true,
+      "sinkClosed": true
+    },
+    {
+      "scenario": "cancel",
+      "phase": "observed",
+      "attempts": 1,
+      "rejectedPaths": 0,
+      "wireChecks": [
+        {
+          "cacheDisabled": true,
+          "modelMatches": true,
+          "endpointOnly": true,
+          "noFallback": true,
+          "requireParameters": true,
+          "zdr": true,
+          "dataCollectionDenied": true,
+          "fourZeroCeilings": true,
+          "pluginsEmpty": true
+        }
+      ],
+      "terminal": true,
+      "activeAtEnd": false,
+      "pidVerified": true,
+      "pluginCatalog": {
+        "expectedActive": true,
+        "external": [
+          {
+            "expectedID": true,
+            "status": "active"
+          }
+        ]
+      },
+      "retryPluginActive": true,
+      "onlyFixtureModel": true,
+      "partialChunkSent": true,
+      "promptAccepted": true,
+      "activeBeforeCancel": true,
+      "providerConnectionClosed": true,
+      "cancelStatus": "saved",
+      "observedMs": 427,
+      "correlation": {
+        "state": "terminal",
+        "outcome": "interrupted",
+        "syntheticTextMatches": null
+      },
+      "correlationChecks": {
+        "userIDMatches": true,
+        "promptHashMatches": true,
+        "messageTimesOrdered": true,
+        "busyAtOrAfterUser": false,
+        "idleAtOrAfterBusy": true,
+        "idleMessageAtOrAfterBusy": true,
+        "assistantAtOrAfterUser": true,
+        "assistantAtOrAfterBusy": true,
+        "assistantCompletedAtOrBeforeIdleMessage": true,
+        "assistantCompletedAtOrBeforeSessionIdle": true
+      },
+      "messages": {
+        "types": [
+          "user",
+          "assistant",
+          "idle"
+        ],
+        "hasUser": true,
+        "assistants": [
+          {
+            "completed": true,
+            "failed": true,
+            "retrying": false
+          }
+        ],
+        "idleOutcomes": [
+          "interrupted"
+        ],
+        "stateOutcome": "interrupted",
+        "busyPresent": true,
+        "idlePresent": true
+      },
+      "policyForwarded": true,
+      "retryGate": "pass_single_attempt_terminal",
+      "lifecycle": {
+        "nativeOutcome": "interrupted",
+        "terminalReason": "cancelled",
+        "runtimeRetired": true,
+        "fixedCancellationAnswer": true
+      },
+      "nativeMutations": {
+        "prompts": 1,
+        "interrupts": 1,
+        "deletes": 1
+      },
       "childStopped": true,
       "sinkClosed": true
     }

@@ -12,6 +12,7 @@ import { createNativeSessionClient } from '../Panda-agent/src/opencode/session-c
 import { createNativeReceipt, createNativeMessageID } from '../Panda-agent/src/opencode/session-contracts.ts';
 import noRetry from '../Panda-agent/runtime/opencode/plugins/no-retry.ts';
 import { correlateNativeTurn } from '../Panda-agent/src/opencode/turn-result.ts';
+import { createNativeLifecycle } from '../Panda-agent/src/server/native-lifecycle.ts';
 
 if (process.argv.length !== 2) throw Error('invalid_probe_argument');
 const executable = resolve('tmp/opencode-2.2.2-review/opencode.exe');
@@ -65,6 +66,47 @@ function inspectWire(headers, body) {
     pluginsEmpty: Array.isArray(body?.plugins) && body.plugins.length === 0,
   };
 }
+function cancellationFixture(native, receipt, messageID, promptHash) {
+  const turn = { thread: '10000000-0000-4000-8000-000000000001', request: '10000000-0000-4000-8000-000000000002' };
+  const runtimeBinding = 'b'.repeat(64);
+  let state = {
+    receipt, messageID, promptHash, runtimeBinding, scopes: [], phase: 'prompting', version: 1,
+    createClaimed: true, promptClaimed: true, cancelRequested: false,
+    nativeOutcome: null, terminalReason: null, removalClaimed: false, runtimeRetired: false,
+  };
+  let releasedAnswer;
+  const sameTurn = (thread, request) => thread === turn.thread && request === turn.request;
+  const update = (thread, request, version, changes) => {
+    check(sameTurn(thread, request) && version === state.version, 'fixture_journal_fence');
+    state = { ...state, ...changes, version: version + 1 };
+    return structuredClone(state);
+  };
+  const lifecycle = createNativeLifecycle({
+    current: async input => sameTurn(input.thread, input.request)
+      && (!input.receipt || JSON.stringify(input.receipt) === JSON.stringify(receipt)),
+    ownerBinding: async () => receipt.binding,
+    authorizeRuntime: async operation => operation === 'observe' ? runtimeBinding : null,
+    native,
+    store: {
+      state: async (thread, request) => sameTurn(thread, request) ? structuredClone(state) : null,
+      transition: async (thread, request, version, phase) => update(thread, request, version, { phase, cancelRequested: true }),
+      complete: async (thread, request, version, answer, nativeOutcome, terminalReason) => {
+        update(thread, request, version, { phase: 'terminal', nativeOutcome, terminalReason });
+        releasedAnswer = answer;
+      },
+      claimRemoval: async (thread, request, version) => update(thread, request, version, { removalClaimed: true }),
+      retire: async (thread, request, version) => update(thread, request, version, { runtimeRetired: true }),
+    },
+  });
+  return { turn, lifecycle, outcome: () => ({
+    nativeOutcome: state.nativeOutcome,
+    terminalReason: state.terminalReason,
+    runtimeRetired: state.runtimeRetired,
+    fixedCancellationAnswer: releasedAnswer?.outcome === 'insufficient'
+      && releasedAnswer.text === 'This request was cancelled. Start a new question when ready.'
+      && releasedAnswer.citations.length === 0,
+  }) };
+}
 async function runCase(scenario) {
   const record = { scenario, phase: 'fixture', attempts: 0, rejectedPaths: 0, wireChecks: [], terminal: false, activeAtEnd: null };
   summary.cases.push(record);
@@ -87,10 +129,15 @@ async function runCase(scenario) {
         record.wireChecks.push(fields);
         if (!Object.values(fields).every(value => value === true)) { response.writeHead(422, { 'content-type': 'application/json' }); response.end('{"error":{"message":"fixture policy violation","type":"invalid_request_error"}}'); return; }
         if (scenario === 'drop') { request.socket.destroy(); return; }
-        if (scenario === 'success') {
+        if (scenario === 'success' || scenario === 'cancel') {
           response.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' });
           const chunk = (delta, finish_reason = null) => ({ id: 'chatcmpl-fixture', object: 'chat.completion.chunk', created: 1, model: modelID, choices: [{ index: 0, delta, finish_reason }] });
           response.write('data: ' + JSON.stringify(chunk({ role: 'assistant', content: 'Synthetic fixture reply.' })) + '\n\n');
+          if (scenario === 'cancel') {
+            record.partialChunkSent = true;
+            response.once('close', () => { record.providerConnectionClosed = true; });
+            return;
+          }
           response.write('data: ' + JSON.stringify(chunk({}, 'stop')) + '\n\n');
           response.end('data: [DONE]\n\n'); return;
         }
@@ -179,10 +226,18 @@ async function runCase(scenario) {
       return provider?.settings?.baseURL === mockURL && JSON.stringify(provider.body?.provider) === JSON.stringify(policy)
         && provider.headers?.['X-OpenRouter-Cache'] === 'false' && Array.isArray(provider.body?.plugins) && provider.body.plugins.length === 0;
     }), 'fixture_loaded_config');
-    const receipt = createNativeReceipt('playground', 'a'.repeat(64));
+    const receipt = createNativeReceipt(scenario === 'cancel' ? 'customer' : 'playground', 'a'.repeat(64));
     const marker = join(work, 'session-receipt.json'); await writeFile(marker, JSON.stringify(receipt), { flag: 'wx' });
     const admission = async candidate => JSON.stringify(candidate) === await readFile(marker, 'utf8');
-    const native = createNativeSessionClient({ baseUrl, password, directory: join(work, 'workspace'), expectedPid: child.pid, timeoutMs: 5000 });
+    const mutations = { prompts: 0, interrupts: 0, deletes: 0 };
+    const transport = (url, init) => {
+      const path = new URL(url).pathname;
+      if (init?.method === 'POST' && path.endsWith('/prompt')) mutations.prompts++;
+      if (init?.method === 'POST' && path.endsWith('/interrupt')) mutations.interrupts++;
+      if (init?.method === 'DELETE') mutations.deletes++;
+      return fetch(url, init);
+    };
+    const native = createNativeSessionClient({ baseUrl, password, directory: join(work, 'workspace'), expectedPid: child.pid, timeoutMs: 5000, fetch: transport });
     record.phase = 'session_create'; await native.create(receipt, admission);
     record.phase = 'prompt_ack';
     const messageID = createNativeMessageID(), text = 'Synthetic local wire probe. Reply with fixture.';
@@ -191,6 +246,25 @@ async function runCase(scenario) {
     check(ack.status === 'accepted', 'fixture_prompt_ack'); record.promptAccepted = true;
     record.phase = 'observe';
     const observationStart = Date.now(), observationEnd = Math.min(deadline, observationStart + summary.observationWindowMs);
+    const cancellation = scenario === 'cancel' ? cancellationFixture(native, receipt, messageID, promptHash) : null;
+    if (cancellation) {
+      while (Date.now() < observationEnd) {
+        if (record.partialChunkSent && (await native.active(receipt, admission)).active && !record.providerConnectionClosed) {
+          record.activeBeforeCancel = true;
+          break;
+        }
+        await sleep(100);
+      }
+      check(record.activeBeforeCancel, 'fixture_not_active_before_cancel');
+      record.phase = 'cancel';
+      const { lifecycle, turn } = cancellation;
+      let cancelled = await lifecycle.cancel(turn);
+      while (cancelled.status !== 'saved' && Date.now() < observationEnd) {
+        await sleep(100);
+        cancelled = await lifecycle.status(turn);
+      }
+      record.cancelStatus = cancelled.status;
+    }
     while (Date.now() < observationEnd) {
       const state = await native.get(receipt, admission), active = await native.active(receipt, admission);
       record.activeAtEnd = active.active;
@@ -224,9 +298,25 @@ async function runCase(scenario) {
     record.policyForwarded = true;
     record.retryGate = record.attempts > 1 ? 'failed_native_retries_observed' : record.terminal ? 'pass_single_attempt_terminal' : 'unverified_window_ended';
     check(record.terminal && record.attempts === 1, 'retry_not_single_terminal');
-    check(record.messages.stateOutcome === (scenario === 'success' ? 'succeeded' : 'failed'), 'unexpected_terminal_outcome');
-    check(record.messages.hasUser && record.messages.assistants.length === 1 && record.messages.assistants[0].completed && !record.messages.assistants[0].retrying && record.messages.idleOutcomes.at(-1) === record.messages.stateOutcome, 'terminal_message_evidence');
-    check(record.correlation.state === 'terminal' && record.correlation.outcome === (scenario === 'success' ? 'succeeded' : 'failed') && (scenario !== 'success' || record.correlation.syntheticTextMatches), 'terminal_turn_correlation');
+    const expectedOutcome = cancellation ? 'interrupted' : scenario === 'success' ? 'succeeded' : 'failed';
+    check(record.messages.stateOutcome === expectedOutcome, 'unexpected_terminal_outcome');
+    check(record.messages.hasUser && record.messages.idleOutcomes.at(-1) === expectedOutcome
+      && (cancellation || (record.messages.assistants.length === 1 && record.messages.assistants[0].completed && !record.messages.assistants[0].retrying)), 'terminal_message_evidence');
+    check(record.correlation.state === 'terminal' && record.correlation.outcome === expectedOutcome && (scenario !== 'success' || record.correlation.syntheticTextMatches), 'terminal_turn_correlation');
+    if (cancellation) {
+      record.phase = 'cancel_cleanup';
+      const { lifecycle, turn, outcome } = cancellation;
+      check(record.cancelStatus === 'saved' && record.providerConnectionClosed, 'cancel_not_saved_or_provider_open');
+      check((await lifecycle.cancel(turn)).status === 'saved', 'repeat_cancel_not_saved');
+      check((await lifecycle.cleanup(turn)).status === 'retired', 'cancel_cleanup_not_retired');
+      check((await lifecycle.cleanup(turn)).status === 'retired', 'repeat_cleanup_not_retired');
+      check((await native.absence(receipt, admission)).absent, 'cancelled_session_still_exists');
+      record.lifecycle = outcome();
+      record.nativeMutations = mutations;
+      check(record.lifecycle.fixedCancellationAnswer && record.lifecycle.runtimeRetired
+        && record.lifecycle.terminalReason === 'cancelled' && record.lifecycle.nativeOutcome === 'interrupted', 'cancel_journal_result');
+      check(mutations.prompts === 1 && mutations.interrupts === 1 && mutations.deletes === 1, 'duplicate_native_mutation');
+    }
     record.phase = 'observed';
   } finally {
     if (child && child.exitCode === null && child.signalCode === null) child.kill();
@@ -247,7 +337,7 @@ try {
     check(JSON.stringify(event.decision) === '{"retry":false}', 'offline_hook_veto');
   }
   summary.offlineHook = 'pass_single_retry_hook_unconditional_veto';
-  for (const scenario of ['429', '503', 'drop', 'success']) await runCase(scenario);
+  for (const scenario of ['429', '503', 'drop', 'success', 'cancel']) await runCase(scenario);
   summary.policyForwarding = 'pass';
   summary.retryGate = summary.cases.every(record => record.retryGate === 'pass_single_attempt_terminal') ? 'pass' : summary.cases.some(record => record.attempts > 1) ? 'failed' : 'unverified';
   summary.result = summary.retryGate === 'pass' ? 'completed' : 'policy_blocked';

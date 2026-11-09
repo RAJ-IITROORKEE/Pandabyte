@@ -162,10 +162,16 @@ without another DELETE: one create, zero prompts, zero interrupts, one DELETE in
 this lifecycle case. Its synthetic file journal/current callback is not Clerk or
 database acceptance. Child and fixture were removed.
 
-Mount gates remain: real callback/binding and routes, journal application, active
-inference cancellation, late prompt versus early/lost interrupt, and recovery after
-a consumed removal claim without confirmed deletion. No retry lease or automatic
-second interrupt/DELETE is introduced to hide those uncertain outcomes.
+The loopback wire probe also exercises the application lifecycle adapter against
+an active OpenCode 2.2.2 session with a synthetic versioned journal. After one
+partial chunk, cancellation closes the connection and correlates the interrupted
+turn. The journal saves the fixed cancellation answer. Repeated cancellation and
+cleanup leave the total at one prompt, one interrupt and one deletion. See
+`opencode-provider-wire-probe.json`, case `cancel`.
+
+Mounted gates still cover active cancellation through Clerk and SQL, late prompts
+after early or lost interrupt acknowledgements, and recovery after a consumed
+removal claim without confirmed deletion.
 
 ## Mounted admission boundary
 

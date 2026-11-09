@@ -1644,17 +1644,115 @@
       "phaseAdvanced": false
     }
   },
+  "phase1RegressionRecheck": {
+    "date": "2026-11-09",
+    "agentAndAdminTests": {
+      "total": 609,
+      "passed": 593,
+      "skipped": 16,
+      "failed": 0,
+      "skipReason": "Private fixtures unavailable"
+    },
+    "clientDictationTests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "nativeTypes": "passed",
+    "wireProbeLint": "passed",
+    "coverageRowsValidated": 97,
+    "providerAuthentication": {
+      "status": 200,
+      "source": "Owner-approved earlier working key",
+      "localDefaultsSynced": true,
+      "workspaceMatchesBrowser": true
+    },
+    "browser": {
+      "selected": "Fresh Brave privacy tab and signed-in Codex Browser Playground tab",
+      "privacyReadOnlyVerified": true,
+      "workspaceLoggingOff": true,
+      "broadcastUnconfigured": true,
+      "dataDiscountOff": true,
+      "retrieval": {
+        "query": "Which MCU does the x8266 use?",
+        "outcome": "retrieved",
+        "contextPassages": 2,
+        "contextCharacters": 638,
+        "elapsedMs": 8435,
+        "approvedListingIdentifies": "ESP8266",
+        "modelEvaluationDisabled": true
+      },
+      "anonymousRuntimeStatus": 401,
+      "anonymousPlaygroundStatus": 401,
+      "anonymousPrivateNoStore": true
+    },
+    "liveInferenceEnabled": false,
+    "phaseAdvanced": false,
+    "initialProviderAuthentication": {
+      "status": 401,
+      "reason": "User not found.",
+      "inferenceRequests": 0
+    },
+    "initialBrowserConnection": {
+      "selected": "Existing OpenRouter key tab in Brave",
+      "attempts": 2,
+      "result": "Connection timed out on Emulation.setFocusEmulationEnabled",
+      "acceptanceVerified": false
+    },
+    "providerDiagnostic": {
+      "model": "xingchen-agi/xing4.0-29b-a4b:free",
+      "provider": "phala",
+      "requests": 1,
+      "httpStatus": 429,
+      "fallbackAllowed": false,
+      "returnedCost": null,
+      "modelResponseVerified": false
+    }
+  },
   "phase1MountedToolFixture": {
     "date": "2026-11-07",
     "surface": "Signed-in development Admin, Codex Browser, localhost:3001 RAG Playground",
     "openCodeVersion": "2.2.2",
     "scope": "Windows opt-in local relay, fixed one-shot allow and deny cases, disposable MCP tool, scripted loopback model",
-    "allow": { "httpStatus": 200, "toolStatus": "completed", "result": "pandabyte_fixture_tool_result", "mcpInvocations": 1 },
-    "deny": { "httpStatus": 200, "toolStatus": "error", "nativePermissionDenied": true, "mcpInvocations": 0 },
-    "guards": { "browserReloadReplay": 409, "anonymous": 401, "foreignOrigin": 403, "unknownCase": 400, "nonemptyBody": 400 },
-    "retrieval": { "httpStatus": 200, "approvedPassages": 2, "listingIdentifies": "ESP8266", "modelAnswer": "not requested", "gpt4oMiniEvaluationDisabled": true },
-    "verification": { "focusedTestsPassed": 56, "scopedLint": "passed", "typescript": "passed", "coverageTasksValidated": 97 },
-    "cleanup": { "ownedSessionsRemoved": true, "ownedProcessesStopped": true, "fixtureDirectoriesRemoved": true, "launcherStopped": true, "regularPreviewRestored": true, "fixtureControlsAbsentInRegularPreview": true },
+    "allow": {
+      "httpStatus": 200,
+      "toolStatus": "completed",
+      "result": "pandabyte_fixture_tool_result",
+      "mcpInvocations": 1
+    },
+    "deny": {
+      "httpStatus": 200,
+      "toolStatus": "error",
+      "nativePermissionDenied": true,
+      "mcpInvocations": 0
+    },
+    "guards": {
+      "browserReloadReplay": 409,
+      "anonymous": 401,
+      "foreignOrigin": 403,
+      "unknownCase": 400,
+      "nonemptyBody": 400
+    },
+    "retrieval": {
+      "httpStatus": 200,
+      "approvedPassages": 2,
+      "listingIdentifies": "ESP8266",
+      "modelAnswer": "not requested",
+      "gpt4oMiniEvaluationDisabled": true
+    },
+    "verification": {
+      "focusedTestsPassed": 56,
+      "scopedLint": "passed",
+      "typescript": "passed",
+      "coverageTasksValidated": 97
+    },
+    "cleanup": {
+      "ownedSessionsRemoved": true,
+      "ownedProcessesStopped": true,
+      "fixtureDirectoriesRemoved": true,
+      "launcherStopped": true,
+      "regularPreviewRestored": true,
+      "fixtureControlsAbsentInRegularPreview": true
+    },
     "externalInferenceCalls": 0,
     "liveInferenceEnabled": false,
     "strictZdrVerified": false,
