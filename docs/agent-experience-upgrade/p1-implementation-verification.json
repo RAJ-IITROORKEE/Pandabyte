@@ -1853,5 +1853,111 @@
     },
     "limitations": "Synthetic ownership and storage do not establish mounted Clerk/SQL/native execution or a successful live provider answer.",
     "phaseAdvanced": false
+  },
+  "phase1ProjectMemoryControls": {
+    "date": "2026-11-09",
+    "status": "verified bounded owner/thread project-intent controls; P1 remains partial",
+    "authority": "Continue independent Phase 1 work during upstream Phala 429; approved P1.2 Memory & context design",
+    "changes": [
+      "Customer Memory & context can add, review, correct and clear bounded user-declared intent for the selected owned chat.",
+      "Clerk session checked before and after user-scoped InsForge RPC; same-origin PATCH, strict duplicate-key rejection, bounded UTF-8 body and private/no-store output.",
+      "SQL locks owned active parent first, rejects pending turns, uses expected-version CAS and last-operation replay.",
+      "Clear retains a row with intent null and monotonic version, empties questions/recent goals, leaves chat history and usage counters intact. Counter preservation is source-reviewed, not a separate nonzero-counter live test.",
+      "Per-owner/thread sessionStorage receipt stores operation ID/version only. Unknown writes block further mutations and never auto-retry; status readback resolves only matching operation or a newer version.",
+      "Late response after unmount cannot update another chat. Cancel focuses remounted action; success focuses stable heading."
+    ],
+    "migration": {
+      "path": "Panda-agent/migrations/20261109155410_project-memory-controls.sql",
+      "sha256": "a100a73c943c1e6fdf484e923b667e0c02bf34fc9e2cdbabb505ea5203635278",
+      "applied": true,
+      "target": "Existing selected Agent development InsForge project, host matched to worktree env",
+      "method": "Official CLI generated migration version and applied this single additive migration from isolated ignored CLI workspace; PostgREST schema reload",
+      "rehearsal": "New DDL compiled with privilege checks in schema-only transaction that intentionally rolled back. CLI rejected session-claims rehearsal, so actual actors were tested through Clerk JWTs."
+    },
+    "checks": {
+      "agentAdminRegression": {
+        "total": 617,
+        "pass": 601,
+        "skipped": 16,
+        "fail": 0,
+        "skippedReason": "Existing private-fixture requirements"
+      },
+      "focusedMemory": {
+        "pass": 8,
+        "fail": 0,
+        "includedInRegression": true
+      },
+      "separateDictation": {
+        "pass": 2,
+        "fail": 0
+      },
+      "scopedEslint": "passed",
+      "productionBuild": "passed compilation and application TypeScript",
+      "buildId": "Q3eLaidRCzNq5Dz4QbCFZ",
+      "taskValidation": "97 valid",
+      "whitespace": "passed",
+      "credentialPatternScan": {
+        "changedFiles": 15,
+        "findings": 0,
+        "scope": "Changed/new source and documentation; no private credential files printed"
+      }
+    },
+    "mountedApi": {
+      "realDevelopmentClerkActors": 2,
+      "httpChecks": 23,
+      "result": "passed",
+      "isolation": "Anonymous 401; foreign owner read/change 404; foreign origin 403; forged fields 400; direct foreign RPC and direct table SELECT denied.",
+      "concurrency": "One of two equal-version corrections commits, other returns 409; exact replay does not increment.",
+      "lifecycle": "Synthetic pending SQL row causes 409; archived mutation 404; stale restoration 409; clear retains version3; owned thread delete followed by read404.",
+      "pendingTurnLimitation": "Synthetic SQL pending row, not actual agent dispatch or in-flight cancellation.",
+      "cleanup": "Both disposable Clerk users deleted, provider404 verified; temporary pending row and thread removed; zero role writes."
+    },
+    "codexBrowser": {
+      "url": "http://localhost:3001/panda-agent",
+      "result": "passed bounded context-controls journey",
+      "verified": [
+        "Add and save",
+        "Correct and save",
+        "Reload and reopen retains correction",
+        "Cancel edit returns focus",
+        "Lowercase clear cannot submit",
+        "Exact CLEAR removes intent",
+        "Success focuses context heading",
+        "Reload and reopen retains empty context",
+        "320 CSS-pixel form fields fit without horizontal overflow"
+      ],
+      "finalBuild": "Clear, persistence, focus and responsive geometry verified on final build; add/correct originally checked on preceding candidate with same save contract.",
+      "responsiveLimitation": "Resizing with desktop sidebar open activates existing mobile sidebar focus trap; geometry only, not mobile keyboard journey acceptance.",
+      "accessibility": "Labels, polite status, alert, focus and field geometry verified; no new real screen-reader speech, zoom, reduced-motion runtime switch or light-theme acceptance.",
+      "proof": "tmp/phase1-project-context-cleared.png",
+      "cleanup": "Only disposable zero-message owner test chat removed through normal API, subsequent404. Owner session preserved, welcome state restored and fixture absent; viewport reset."
+    },
+    "safety": {
+      "externalInferenceCalls": 0,
+      "totalPriorDiagnosticInferenceCalls": 2,
+      "nativeApplicationInference": "OFF",
+      "zeroCost": "Unchanged; no inference request or paid fallback",
+      "strictZdr": "Unchanged; no new processor, embedder or Mem0 activation",
+      "deployment": false,
+      "push": false,
+      "merge": false,
+      "originalHistoryPreserved": true
+    },
+    "remaining": [
+      "Phala upstream429 successful response and zero-cost receipt",
+      "Shared Clerk/SQL native chat and Playground inference/citation/lifecycle acceptance",
+      "Supported native Admin management and effective permissions in shared execution",
+      "Mem0 processing/runtime/store/retention decision and integration",
+      "Native/customer/Playground cross-surface memory and withdrawn-source propagation",
+      "Full P1 accessibility and held-out acceptance before Phase2"
+    ],
+    "localRuntime": {
+      "port": 3001,
+      "buildDirectory": ".next-agent-phase1-memory-final",
+      "appSession": 32845,
+      "providerFreeInspectionSession": 62226,
+      "descriptor": "private/native-runtime-phase1-20261109.json",
+      "privateWorkerTunnel": "Previously closed; this memory workflow uses existing InsForge and does not require it"
+    }
   }
 }

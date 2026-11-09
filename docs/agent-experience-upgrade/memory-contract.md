@@ -1,6 +1,6 @@
 # Panda Agent memory integration contract
 
-**Status: proposed configuration and safety contract, 6 November 2026.** No Mem0 runtime, package, provider, store, or customer-processing change is made by this document. This is not the separately supplied Mem0 plan: a scoped search of repository Markdown and 481 Markdown/MDX files in `C:\Users\rajra\Downloads` found no separate plan or configuration. The only matching plan references were in `Pandabyte_Master_Codex_Prompt.md`. No user credential files, provider probes, or broad personal-file search were used.
+**Status: bounded existing-store project-context controls verified 9 November 2026; Mem0 configuration remains a disabled proposal.** No Mem0 runtime, package, provider, store, or customer-processing change is made by this document. This is not the separately supplied Mem0 plan: a scoped search of repository Markdown and 481 Markdown/MDX files in `C:\Users\rajra\Downloads` found no separate plan or configuration. The only matching plan references were in `Pandabyte_Master_Codex_Prompt.md`. No user credential files, provider probes, or broad personal-file search were used.
 
 ## Finding and recommendation
 
@@ -22,8 +22,52 @@ If a Mem0 implementation is later required, first evaluate the Mem0 open-source 
 - `Panda-agent/src/guide/contracts.ts`, `Panda-agent/src/server/guide-store.ts`, `Panda-agent/src/server/chat-store.ts`, and `Panda-agent/src/server/lightweight-handler.ts` validate/project this bounded state through the owned chat read and guide lifecycle. `Panda-agent/tests/guide-contract.test.mjs`, `guide-store.test.mjs`, and `guide-handler.test.mjs` cover validation, projection and lifecycle behavior. These tests are source evidence, not a new verification run in this task.
 - The same migration makes project memory reference the chat with `ON DELETE CASCADE`; `app/api/panda-agent/chats/[id]/route.ts` exposes the existing owner-scoped chat-delete operation. The delete RPC rejects pending turns before deletion. This proves project-memory cleanup through chat deletion, not a complete cross-store Mem0 deletion contract.
 - `Panda-agent/src/retrieval/context-summary.ts` reports bounded per-request retrieval counts; it is telemetry, not persistent conversational memory. No general cross-conversation customer-memory store or Mem0 adapter was identified in the inspected paths.
-- The current lightweight service README describes a deterministic guide with no model call. The current Agent upgrade capability contract records that its worker model profile is empty. There is no established Mem0 integration, general memory CRUD surface, or approved Mem0 provider/store configuration.
+- The current lightweight service README describes a deterministic guide with no model call. The current Agent upgrade capability contract records that its worker model profile is empty. There is no established Mem0 integration or approved Mem0 provider/store configuration. The owner/thread intent review, correction and clearing controls below now exist in the existing store.
 - `docker` and `ollama` were not found on the current PowerShell command path. This is a local environment observation, not proof those tools are absent from every runtime or deployment.
+
+## Verified explicit project-context controls, 9 November 2026
+
+The approved customer Memory & context view now allows add, review, correction and
+clearing of bounded user-declared goal/board/revision/components. This uses the
+existing InsForge owner/thread memory table and Clerk identity. It adds no Mem0,
+LLM extraction, embeddings, new processor or cross-chat memory. Intent remains
+user-reported context and cannot establish product facts or source authority.
+
+GET/PATCH `/api/panda-agent/chats/[id]/memory` uses the current verified owner
+session, private/no-store responses, same-origin writes and bounded strict JSON.
+The additive migration `20261109155410_project-memory-controls.sql` is applied
+only to the selected development Agent backend. Authenticated RPCs check ownership,
+lock the active parent chat first and reject pending turns. Concurrent writes use
+expected-version comparison, and an exact last-operation replay is idempotent.
+Direct table access remains denied. Archived chats are readable but not editable.
+
+Clear requires typed CLEAR. It empties intent, questions and recent goals while
+retaining a versioned row, guide usage/compaction counters and chat messages. This
+prevents a stale version-zero request from restoring an old memory or resetting a
+budget. Existing owned chat deletion still cascades its project-memory row.
+This does not promise erasure of unrelated message history, audits or backups.
+
+Before a write, the UI persists and verifies an owner/thread recovery receipt
+containing only operation ID and expected version. An unknown outcome blocks more
+writes and never auto-retries. Status-only readback can resolve the matching
+operation or a newer version; the same old version leaves the write uncertain.
+Access/version rejection requires readback and review. A late response after
+switching chats cannot update the next chat or clear the old receipt. Clearing
+recovery storage failure retains a block. No customer text is stored in receipts.
+
+The final built Codex Browser verified correction persistence, clear confirmation,
+clear persistence, Cancel/success focus and 320px form geometry. Twenty-three
+mounted HTTP checks used two real disposable development Clerk identities,
+including cross-owner denial, concurrent conflict, replay, pending/archive guards
+and cleanup. The pending guard used a synthetic SQL row, not agent dispatch.
+All test identities and the separate disposable owner browser chat were cleaned.
+Eight focused regressions pass within the 601-pass Agent/Admin suite (16 skips).
+Counter preservation is source-reviewed; a nonzero-counter live case was not added.
+Details and limitations are in `p1-implementation-verification.json.phase1ProjectMemoryControls`.
+
+This closes a bounded existing-memory control gap. Mem0 activation, privacy/retention,
+cross-surface native/Playground integration and source-withdrawal propagation remain
+unverified. Phase 1 remains partial and Phase 2 gated.
 
 ## Versioned configuration proposal
 

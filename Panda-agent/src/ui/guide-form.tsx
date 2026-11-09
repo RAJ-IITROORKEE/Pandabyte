@@ -5,13 +5,14 @@ import styles from "./guide-form.module.css";
 import { prepareGuideInput, type GuideInput } from "./guide-input";
 
 export type { GuideInput } from "./guide-input";
-export type ProjectMemory = { version: number; guideTurns: number; compactions: number; intent: { goal: string; board: string; revision?: string; components: string[] }; questions: string[]; recentGoals: string[] };
+export type { ProjectMemory } from "../guide/contracts";
+import type { ProjectMemory } from "../guide/contracts";
 
 export function GuideForm({ memory, disabled, onSubmit, onClose }: { memory: ProjectMemory | null; disabled: boolean; onSubmit: (input: GuideInput) => void; onClose: () => void }) {
-  const [goal, setGoal] = useState(memory?.intent.goal ?? "");
-  const [board, setBoard] = useState(memory?.intent.board ?? "");
-  const [revision, setRevision] = useState(memory?.intent.revision ?? "");
-  const [components, setComponents] = useState(memory?.intent.components.join("\n") ?? "");
+  const [goal, setGoal] = useState(memory?.intent?.goal ?? "");
+  const [board, setBoard] = useState(memory?.intent?.board ?? "");
+  const [revision, setRevision] = useState(memory?.intent?.revision ?? "");
+  const [components, setComponents] = useState(memory?.intent?.components.join("\n") ?? "");
   const [version] = useState(memory?.version ?? 0);
   const [error, setError] = useState("");
   const changed = (memory?.version ?? 0) !== version;

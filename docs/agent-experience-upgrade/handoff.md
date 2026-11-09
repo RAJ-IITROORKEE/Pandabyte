@@ -1,7 +1,7 @@
 # Agent Experience Upgrade — current handoff
 
 9 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. The retrieval-first fix is `78707cd`. This checkpoint records its signed-in Codex browser verification.
+Use `git log -1` for the local checkpoint. Latest follow-up implements and verifies explicit owner/thread project-context controls while Phala is rate limited. Earlier native integration is retained at `a8f84ab`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
@@ -19,7 +19,7 @@ Latest owner request: reuse the exact already working main RAG system in this
 branch, make Agent Skills useful, test Playground/main chat/OpenRouter, and use
 bounded memory-efficient multi-agent work. Zero-cost and strict ZDR remain
 unchanged. Use the existing key directly; do not request OpenRouter account login,
-model-choice or credentials again. Inference stays OFF until privacy verified.
+model-choice or credentials again. Native application inference stays OFF pending successful bounded-provider receipt and shared execution acceptance.
 
 ## Main RAG reuse
 
@@ -264,8 +264,8 @@ speech claim. Codex tabs retained for chat, RAG and Agent Skills.
 
 ## Local state and next work
 
-Local built app runs in session77432 on localhost3001 with the development Clerk
-and InsForge services. Build `IMMiNJueGSBKsBd1GET-K` uses
+The earlier built app in session77432 is stopped. Current final built app runs in
+session32845 on localhost3001 with the development Clerk and InsForge services. Build `IMMiNJueGSBKsBd1GET-K` uses
 `.next-agent-experience-browser-fix` and passed compilation and type checking.
 Worktree `.env.local` retains journalON, new-native-messagesOFF, document-libraryON,
 inspectionON, upload/preparationON, existing server-only signing key and owned
@@ -398,3 +398,65 @@ zero-cost receipt. Remaining acceptance covers shared native chat and Playground
 structured responses and citations, lifecycle and latency, supported native Admin
 management, effective permissions in shared execution, and customer memory. The 97-row register
 tracks these gates before Phase 2.
+
+## Project-context controls checkpoint, 9 November 2026
+
+The approved Memory & context view now supports add, review, correction and typed
+CLEAR for bounded owner/thread project intent in existing InsForge storage.
+Clerk is checked before and after the RPC. Same-origin PATCH, strict bounded JSON,
+private/no-store responses, owner-only RPCs and table restrictions remain enforced.
+The development migration `20261109155410_project-memory-controls.sql` was applied
+through the official CLI to the selected Agent backend after target matching and
+a rolled-back schema rehearsal. Its SHA256 is `a100a73c943c1e6fdf484e923b667e0c02bf34fc9e2cdbabb505ea5203635278`.
+The repository-root CLI config points elsewhere and must not be used for this
+Agent migration. The isolated task CLI credential copy is removed after use.
+
+Corrections use expected-version comparison under the parent chat lock. Pending
+turns and archived chats block writes. Clear retains a null-intent version fence
+and usage counters, empties questions/recent goals and preserves chat history.
+Exact replay does not increment again. The browser persists operation ID/version
+only before sending; unknown writes block further changes and never auto-retry.
+Status-only readback of the old version does not unlock. Later responses cannot
+update another selected chat. Source evidence authority is unchanged.
+
+Mounted development checks passed 23 HTTP assertions with two real disposable
+Clerk identities. They cover anonymous/foreign-owner/origin rejection, invalid
+fields, replay, concurrent conflict, versioned clear, stale restore, archive and
+thread deletion. Direct foreign RPC/table access was denied. The pending guard
+was exercised with one synthetic SQL row, not an agent-dispatched turn. Both
+fixture identities, the pending row and their chat were removed; provider404 was
+verified, and no role writes occurred.
+
+Codex Browser checked add/save, correction/save, reopen persistence and Cancel.
+The final built app checked clear confirmation (lowercase rejected), empty-context
+persistence after reload/reopen and correct Cancel/success focus. The 320 CSS-pixel
+form fits without horizontal overflow. Resizing with the desktop sidebar open
+activates its existing mobile focus trap, so geometry is not claimed as a complete
+mobile keyboard journey. No new real screen-reader speech, zoom, light theme or
+runtime reduced-motion acceptance. The separate disposable zero-message owner
+chat was removed through the normal API and its read returned404. The owner
+session is preserved, viewport reset, welcome restored, and fixture absent.
+Local cropped proof: `tmp/phase1-project-context-cleared.png`.
+
+Final Agent/Admin regressions: 617 total, 601 PASS,16 existing private-fixture
+skips,0 FAIL. Eight memory cases are included. Two dictation tests pass separately.
+Scoped ESLint and production compilation/application TypeScript pass. Final
+BUILD_ID `Q3eLaidRCzNq5Dz4QbCFZ`, directory
+`.next-agent-phase1-memory-final`, app session32845 on localhost3001. Inspection
+supervisor remains session62226 with the owned descriptor recorded above.
+Generated temporary build includes were removed from tsconfig. All 97 tasks validate;
+whitespace checks pass and 15 changed/new files pass credential-pattern scanning.
+
+This checkpoint makes zero external inference calls. The historical two diagnostics
+remain the total; no paid fallback, processor, Mem0, embedding or privacy-policy
+change was introduced. Native application inference remains OFF. Phala429 is still
+unresolved, with no provider reset time or successful zero-cost receipt. Shared
+native chat/Playground/citation/lifecycle acceptance, supported native Admin
+management/effective shared-execution permissions, full memory integration and
+held-out/a11y acceptance remain open. Mem0 still requires the runtime/store,
+processing and retention decisions in `memory-contract.md`.
+
+See `p1-implementation-verification.json.phase1ProjectMemoryControls` and the
+P1.3/P1.7/P1.8 evidence in the single 97-row register. Their statuses remain
+in_progress/partial. Complete the Phase 1 gates before Phase 2. No push, merge,
+deployment or commerce configuration change.

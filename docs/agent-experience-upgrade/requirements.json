@@ -416,7 +416,12 @@
         "browserRoutes": "Codex browser real disabled native admission/absent-attempt cancellation and preserved deterministic RAG/citation/reload/owned archive pass with journal routing ON. Native inference remains OFF.",
         "mainReuse": "7 Nov: requested main working-tree RAG port, actual document/Playground retrieval and native discovery/real RAG bundle controls; see mainRagReuse in p1-implementation-verification.json. Live model inference remains OFF.",
         "restoredMainChat": "7 Nov real AWS/owner Codex browser deterministic quote/citation, reload/reopen and owned archive pass; same1021c59 built source, no live LLM. See mainRagReuse.authorizationFollowup.",
-        "currentFollowup": "7 Nov: p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup; final built Codex browser PDF withdrawal, disposable real-customer isolation and provider-free chat/Playground checks. Strict workspace privacy proof remains unavailable to ordinary key; inference OFF."
+        "currentFollowup": "7 Nov: p1-implementation-verification.json.phase1WithdrawalAndNativeFollowup; final built Codex browser PDF withdrawal, disposable real-customer isolation and provider-free chat/Playground checks. Strict workspace privacy proof remains unavailable to ordinary key; inference OFF.",
+        "projectMemoryControls": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1ProjectMemoryControls",
+          "verified": "9 Nov: owner/thread intent add/correct/clear, version tombstone, uncertain-write recovery; development migration, 23 mounted HTTP checks with real disposable Clerk users, final built Codex Browser checks; 601 regressions pass,16 skip, plus2 dictation.",
+          "limitations": "Mem0 and cross-surface native memory unfinished; no live inference, no Phase2 advancement."
+        }
       }
     },
     {
@@ -565,7 +570,12 @@
       "claim": null,
       "executionEvidence": {
         "memoryContract": "docs/agent-experience-upgrade/memory-contract.md",
-        "ownerFollowup": "Find the missing plan or configure if required; no separately supplied plan found; existing memory preserved; no new processor enabled"
+        "ownerFollowup": "Find the missing plan or configure if required; no separately supplied plan found; existing memory preserved; no new processor enabled",
+        "projectMemoryControls": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1ProjectMemoryControls",
+          "verified": "9 Nov: owner/thread intent add/correct/clear, version tombstone, uncertain-write recovery; development migration, 23 mounted HTTP checks with real disposable Clerk users, final built Codex Browser checks; 601 regressions pass,16 skip, plus2 dictation.",
+          "limitations": "Mem0 and cross-surface native memory unfinished; no live inference, no Phase2 advancement."
+        }
       }
     },
     {
@@ -606,6 +616,11 @@
         "nativeTurnPipeline": {
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1NativeTurnPipelineFollowup",
           "result": "Seven native wire cases,57 focused tests and scoped lint pass. Codex Browser discovery and retrieval pass. One further bounded live diagnostic identifies Phala upstream429 with no Retry-After/reset time. No other eligible free strict-ZDR route is listed."
+        },
+        "projectMemoryControls": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1ProjectMemoryControls",
+          "verified": "9 Nov: owner/thread intent add/correct/clear, version tombstone, uncertain-write recovery; development migration, 23 mounted HTTP checks with real disposable Clerk users, final built Codex Browser checks; 601 regressions pass,16 skip, plus2 dictation.",
+          "limitations": "Mem0 and cross-surface native memory unfinished; no live inference, no Phase2 advancement."
         }
       }
     },
