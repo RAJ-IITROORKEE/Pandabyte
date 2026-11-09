@@ -2072,6 +2072,165 @@
       "deployed": false,
       "pushed": false,
       "merged": false
+    },
+    "supersededBy": "basicRagHistoryIntegration for current history wiring; original measurements retained"
+  },
+  "basicRagHistoryIntegration": {
+    "date": "2026-11-10",
+    "status": "Guarded basic-RAG history/routing/recovery/cancellation checkpoint verified; live provider acceptance pending",
+    "plan": "docs/agent-experience-upgrade/basic-rag-milestone.md",
+    "implementation": {
+      "store": "New owner-scoped sidecar references existing lightweight turn. Existing signed admission/prepare/complete guards, private projections, quotas, skill epoch and source/citation validation preserved.",
+      "classification": "Fresh basic admission only; exact replay cannot reclassify legacy/native/guide/composite turns. Persisted basic classification is consulted before legacy reconciliation regardless of new-admission flag. Existing native classification retains precedence.",
+      "dispatch": "One atomic persisted scope/digest claim. Duplicate request, GET/status and process restart never initiate another completion. Changed question conflicts.",
+      "cancellation": "Basic-specific logical stop-waiting response; prepared state says provider may still process and no late answer will save. Unprepared state says no model request sent. Transactional hash/write fences reject late completion and old workflow takeover. No remote provider interrupt claimed.",
+      "completion": "Internal completing phase accepts only existing lightweight-approved response hash, then verifies actual completed turn/hash before terminalization. This preserves the existing fixed skill-change fallback without duplicating its policy.",
+      "routes": "Existing main-chat messages/read/cancel use the basic bridge; successful HTTP response requires fresh completed durable history. Unknown status remains pending; no worker/model fallback. Existing UI and persistence contracts retained.",
+      "activation": "Route-intent env flag defaults false. basicRagAdmissionEnabled() is hardfalse for both admission and provider-policy check; route flag cannot enable inference. Classifier/status/cancel stay wired while new admission is off."
+    },
+    "migration": {
+      "migration": "20261109183521_basic-rag-chat.sql",
+      "applied": true,
+      "sha256": "7c5aac4a761ff10bbbfb00b0c2c9b6ddbc8223bfd57eb0e0a940cc34bc1f5995",
+      "aclVerified": true,
+      "path": "Panda-agent/migrations/20261109183521_basic-rag-chat.sql",
+      "developmentTarget": "Selected Agent InsForge host matched to worktree env; isolated official CLI context",
+      "rehearsal": "Nine schema units compiled inside intentional rollback statements; no actor impersonation. Applied one explicit additive migration through official CLI, with automatic PostgREST reload.",
+      "acl": "Direct table SELECT/UPDATE denied; anonymous cancel denied; authenticated private legacy-completion alias denied; authenticated basic begin permitted with server HMAC."
+    },
+    "realStoreChecks": {
+      "pass": 26,
+      "providerCalls": 0,
+      "actualDisposableDevelopmentClerkActors": 2,
+      "checks": [
+        "owned absent state is null",
+        "foreign state rejected",
+        "new basic admission",
+        "exact basic admission replay is not admitted",
+        "replayed changed question rejected",
+        "foreign basic admission rejected",
+        "legacy begin cannot take basic turn",
+        "wrong scope rejected before claim",
+        "concurrent claims execute exactly once",
+        "legacy prepare cannot take basic turn",
+        "legacy complete cannot take basic turn",
+        "legacy cancellation cannot take basic turn",
+        "claimed state readback remains pending without dispatch",
+        "logical cancellation has truthful remote wording",
+        "late result cannot overwrite logical cancellation",
+        "claim cannot execute after cancellation",
+        "cancellation replay preserves complete state",
+        "unprepared cancellation does not claim provider dispatch",
+        "normal completion and replay preserve a terminal result",
+        "existing skill-change fallback completes and matches final sidecar hash",
+        "stale source scope refuses completion and retains pending",
+        "basic admission cannot relabel a legacy turn",
+        "legacy state remains outside basic classifier",
+        "raw table read denied",
+        "renamed private completion cannot be called by authenticated actor",
+        "bad signature cannot admit a basic turn"
+      ],
+      "fixtureOnlyEdits": [
+        "Only disposable turn qa_skill_epoch=-1",
+        "Only disposable turn synthetic stale scope hash"
+      ],
+      "sourcePublicationWrites": false,
+      "roleWrites": false,
+      "skillFallback": "Disposable qa_skill_epoch=-1 caused the existing fixed terminal fallback; final sidecar hash matched actual response.",
+      "staleScope": "Synthetic stale scope hash on a disposable turn rejected completion and retained pending; this is not an actual approved-source withdrawal.",
+      "cleanup": "All disposable threads and both test identities deleted, subsequent404 confirmed. An initial overlong test email stopped setup; its one created identity was also cleaned before retry."
+    },
+    "mountedApi": {
+      "gate": "503 before admission; attempt remains absent; gate thread removed",
+      "statusOnlyRead": "200 pending",
+      "duplicate": "503 pending without redispatch",
+      "mismatch": 409,
+      "wrongOrigin": 403,
+      "anonymous": 401,
+      "providerCalls": 0,
+      "syntheticClaim": true,
+      "note": "Real owner Clerk session, actual development database and built localhost BFF. Claimed pending state was deliberately seeded without provider dispatch.",
+      "admissionOff": "Route-intent true still returned503 before durable admission. Readback attempt absent/messages empty. Dedicated gate chat deleted.",
+      "cleanup": "Disposable owner recovery chat deleted via mounted API, subsequent404, owner session preserved."
+    },
+    "codexBrowser": {
+      "url": "http://localhost:3001/panda-agent",
+      "providerCalls": 0,
+      "seededState": "One disposable owned basic-RAG turn with a synthetic persisted claim; no actual model request.",
+      "verified": [
+        "Pending owned chat loads in current main UI",
+        "Check status retains pending without resending",
+        "Cancel saves truthful provider-may-still-process response",
+        "Composer re-enabled after logical cancellation",
+        "Reload retains cancellation response",
+        "Cleanup removes fixture and restores welcome with owner signed in"
+      ],
+      "proof": "tmp/basic-rag-cancellation-20261110.png",
+      "limitations": "Does not prove live generation, actual provider interruption, live token streaming, fresh screen-reader speech, viewport/theme matrix or retrieval latency improvement."
+    },
+    "checks": {
+      "agentAdmin": {
+        "total": 663,
+        "pass": 647,
+        "skipped": 16,
+        "fail": 0
+      },
+      "separateDictation": {
+        "pass": 2,
+        "fail": 0
+      },
+      "focusedBasicRag": {
+        "pass": 41,
+        "includedInAgentAdmin": true
+      },
+      "build": {
+        "passed": true,
+        "id": "vMHixWHEaexSs_yE0cJLv",
+        "directory": ".next-agent-basic-rag"
+      },
+      "types": "Application production build, native TypeScript and direct history-module TypeScript passed",
+      "scopedEslint": "passed",
+      "review": "Independent reviewer found the skill-change fallback edge; fixed before apply, actual database fallback assertion passed, final code review found no new defects. Reviewer independently reran25 route/service tests; did not independently repeat backend calls.",
+      "taskValidation": "97 valid",
+      "whitespace": "passed",
+      "credentialScan": {
+        "changedFiles": 15,
+        "findings": 0
+      },
+      "adoptedSpecification": "SHA256 unchanged"
+    },
+    "provider": {
+      "metadataReadDate": "2026-11-10",
+      "exactFreePhalaTokenPrices": 0,
+      "safetyRetention": false,
+      "newInferenceCalls": 0,
+      "priorBoundedDiagnosticTotal": 3,
+      "lastLiveDiagnostic": "9 November HTTP429; no reset time or zero-cost receipt",
+      "applicationInferenceEnabled": false,
+      "zeroCostStrictZdrUnchanged": true,
+      "accountSettingsChanged": false
+    },
+    "remaining": [
+      "Verified live activation/profile with fresh exact key/workspace/endpoint privacy proof and successful zero-cost response",
+      "Real main-chat grounded answer, provider-failure, replay and citation quality acceptance",
+      "Shared basic-RAG Playground generation/configuration integration",
+      "Measured retrieval/generation/total response-time acceptance; last prior retrieval sample9171ms, no new latency improvement claimed",
+      "Full original P1 acceptance and subsequent harness/MCP/tools/web-search/memory work after basic prototype acceptance"
+    ],
+    "localRuntime": {
+      "appSession": 47222,
+      "port": 3001,
+      "basicRagNewMessages": false,
+      "nativeNewMessages": false,
+      "inspection": "Prior provider-free descriptor preserved; no new native runtime execution verified in this checkpoint"
+    },
+    "safety": {
+      "customerHistoriesPreserved": true,
+      "sourcePublicationChanges": false,
+      "deployment": false,
+      "push": false,
+      "merge": false,
+      "phase2Advanced": false
     }
   }
 }

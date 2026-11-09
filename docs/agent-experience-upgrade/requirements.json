@@ -425,6 +425,11 @@
         "basicRagPriority": {
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
           "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
+        },
+        "basicRagHistory": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
+          "verified": "10 Nov: signed classification/one-use claim, read-only recovery, basic-specific logical cancel and late-save fence;26real backend assertions, mounted off-gate APIs and Codex Browser.647regressions pass/16skip plus2dictation.",
+          "limitations": "No new inference call; live application admission hardOFF. Original P1 row status unchanged; no Phase2 advancement."
         }
       }
     },
@@ -470,6 +475,11 @@
         "basicRagPriority": {
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
           "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
+        },
+        "basicRagHistory": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
+          "verified": "10 Nov: signed classification/one-use claim, read-only recovery, basic-specific logical cancel and late-save fence;26real backend assertions, mounted off-gate APIs and Codex Browser.647regressions pass/16skip plus2dictation.",
+          "limitations": "No new inference call; live application admission hardOFF. Original P1 row status unchanged; no Phase2 advancement."
         }
       },
       "providerDecision": {
@@ -637,6 +647,11 @@
         "basicRagPriority": {
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
           "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
+        },
+        "basicRagHistory": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
+          "verified": "10 Nov: signed classification/one-use claim, read-only recovery, basic-specific logical cancel and late-save fence;26real backend assertions, mounted off-gate APIs and Codex Browser.647regressions pass/16skip plus2dictation.",
+          "limitations": "No new inference call; live application admission hardOFF. Original P1 row status unchanged; no Phase2 advancement."
         }
       }
     },
@@ -2634,9 +2649,9 @@
         "no deployment/push/merge"
       ],
       "acceptance": "Actual grounded one-shot response, zero-cost receipt, current-source checks, owned persistence/recovery, API/Codex Browser and measured latency",
-      "blocked": "Fresh exact route still429, no zero-cost receipt. Plain-RAG durable main-chat integration remains unfinished independently of provider availability.",
-      "executionEvidence": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
-      "implemented": "Evidence-preparation simplification and concurrent current-source reads, tested one-shot core/strict-free transport. No application inference activation.",
+      "blocked": "Live activation/profile, successful strict-free provider response and zero-cost receipt, shared Playground generation, quality and response-time acceptance remain open.",
+      "executionEvidence": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
+      "implemented": "Basic-RAG core, strict-free transport and guarded main-chat durable classification/recovery/logical cancellation integrated. Verified with synthetic completions, real Clerk/InsForge/mounted APIs and Codex Browser. Inference remains off.",
       "performance": "Reduced remote reads but measured8826/8968/9171ms does not establish a speed improvement."
     }
   }

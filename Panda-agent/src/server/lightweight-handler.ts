@@ -18,6 +18,7 @@ import {validAgenticCatalog,type createAgenticAnswer} from './agentic-answer.ts'
 import type {createAgenticStore,CompositeExecution} from './agentic-store.ts';
 import {parseToolActivity} from '../agentic/tool-activity.ts';
 import type {NativeChatBridge} from './native-chat-service.ts';
+import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 
 type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>;diagnostic?:ReturnType<typeof createDiagnosticStore>;agentic?:ReturnType<typeof createAgenticStore>};
 type Dependencies = {
@@ -40,6 +41,8 @@ type Dependencies = {
   agenticCancel?(actor:ChatActor,execution:CompositeExecution,signal:AbortSignal):Promise<void>;
   native?(actor:ChatActor):NativeChatBridge;
   nativeNewMessages?():boolean;
+  basicRag?(actor:ChatActor):BasicRagChatBridge;
+  basicRagNewMessages?():boolean;
 };
 const json = (value:unknown,status=200) => new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store'}});
 const status = (e:unknown) => e instanceof ChatStoreError ? ({not_found:404,conflict:409,invalid:400,unauthenticated:401,quota:429,unavailable:503})[e.code] : typeof e==='number' ? e : 503;
@@ -91,6 +94,8 @@ export function createLightweightHandler(deps:Dependencies) {
       if(method==='DELETE' && request.body) {const reader=request.body.getReader();try{while(true){const p=await reader.read();if(p.done)break;if(p.value.byteLength){await reader.cancel();throw 400;}}}finally{reader.releaseLock();}}
       const store=deps.store(actor);
       const native=deps.native?.(actor);
+      const basicRag=deps.basicRag?.(actor);
+      if(deps.basicRagNewMessages?.() && !basicRag && ['read','message','cancel'].includes(action))throw new ChatStoreError('unavailable');
       if(action==='list')return json(await store.list(url.search==='?archived=true'));
       if(action==='create')return json(await store.create((input.title as string|undefined)?.trim()??'New chat'),201);
       if(action==='archive')return json(await store.archive(id!,input.archived as boolean));
@@ -112,6 +117,12 @@ export function createLightweightHandler(deps:Dependencies) {
         return {...publicRead(saved),attemptStatus:matches[0]?.status ?? 'absent'};
       };
       const release=async () => project(await safeRead());
+      const releaseBasic=async(requestId:string,question?:string) => {
+        const saved=await safeRead(), matches=saved.turns.filter(turn=>turn.requestId===requestId);
+        if(matches.length!==1 || matches[0].status!=='complete')throw new ChatStoreError('unavailable');
+        if(question!==undefined && matches[0].question!==question)throw new ChatStoreError('conflict');
+        return project(saved);
+      };
       // Only explicit same-origin mutations may remove native context; history GET never deletes it.
       const cleanup=async(requestId:string)=>{try{await native?.cleanup({thread:id!,request:requestId},request.signal);}catch{/* Retain uncertain native context; SQL still forbids deleting its history. */}};
       if(action==='cleanup') {
@@ -142,6 +153,12 @@ export function createLightweightHandler(deps:Dependencies) {
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             await cleanup(turn.requestId);
             return json(await release());
+          }
+          if(basicRag && await basicRag.state(id!,turn.requestId)) {
+            if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
+            const result=await basicRag.cancel({thread:id!,request:turn.requestId},request.signal);
+            if(result.status!=='saved')throw new ChatStoreError('unavailable');
+            return json(await releaseBasic(turn.requestId,turn.question));
           }
           if(turn.workflow==='agentic'){
             if(!store.agentic||!deps.agenticCancel)throw new ChatStoreError('unavailable');
@@ -227,6 +244,12 @@ export function createLightweightHandler(deps:Dependencies) {
             catch(e) {if(!(e instanceof ChatStoreError) || e.code!=='unavailable')throw e;}
             return json(await release());
           }
+          if(basicRag && await basicRag.state(id!,turn.requestId)) {
+            if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
+            try {await basicRag.status({thread:id!,request:turn.requestId},request.signal);}
+            catch(e) {if(!(e instanceof ChatStoreError) || e.code!=='unavailable')throw e;}
+            return json(await release());
+          }
           const execution=await store.execution(id!,turn.requestId);
           const diagnostic=turn.question.startsWith('Diagnostic (')?await store.diagnostic?.execution(id!,turn.requestId):null;
           if(execution.prepared||diagnostic||turn.workflow==='agentic') {
@@ -238,14 +261,34 @@ export function createLightweightHandler(deps:Dependencies) {
       }
       const question=agenticInput?agenticInput.question:diagnosticInput?diagnosticQuestion(diagnosticInput):guideInput?guideQuestion(guideInput):(input.question as string).trim(), requestId=(input.requestId as string).toLowerCase();
       if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unavailable');
-      if(native) {
+      if(native || basicRag) {
         const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
-        const persisted=await native.state(id!,requestId);
-        if(persisted || (deps.nativeNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput)) {
+        const persisted=native && await native.state(id!,requestId);
+        if(persisted && native) {
           if(existing && (existing.question!==question || existing.workflow))throw new ChatStoreError('conflict');
-          const result=persisted
-            ? await native.status({thread:id!,request:requestId,question},request.signal)
-            : await native.start({thread:id!,request:requestId,question},request.signal);
+          const result=await native.status({thread:id!,request:requestId,question},request.signal);
+          if(result.status!=='saved')throw new ChatStoreError('unavailable');
+          await cleanup(requestId);
+          return json(await release());
+        }
+        if(basicRag && await basicRag.state(id!,requestId)) {
+          // Admission may have committed after the first read. Re-read before comparing the immutable question.
+          const turn=existing ?? (await safeRead()).turns.find(t=>t.requestId===requestId);
+          if(!turn)throw new ChatStoreError('unavailable');
+          if(turn.question!==question || turn.workflow || guideInput || diagnosticInput || agenticInput)throw new ChatStoreError('conflict');
+          if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
+          const result=await basicRag.status({thread:id!,request:requestId},request.signal);
+          if(result.status!=='saved')throw new ChatStoreError('unavailable');
+          return json(await releaseBasic(requestId,question));
+        }
+        if(basicRag && deps.basicRagNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
+          if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
+          const result=await basicRag.start({thread:id!,request:requestId,question},request.signal);
+          if(result.status!=='saved')throw new ChatStoreError('unavailable');
+          return json(await releaseBasic(requestId,question));
+        }
+        if(native && deps.nativeNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
+          const result=await native.start({thread:id!,request:requestId,question},request.signal);
           if(result.status!=='saved')throw new ChatStoreError('unavailable');
           await cleanup(requestId);
           return json(await release());

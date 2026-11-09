@@ -110,3 +110,20 @@ remain unwired to main-chat persistence. Actual provider diagnostic still429.
 Browser retrieval returns the same2passages/638characters but measured9171ms
 versus8826ms baseline; a speed improvement is unestablished. No prototype completion
 or deployment is claimed. See the current handoff and existing P1 verification.
+
+## History integration checkpoint, 10 November 2026
+
+Step3 guarded wiring is implemented: persisted basic-RAG classification, one-use
+claim, status-only recovery and logical cancellation with a late-save fence.
+Existing signed history, quotas, skill epoch and source/citation guards are reused.
+Twenty-six real backend assertions, mounted APIs and Codex Browser recovery/cancel/
+reload/cleanup passed.647unit regressions pass with16skips; two dictation tests
+pass separately. No new inference call or live response acceptance is claimed.
+
+The route-intent flag is false in the normal preview. Even when true during the
+mounted gate check, hardfalse admission/policy guards returned503 before begin.
+Inference remains off. Next is supported activation/profile, a successful actual
+zero-cost strict-ZDR response, real answer/citation quality, shared Playground
+generation and measured fast-response acceptance. The earlier nine-second
+retrieval result remains an open performance gate. See current handoff and
+`p1-implementation-verification.json.basicRagHistoryIntegration`.

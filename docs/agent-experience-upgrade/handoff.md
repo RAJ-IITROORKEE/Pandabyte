@@ -1,11 +1,86 @@
 # Agent Experience Upgrade — current handoff
 
-9 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. Latest follow-up prioritizes the basic RAG prototype, simplifies evidence preparation and verifies the guarded one-call core while Phala remains rate limited. Earlier native integration is retained at `a8f84ab`.
+10 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
+Use `git log -1` for the local checkpoint. Latest follow-up integrates guarded basic-RAG history, status recovery and logical cancellation. Prior retrieval/core checkpoint is `05bd279`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Latest priority — basic RAG first, 9 November 2026
+## Latest checkpoint — basic RAG history, 10 November 2026
+
+The revised basic-RAG-first plan remains active. Main-chat messages/read/cancel
+now use durable basic-RAG classification and the tested one-call core behind an
+OFF admission gate. Native/legacy/guide/composite histories retain their own
+paths. Existing signed lightweight admission, quotas, prepare, completion and
+source-fenced reads are preserved; no old unfenced completion was revived.
+
+Applied development migration `20261109183521_basic-rag-chat.sql` adds an owner-only
+sidecar, server-HMAC RPCs and cross-kind guards. Private renamed wrappers remain
+revoked. SHA256 `7c5aac4a761ff10bbbfb00b0c2c9b6ddbc8223bfd57eb0e0a940cc34bc1f5995`.
+Official CLI selected the version and applied exactly this migration to the Agent
+backend after matching the worktree host. Nine intentional rollback schema units
+passed. Root storefront CLI config still points elsewhere; do not use it here.
+The isolated task CLI credential copy is removed after use.
+
+One atomic scope/digest claim admits a single completion. Duplicate POST, GET/
+status and restart recovery never prompt again. Claimed/unknown states remain
+pending until a verified result or explicit logical cancellation. Basic cancel
+does not use the worker no-dispatch contract: it says the provider may still
+process, and its transaction fences every late application answer save. Cancel
+before claim says no model request sent. Current session/owner/source guards and
+private/no-store output remain. HTTP success requires fresh completed history.
+
+Independent review caught the existing skill-epoch fallback substituting a fixed
+answer. An internal transactional completing phase now accepts only the existing
+approved hash, then verifies actual complete status/hash before terminalizing.
+No intermediate phase can return/commit. The real disposable epoch-mismatch test
+confirmed the fallback and exact final hash; no global skill was changed.
+
+Actual development checks:26PASS with two disposable Clerk users and their own
+chat. They cover one concurrent claim, cross-owner rejection, replay, cross-kind
+takeover denial, bad signatures, direct-table/private-alias denial, logical
+cancellation/late completion, normal completion and skill fallback. A disposable
+persisted stale scope hash rejected completion and remained pending. That is not
+an actual source withdrawal. Test identities/threads were deleted and404 verified.
+An initial fixture email exceeded64local characters; its one created actor was
+cleaned before the shorter-address retry. No role/source-publication writes.
+
+Mounted localhost checks used the real owner session. With basic route intent
+true, hardfalse provider admission returned503 before begin; subsequent attempt
+read was absent with no messages. A separate synthetic persisted claim produced
+pending GET200 and duplicate POST503, changed question409, foreign origin403 and
+anonymous401. No provider call occurred. Codex Browser opened this owned pending
+chat, checked status without resending, cancelled to the truthful saved response,
+observed the composer re-enabled, and retained the response after reload. The
+disposable chat was deleted through the mounted API and404 confirmed. Owner
+session and other histories preserved; welcome restored and fixture absent.
+Proof: `tmp/basic-rag-cancellation-20261110.png`.
+
+Regressions663total/647PASS/16existing private-fixture skips/0FAIL; two dictation
+tests separately PASS. Forty-one focused core/transport/service/route cases are
+included. Production compilation/application TypeScript, native/direct-module
+TypeScript and scoped ESLint pass. Independent review found no new defects after
+the fallback fix. Final build `vMHixWHEaexSs_yE0cJLv` in `.next-agent-basic-rag`;
+normal preview session47222 on localhost3001. Both new-basic and new-native flags
+are false. Classifier/status/cancel remain wired regardless of those flags.
+Generated build includes were removed from tsconfig. No new UI design or package.
+
+Current public metadata still lists exact free Phala prices0 and explicit
+safety_retention:false. There were ZERO new inference requests in this checkpoint;
+the cumulative prior diagnostic count remains3. The last POST on9November was429
+with no retry time or zero-cost receipt. Do not describe this as a fresh successful
+or fresh rate-limited inference test. Admission and policyCurrent remain hardfalse
+in `basic-rag-runtime.ts`, independent of route-intent env. No account privacy
+setting, processor, paid fallback, deployment, push, merge or Phase2 change.
+
+Next: implement the reviewed live profile/activation after fresh exact privacy
+proof and a successful strict-free response; verify real main-chat grounded
+answer/citations/lifecycle/quality, shared Playground generation/configuration,
+and measured fast response. The prior9171ms retrieval measurement remains an open
+performance gate. Only then resume deferred harness/tools/MCP/web-search/memory
+expansion. Full original P1 remains open. Current evidence:
+`p1-implementation-verification.json.basicRagHistoryIntegration`.
+
+## Prior checkpoint — basic RAG first, 9 November 2026
 
 The owner now wants a simple practical RAG LLM chatbot in the existing main chat
 before harness expansion. This dated override supersedes OpenCode-first ordering
