@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { answerQuestion, reciprocalRankFusion } from '../src/retrieval/answers.ts';
+import { answerQuestion, prepareQuestionEvidence, reciprocalRankFusion } from '../src/retrieval/answers.ts';
 const hash = s => createHash('sha256').update(s).digest('hex');
 const actor = { subject: 'user-1' };
 const chunk = (handle = 'panda:00000000-0000-0000-0000-000000000001:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', overrides = {}) => ({ handle, productId: 'p1', text: 'The listing claims 4 pins.', textHash: hash('The listing claims 4 pins.'), header: 'canonical header', physicalRevision: null, blocked: false, title: 'Product listing', sourceUrl: 'https://pandabyte.in/product-page/a', capturedAt: '2026-10-30T00:00:00Z', sectionPath: ['Specifications'], ...overrides });
@@ -19,6 +19,26 @@ const make = (overrides = {}) => {
     return { calls, scope, adapters };
 };
 const ask = (a, q = { question: 'How many pins?', productSku: 'SKU1' }) => answerQuestion(actor, q, a);
+test('retrieval-only preparation avoids selection and checks current source before release', async () => {
+    const x = make({ ranking: { mode: 'lexical' }, select: async () => assert.fail('retrieval must not invoke a selector') });
+    const prepared = await prepareQuestionEvidence(actor, { question: 'How many pins?', productSku: 'SKU1' }, x.adapters);
+    assert.equal(prepared.kind, 'ready');
+    assert.equal(x.calls.filter(c => c === 'scope').length, 1);
+    assert.equal(await prepared.revalidate(), true);
+    assert.equal(x.calls.filter(c => c === 'scope').length, 2);
+    x.scope.chunks[0].text = 'Changed text';
+    x.scope.chunks[0].textHash = hash('Changed text');
+    assert.equal(await prepared.revalidate(), false);
+    assert.ok(!x.calls.includes('model'));
+});
+test('evidence keeps its original fingerprint when an adapter reuses a mutable scope object', async () => {
+    const x = make({ ranking: { mode: 'lexical' } });
+    x.adapters.currentScope = async () => x.scope;
+    const prepared = await prepareQuestionEvidence(actor, { question: 'How many pins?', productSku: 'SKU1' }, x.adapters);
+    assert.equal(prepared.kind, 'ready');
+    x.scope.fingerprint = 'new-source-generation';
+    assert.equal(await prepared.revalidate(), false);
+});
 test('valid answer projects trusted citation and rechecks scope', async () => {
     const x = make();
     const result = await ask(x.adapters);
@@ -208,6 +228,16 @@ test('trusted selector can recheck all retrieved fragments before release', asyn
         x.scope.chunks = [];
         assert.equal(await context.revalidate(), false);
         return { selections: [{ handle: fragments[0].handle, quote: '4 pins' }] };
+    };
+    assert.equal((await ask(x.adapters)).kind, 'unavailable');
+});
+test('selector cannot shrink the captured revalidation set by mutating its fragment array', async () => {
+    const x = make();
+    x.adapters.select = async (_question, fragments, context) => {
+        fragments.length = 0;
+        x.scope.chunks = [];
+        assert.equal(await context.revalidate(), false);
+        throw Error('withdrawn');
     };
     assert.equal((await ask(x.adapters)).kind, 'unavailable');
 });

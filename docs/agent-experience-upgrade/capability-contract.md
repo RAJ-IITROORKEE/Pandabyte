@@ -1,3 +1,5 @@
+> Latest user override, 9 November 2026: basic one-call RAG prototype precedes harness expansion. See [milestone plan](basic-rag-milestone.md). The historical OpenCode execution-ownership rules below apply to the following harness milestone, not this bounded prototype. All auth, data and privacy constraints remain.
+
 # Agent Experience Upgrade: runtime capability contract
 
 Status: **contract with bounded development evidence, updated 7 November 2026**. Read-only native discovery and isolated capability probes are verified below; live product execution and deployment are not certified. Historical 6 November audit findings remain labelled by scope. The [requirements authority](requirements.json) tracks implementation and acceptance. The historical Panda Agent Phase 6 remains **in progress**, Phase 5 is the last full PASS, and its original held-out multi-hop gate is not established; preserve its [handoff](../../Panda-agent/docs/lightweight-harness-handoff.md) and [verification](../../Panda-agent/docs/verification/lightweight-phase6-20261106.json).

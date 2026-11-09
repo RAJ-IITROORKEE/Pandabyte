@@ -1,3 +1,5 @@
+> Agent priority override, 9 November 2026: deliver the [basic RAG chatbot milestone](docs/agent-experience-upgrade/basic-rag-milestone.md) in the existing main chat before expanding OpenCode/harness, MCP, web search or memory. Reuse the approved UI and shared retrieval; zero cost, strict ZDR, owner/source guards and no deployment remain unchanged. Preserve the full requirement register and historical evidence.
+
 # PandaByte.in
 
 An India-first IoT hardware catalog and company website with an editable administration backend.

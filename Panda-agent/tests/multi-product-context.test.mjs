@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';import {readFile} from 'node:fs/promises';
 import {resolveMultiProductIdentity} from '../src/retrieval/multi-product-identity.ts';import {prepareProductContextSet} from '../src/retrieval/product-context-set.ts';
+import {PRODUCT_MEMBERSHIP} from '../src/retrieval/engineering-proof.ts';
 const rows=[{id:'c3',sku:'ESPXC3',title:'PandaByte xC3 ESP32-C3 Board'},{id:'c3m',sku:'ESPXC3M',title:'PandaByte xC3m ESP32-C3 Board'},{id:'s3',sku:'ESPXS3',title:'PandaByte xS3 ESP32-S3 Board'},{id:'c6',sku:'ESPXC6',title:'PandaByte xC6 ESP32-C6 Board'},{id:'dht',sku:'PBDHT11',title:'DHT11 Sensor'}];
 test('full catalog aliases resolve distinct xC3 and xS3, shared models clarify, boundaries isolate xC3m',()=>{
  assert.deepEqual(resolveMultiProductIdentity(rows,'Does PandaByte xC3 or xS3 have 8MB PSRAM?').products.map(x=>x.sku),['ESPXC3','ESPXS3']);
@@ -59,5 +60,61 @@ test('unknown product choice before a shared predicate clarifies without blockin
  for(const q of ['Does xC3 or Arduino Uno have 8 MB PSRAM?','Does xC3 or a mystery board support WiFi?','Does xC3 or an unknown module use USB?'])assert.equal(resolveMultiProductIdentity(rows,q).kind,'clarification',q);
  assert.deepEqual(resolveMultiProductIdentity(rows,'Does xC3 or xS3 have 8 MB PSRAM?').products.map(p=>p.sku),['ESPXC3','ESPXS3']);
  assert.deepEqual(resolveMultiProductIdentity(rows,'Does xC3 have WiFi or Bluetooth?').products.map(p=>p.sku),['ESPXC3']);
+});
+
+test('synthetic context avoids selector and redundant reads while withholding stale sources',async()=>{
+ const product={id:'00000000-0000-4000-8000-000000000001',sku:'SYNTHXC3',title:'PandaByte xC3 Board',sourceUrl:'https://pandabyte.in/product-page/synthetic-xc3',approvedChunksCount:1};
+ const membershipKey=hash(product.id);assert.equal(PRODUCT_MEMBERSHIP[membershipKey],undefined);
+ PRODUCT_MEMBERSHIP[membershipKey]={count:1,digest:'0'.repeat(64)};
+ try {
+  let scopeReads=0,catalogReads=0,revoked=false,revokeOnRead=0,allowed=true,selectionCalls=0,duplicate=false;
+  const body='Synthetic xC3 uses an ESP32-C3.';
+  const chunk={handle:`panda:00000000-0000-4000-8000-000000000002:${hash('logical')}:${hash('version')}`,productId:product.id,text:body,textHash:hash(body),header:'fixture',physicalRevision:null,blocked:false,title:product.title,sourceUrl:product.sourceUrl,capturedAt:'2026-10-30T00:00:00Z',sectionPath:['Specs']};
+  const input={actor:{subject:'admin'},question:'What does xC3 use?',
+   client:{database:{rpc:async()=>{catalogReads++;return {data:{items:[product]},error:null};}}},
+   createAdapters:()=>({resolveIdentity:async()=>{throw Error('unused')},currentScope:async()=>{scopeReads++;return {fingerprint:revoked||scopeReads===revokeOnRead?'withdrawn':'current',candidate:true,sealed:true,engineeringVerified:true,manifestVerified:true,configVerified:true,generationCurrent:true,chunks:duplicate?[structuredClone(chunk),{...chunk,sourceUrl:'https://evil.test/private'}]:[structuredClone(chunk)]};},lexical:async(_q,handles)=>handles,dense:async()=>[],select:async()=>{selectionCalls++;throw Error('unused');}}),
+   authorizeCurrent:async()=>allowed};
+  const ready=await prepareProductContextSet(input);
+  assert.equal(ready.kind,'ready');assert.equal(selectionCalls,0);assert.equal(scopeReads,2);assert.equal(catalogReads,2);
+  assert.equal(await ready.revalidate(),true);assert.equal(scopeReads,3);
+  duplicate=true;assert.equal((await prepareProductContextSet(input)).kind,'unavailable');duplicate=false;
+  revoked=true;assert.equal(await ready.revalidate(),false);
+  revoked=false;revokeOnRead=scopeReads+2;assert.equal((await prepareProductContextSet(input)).kind,'unavailable');
+  revokeOnRead=0;allowed=false;assert.equal((await prepareProductContextSet(input)).kind,'unavailable');assert.equal(selectionCalls,0);
+ } finally { delete PRODUCT_MEMBERSHIP[membershipKey]; }
+});
+
+test('catalog and source revalidation overlap and withhold revoked or aborted results', {timeout:5000}, async()=>{
+ const product={id:'00000000-0000-4000-8000-000000000003',sku:'SYNTHXC3',title:'PandaByte xC3 Board',sourceUrl:'https://pandabyte.in/product-page/synthetic-xc3',approvedChunksCount:1};
+ const membershipKey=hash(product.id);assert.equal(PRODUCT_MEMBERSHIP[membershipKey],undefined);
+ PRODUCT_MEMBERSHIP[membershipKey]={count:1,digest:'0'.repeat(64)};
+ try {
+  for(const scenario of ['current','membership','source','catalog','abort','scope-error','catalog-error']){
+   let pause=false,allowed=true,revoked=false,catalogChanged=false,catalogStarted=false,scopeStarted=false,authCalls=0,release,startCatalog;
+   const gate=new Promise(resolve=>{release=resolve;}),catalogEntered=new Promise(resolve=>{startCatalog=resolve;}),controller=new AbortController();
+   const body='Synthetic xC3 uses an ESP32-C3.';
+   const chunk={handle:`panda:00000000-0000-4000-8000-000000000004:${hash('logical')}:${hash('version')}`,productId:product.id,text:body,textHash:hash(body),header:'fixture',physicalRevision:null,blocked:false,title:product.title,sourceUrl:product.sourceUrl,capturedAt:'2026-10-30T00:00:00Z',sectionPath:['Specs']};
+   const input={actor:{subject:'admin'},question:'What does xC3 use?',signal:controller.signal,
+    client:{database:{rpc:async()=>{if(pause){catalogStarted=true;startCatalog();await gate;if(scenario==='catalog-error')throw Error('unavailable');}return {data:{items:[catalogChanged?{...product,title:'PandaByte xC3 Changed Board'}:product]},error:null};}}},
+    createAdapters:()=>({resolveIdentity:async()=>{throw Error('unused')},currentScope:async()=>{if(pause){scopeStarted=true;await gate;if(scenario==='scope-error')throw Error('unavailable');}return {fingerprint:revoked?'withdrawn':'current',candidate:true,sealed:true,engineeringVerified:true,manifestVerified:true,configVerified:true,generationCurrent:true,chunks:[structuredClone(chunk)]};},lexical:async(_q,handles)=>handles,dense:async()=>[],select:async()=>{throw Error('unused');}}),
+    authorizeCurrent:async()=>{authCalls++;return allowed;}};
+   const ready=await prepareProductContextSet(input);assert.equal(ready.kind,'ready');
+   pause=true;const beforeAuth=authCalls,pending=ready.revalidate();
+   try {
+    await catalogEntered;assert.equal(catalogStarted,true);assert.equal(scopeStarted,true,'scope check must start before catalog completes');
+    if(scenario==='membership')allowed=false;
+    if(scenario==='source')revoked=true;
+    if(scenario==='catalog')catalogChanged=true;
+    if(scenario==='abort')controller.abort();
+   } finally {release();}
+   assert.equal(await pending,scenario==='current',scenario);
+   assert.equal(authCalls-beforeAuth,scenario==='abort'?1:2,'authorization checks bracket parallel reads');
+   if(scenario==='current'){
+    allowed=false;catalogStarted=false;scopeStarted=false;
+    assert.equal(await ready.revalidate(),false);
+    assert.equal(catalogStarted,false);assert.equal(scopeStarted,false);
+   }
+  }
+ } finally {delete PRODUCT_MEMBERSHIP[membershipKey];}
 });
 test('captured catalog clarifies unknown product choice',{skip},async()=>{const f=fixture();const result=await prepareProductContextSet({...f.input,question:'Does xC3 or Arduino Uno have 8 MB PSRAM?'});assert.equal(result.kind,'clarification');});

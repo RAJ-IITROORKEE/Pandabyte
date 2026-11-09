@@ -59,7 +59,21 @@ export function reciprocalRankFusion(lexical: string[], dense: string[]): string
     }
     return [...scores].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'en')).map(([h]) => h);
 }
-export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adapters): Promise<Outcome> {
+type PreparedEvidence = {
+    kind: 'ready';
+    question: string;
+    fingerprint: string;
+    chunks: CanonicalChunk[];
+    fragments: Array<{ handle: string; text: string }>;
+    completeEligibleScope: boolean;
+    byHandle: Map<string, CanonicalChunk>;
+    revalidate(selected?: string[]): Promise<boolean>;
+    activity(stage: 'resolving_product' | 'reading_sources' | 'searching_sources' | 'checking_citations', summary?: ContextSummary): void;
+    summary: ContextSummary;
+};
+
+// The caller must revalidate this request-scoped snapshot before dispatch and release.
+export async function prepareQuestionEvidence(actor: Actor, raw: unknown, adapters?: Adapters): Promise<PreparedEvidence | Exclude<Outcome, { kind: 'evidence' }>> {
     if (!actor || !bounded(actor.subject, 512))
         return { kind: 'unauthorized' };
     const input = parseQuestion(raw);
@@ -88,8 +102,9 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         const scope = await adapters.currentScope(actor, identity.product, input.physicalRevision);
         if (!validScope(scope))
             return { kind: 'unavailable' };
+        const fingerprint = scope.fingerprint;
         const eligible = scope.chunks.filter(c => validChunk(c, identity.product.id, input.physicalRevision));
-        const byHandle = new Map(eligible.map(c => [c.handle, c]));
+        const byHandle = new Map(eligible.map(c => [c.handle, { ...c, sectionPath: [...c.sectionPath] }]));
         if (byHandle.size !== eligible.length)
             return { kind: 'unavailable' };
         const handles = [...byHandle.keys()].sort();
@@ -127,19 +142,37 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
         }
         if (!fragments.length)
             return { kind: 'insufficient' };
-        const scopeUnchanged = async (selected: string[]) => {
+        const retrievedHandles = fragments.map(fragment => fragment.handle);
+        const scopeUnchanged = async (selected = retrievedHandles) => {
             const current = await adapters.currentScope(actor, identity.product, input.physicalRevision);
-            if (!validScope(current) || current.fingerprint !== scope.fingerprint)
+            if (!validScope(current) || current.fingerprint !== fingerprint)
                 return false;
             const currentEligible = current.chunks.filter(c => validChunk(c, identity.product.id, input.physicalRevision));
             const currentMap = new Map(currentEligible.map(c => [c.handle, c]));
             return currentMap.size === currentEligible.length && selected.every(handle => JSON.stringify(currentMap.get(handle)) === JSON.stringify(byHandle.get(handle)));
         };
-        if (!await scopeUnchanged(fragments.map(fragment => fragment.handle)))
-            return { kind: 'unavailable' };
-        activity('searching_sources', { fragments: fragments.length, characters: 20000 - remaining, duplicatesRemoved, limitCharacters: 20000 });
         const completeEligibleScope = handles.length <= 8 && fragments.length === handles.length && duplicatesRemoved === 0 && fragments.every(f => byHandle.get(f.handle)?.text === f.text);
-        const result = await adapters.select(input.question, fragments, { revalidate: () => scopeUnchanged(fragments.map(fragment => fragment.handle)), completeEligibleScope });
+        return {
+            kind: 'ready', question: input.question, fingerprint,
+            chunks: scope.chunks, fragments, byHandle, revalidate: scopeUnchanged,
+            completeEligibleScope, activity,
+            summary: { fragments: fragments.length, characters: 20000 - remaining, duplicatesRemoved, limitCharacters: 20000 },
+        };
+    }
+    catch {
+        return { kind: 'unavailable' };
+    }
+}
+
+export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adapters): Promise<Outcome> {
+    try {
+        const prepared = await prepareQuestionEvidence(actor, raw, adapters);
+        if (prepared.kind !== 'ready') return prepared;
+        if (!adapters || !await prepared.revalidate())
+            return { kind: 'unavailable' };
+        const { fragments, byHandle, activity, completeEligibleScope } = prepared;
+        activity('searching_sources', prepared.summary);
+        const result = await adapters.select(prepared.question, fragments, { revalidate: () => prepared.revalidate(), completeEligibleScope });
         if (!result || Object.keys(result).some(k => k !== 'selections') || !Array.isArray(result.selections) || result.selections.length > 4)
             return { kind: 'unavailable' };
         const seen = new Set<string>();
@@ -149,7 +182,7 @@ export async function answerQuestion(actor: Actor, raw: unknown, adapters?: Adap
             seen.add(s.handle);
         }
         activity('checking_citations');
-        if (!await scopeUnchanged(result.selections.map(selection => selection.handle)))
+        if (!await prepared.revalidate(result.selections.map(selection => selection.handle)))
             return { kind: 'unavailable' };
         if (!result.selections.length)
             return { kind: 'insufficient' };

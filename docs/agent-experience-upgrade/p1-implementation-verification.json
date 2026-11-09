@@ -1959,5 +1959,119 @@
       "descriptor": "private/native-runtime-phase1-20261109.json",
       "privateWorkerTunnel": "Previously closed; this memory workflow uses existing InsForge and does not require it"
     }
+  },
+  "basicRagPrototype": {
+    "date": "2026-11-09",
+    "status": "preparation checkpoint verified; complete live prototype unfinished",
+    "userOverride": "Basic main-site RAG chatbot before OpenCode/harness, MCP, web search and expanded memory. Original scope and historical evidence retained.",
+    "plan": "docs/agent-experience-upgrade/basic-rag-milestone.md",
+    "architecture": "Existing approved UI → Clerk/InsForge approved product context → one direct guarded LLM completion → literal citation/current-source validation → signed owned history. No agent loop.",
+    "diagnosis": {
+      "currentMainChat": "Deterministic MCU quote selector via FastAPI, not a general RAG LLM chatbot.",
+      "copiedPlayground": "Paid GPT-4o-mini generation intentionally disabled; retrieval/UI reused.",
+      "provider": "Exact eligible zero-cost strict-ZDR Phala route still returns429 independently of harness.",
+      "retrieval": "Dummy empty selector caused two extra scope reads per product. Remote authorization/identity/source I/O remains dominant.",
+      "persistence": "Existing signed lightweight store can persist free-form grounded answers, but a prepared turn is assumed to be the legacy worker during read/cancel. Explicit plain-RAG classification is required; an answer-callback swap is unsafe."
+    },
+    "implemented": {
+      "retrieval": "Shared prepareQuestionEvidence extraction; context-set preparation no longer invokes a selector. Scope reads per product before context return reduced from4to2 (with separate final release,5to3). Normal answers retain pre/post-selector checks. Catalog/scope rereads now run concurrently between authorization/abort checks. No cross-request cache.",
+      "core": "runBasicRag handles one named product, bounded context, one completion with a required beforeSend gate, final current-source/session checks, validated literal citations and zero-cost usage. No invented URLs, private pointers or source-label-only answer evidence. Missing evidence abstains/clarifies without a model call.",
+      "transport": "createBasicRagCompletion pins exact free Xing4/Phala, refreshes endpoint/ZDR policy, requires safety_retention:false, supported reasoning/response parameters, data collection denied, no fallback/plugins/tools, four zero-price ceilings and zero-cost returned receipt. Input snapshot precedes asynchronous checks. A server policy proof and durable one-use claim callback are required; no runtime activation resolver or route caller is installed.",
+      "rateLimit": "Actual adapter rate_limited now maps to core unavailable, tested through composed HTTP fixture. One attempt only; unknown outcomes never retry.",
+      "dependencies": "No new dependency/framework/version. Existing MIT library notices retained. Missing local sharp0.35.5 and nested semver7.8.5 restored from registry tarballs matching lockfile SHA512, no lifecycle scripts or lockfile change."
+    },
+    "tests": {
+      "agentAdmin": {
+        "total": 638,
+        "pass": 622,
+        "skipped": 16,
+        "fail": 0
+      },
+      "separateDictation": {
+        "pass": 2,
+        "fail": 0
+      },
+      "basicRagFocused": {
+        "pass": 16,
+        "includedInRegression": true
+      },
+      "types": "Production application build, native TypeScript and direct new unwired basic-RAG module TypeScript passed.",
+      "scopedEslint": "passed",
+      "build": {
+        "passed": true,
+        "id": "oY9rNV8bmr4T5IafOsCCg",
+        "directory": ".next-agent-basic-rag"
+      },
+      "review": "Scoped explorers, two implementers and independent integration review. Reviewer found/fix verified actual429 classification mismatch. Final follow-up found no new defects.",
+      "fixtureLimits": "Completion/cancellation/withdrawal coverage for new core is synthetic. It does not prove main-chat persistence, live answer quality, token streaming or live provider cancellation.",
+      "taskValidation": "97 valid",
+      "whitespace": "passed",
+      "credentialScan": {
+        "changedFiles": 17,
+        "findings": 0
+      },
+      "originalSpecification": "SHA256 unchanged"
+    },
+    "codexBrowser": {
+      "url": "http://localhost:3001/admin/rag-control-room#playground",
+      "result": "Real existing owner development session; same query retrieved2approved passages/638characters containing ESP8266. Workflow generation/validation skipped; model evaluation disabled.",
+      "query": "Which MCU does the x8266 use?",
+      "measurementsMs": {
+        "before": 8826,
+        "afterExtraction": 8968,
+        "finalAfterParallelReads": 9171
+      },
+      "finalStagesMs": {
+        "authorize": 708,
+        "retrieve": 5446,
+        "augment": 0,
+        "generate": 0,
+        "validate": 0,
+        "release": 2994
+      },
+      "performanceConclusion": "Remote call count reduced, but browser samples do not establish a speed improvement. Fast-response acceptance remains open; these are single sequential development QA samples, not a load test.",
+      "mainChat": "Final build loaded signed-in existing customer shell with model/search/attachment controls disabled. No live main-chat answer claimed and no new customer conversation created.",
+      "proof": "tmp/basic-rag-retrieval-20261109.png",
+      "anonymousApi": "Mounted Playground POST and chats GET401, private/no-store. Guards unchanged by final parallel-read adjustment.",
+      "limits": "No new isolated browser identities, screen-reader speech, zoom, light/dark comparison or deployed-main-site acceptance. No database, source, history, role or account-setting mutation."
+    },
+    "provider": {
+      "record": "docs/agent-experience-upgrade/provider-policy-verification.json.basicRagDiagnostic",
+      "result": "HTTP429",
+      "oneSyntheticCall": true,
+      "workspacePrivacyReadOnlyRefreshed": true,
+      "approvedKeyWorkspaceMatched": true,
+      "eligibleFreeModels": 12,
+      "eligibleStrictFreeRoutes": 1,
+      "returnedCost": null,
+      "returnedUsage": null,
+      "retryAfter": null,
+      "cumulativeBoundedDiagnosticRequests": 3,
+      "noPaidFallback": true,
+      "applicationInferenceEnabled": false,
+      "customerDataSent": false,
+      "zeroCostStrictZdrUnchanged": true
+    },
+    "remaining": [
+      "Explicit plain-RAG engine classification and durable main-chat begin/dispatch/status/cancel/recovery integration; preserve legacy/native pending turns.",
+      "Guarded shared customer/Playground configuration and activation only after exact fresh policy proof and successful zero-cost provider response.",
+      "Real grounded answer quality, lifecycle/owner isolation and source-withdrawal acceptance in main chat.",
+      "Measured retrieval/generation/total fast-response target, including remaining remote read overhead.",
+      "Following milestone: preserved OpenCode harness, skill/MCP management, web search/tools, cross-surface memory and full original acceptance."
+    ],
+    "localRuntime": {
+      "port": 3001,
+      "appSession": 26714,
+      "providerFreeInspectionSession": 62226,
+      "nativeMessagesEnabled": false,
+      "previousTaskBuildPreserved": "E:/CodexTemporary/panda-agent-basic-rag-20261109/previous-memory-build"
+    },
+    "scope": {
+      "phase1Complete": false,
+      "phase2Advanced": false,
+      "deployed": false,
+      "pushed": false,
+      "merged": false
+    }
   }
 }

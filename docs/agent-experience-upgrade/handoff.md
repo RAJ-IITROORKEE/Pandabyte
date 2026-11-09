@@ -1,9 +1,77 @@
 # Agent Experience Upgrade — current handoff
 
 9 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. Latest follow-up implements and verifies explicit owner/thread project-context controls while Phala is rate limited. Earlier native integration is retained at `a8f84ab`.
+Use `git log -1` for the local checkpoint. Latest follow-up prioritizes the basic RAG prototype, simplifies evidence preparation and verifies the guarded one-call core while Phala remains rate limited. Earlier native integration is retained at `a8f84ab`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
+
+## Latest priority — basic RAG first, 9 November 2026
+
+The owner now wants a simple practical RAG LLM chatbot in the existing main chat
+before harness expansion. This dated override supersedes OpenCode-first ordering
+only for that prototype. Keep the adopted specification unchanged and the full
+97-row register. The new [milestone plan](basic-rag-milestone.md) is mapped inside
+that register, not a second task authority. Reuse the approved UI, Clerk and
+InsForge, one bounded context and one completion. No new platform, agent loop,
+MCP, web search or memory extraction is required for this milestone.
+
+Actual diagnosis: main chat is the deterministic MCU quote selector; copied paid
+GPT-4o-mini evaluation is intentionally off. The new provider-independent basic RAG
+core and strict-free OpenRouter transport are tested but NOT wired into customer
+persistence. Existing prepared-turn read/cancel assumes the FastAPI worker, so
+safe plain-RAG execution classification/status/cancel integration is still needed.
+Do not replace the answer callback alone or revive historical unfenced SQL finish.
+This unfinished independent work is explicit, not hidden behind the provider gate.
+
+Evidence preparation now reuses the real shared retrieval directly instead of an
+empty selector. Per-product scope reads fall4to2 before context return,5to3 with
+final workflow release. Normal answer pre/post-selector checks remain. Current
+catalog and source rereads run concurrently between authorization/abort checks;
+all exact identity and scope results must pass. No shared cache was added.
+
+The core makes at most one guarded completion and validates zero-cost usage,
+literal evidence and current ownership/sources before release. The transport pins
+the exact free Xing4/Phala endpoint, strict ZDR and safety-retention exclusion,
+denied data collection, no fallback/tools/plugins, disabled supported reasoning
+and four zero-price ceilings. It requires a trusted policy proof and durable
+one-use claim callback. No activation resolver is installed. Quote membership
+does not prove semantic support; live quality acceptance remains required.
+
+Fresh read-only Brave privacy inspection showed logging off, no trace destination,
+data discount off and public prompt publication off. Approved-key workspace match
+passed. Current metadata lists12eligible free models but only1strict-free route.
+One synthetic diagnostic through the new adapter returned429 in1697ms, no
+Retry-After, usage or cost receipt. Cumulative diagnostics total3. No retry,
+customer data, paid fallback or account-setting change. Application inference OFF.
+
+Final regressions638total/622PASS/16existing private-fixture skips/0FAIL; two
+dictation tests separately PASS. Sixteen new core/transport cases are included.
+Production build, application/native/direct-module TypeScript and scoped lint
+pass. Independent review found and verified the corrected rate-limit mapping.
+Final build `oY9rNV8bmr4T5IafOsCCg`, directory `.next-agent-basic-rag`,
+app session26714 on localhost3001; provider-free inspection remains62226.
+Temporary build includes removed from tsconfig. The stopped previous memory
+build was preserved on E: to free C: space. An empty local sharp directory broke
+the first build/suite; exact locked sharp0.35.5 and nested semver7.8.5 were restored
+from integrity-checked registry tarballs without scripts or dependency changes.
+
+Codex Browser retrieved the same2approved passages/638characters naming ESP8266.
+Elapsed samples were8826ms before,8968ms after extraction and9171ms after parallel
+reads. Thus there is NO demonstrated speed improvement. Final stage timings are
+authorize708/retrieve5446/release2994ms; generation and validation skipped.
+Remote I/O remains the performance gate. Main chat's existing signed-in shell
+loads with unsupported controls disabled; no live main-chat LLM result claimed.
+No customer chats, roles, sources, histories or settings were changed. Local proof
+`tmp/basic-rag-retrieval-20261109.png`. Anonymous mounted Playground/chats checks
+return401/private-no-store. Real new cancellation, isolation, screen-reader,
+light/dark and deployed-site acceptance are not claimed by these synthetic tests.
+
+Next: finish safe plain-RAG chat persistence/recovery and shared activation; obtain
+a successful strict-free provider response; validate main-chat grounded answers,
+source withdrawal, isolated ownership and measured fast response. Then resume
+preserved harness/tools/MCP/web-search/memory scope. Full P1 remains open and
+Phase2 gated. No push, merge or deployment. Details in
+`p1-implementation-verification.json.basicRagPrototype`.
 
 ## Authority and phase boundary
 

@@ -421,6 +421,10 @@
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1ProjectMemoryControls",
           "verified": "9 Nov: owner/thread intent add/correct/clear, version tombstone, uncertain-write recovery; development migration, 23 mounted HTTP checks with real disposable Clerk users, final built Codex Browser checks; 601 regressions pass,16 skip, plus2 dictation.",
           "limitations": "Mem0 and cross-surface native memory unfinished; no live inference, no Phase2 advancement."
+        },
+        "basicRagPriority": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
+          "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
         }
       }
     },
@@ -462,6 +466,10 @@
         "nativeTurnPipeline": {
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1NativeTurnPipelineFollowup",
           "result": "Actual isolated OpenCode 2.2.2 turn adapter plus prepared synthetic evidence releases one validated citation on success and the fixed unavailable answer on 429. One prompt per case, repeated start/status has no replay. Clerk/SQL mount and live provider output remain open."
+        },
+        "basicRagPriority": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
+          "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
         }
       },
       "providerDecision": {
@@ -539,7 +547,11 @@
       "claim": null,
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "mountedToolFixture": "phase1MountedToolFixture verifies owner-bound one-shot local allow/deny dispatch and rendered tool results, replay rejection and retrieval regression in Codex Browser. The shared native Playground workflow and live inference acceptance remain open."
+        "mountedToolFixture": "phase1MountedToolFixture verifies owner-bound one-shot local allow/deny dispatch and rendered tool results, replay rejection and retrieval regression in Codex Browser. The shared native Playground workflow and live inference acceptance remain open.",
+        "basicRagPriority": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
+          "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
+        }
       }
     },
     {
@@ -621,6 +633,10 @@
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1ProjectMemoryControls",
           "verified": "9 Nov: owner/thread intent add/correct/clear, version tombstone, uncertain-write recovery; development migration, 23 mounted HTTP checks with real disposable Clerk users, final built Codex Browser checks; 601 regressions pass,16 skip, plus2 dictation.",
           "limitations": "Mem0 and cross-surface native memory unfinished; no live inference, no Phase2 advancement."
+        },
+        "basicRagPriority": {
+          "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
+          "status": "Basic RAG prototype first; core/retrieval checkpoint verified, live prototype and safe chat persistence integration remain unfinished. Full original row status unchanged."
         }
       }
     },
@@ -2602,5 +2618,26 @@
       "claim": null
     }
   ],
-  "dependencyPolicy": "dependsOn is the enforced acyclic task graph. Prose dependencies retain external prerequisites; verified status requires recorded acceptance, including design approval where required. claim is exclusive active ownership; owner remains accountable ownership."
+  "dependencyPolicy": "dependsOn is the enforced acyclic task graph. Prose dependencies retain external prerequisites; verified status requires recorded acceptance, including design approval where required. claim is exclusive active ownership; owner remains accountable ownership.",
+  "milestoneOverrides": {
+    "basicRagPrototype": {
+      "date": "2026-11-09",
+      "authority": "Latest user: simple practical RAG chatbot before harness and further capabilities",
+      "plan": "docs/agent-experience-upgrade/basic-rag-milestone.md",
+      "status": "in_progress",
+      "fullPhase1Complete": false,
+      "ordering": "Basic main-chat RAG before harness/skills/MCP/websearch/expandedmemory; original mandatory scope preserved",
+      "constraints": [
+        "zero cost",
+        "strict ZDR",
+        "existing approved UI and identity/storage",
+        "no deployment/push/merge"
+      ],
+      "acceptance": "Actual grounded one-shot response, zero-cost receipt, current-source checks, owned persistence/recovery, API/Codex Browser and measured latency",
+      "blocked": "Fresh exact route still429, no zero-cost receipt. Plain-RAG durable main-chat integration remains unfinished independently of provider availability.",
+      "executionEvidence": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagPrototype",
+      "implemented": "Evidence-preparation simplification and concurrent current-source reads, tested one-shot core/strict-free transport. No application inference activation.",
+      "performance": "Reduced remote reads but measured8826/8968/9171ms does not establish a speed improvement."
+    }
+  }
 }
