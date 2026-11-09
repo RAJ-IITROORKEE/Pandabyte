@@ -41,7 +41,7 @@ type Dependencies = {
   agenticCancel?(actor:ChatActor,execution:CompositeExecution,signal:AbortSignal):Promise<void>;
   native?(actor:ChatActor):NativeChatBridge;
   nativeNewMessages?():boolean;
-  basicRag?(actor:ChatActor):BasicRagChatBridge;
+  basicRag?(actor:ChatActor,request:Request):BasicRagChatBridge;
   basicRagNewMessages?():boolean;
 };
 const json = (value:unknown,status=200) => new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store'}});
@@ -57,6 +57,19 @@ async function body(request:Request) {
     while (true) { const {done,value}=await reader.read(); if(done)break; size+=value.byteLength; if(size>8192){await reader.cancel();throw 413;} parts.push(value); }
     try { return strictJson(new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(parts))); } catch { throw 400; }
   } finally {reader.releaseLock();}
+}
+
+const wantsStream = (request:Request) => !!request.headers.get('accept')?.split(',').some(x=>x.trim().split(';')[0]==='text/event-stream');
+function streamWork(request:Request, execute:(progress:ActivityReporter,signal:AbortSignal)=>Promise<unknown>):Response {
+  let closed=false; const encoder=new TextEncoder(); const seen=new Set<string>(); let contextSent=false;
+  const workController=new AbortController();
+  const abort=()=>workController.abort(); request.signal.addEventListener('abort',abort,{once:true}); if(request.signal.aborted)abort();
+  const stream=new ReadableStream<Uint8Array>({start(controller){
+    const send=(value:unknown)=>{if(!closed){try{controller.enqueue(encoder.encode(`data: ${JSON.stringify(value)}\n\n`));}catch{closed=true;workController.abort();}}};
+    const progress:ActivityReporter=(stage,context,tool)=>{if(tool){const checked=parseToolActivity(tool);if(!checked)throw new ChatStoreError('unavailable');send({type:'tool',tool:checked});}if(context && !contextSent){contextSent=true;send({type:'context',...context});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
+    void execute(progress,workController.signal).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
+  },cancel(){closed=true;workController.abort();}});
+  return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});
 }
 
 export function createLightweightHandler(deps:Dependencies) {
@@ -94,7 +107,7 @@ export function createLightweightHandler(deps:Dependencies) {
       if(method==='DELETE' && request.body) {const reader=request.body.getReader();try{while(true){const p=await reader.read();if(p.done)break;if(p.value.byteLength){await reader.cancel();throw 400;}}}finally{reader.releaseLock();}}
       const store=deps.store(actor);
       const native=deps.native?.(actor);
-      const basicRag=deps.basicRag?.(actor);
+      const basicRag=deps.basicRag?.(actor,request);
       if(deps.basicRagNewMessages?.() && !basicRag && ['read','message','cancel'].includes(action))throw new ChatStoreError('unavailable');
       if(action==='list')return json(await store.list(url.search==='?archived=true'));
       if(action==='create')return json(await store.create((input.title as string|undefined)?.trim()??'New chat'),201);
@@ -283,9 +296,13 @@ export function createLightweightHandler(deps:Dependencies) {
         }
         if(basicRag && deps.basicRagNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
-          const result=await basicRag.start({thread:id!,request:requestId,question},request.signal);
-          if(result.status!=='saved')throw new ChatStoreError('unavailable');
-          return json(await releaseBasic(requestId,question));
+          const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
+            const result=await basicRag.start({thread:id!,request:requestId,question},signal,stage=>progress(stage));
+            if(result.status!=='saved')throw new ChatStoreError('unavailable');
+            return releaseBasic(requestId,question);
+          };
+          if(wantsStream(request))return streamWork(request,execute);
+          return json(await execute(()=>{},request.signal));
         }
         if(native && deps.nativeNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           const result=await native.start({thread:id!,request:requestId,question},request.signal);
@@ -303,17 +320,8 @@ export function createLightweightHandler(deps:Dependencies) {
       const turn=start.turns.find(t=>t.requestId===requestId);
       if(!turn || turn.question!==question)throw new ChatStoreError('unavailable');
       if(turn.status==='complete')return json(await release());
-      if(!request.headers.get('accept')?.split(',').some(x=>x.trim().split(';')[0]==='text/event-stream'))return json(await work(start,question,requestId,()=>{}));
-      let closed=false; const encoder=new TextEncoder(); const seen=new Set<string>(); let contextSent=false;
-      const workController=new AbortController();
-      const abort=()=>workController.abort(); request.signal.addEventListener('abort',abort,{once:true}); if(request.signal.aborted)abort();
-      const workRequest=new Request(request.url,{method:request.method,headers:request.headers,signal:workController.signal});
-      const stream=new ReadableStream<Uint8Array>({start(controller){
-        const send=(value:unknown)=>{if(!closed){try{controller.enqueue(encoder.encode(`data: ${JSON.stringify(value)}\n\n`));}catch{closed=true;}}};
-        const progress:ActivityReporter=(stage,context,tool)=>{if(tool){const checked=parseToolActivity(tool);if(!checked)throw new ChatStoreError('unavailable');send({type:'tool',tool:checked});}if(context && !contextSent){contextSent=true;send({type:'context',...context});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
-        void work(start,question,requestId,progress,undefined,workRequest).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
-      },cancel(){closed=true;workController.abort();}});
-      return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});
+      if(!wantsStream(request))return json(await work(start,question,requestId,()=>{}));
+      return streamWork(request,(progress,signal)=>work(start,question,requestId,progress,undefined,new Request(request.url,{method:request.method,headers:request.headers,signal})));
     } catch(e) { if(e instanceof GuideDisabledError)return json({error:'guide_disabled'},409);if(e instanceof DiagnosticDisabledError)return json({error:'diagnostic_disabled'},409);const s=status(e); return json({error:error(s)},s); }
   }
   return {

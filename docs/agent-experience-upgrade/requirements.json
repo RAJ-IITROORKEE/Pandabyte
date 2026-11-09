@@ -2636,23 +2636,30 @@
   "dependencyPolicy": "dependsOn is the enforced acyclic task graph. Prose dependencies retain external prerequisites; verified status requires recorded acceptance, including design approval where required. claim is exclusive active ownership; owner remains accountable ownership.",
   "milestoneOverrides": {
     "basicRagPrototype": {
-      "date": "2026-11-09",
-      "authority": "Latest user: simple practical RAG chatbot before harness and further capabilities",
+      "date": "2026-11-10",
+      "authority": "Latest user: Control Room LLM output first, then smooth basic RAG main chat; OpenCode optional for prototype. Explicit separate reply permits <=USD0.01 total Luna tests, strict ZDR unchanged.",
       "plan": "docs/agent-experience-upgrade/basic-rag-milestone.md",
       "status": "in_progress",
       "fullPhase1Complete": false,
-      "ordering": "Basic main-chat RAG before harness/skills/MCP/websearch/expandedmemory; original mandatory scope preserved",
+      "ordering": "Control Room grounded output before basic main chat acceptance; harness/skills/MCP/websearch/expandedmemory remain later",
       "constraints": [
-        "zero cost",
-        "strict ZDR",
+        "zero cost by default; explicit <=USD0.01 total Luna testing exception only",
+        "strict ZDR including no safety retention",
         "existing approved UI and identity/storage",
         "no deployment/push/merge"
       ],
-      "acceptance": "Actual grounded one-shot response, zero-cost receipt, current-source checks, owned persistence/recovery, API/Codex Browser and measured latency",
-      "blocked": "Live activation/profile, successful strict-free provider response and zero-cost receipt, shared Playground generation, quality and response-time acceptance remain open.",
-      "executionEvidence": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
-      "implemented": "Basic-RAG core, strict-free transport and guarded main-chat durable classification/recovery/logical cancellation integrated. Verified with synthetic completions, real Clerk/InsForge/mounted APIs and Codex Browser. Inference remains off.",
-      "performance": "Reduced remote reads but measured8826/8968/9171ms does not establish a speed improvement."
+      "acceptance": "Actual grounded one-shot response and provider usage receipt, current-source checks, isolated Admin evaluation, owned persistence/recovery, API/Codex Browser and measured latency",
+      "blocked": "Fast-response acceptance, broader quality matrix and ongoing operating budget remain open. Default zero-cost strict-ZDR Phala route still429. Original Phase1 remains partial; Phase2 gated.",
+      "executionEvidence": "docs/agent-experience-upgrade/p1-implementation-verification.json.controlRoomBasicRagLive20261110",
+      "implemented": "Control Room and basic main chat generated grounded GPT-6 Luna answers through strict Azure ZDR within the separate bounded paid test. Main citation and answer survive reload. Finite owner-bound local admission/receipts, persistent claims and activity SSE implemented.",
+      "performance": "Live Control Room41335ms: retrieve6217/generate26493/release7297; generation includes admission, not measured provider-only latency.",
+      "paidTest": {
+        "authorizedUsd": 0.01,
+        "paidModelPosts": 3,
+        "spentReservations": 4,
+        "maxReservedNanoUsd": 9690560,
+        "ongoingInference": false
+      }
     }
   }
 }

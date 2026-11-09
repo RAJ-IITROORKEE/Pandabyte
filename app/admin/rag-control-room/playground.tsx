@@ -6,7 +6,7 @@ import { PlaygroundToolFixture } from "./playground-tool-fixture";
 
 type Passage = { rank: number; title: string; sourceUrl: string; capturedAt: string; sectionPath: string[]; text: string; productSku?: string; productTitle?: string; lexicalOverlap: { matched: number; total: number } };
 type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; products?: { sku: string; title: string }[]; workflow?: { stage: "authorize" | "retrieve" | "augment" | "generate" | "validate" | "release"; status: "completed" | "skipped"; elapsedMs: number }[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null }; model: { status: "not_requested" | "guard_unavailable" } | { status: "not_run"; reason?: "multi_product_guard_unavailable" | "no_retrieved_context" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
-type Capability = { model: "openai/gpt-4o-mini"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | null; approvedQuestions: string[] };
+type Capability = { model: "openai/gpt-4o-mini" | "xingchen-agi/xing4.0-29b-a4b:free" | "openai/gpt-6-luna"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | "basic-rag-v1" | "luna-rag-test-v1" | null; approvedQuestions: string[] };
 const outcomeKey = "panda-playground-unknown-outcome";
 
 export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
@@ -43,14 +43,14 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
       .then(async response => {
         if (!response.ok) throw Error();
         const value = await response.json();
-        if (value?.model !== "openai/gpt-4o-mini" || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1", "product-playground-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
+        if (!["openai/gpt-4o-mini", "xingchen-agi/xing4.0-29b-a4b:free", "openai/gpt-6-luna"].includes(value?.model) || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
         if (!controller.signal.aborted) setCapability(value);
       })
       .catch(() => { if (!controller.signal.aborted) setCapabilityError(true); });
     return () => { controller.abort(); if (capabilityRequest.current === controller) capabilityRequest.current = null; };
   }, [capabilityAttempt]);
 
-  const modelAvailable = capability?.connection === "configured_unverified" && (capability.profile === "mini-two-case-v1" || capability.profile === "product-playground-v1") && capability.transport !== "unconfigured";
+  const modelAvailable = capability?.connection === "configured_unverified" && (["mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1"].includes(capability.profile ?? "")) && capability.transport !== "unconfigured";
   const canEvaluate = guardReady && !unknownOutcome && modelAvailable;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -113,13 +113,15 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
         <div className={styles.evaluation}>
           <label className={styles.checkOption}>
             <input name="evaluate" type="checkbox" checked={evaluate} onChange={event => { setEvaluate(event.target.checked); setResult(null); setError(""); }} disabled={busy || !canEvaluate} aria-describedby="evaluation-help" />
-            <span>Also evaluate with GPT-4o-mini</span>
+            <span>Also generate a grounded answer</span>
           </label>
           <p id="evaluation-help" role="status">{unknownOutcome
             ? "A previous evaluation may have an unknown outcome, or session storage is unavailable. Check the server-side status before evaluating again. Retrieval remains available."
             : capabilityError ? "Model status could not be checked. Retrieval remains available."
             : !capability ? "Checking model availability. You can inspect retrieval now."
             : !modelAvailable ? "Model evaluation is off pending verification of zero cost and zero data retention. You can inspect retrieval now."
+            : capability.profile === "luna-rag-test-v1" ? "GPT-6 Luna · strict ZDR · approved test budget only. No automatic retry."
+            : capability.profile === "basic-rag-v1" ? "Xing 4.0 · zero cost · strict ZDR. Provider capacity is checked for each request."
             : capability.profile === "mini-two-case-v1" ? "Only the approved questions below can be evaluated within the profile allowance."
             : "Evaluation is optional and subject to the configured profile allowance."}</p>
         </div>
@@ -139,7 +141,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
           {result.outcome === "conflict" && <p>The product identities could not be resolved safely. Use exact product names, models or SKUs.</p>}
           {result.outcome === "insufficient" && result.passages.length === 0 && <p>No supporting passages were found. Include the exact product model and the specification you need.</p>}
           {result.products && result.products.length > 0 && <p><strong>Products:</strong> {result.products.map(product => `${product.title} (${product.sku})`).join(" · ")}</p>}
-          <h4>GPT-4o-mini answer</h4>
+          <h4>Grounded model answer</h4>
           {result.model.status === "not_requested" ? <p>No model answer yet. This was a retrieval-only request.</p> : result.model.status === "guard_unavailable" ? <p>Model output unavailable: the model execution guard is unavailable. No model was called.</p> : result.model.status === "not_run" ? <p>{result.model.reason === "multi_product_guard_unavailable" ? "Retrieval succeeded, but this context profile has no model connection. No model was called." : result.model.reason === "no_retrieved_context" ? "Model evaluation did not run because no context was retrieved. No model was called." : "Model evaluation did not run. No model was called."}</p> : result.model.status === "evaluated" ? <div><p className={styles.passage}>{result.model.answer || "No supported answer was found in the retrieved context."}</p><h4>Selected evidence</h4>{result.model.evidence.length === 0 ? <p>No evidence selected by the model.</p> : <ul className={styles.evidence}>{result.model.evidence.map(item => { const source = result.passages.find(passage => passage.rank === item.rank); return <li key={item.rank}><strong>Passage {item.rank}</strong><blockquote>{item.quote}</blockquote><p>Model relevance explanation: {item.reason}</p>{source && <a href={source.sourceUrl} target="_blank" rel="noreferrer">Open source</a>}</li>; })}</ul>}</div> : <p>Unknown model status. Check the request before submitting again.</p>}
           <details className={styles.context}><summary>Retrieved context ({result.passages.length})</summary>{result.passages.length === 0 ? <p>No passages returned.</p> : <ol>{result.passages.map((passage, index) => <li key={`${passage.rank}-${index}`}><strong>Rank {passage.rank}: {passage.title}</strong>{(passage.productTitle || passage.productSku) && <p>Product: {[passage.productTitle, passage.productSku].filter(Boolean).join(" · ")}</p>}<p>{passage.sectionPath.join(" / ") || "Listing"} · captured {passage.capturedAt}</p><p>Query term overlap: {passage.lexicalOverlap.matched} of {passage.lexicalOverlap.total}. This heuristic does not establish relevance or correctness.</p><blockquote>{passage.text}</blockquote><a href={passage.sourceUrl} target="_blank" rel="noreferrer">Open source</a></li>)}</ol>}</details>
           {result.workflow && result.workflow.length > 0 && <details className={styles.context}><summary>Workflow stages</summary><ol>{result.workflow.map((step, index) => <li key={`${step.stage}-${index}`}><strong>{step.stage}</strong>: {step.status} · {metric(step.elapsedMs, " ms")}</li>)}</ol></details>}

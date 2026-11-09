@@ -60,6 +60,16 @@ const privateWire = async response => {
   const value = await response.text(); assert.doesNotMatch(value, /PRIVATE|requestId|runtimeBinding|receipt/); return value;
 };
 
+test('basic RAG factory receives the authenticated actor and actual request origin', async () => {
+  const f = fixture({ basicNew: true }); let seen;
+  f.deps.basicRag = (actor, request) => { seen = { actor, request }; return f.basic; };
+  const req = message();
+  const response = await createLightweightHandler(f.deps).messagePOST(req, thread);
+  assert.equal(response.status, 200);
+  assert.equal(seen.actor.subject, 'OWNER'); assert.equal(seen.request, req);
+  assert.equal(new URL(seen.request.url).origin, 'http://localhost');
+});
+
 test('new ordinary basic-RAG request runs once before native or legacy admission and returns private saved history', async () => {
   const f = fixture({ basicNew: true, nativeNew: true });
   const response = await f.handler.messagePOST(message(), thread);
@@ -165,4 +175,31 @@ test('concurrent basic admission is reread and observed without starting a secon
   assert.equal(response.status, 200); await privateWire(response);
   assert.equal(f.calls.includes('basic_status'), true); assert.equal(f.calls.includes('basic_start'), false);
   assert.ok(f.calls.filter(x => x === 'read').length >= 3);
+});
+
+test('basic RAG SSE streams unique activity and only releases the saved answer', async () => {
+  const f=fixture({basicNew:true});const start=f.basic.start;
+  f.basic.start=async(turn,signal,progress)=>{for(const stage of ['reading_sources','reading_sources','selecting_evidence','checking_citations','saving_answer'])progress(stage,{provisional:'PRIVATE_PROVISIONAL'}, {toolId:'convert_units',state:'complete'});return start(turn,signal,progress);};
+  const response=await f.handler.messagePOST(message(undefined,{accept:'text/event-stream'}),thread);
+  assert.match(response.headers.get('content-type'),/^text\/event-stream/);const wire=await privateWire(response);
+  const events=wire.trim().split('\n\n').map(part=>JSON.parse(part.slice(6)));
+  assert.deepEqual(events.filter(e=>e.type==='activity').map(e=>e.stage),['reading_sources','selecting_evidence','checking_citations','saving_answer']);
+  assert.equal(events.filter(e=>e.type==='complete').length,1);assert.equal(events.at(-1).type,'complete');
+  assert.ok(events.slice(0,-1).every(e=>!JSON.stringify(e).includes('ESP8266')));assert.match(JSON.stringify(events.at(-1).data),/ESP8266/);
+  assert.equal(f.calls.filter(x=>x==='basic_start').length,1);
+});
+test('basic RAG SSE never releases a provisional answer when pending or owner access is revoked',async()=>{
+  for(const pending of [true,false]){
+    const f=fixture({basicNew:true,pendingStart:pending});const start=f.basic.start;
+    f.basic.start=async(turn,signal,progress)=>{progress('reading_sources');const result=await start(turn,signal,progress);if(!pending)f.deactivate();return result;};
+    const response=await f.handler.messagePOST(message(undefined,{accept:'text/event-stream'}),thread);const events=(await privateWire(response)).trim().split('\n\n').map(part=>JSON.parse(part.slice(6)));
+    assert.equal(events.at(-1).type,'error');assert.equal(events.some(e=>e.type==='complete'),false);assert.doesNotMatch(JSON.stringify(events),/ESP8266/);assert.equal(f.calls.filter(x=>x==='basic_start').length,1);
+  }
+});
+test('basic RAG SSE disconnect aborts the single in-flight bridge without a redispatch',async()=>{
+ const f=fixture({basicNew:true});let bridgeSignal;let stopped;const done=new Promise(resolve=>{stopped=resolve;});
+ f.basic.start=async(_turn,signal,progress)=>{f.calls.push('basic_start');bridgeSignal=signal;progress('reading_sources');await new Promise(resolve=>signal.addEventListener('abort',resolve,{once:true}));stopped();return {status:'unknown'};};
+ const response=await f.handler.messagePOST(message(undefined,{accept:'text/event-stream'}),thread),reader=response.body.getReader();
+ const first=await reader.read();assert.match(new TextDecoder().decode(first.value),/reading_sources/);await reader.cancel();await done;
+ assert.equal(bridgeSignal.aborted,true);assert.equal(f.calls.filter(x=>x==='basic_start').length,1);assert.equal(f.calls.some(x=>x==='legacy_begin'||x==='native_start'),false);
 });

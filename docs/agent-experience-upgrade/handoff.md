@@ -1,11 +1,70 @@
 # Agent Experience Upgrade — current handoff
 
 10 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. Latest follow-up integrates guarded basic-RAG history, status recovery and logical cancellation. Prior retrieval/core checkpoint is `05bd279`.
+Use `git log -1` for the local checkpoint. Latest follow-up verifies Control Room and main-chat grounded Luna output. Prior basic-history checkpoint is `72b2a20`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Latest checkpoint — basic RAG history, 10 November 2026
+## Latest checkpoint — live basic RAG, 10 November 2026
+
+The owner's current priority is Control Room LLM output first, then basic main
+chat; OpenCode is optional for this prototype. The original specification remains
+verbatim and all97 requirements remain tracked. Full P1 is partial; Phase2 is gated.
+
+The owner explicitly approved USD0.01 TOTAL Luna testing, with strict ZDR retained.
+Fresh signed-in OpenRouter privacy review found logging/traces/data-discount/public
+prompts off; no settings changed. Fresh endpoint/ZDR APIs pin `azure/us`, with
+safety retention false, no fallback/tools/plugins/caching/reasoning. Default free
+Phala recheck still429; no automatic retry or relaxed privacy fallback.
+
+Actual live results:
+- Synthetic diagnostic HTTP200: TEST8266;156input/47output, zero reasoning tokens,
+  USD0.00004301. OpenRouter returned the exact catalog alias, not the dated endpoint
+  name. The retained response was revalidated offline after the exact-identity fix;
+  no second diagnostic POST.
+- Codex Browser Control Room: x8266 → ESP8266, literal supporting quote,2passages/
+  638characters,277input/56output tokens, USD0.00006127. Total41,335ms; retrieval
+  6217ms, generate26493ms, release7297ms. Generate includes admission; provider-only
+  latency was not measured. This is working output, not fast-response acceptance.
+- Codex Browser main chat: ESP8266 with S1 citation, current source disclosure and
+  saved answer retained after reload. The owned prototype chat is retained; earlier
+  histories and sources are unchanged. Main UI does not expose usage metrics.
+
+One earlier Control Room attempt was definitively not admitted before POST but
+consumed a conservative reservation. That marker was never refunded or reset.
+There were3 actual paid POSTs and4 permanent reservations. The narrowed fourth
+call keeps even the mixed worst-case reservations below USD0.00969056. A fifth
+claim is denied. Keep every private budget marker; never reseed to retry.
+
+Shared adapters now use owner-bound local profile/diagnostic receipts, fresh
+workspace/model/session checks, persistent one-use claims and final synchronous
+profile/receipt/budget snapshots. Admin evaluation stays outside customer history
+and memory. Main basic RAG now uses existing activity SSE and releases only a
+saved owner-checked answer. The live positive main call preceded that progress-only
+change; its stream/abort/no-provisional-output behavior passed injected route tests.
+
+Verification: broad regression676total/660PASS/16existing private-fixture skips/
+0FAIL; final optimized policy/budget/transport29PASS and affected handler/SSE70PASS.
+Final production build/types and scoped ESLint pass. Earlier parallel ACL fixtures
+failed closed under build contention; serial focused checks passed. No dependency
+or migration change. See `p1-implementation-verification.json.controlRoomBasicRagLive20261110`.
+
+Paid profile paths are unmounted after testing. Localhost3001 retains basic route
+intent and history access, with provider admission off; neither paid default nor
+ongoing paid budget is authorized. Native new-message admission remains false.
+Private profile/receipt/budget files stay ignored. No deployment/push/merge.
+
+Remaining: reduce measured latency, separate provider/admission/source timings,
+complete representative quality/abstention tests, and obtain an ongoing operating
+budget or successful strict-free capacity before enabling a reusable live demo.
+Normal-process file exclusivity is tested; power-loss durability, malicious local
+marker removal and atomic Windows ACL revocation are not certified. The reservation
+uses conservative GPT byte/framing bounds, not a provider absolute-dollar cap.
+
+Proof: `tmp/control-room-luna-live-20261110.png` and
+`tmp/main-chat-luna-live-20261110.png` (local ignored artifacts).
+
+## Previous checkpoint — basic RAG history, 10 November 2026
 
 The revised basic-RAG-first plan remains active. Main-chat messages/read/cancel
 now use durable basic-RAG classification and the tested one-call core behind an

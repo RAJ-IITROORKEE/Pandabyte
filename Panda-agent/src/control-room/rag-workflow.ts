@@ -5,6 +5,7 @@ import {getCurrentRunTree} from 'langsmith/singletons/traceable';
 import type {ReadyProductContext} from '../retrieval/product-context-set.ts';
 import {lexicalOverlap,validatePlaygroundEvaluation} from './playground-evaluation.ts';
 import {isPlaygroundUsage} from './playground-usage.ts';
+import {basicRagUsage} from '../retrieval/basic-rag.ts';
 
 export type WorkflowStage='authorize'|'retrieve'|'augment'|'generate'|'validate'|'release';
 type Prepared=ReadyProductContext|{kind:'clarification'|'insufficient'|'unavailable'};
@@ -13,6 +14,7 @@ export type RagWorkflowDependencies={
  prepare:(question:string,signal:AbortSignal)=>Promise<Prepared>;
  generate?:(input:{question:string;requestId:string;context:ReadyProductContext;documents:Document[]},beforeSend:()=>Promise<boolean>,signal:AbortSignal)=>Promise<{evaluation:unknown;usage?:unknown}>;
  generationScope?:'single_product'|'multiple_products';
+ usagePolicy?:'zero_cost'|'bounded_luna_test';
 };
 type Model={status:'not_requested'|'guard_unavailable'}|{status:'not_run';reason:'multi_product_guard_unavailable'|'no_retrieved_context'}|{status:'evaluated';answer:string;evidence:{rank:number;quote:string;reason:string}[]};
 
@@ -48,6 +50,7 @@ export async function runRagWorkflow(input:{question:string;evaluate:boolean;req
   }))
   .addNode('validate',node('validate',async()=>{
    if(!raw)return 'skipped';
+   if(deps.usagePolicy&&!basicRagUsage(raw.usage,deps.usagePolicy))throw Object.assign(Error('Model outcome unknown'),{code:'outcome_unknown'});
    const checked=validatePlaygroundEvaluation(raw.evaluation,context!.passages.map(p=>({handle:String(p.rank),text:p.text})));
    if(!checked)throw Object.assign(Error('Model outcome unknown'),{code:'outcome_unknown'});
    model={status:'evaluated',answer:checked.answer,evidence:checked.evidence};if(!checked.evidence.length)outcome='insufficient';
@@ -61,7 +64,7 @@ export async function runRagWorkflow(input:{question:string;evaluate:boolean;req
  // Release is the final source/Admin check; subsequent formatting performs no external I/O.
  input.signal.throwIfAborted();
  const finalModel=model as Model;
- const usage=finalModel.status==='evaluated'&&isPlaygroundUsage(raw?.usage)?raw!.usage:null;
+ const usage=finalModel.status==='evaluated'?(basicRagUsage(raw?.usage,deps.usagePolicy)??(!deps.usagePolicy&&isPlaygroundUsage(raw?.usage)?raw!.usage:null)):null;
  const passages=context?.passages.map(p=>({...p,sectionPath:[...p.sectionPath],lexicalOverlap:lexicalOverlap(input.question,p.text)}))??[];
  return {outcome,passages,products:context?.products.map(p=>({sku:p.sku,title:p.title}))??[],retrieval:'lexical' as const,relevance:'unverified' as const,model:finalModel,
   metrics:{elapsedMs:Math.round(performance.now()-started),contextPassages:passages.length,contextCharacters:passages.reduce((n,p)=>n+[...p.text].length,0),inputTokens:usage?.inputTokens??null,outputTokens:usage?.outputTokens??null,costUsd:usage?usage.costNanoUsd/1e9:null},workflow};

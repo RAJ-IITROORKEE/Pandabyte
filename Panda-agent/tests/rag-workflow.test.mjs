@@ -32,6 +32,17 @@ test('invalid model quotations stay unknown and are never retried',async()=>{
  const f=fixture();let sends=0;f.deps.generate=async()=>{sends++;return {evaluation:{answer:'Unsupported',evidence:[{rank:1,quote:'8 MB PSRAM',reason:'Wrong product'}]}};};
  await assert.rejects(runRagWorkflow({...input(),evaluate:true,requestId},f.deps),e=>e.code==='outcome_unknown');assert.equal(sends,1);
 });
+
+test('basic zero-cost policy exposes verified zero usage and rejects paid or missing receipts',async()=>{
+ for(const cost of [0,1,undefined]){
+  const f=fixture();f.deps.usagePolicy='zero_cost';
+  const generate=f.deps.generate;
+  f.deps.generate=async(...args)=>{const r=await generate(...args);r.usage=cost===undefined?undefined:{inputTokens:100,outputTokens:20,costNanoUsd:cost};return r;};
+  if(cost===0){const r=await runRagWorkflow({...input(),evaluate:true,requestId},f.deps);assert.equal(r.metrics.costUsd,0);assert.equal(r.metrics.inputTokens,100);}
+  else await assert.rejects(runRagWorkflow({...input(),evaluate:true,requestId},f.deps),e=>e.code==='outcome_unknown');
+  assert.equal(f.callCount(),1);
+ }
+});
 test('withdrawal or revoked Admin after generation withholds the result',async()=>{
  for(const revoke of ['withdraw','revoke']){const f=fixture(),complete=f.deps.generate;f.deps.generate=async(...args)=>{const r=await complete(...args);f[revoke]();return r;};await assert.rejects(runRagWorkflow({...input(),evaluate:true,requestId},f.deps));assert.equal(f.callCount(),1);}
 });

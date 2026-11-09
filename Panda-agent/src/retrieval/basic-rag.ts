@@ -4,25 +4,29 @@ import type { ChatAnswer } from '../server/chat-contracts.ts';
 import type { ReadyProductContext } from './product-context-set.ts';
 
 type Prepared = ReadyProductContext | { kind: 'clarification' | 'insufficient' | 'unavailable' };
-type Usage = { inputTokens: number; outputTokens: number; costNanoUsd: 0 };
+type Usage = { inputTokens: number; outputTokens: number; costNanoUsd: number };
+export type BasicRagUsagePolicy = 'zero_cost' | 'bounded_luna_test';
 type Metrics = { retrievalMs: number | null; generationMs: number | null; totalMs: number };
 type BasicRagResult =
   | { status: 'answered'; answer: ChatAnswer; usage: Usage; metrics: Metrics }
   | { status: 'clarification' | 'insufficient' | 'invalid' | 'unavailable' | 'outcome_unknown'; metrics: Metrics };
 type Dependencies = {
+  usagePolicy?: BasicRagUsagePolicy;
   authorize: () => Promise<boolean>;
   prepare: (question: string, signal: AbortSignal) => Promise<Prepared>;
   // A trusted transport must await beforeSend immediately before its only dispatch.
   complete: (input: { question: string; passages: Array<{ rank: number; text: string }> }, beforeSend: () => Promise<boolean>, signal: AbortSignal) => Promise<{ evaluation: unknown; usage?: unknown }>;
 };
 
-function usage(value: unknown): Usage | null {
+export function basicRagUsage(value: unknown, policy: BasicRagUsagePolicy = 'zero_cost'): Usage | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const v = value as Record<string, unknown>;
-  if (Object.keys(v).sort().join(',') !== 'costNanoUsd,inputTokens,outputTokens' || v.costNanoUsd !== 0
+  if (Object.keys(v).sort().join(',') !== 'costNanoUsd,inputTokens,outputTokens'
+    || (policy === 'zero_cost' ? v.costNanoUsd !== 0 : !Number.isSafeInteger(v.costNanoUsd) || (v.costNanoUsd as number) < 0 || (v.costNanoUsd as number) > 2697640)
     || !Number.isSafeInteger(v.inputTokens) || (v.inputTokens as number) < 0 || (v.inputTokens as number) > 128000
-    || !Number.isSafeInteger(v.outputTokens) || (v.outputTokens as number) < 0 || (v.outputTokens as number) > 1000) return null;
-  return { inputTokens: v.inputTokens as number, outputTokens: v.outputTokens as number, costNanoUsd: 0 };
+    || !Number.isSafeInteger(v.outputTokens) || (v.outputTokens as number) < 0 || (v.outputTokens as number) > 1000
+    || (policy === 'bounded_luna_test' && ((v.inputTokens as number) > 21024 || (v.outputTokens as number) > 700))) return null;
+  return { inputTokens: v.inputTokens as number, outputTokens: v.outputTokens as number, costNanoUsd: v.costNanoUsd as number };
 }
 
 export async function runBasicRag(input: { question: string; signal: AbortSignal }, deps: Dependencies): Promise<BasicRagResult> {
@@ -67,7 +71,7 @@ export async function runBasicRag(input: { question: string; signal: AbortSignal
     if (!checked || !checked.answer.isWellFormed() || checked.evidence.some(e => !e.quote.isWellFormed() || !e.reason.isWellFormed())
       || checked.evidence.some(e => /^source\s*:\s*https?:\/\/\S+\s*$/i.test(e.quote))
       || /(?:\[S\d+\]|https?:\/\/|www\.)/i.test(checked.answer)) return fail('outcome_unknown');
-    const verifiedUsage = usage(raw.usage);
+    const verifiedUsage = basicRagUsage(raw.usage, deps.usagePolicy);
     if (!verifiedUsage) return fail('unavailable');
     if (!await current()) return fail('unavailable');
     if (!checked.evidence.length) return fail('insufficient');

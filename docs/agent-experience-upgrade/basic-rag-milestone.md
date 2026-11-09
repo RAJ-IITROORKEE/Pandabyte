@@ -1,5 +1,36 @@
 # Basic RAG prototype implementation plan
 
+## Latest priority and bounded test exception — 10 November 2026
+
+The owner now prioritizes the Control Room's grounded LLM output, followed by
+the existing main chat using the same retrieval and completion contracts. OpenCode
+is optional for this prototype; its original tracked requirements remain deferred.
+Keep the reviewed layout, source review, identity and history guards.
+
+The owner explicitly approved **up to USD0.01 total for GPT-6 Luna testing**, with
+strict ZDR unchanged. This is a bounded local test exception to zero cost, not a
+paid default or ongoing inference allowance. Pin the reviewed Azure US endpoint,
+disable fallback, tools, plugins, caching and reasoning, and refresh policy before
+dispatch. Reserve fixed conservative charges before calls, including failed
+or unknown calls; never refund, clean or reseed those reservation markers. Actual
+provider usage is separate from reservations. The local ledger is not a provider
+enforced financial limit and has not been validated against disk power loss.
+
+The first Control Room attempt stopped before POST but consumed a reservation.
+Its marker remains spent. The revised text bound is10,000 serialized UTF-8 bytes
+plus1,024 framing tokens, with700 output tokens. A narrowed call reserves
+1,597,640nanoUSD. A fourth marker is allowed only for this smaller bound: even
+three original2,697,640nanoUSD reservations plus one smaller reservation total
+USD0.00969056, within the owner's USD0.01 authorization. A fifth claim is denied.
+
+Order: synthetic diagnostic and actual receipt → Control Room answer/evidence/
+usage in Codex Browser → main chat answer/citation/reload → disable the test lease
+and record remaining acceptance gates. A failed diagnostic does not activate
+application inference. No deployment, push, merge or provider account change.
+
+The free Phala route was freshly checked again and returned429; no automatic retry.
+The historical plan and evidence below explain the preceding free-only checkpoint.
+
 9 November 2026. This records the owner's latest direction to deliver a practical
 RAG chatbot before expanding the agent harness. It overrides OpenCode-first
 ordering for this bounded prototype. The adopted master specification remains
@@ -26,8 +57,9 @@ not deployment or permission to publish the current branch.
 
 ## Constraints and deliberate limits
 
-- Zero cost and strict ZDR remain mandatory, including safety-retention exclusion.
-  Current candidate is the exact free Xing4 model on Phala with no fallback.
+- Zero cost remains the default, with only the bounded Luna test exception above.
+  Strict ZDR and safety-retention exclusion apply to both paths. The free candidate
+  is the exact Xing4 model on Phala with no fallback.
 - Keep live application inference off until exact current route/privacy checks and
   a successful bounded diagnostic with an actual zero-cost receipt pass.
 - One small response with reasoning disabled only where the provider supports it.

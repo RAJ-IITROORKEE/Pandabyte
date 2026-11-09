@@ -1,8 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { approvedPlaygroundQuestions, matchApprovedPlaygroundCase } from '../src/control-room/playground-intent.ts';
-import { playgroundCapabilities, createPlaygroundCapabilitiesHandler } from '../src/control-room/playground-capabilities.ts';
+import { playgroundCapabilities, basicRagPlaygroundCapabilities, createPlaygroundCapabilitiesHandler } from '../src/control-room/playground-capabilities.ts';
 const flags={VERCEL:'1',PANDA_AGENT_PLAYGROUND_GATEWAY_ENABLED:'true',PANDA_AGENT_PLAYGROUND_GATEWAY_PROTOCOL:'v3-context-digest',PANDA_AGENT_PLAYGROUND_PROFILE:'mini-two-case-v1'};
+
+test('basic RAG capability needs a verified local lease and does not name the historical paid model',()=>{
+ const off=basicRagPlaygroundCapabilities(false),on=basicRagPlaygroundCapabilities(true);
+ assert.equal(off.connection,'not_configured');assert.equal(off.profile,null);assert.equal(off.transport,'unconfigured');
+ assert.equal(on.model,'xingchen-agi/xing4.0-29b-a4b:free');assert.equal(on.profile,'basic-rag-v1');assert.deepEqual(on.approvedQuestions,[]);
+});
 test('returns fresh copies of the two approved questions',()=>{
  const values=approvedPlaygroundQuestions();assert.equal(values.length,2);assert.equal(matchApprovedPlaygroundCase({question:values[0],productSku:'ESPX8266'}),'mini-01');values.push('forged');assert.equal(approvedPlaygroundQuestions().length,2);
 });

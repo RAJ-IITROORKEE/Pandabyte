@@ -31,6 +31,7 @@ export function createBasicRagCompletion(options: {
   apiKey: string; fetcher?: typeof fetch;
   policyCurrent(): Promise<boolean>;
   claim(): Promise<boolean>;
+  dispatchCurrent?(): boolean;
 }) {
   let used = false;
   const fetcher = options.fetcher ?? fetch;
@@ -56,14 +57,18 @@ export function createBasicRagCompletion(options: {
       const [catalog, policy] = await Promise.all([get('/models/' + basicRagModel + '/endpoints'), get('/endpoints/zdr')]);
       const endpoints = object(catalog) && object(catalog.data) && Array.isArray(catalog.data.endpoints) ? catalog.data.endpoints : [];
       const rows = object(policy) && Array.isArray(policy.data) ? policy.data : [];
-      const pinned = endpoints.filter(e => object(e) && e.tag === 'phala');
-      const zdr = rows.filter(e => object(e) && e.model_id === basicRagModel && e.tag === 'phala');
+      const phala = (tag: unknown) => typeof tag === 'string' && (tag.toLowerCase() === 'phala' || tag.toLowerCase().startsWith('phala/'));
+      const pinned = endpoints.filter(e => object(e) && phala(e.tag));
+      const zdr = rows.filter(e => object(e) && e.model_id === basicRagModel && phala(e.tag));
       const endpoint = pinned[0];
       const supported = object(endpoint) && Array.isArray(endpoint.supported_parameters) ? endpoint.supported_parameters : [];
-      if (pinned.length !== 1 || zdr.length !== 1 || !object(zdr[0]) || zdr[0].safety_retention !== false
-        || !object(endpoint) || !object(endpoint.pricing) || endpoint.pricing.prompt !== '0' || endpoint.pricing.completion !== '0'
+      if (pinned.length !== 1 || zdr.length !== 1 || !object(zdr[0]) || zdr[0].tag !== 'phala' || zdr[0].safety_retention !== false
+        || !object(endpoint) || endpoint.tag !== 'phala' || !object(endpoint.pricing) || endpoint.pricing.prompt !== '0' || endpoint.pricing.completion !== '0'
         || !['max_tokens', 'temperature', 'response_format', 'reasoning'].every(p => supported.includes(p))) throw new BasicRagProviderError('not_admitted');
-      if (deadline.aborted || !await options.policyCurrent() || !await options.claim() || deadline.aborted || !await beforeSend() || deadline.aborted)
+      // Complete slow policy/claim work before the one final network-backed source and actor check.
+      if (deadline.aborted || !await options.policyCurrent() || !await options.claim() || deadline.aborted
+        || !await options.policyCurrent() || deadline.aborted || !await beforeSend() || deadline.aborted
+        || (options.dispatchCurrent !== undefined && !options.dispatchCurrent()) || deadline.aborted)
         throw new BasicRagProviderError('not_admitted');
       sent = true;
       const response = await fetcher(api + '/chat/completions', {
@@ -82,6 +87,10 @@ export function createBasicRagCompletion(options: {
         throw new BasicRagProviderError(response.status === 429 ? 'rate_limited' : 'outcome_unknown', response.status);
       }
       const value = await readJSON(response, 64000);
+      if (object(value) && Object.hasOwn(value, 'error')) {
+        if (Object.keys(value).length === 1 && object(value.error) && value.error.code === 429) throw new BasicRagProviderError('rate_limited', response.status);
+        throw new BasicRagProviderError('outcome_unknown', response.status);
+      }
       const choices = object(value) && Array.isArray(value.choices) ? value.choices : [];
       const first = choices[0], usage = object(value) ? value.usage : null;
       const message = object(first) ? first.message : null;

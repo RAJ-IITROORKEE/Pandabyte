@@ -1,6 +1,6 @@
-> Agent priority override, 9 November 2026: deliver the [basic RAG chatbot milestone](docs/agent-experience-upgrade/basic-rag-milestone.md) in the existing main chat before expanding OpenCode/harness, MCP, web search or memory. Reuse the approved UI and shared retrieval; zero cost, strict ZDR, owner/source guards and no deployment remain unchanged. Preserve the full requirement register and historical evidence.
+> Agent priority override, 10 November 2026: deliver grounded LLM output in the Control Room, then the [basic RAG chatbot milestone](docs/agent-experience-upgrade/basic-rag-milestone.md) in main chat. OpenCode is optional for this prototype. Zero cost remains the default; the owner separately approved up to USD0.01 total Luna testing with strict ZDR unchanged. Preserve the approved UI, owner/source guards, full requirements and historical evidence. No deployment.
 
-Basic-RAG history checkpoint, 10 November: durable routing/status recovery and logical cancellation are verified in development and Codex Browser. Live inference remains off pending strict-free provider activation and response acceptance; see the current handoff.
+Basic-RAG live checkpoint, 10 November: Codex Browser verified grounded GPT-6 Luna output in the Control Room and main chat, with citations and saved history surviving reload. The bounded paid test is closed; ongoing inference remains off. The free Phala route still returns429, and Control Room latency41.3s needs improvement. See the current handoff.
 
 # PandaByte.in
 
@@ -11,9 +11,10 @@ An India-first IoT hardware catalog and company website with an editable adminis
 The approved customer shell is implemented. The owner's 7 November request reuses
 the main working-tree RAG Control Room, document library and retrieval Playground
 in this branch. Native discovery and existing RAG skill/tool controls are verified;
-native execution and full Admin management remain in progress. Inference stays off
-under the unchanged zero-cost/strict-ZDR gate; current chat retains deterministic
-RAG. See the handoff for current runtime, verification and remaining gates.
+native execution and full Admin management remain in progress. Direct one-shot RAG
+is mounted separately from native execution; the bounded paid prototype passed,
+while ongoing inference and the fast-response acceptance gate remain open. See
+the handoff for current runtime, verification and remaining gates.
 
 **Status: hosted development preview, 29 October 2026.** [Open PandaByte](https://pandabyte-iot.vercel.app). The site uses the selected development Clerk/InsForge services. It is not a production-commerce launch; real payments and invoice issuance remain disabled/deferred. [Deployment and checks](docs/vercel-preview-deployment.md).
 

@@ -2232,5 +2232,150 @@
       "merge": false,
       "phase2Advanced": false
     }
+  },
+  "controlRoomBasicRagLive20261110": {
+    "date": "2026-11-10",
+    "status": "bounded_live_prototype_verified_latency_and_operating_budget_open",
+    "priority": "Control Room LLM output, then basic main chat; OpenCode optional for this prototype",
+    "authorization": {
+      "paidTestLimitUsd": 0.01,
+      "strictZdr": true,
+      "ongoingPaidInference": false,
+      "source": "Explicit user cost-choice reply"
+    },
+    "implementation": [
+      "Shared strict RAG completion transport in Control Room and main chat",
+      "Current owner/Admin/session/source checks, local profile/receipt binding and synchronous file snapshots",
+      "Persistent one-use Admin request claim separate from customer history; shared finite paid test reservations",
+      "Main basic route emits activity and only saved owner-checked final through existing SSE protocol",
+      "Historical GPT-4o-mini labels replaced with grounded-answer and actual active-profile status"
+    ],
+    "live": {
+      "provider": "Azure",
+      "endpoint": "azure/us",
+      "model": "openai/gpt-6-luna",
+      "requestedPolicy": {
+        "zdr": true,
+        "safetyRetention": false,
+        "dataCollection": "deny",
+        "allowFallbacks": false,
+        "reasoning": false,
+        "tools": false,
+        "plugins": false,
+        "cache": false
+      },
+      "diagnostic": {
+        "httpStatus": 200,
+        "answer": "TEST8266",
+        "inputTokens": 156,
+        "outputTokens": 47,
+        "reasoningTokens": 0,
+        "costNanoUsd": 43010,
+        "identityReconciliation": "Same retained live response revalidated offline after accepting exact current catalog alias as well as exact dated endpoint ID; no second diagnostic POST"
+      },
+      "firstControlRoomAttempt": {
+        "outcome": "not_admitted",
+        "modelPost": false,
+        "reservationSpent": true,
+        "automaticRetry": false,
+        "followup": "Repeated profile/Admin reads consolidated; spent marker retained"
+      },
+      "controlRoom": {
+        "surface": "Codex in-app browser localhost:3001/admin/rag-control-room#playground",
+        "question": "Which MCU does the x8266 use?",
+        "answer": "The x8266 uses an ESP8266 microcontroller.",
+        "literalEvidence": "ESP8266-based microcontroller board",
+        "contextPassages": 2,
+        "contextCharacters": 638,
+        "inputTokens": 277,
+        "outputTokens": 56,
+        "costNanoUsd": 61270,
+        "elapsedMs": 41335,
+        "stagesMs": {
+          "authorize": 1302,
+          "retrieve": 6217,
+          "augment": 0,
+          "generate": 26493,
+          "validate": 0,
+          "release": 7297
+        },
+        "providerOnlyLatencyMeasured": false,
+        "screenshot": "tmp/control-room-luna-live-20261110.png"
+      },
+      "mainChat": {
+        "surface": "Codex in-app browser localhost:3001/panda-agent",
+        "question": "Which MCU does the x8266 use?",
+        "answer": "ESP8266",
+        "sourceCitation": "S1",
+        "literalEvidence": "Pandabyte x8266 is a compact ESP8266-based microcontroller board",
+        "savedAndSurvivedReload": true,
+        "existingHistoriesPreserved": true,
+        "retainedOwnedPrototypeChat": true,
+        "usage": "Transport verified actual bounded numeric receipt before persistence; main UI does not expose token/cost metrics",
+        "screenshot": "tmp/main-chat-luna-live-20261110.png"
+      },
+      "paidModelPosts": 3,
+      "permanentReservations": 4,
+      "reservationsResetOrRefunded": false,
+      "worstCaseReservedNanoUsd": 9690560,
+      "fifthReservationDeniedByFixture": true
+    },
+    "verification": {
+      "broadRegression": {
+        "total": 676,
+        "pass": 660,
+        "skip": 16,
+        "fail": 0,
+        "note": "Before final policy/SSE refinements; targeted suites cover subsequent changes"
+      },
+      "optimizedPolicyBudgetTransport": {
+        "pass": 29,
+        "fail": 0
+      },
+      "basicSseRoutes": {
+        "pass": 18,
+        "fail": 0,
+        "evidenceClass": "Synthetic injected bridge; live positive main call preceded this progress-only change"
+      },
+      "legacyAndGuideSse": {
+        "pass": 30,
+        "fail": 0
+      },
+      "typeScript": "Final production build compilation and application TypeScript passed",
+      "lint": "Scoped ESLint passed",
+      "finalBuildId": "-4Gk9S0QXTFiW6UwL6hFx",
+      "finalAffectedHandlerRegression": {
+        "pass": 70,
+        "fail": 0
+      }
+    },
+    "remaining": [
+      "Control Room end-to-end 41.3s is not the requested fast prototype target; separately measure provider, policy and source costs",
+      "Ongoing paid prototype budget is not authorized; free strict-ZDR Phala route still429",
+      "Broader representative answer/abstention and quality matrix; no claim of general conversational support",
+      "Original Phase1 native OpenCode/skills/MCP gates remain tracked; Phase2 not advanced"
+    ],
+    "limits": [
+      "Owner-bound localhost development/test session only; no hosted deployment",
+      "Provider unit-price cap plus conservative GPT byte/token framing reservation; not a provider-enforced absolute-dollar cap",
+      "Normal-process exclusivity tested; power-loss durability, malicious local marker deletion and atomic Windows ACL revocation are not certified",
+      "No customer-memory extraction or developer memory sent to provider"
+    ],
+    "cleanup": {
+      "privateSecretsTracked": false,
+      "privateBudgetMarkers": "Retained permanently; never delete/reseed to retry",
+      "disposableIdentitiesCreated": 0,
+      "sourceRolePublicationChanges": false,
+      "providerAccountChanges": false,
+      "paidLeaseMountedAfterTesting": false,
+      "pushMergeDeploy": false,
+      "preview": {
+        "port": 3001,
+        "basicRouteIntent": true,
+        "nativeNewMessages": false,
+        "paidProfileMounted": false,
+        "providerAdmission": false
+      }
+    }
   }
 }

@@ -5,6 +5,20 @@ import { createBasicRagCompletion, basicRagModel } from '../src/server/basic-rag
 
 const question = 'Which MCU does the x8266 use?';
 const input = () => ({ question, signal: new AbortController().signal });
+
+test('bounded paid receipt requires explicit test policy and does not change zero-cost default',async()=>{
+ for(const policy of [undefined,'bounded_luna_test']){
+  const f=fixture(),complete=f.deps.complete;f.deps.usagePolicy=policy;
+  f.deps.complete=async(...args)=>{const r=await complete(...args);r.usage.costNanoUsd=20000;return r;};
+  const r=await runBasicRag(input(),f.deps);
+  assert.equal(r.status,policy?'answered':'unavailable');
+  if(policy)assert.equal(r.usage.costNanoUsd,20000);
+ }
+ for(const usage of [{inputTokens:21025,outputTokens:20,costNanoUsd:20},{inputTokens:80,outputTokens:701,costNanoUsd:20},{inputTokens:80,outputTokens:20,costNanoUsd:2697641}]){
+  const f=fixture(),complete=f.deps.complete;f.deps.usagePolicy='bounded_luna_test';f.deps.complete=async(...args)=>({...await complete(...args),usage});
+  assert.equal((await runBasicRag(input(),f.deps)).status,'unavailable');
+ }
+});
 function fixture() {
   let authorized = true, current = true, calls = 0;
   const context = {

@@ -1,4 +1,4 @@
-import { runBasicRag } from '../retrieval/basic-rag.ts';
+import { runBasicRag, type BasicRagUsagePolicy } from '../retrieval/basic-rag.ts';
 import type { ReadyProductContext } from '../retrieval/product-context-set.ts';
 import { uuid, type ActivityReporter, type ChatAnswer, type ChatRead } from './chat-contracts.ts';
 import type { BasicRagChatBridge, BasicRagReference, BasicRagTurn } from './basic-rag-chat-contracts.ts';
@@ -9,6 +9,7 @@ type Scope = { productId: string; sku: string; scopeHash: string };
 type Prepared = ReadyProductContext | { kind: 'clarification' | 'insufficient' | 'unavailable' };
 type Completion = (input: { question: string; passages: Array<{ rank: number; text: string }> }, beforeSend: () => Promise<boolean>, signal: AbortSignal) => Promise<{ evaluation: unknown; usage?: unknown }>;
 type Dependencies = {
+  usagePolicy?: BasicRagUsagePolicy;
   store: {
     state(thread: string, request: string): Promise<State | null>;
     begin(thread: string, request: string, question: string): Promise<ChatRead & { admitted: boolean }>;
@@ -124,6 +125,7 @@ export function createBasicRagChatService(deps: Dependencies): BasicRagChatBridg
         };
         const complete = deps.completion(claim);
         const result = await runBasicRag({ question: turn.question, signal }, {
+          usagePolicy: deps.usagePolicy,
           authorize: current,
           prepare: async (question, requestSignal) => {
             report(progress, 'reading_sources');
