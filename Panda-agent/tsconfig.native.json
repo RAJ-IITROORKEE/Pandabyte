@@ -4,7 +4,9 @@
   "include": [
     "src/opencode/**/*.ts",
     "runtime/opencode/plugins/**/*.ts",
+    "runtime/opencode/research-binding/**/*.ts",
     "src/server/native-*.ts",
+    "src/server/research-*.ts",
     "src/retrieval/prepared-evidence.ts"
   ]
 }

@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-11",
+  "phase": "B",
+  "accepted": true,
+  "scope": "Phase B accepted: synthetic exact-image execution only; no real model/search or hosted research activation",
+  "nativeCommandId": "0f1b6ed5-086a-40bb-93c6-7abcaeea95a2",
+  "sourceArchiveSha256": "1c781a11dec0ed369597a286ee4fd1ee9400f4784610e56aa2c970cfa5e94b3a",
+  "nativeCommandStatus": "Success",
+  "native": {
+    "state": "initial_smoke_passed",
+    "fullPhaseBGate": false,
+    "version": "2.2.5",
+    "profileHash": "98869443278f82ca9b5f2edeaaab478e646016e26695ffbd08f4596d05671ff2",
+    "checks": [
+      "mcp_fresh_connection_duplicate_cached",
+      "settled_receipt_read_without_activation",
+      "native_tool_continuation",
+      "native_two_turn_history",
+      "settled_restart_terminal_reconciliation",
+      "native_persistent_restart",
+      "unknown_restart_no_dispatch",
+      "two_owner_isolation",
+      "native_http_429_no_redispatch",
+      "settled_disconnect_no_redispatch",
+      "retire_after_settle_no_redispatch",
+      "claim_disconnect_no_dispatch",
+      "lost_container_create_receipt_exact_cleanup"
+    ],
+    "counts": {
+      "providerDispatches": 9,
+      "toolDispatches": 1,
+      "deniedAuxiliary": 0,
+      "unknownReplayDenials": 0
+    },
+    "retainedUnknown": true,
+    "realProviderCalls": 0,
+    "realSearchCalls": 0,
+    "durationMs": 69099
+  },
+  "local": {
+    "focused": {
+      "failed": 0,
+      "passed": 58,
+      "tests": 58,
+      "skipped": 0
+    },
+    "clientDictation": {
+      "failed": 0,
+      "passed": 2,
+      "tests": 2
+    },
+    "nativeTypecheck": "passed",
+    "scopedLint": "passed",
+    "productionBuild": "passed before caller-only repairs",
+    "broaderRegression": {
+      "passed": 1004,
+      "skipped": 32,
+      "failed": 0,
+      "tests": 1036
+    }
+  },
+  "postRunHealth": {
+    "gatewayService": "active",
+    "status": "Success",
+    "lightweightContainer": "healthy",
+    "commandId": "db15ebc1-34fc-44b6-926d-c46797b359f0",
+    "nativeHostSlot": "free"
+  },
+  "sourceSha256": {
+    "Panda-agent/runtime/opencode/research-binding/index.ts": "7b6a23b8d3d20ffde59f2dd9de755581bf54d14e94ab6fc831ac133ee94c86d4",
+    "Panda-agent/runtime/opencode/research-controller.mjs": "e7e5d15c27230735798fa1f61af41e2676e0792c428b17ceeb80b75c9057b239",
+    "Panda-agent/runtime/opencode/research-http-proxy.mjs": "6047341e99811f162970181a185c053a8d8407fd97ec00c6b000dadd5456e9eb",
+    "Panda-agent/runtime/opencode/research-mcp-shim.mjs": "3a54ccf2d2b889336d65cdd53ae301325bd93c12c2da35884f62e50d72581f47",
+    "Panda-agent/runtime/opencode/research-profile.mjs": "d2b0d66f70d1c6b60493249954ae2238955644777fd945ec17d57a311464ae30",
+    "Panda-agent/runtime/opencode/research-provider-channel.mjs": "456e01a3f3bd33f0fc14859af47a5038ed0619fc4b61e1efdd4de7996a528129",
+    "Panda-agent/scripts/test-native-research.mjs": "0f4a8dae89bc72aab5cd1168e92010547f2553170e1c8e350dbe9eb09cd38e33",
+    "Panda-agent/src/opencode/research-forms.ts": "7485e56a2c0cc622ef9d93de719cc88e495cc298ba19923a77a6e2e5ead0f218",
+    "Panda-agent/src/opencode/research-provider-gateway.ts": "77a5f7b299f7ef22d6e1a2e027717264f039a4a578397aaf987d274026d2853a",
+    "Panda-agent/src/opencode/research-runtime.ts": "cc84195848b5749003b6e6772ace8d0086997cf35498987c8d2f3db46c858c34",
+    "Panda-agent/src/opencode/research-transcript.ts": "ff0aa0f089e7e06f7fac501942027b85ddb23b71849afe9f6a14e430d6561858",
+    "Panda-agent/src/opencode/research-values.ts": "457a567a6cd571a259c9bea338ef0dc051dc83805687e9726bb6d630670051c6",
+    "Panda-agent/src/server/native-docker-host-quota.ts": "02cae9d48e7c974d135f04eb2c303d19c0712a9dfa805bc81dc40cd19d7e3421",
+    "Panda-agent/src/server/research-docker-transport.ts": "5be3fd4c16c5c175ecd5a739f764c478f08727b0ab55214f0a845abe1dc9780e",
+    "Panda-agent/src/server/research-runtime-store.ts": "849c0a8120cf8d358b12ffd1e76e97cbca36e71b6d54f49b19be6ed8e7cec1d4",
+    "Panda-agent/tests/research-binding-plugin.test.mjs": "7f69ca1147d5846626a8a26206d3909155aa76ff835a04135bfee9852804a8bb",
+    "Panda-agent/tests/native-docker-host-quota.test.mjs": "d3ddff410da3d94473e8e7ea5db1a3d43a38d12088abec24c315b2219a396e20",
+    "Panda-agent/tests/research-docker-transport.test.mjs": "0caf48379bf172129ae4cdc82d7730cc262848cdcb63a52c3f108fd820c3d9a1",
+    "Panda-agent/tests/research-forms.test.mjs": "2f68c9df7eaf069260dbf257a676a4f8436320cbb0ab46ac0fd9fa256883bcf1",
+    "Panda-agent/tests/research-provider-gateway.test.mjs": "748ba6ca7d06ac24cfc5b66c325aa2da5e1405f6a261b70a5d85187c417c609e",
+    "Panda-agent/tests/research-runtime-store.test.mjs": "ccbcd9a753e1d1686099e90681fc3d914ab054b0ceab74710c2c597556430ce5",
+    "Panda-agent/tests/research-runtime.test.mjs": "f45de0ef0d5798b93250695fe1f89141bee40b89201a381067b5a420e9e10817",
+    "Panda-agent/tests/research-transcript.test.mjs": "c0252c3148b22c4f64c080fbfc10dfec963f9808c6cb1c04b70317c06f0d1b33",
+    "Panda-agent/tsconfig.native.json": "80d575acbb16d152b69c0ba4d341df25f9f2cd168642e675b608d1c3cf36e1e6"
+  }
+}
