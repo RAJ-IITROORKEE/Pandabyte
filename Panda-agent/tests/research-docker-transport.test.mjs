@@ -13,6 +13,15 @@ test('research transport binds the narrow native surface and preserves actual re
  assert.equal(seen.length,2);assert.equal(seen[0].sessionID,sessionID);assert.deepEqual(seen[0].ownership,ownership);
  await transport.close();await assert.rejects(()=>transport.request('GET','/api/info'));
 });
+
+test('selected search transport binds profile on the proxy wire and permits only its create permissions', async () => {
+ const seen = [], transport = createResearchDockerTransport({ ...base, profile: 'tavily-search', run: async wire => { seen.push(wire); return response; } });
+ assert.deepEqual(transport.createBody.permissions, [{ action: '*', resource: '*', effect: 'deny' }, { action: 'panda_research_search', resource: '*', effect: 'allow' }]);
+ await transport.request('POST', '/api/session', transport.createBody);
+ assert.equal(seen[0].profile, 'tavily-search');
+ await assert.rejects(() => transport.request('POST', '/api/session', { ...transport.createBody, permissions: [{ action: '*', resource: '*', effect: 'deny' }, { action: 'panda_research_echo', resource: '*', effect: 'allow' }] }));
+ await transport.close(); assert.throws(() => createResearchDockerTransport({ ...base, profile: 'foreign' }));
+});
 test('foreign, arbitrary, malformed and unclaimed mutation shapes fail before Docker',async()=>{
  let calls=0;const transport=createResearchDockerTransport({...base,run:async()=>{calls++;return response;}});
  for(const [method,path,body] of [['GET','/api/session'],['GET',`/api/session/ses_abcdef123456ZZZZZZZZZZZZZZ`],['POST',`/api/session/${sessionID}/resume`,{}],['DELETE',`/api/session/${sessionID}`],['GET','/api/info',{}],['POST',`/api/session/${sessionID}/prompt`,{text:'missing id'}],['POST','/api/session',{id:sessionID,permissions:[]}],['GET',`/api/session/${sessionID}/message?limit=100&cursor=x%2Fy`]]) await assert.rejects(()=>transport.request(method,path,body));
@@ -33,9 +42,9 @@ test('malformed or oversized helper responses remain unavailable without replay'
   await assert.rejects(()=>transport.request('GET','/api/info'));assert.equal(calls,1);await transport.close();
  }
 });
-test('actual private channel forwards bounded provider/broker frames and denies stale generation before forwarding',{timeout:15000},async()=>{
+for(const profile of ['synthetic-echo','tavily-search'])test('actual private channel fixes broker path and generation for '+profile,{timeout:15000},async()=>{
  const {spawn}=await import('node:child_process');const {createInterface}=await import('node:readline');
- const child=spawn(process.execPath,['Panda-agent/runtime/opencode/research-provider-channel.mjs'],{stdio:['pipe','pipe','pipe'],env:{...process.env,PANDA_RESEARCH_CHANNEL_TOKEN:'a'.repeat(64),PANDA_RESEARCH_GENERATION:generation}});
+ const child=spawn(process.execPath,['Panda-agent/runtime/opencode/research-provider-channel.mjs'],{stdio:['pipe','pipe','pipe'],env:{...process.env,PANDA_RESEARCH_CHANNEL_TOKEN:'a'.repeat(64),PANDA_RESEARCH_GENERATION:generation,PANDA_RESEARCH_PROFILE:profile}});
  const lines=createInterface({input:child.stdout}),queue=[],waiters=[];let errors='';child.stderr.on('data',part=>errors+=part);
  lines.on('line',line=>{const item=JSON.parse(line);const waiter=waiters.shift();if(waiter)waiter(item);else queue.push(item);});
  const next=()=>queue.length?Promise.resolve(queue.shift()):new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('channel timeout '+errors)),3000);waiters.push(value=>{clearTimeout(timer);resolve(value);});});
@@ -47,11 +56,13 @@ test('actual private channel forwards bounded provider/broker frames and denies 
   child.stdin.write(JSON.stringify({version:1,type:'response',id:frame.id,status:200,contentType:'text/event-stream',body:Buffer.from('data: [DONE]\n\n').toString('base64')})+'\n');
   const result=await request;assert.equal(await result.text(),'data: [DONE]\n\n');
   const denied=await fetch('http://127.0.0.1:4175/v1/chat/completions',{method:'POST',headers:{...headers,'x-panda-native-generation':'f'.repeat(64)},body:'{}'});assert.equal(denied.status,403);
-  const brokerRequest=fetch('http://127.0.0.1:4174/echo',{method:'POST',headers:{authorization:headers.authorization,'content-type':'application/json'},body:JSON.stringify({generation}),signal:AbortSignal.timeout(5000)});
-  const brokerFrame=await next();assert.equal(brokerFrame.channel,'broker');assert.equal(brokerFrame.id,frame.id+1);
+  const path=profile==='synthetic-echo'?'/echo':'/search',foreign=profile==='synthetic-echo'?'/search':'/echo';
+  const rejected=await fetch('http://127.0.0.1:4174'+foreign,{method:'POST',headers:{authorization:headers.authorization,'content-type':'application/json'},body:JSON.stringify({generation})});assert.equal(rejected.status,403);
+  const brokerRequest=fetch('http://127.0.0.1:4174'+path,{method:'POST',headers:{authorization:headers.authorization,'content-type':'application/json'},body:JSON.stringify({generation}),signal:AbortSignal.timeout(5000)});
+  const brokerFrame=await next();assert.equal(brokerFrame.channel,'broker');assert.equal(brokerFrame.path,path);assert.equal(brokerFrame.id,frame.id+1);
   child.stdin.write(JSON.stringify({version:1,type:'response',id:brokerFrame.id,status:200,contentType:'application/json',body:Buffer.from('{"content":[]}').toString('base64')})+'\n');
   assert.equal((await brokerRequest).status,200);
- }finally{child.stdin.end();child.kill();lines.close();}
+ }finally{const {once}=await import('node:events');const exit=once(child,'close');child.stdin.end();child.kill();await exit;lines.close();}
 });
 test('actual HTTP proxy accepts the full allowed escaped prompt wire without replay',{timeout:15000},async()=>{
  const {spawn}=await import('node:child_process');const {createServer}=await import('node:http');const {once}=await import('node:events');
@@ -60,7 +71,7 @@ test('actual HTTP proxy accepts the full allowed escaped prompt wire without rep
  server.listen(4172,'127.0.0.1');await once(server,'listening');
  const transport=createResearchDockerTransport({...base,run:async wire=>{
   assert.ok(Buffer.byteLength(JSON.stringify(wire))>110000);
-  const child=spawn(process.execPath,['Panda-agent/runtime/opencode/research-http-proxy.mjs'],{stdio:['pipe','pipe','pipe'],env:{...process.env,PANDA_NATIVE_PASSWORD:'a'.repeat(64),PANDA_RESEARCH_GENERATION:generation}});
+  const child=spawn(process.execPath,['Panda-agent/runtime/opencode/research-http-proxy.mjs'],{stdio:['pipe','pipe','pipe'],env:{...process.env,PANDA_NATIVE_PASSWORD:'a'.repeat(64),PANDA_RESEARCH_GENERATION:generation,PANDA_RESEARCH_PROFILE:'synthetic-echo'}});
   const chunks=[];child.stdout.on('data',part=>chunks.push(part));child.stdin.end(JSON.stringify(wire));const [exit]=await once(child,'close');assert.equal(exit,0);
   const response=JSON.parse(Buffer.concat(chunks).toString());return {...response,body:Buffer.from(response.body,'base64').toString()};
  }});

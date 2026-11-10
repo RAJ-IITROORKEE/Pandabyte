@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { researchProfileSelection } from '../research-profile.mjs';
 
 type ToolContext = { sessionID: string; messageID: string; id: string };
 type MutableTool = { id: string; name: string; execute: (input: unknown, context: ToolContext) => unknown };
@@ -26,6 +27,7 @@ const queryInput = (value: unknown): value is { query: string } => {
 const researchBinding = {
   id: 'panda-research-binding',
   async setup(context: Context) {
+    const selected = researchProfileSelection(process.env.PANDA_RESEARCH_PROFILE as 'synthetic-echo' | 'tavily-search');
     const generation = process.env.PANDA_RESEARCH_GENERATION;
     if (!/^[a-f0-9]{64}$/.test(generation ?? '')) throw Error('research_binding_invalid');
     await context.session.hook('http.request', event => {
@@ -40,7 +42,7 @@ const researchBinding = {
     await context.session.hook('title', event => { event.result = 'Panda research fixture'; });
     await context.tool.transform(editor => {
       for (const entry of editor.list()) {
-        if (entry.id !== 'panda_research_echo') continue;
+        if (entry.id !== selected.toolName) continue;
         editor.update(entry.id, tool => {
           const execute = tool.execute;
           tool.execute = (input, native) => {

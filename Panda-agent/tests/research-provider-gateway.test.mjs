@@ -45,6 +45,23 @@ test('initial frontier uses only admitted user and excludes completed older turn
   assert.equal(deriveResearchFrontier(expected,[user,nativeAssistant()],[],body),null);
   assert.equal(deriveResearchFrontier(expected,[user],[],{...body,messages:[{role:'user',content:'Other'}]}),null);
 });
+
+test('search profile gateway and frontier accept only selected search tool identities', async () => {
+  const selectedCalls = [{ ...calls[0], name: 'panda_research_search' }];
+  const selectedBody = structuredClone(body); selectedBody.tools[0].function.name = 'panda_research_search';
+  const selectedContinuation = continued(selectedCalls); selectedContinuation.tools = selectedBody.tools;
+  assert.ok(deriveResearchFrontier(expected, [user], [], selectedBody, 'tavily-search'));
+  assert.ok(deriveResearchFrontier(expected, [user, nativeAssistant(selectedCalls)], [{ attemptKey: key, result: { toolCalls: selectedCalls, usage } }], selectedContinuation, 'tavily-search'));
+  assert.equal(deriveResearchFrontier(expected, [user], [], body, 'tavily-search'), null);
+  assert.equal(deriveResearchFrontier(expected, [user], [], selectedBody), null);
+  assert.equal(deriveResearchFrontier(expected, [user], [], selectedBody, 'foreign'), null);
+  await fixture(async ({ gateway, events }) => {
+    assert.equal((await gateway.handle(request(body))).status, 400); assert.deepEqual(events, []);
+    const result = await gateway.handle(request(selectedBody)); assert.equal(result.status, 200);
+    assert.match(result.body.toString(), /panda_research_search/);
+  }, { profile: 'tavily-search', complete: async (_body, before) => { assert.equal(await before(), true); return { toolCalls: selectedCalls, usage }; } });
+  await fixture(async ({ gateway, settled }) => { assert.equal((await gateway.handle(request(selectedBody))).status, 503); assert.deepEqual(settled, []); }, { profile: 'tavily-search' });
+});
 test('settled tool calls produce ordered verified frontier and one native association',()=>{
   const emitted=[...calls,{id:'call-2',name:'panda_research_echo',arguments:{query:'second fixture'}}];
   const result=deriveResearchFrontier(expected,[user,nativeAssistant(emitted)],[{attemptKey:key,result:{toolCalls:emitted,usage}}],continued(emitted));

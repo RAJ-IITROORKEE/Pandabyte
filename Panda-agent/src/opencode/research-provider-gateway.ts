@@ -2,8 +2,10 @@ import { createServer } from 'node:http';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { strictJson } from '../lightweight/client.ts';
 import { researchJSON, researchObject, type ResearchObject, type ResearchValue } from './research-values.ts';
+import { researchProfileSelection } from '../../runtime/opencode/research-profile.mjs';
+import type { ResearchProfileID } from './research-runtime.ts';
 
-const model = 'panda-fixture', toolName = 'panda_research_echo';
+const model = 'panda-fixture';
 const hex = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const nativeID = (value: unknown, prefix = 'msg'): value is string => typeof value === 'string' && new RegExp('^' + prefix + '_[a-f0-9]{12}[A-Za-z0-9]{14}$').test(value);
 const text = (value: unknown, max: number): value is string => typeof value === 'string' && value.isWellFormed() && Buffer.byteLength(value, 'utf8') <= max;
@@ -32,7 +34,7 @@ function validInput(value: unknown): value is ResearchObject {
   return researchObject(value) && exact(value, ['query']) && text(value.query, 1600) && value.query.length >= 1 && value.query.length <= 400
     && !!value.query.trim() && !/[\p{Cc}\p{Cf}]/u.test(value.query);
 }
-function validResult(value: unknown): value is ResearchProviderResult {
+function validResult(value: unknown, toolName: string): value is ResearchProviderResult {
   if (!researchJSON(value, 65536) || !researchObject(value) || !researchObject(value.usage)
     || !exact(value.usage, ['inputTokens', 'outputTokens', 'costNanoUsd'])
     || !Number.isSafeInteger(value.usage.inputTokens) || (value.usage.inputTokens as number) < 0 || (value.usage.inputTokens as number) > 16000
@@ -54,7 +56,7 @@ function content(value: unknown, empty = false): string[] | null {
   }
   return Buffer.byteLength(parts.join(''), 'utf8') <= 98304 ? parts : null;
 }
-function parsedCalls(value: unknown): ResearchProviderToolCall[] | null {
+function parsedCalls(value: unknown, toolName: string): ResearchProviderToolCall[] | null {
   if (!Array.isArray(value) || !value.length || value.length > 16) return null;
   const calls: ResearchProviderToolCall[] = [];
   for (const call of value) {
@@ -67,7 +69,7 @@ function parsedCalls(value: unknown): ResearchProviderToolCall[] | null {
   }
   return new Set(calls.map(call => call.id)).size === calls.length ? calls : null;
 }
-function toolSchema(value: unknown): boolean {
+function toolSchema(value: unknown, toolName: string): boolean {
   if (!researchObject(value) || !exact(value, ['type', 'function']) || value.type !== 'function' || !researchObject(value.function)) return false;
   const f = value.function, p = f.parameters;
   if (!only(f, ['name', 'description', 'parameters', 'strict']) || f.name !== toolName || f.description !== undefined && !text(f.description, 2000)
@@ -82,10 +84,10 @@ function toolSchema(value: unknown): boolean {
     && [p.description, p.title, q.description, q.title].every(v => v === undefined || text(v, 2000))
     && (q.minLength === undefined || q.minLength === 1) && (q.maxLength === undefined || q.maxLength === 400);
 }
-function validBody(value: unknown): value is ResearchProviderBody {
+function validBody(value: unknown, toolName: string): value is ResearchProviderBody {
   if (!researchJSON(value, 131072) || !researchObject(value) || !only(value, ['model', 'stream', 'messages', 'tools', 'tool_choice', 'parallel_tool_calls', 'stream_options', 'max_tokens', 'max_completion_tokens', 'temperature', 'top_p', 'presence_penalty', 'frequency_penalty', 'seed', 'stop'])
     || value.model !== model || value.stream !== true || !Array.isArray(value.messages) || !value.messages.length || value.messages.length > 200) return false;
-  if (value.tools !== undefined && (!Array.isArray(value.tools) || value.tools.length > 1 || !value.tools.every(toolSchema))) return false;
+  if (value.tools !== undefined && (!Array.isArray(value.tools) || value.tools.length > 1 || !value.tools.every(tool => toolSchema(tool, toolName)))) return false;
   if (value.tool_choice !== undefined && !['auto', 'none', 'required'].includes(value.tool_choice as string)
     || value.parallel_tool_calls !== undefined && typeof value.parallel_tool_calls !== 'boolean'
     || value.stream_options !== undefined && (!researchObject(value.stream_options) || !exact(value.stream_options, ['include_usage']) || typeof value.stream_options.include_usage !== 'boolean')
@@ -102,7 +104,7 @@ function validBody(value: unknown): value is ResearchProviderBody {
       if (!exact(message, ['role', 'tool_call_id', 'content']) || !callID(message.tool_call_id) || content(message.content) === null) return false;
     } else if (message.role === 'assistant') {
       if (!only(message, ['role', 'content', 'tool_calls']) || content(message.content ?? null, true) === null
-        || message.tool_calls !== undefined && parsedCalls(message.tool_calls) === null) return false;
+        || message.tool_calls !== undefined && parsedCalls(message.tool_calls, toolName) === null) return false;
     } else if (!exact(message, ['role', 'content']) || content(message.content) === null) return false;
   }
   return true;
@@ -110,10 +112,11 @@ function validBody(value: unknown): value is ResearchProviderBody {
 
 /** Digest recovery must run BEFORE this helper: lazy publication never permits another physical call. */
 export function deriveResearchFrontier(expected: { messageID: string; promptHash: string }, nativeMessages: unknown,
-  attempts: readonly ResearchSettledAttempt[], providerBody: unknown): { frontier: ResearchFrontier; associations: { attemptKey: string; assistantMessageID: string }[] } | null {
+  attempts: readonly ResearchSettledAttempt[], providerBody: unknown, profile: ResearchProfileID = 'synthetic-echo'): { frontier: ResearchFrontier; associations: { attemptKey: string; assistantMessageID: string }[] } | null {
   try {
+    const { toolName } = researchProfileSelection(profile);
     if (!researchJSON({ expected, nativeMessages, attempts }, 1048576) || !nativeID(expected.messageID) || !hex(expected.promptHash)
-      || !Array.isArray(nativeMessages) || nativeMessages.length > 200 || !Array.isArray(attempts) || attempts.length > 6 || !validBody(providerBody)) return null;
+      || !Array.isArray(nativeMessages) || nativeMessages.length > 200 || !Array.isArray(attempts) || attempts.length > 6 || !validBody(providerBody, toolName)) return null;
     const seen = new Set<string>(); let previous = -1;
     for (const row of nativeMessages) {
       if (!researchObject(row) || !nativeID(row.id) || seen.has(row.id) || !researchObject(row.time)
@@ -133,7 +136,7 @@ export function deriveResearchFrontier(expected: { messageID: string; promptHash
     const frontier: ResearchFrontier = { v: 1, messageID: expected.messageID, steps: [] }, associations: { attemptKey: string; assistantMessageID: string }[] = [];
     const attemptKeys = new Set<string>(), callIDs = new Set<string>();
     for (const [index, attempt] of attempts.entries()) {
-      if (!hex(attempt.attemptKey) || attemptKeys.has(attempt.attemptKey) || !validResult(attempt.result) || !('toolCalls' in attempt.result)) return null;
+      if (!hex(attempt.attemptKey) || attemptKeys.has(attempt.attemptKey) || !validResult(attempt.result, toolName) || !('toolCalls' in attempt.result)) return null;
       attemptKeys.add(attempt.attemptKey);
       const row = rows[index];
       if (row.type !== 'assistant' || !Array.isArray(row.content) || row.content.length > 128 || row.error !== undefined || row.retry !== undefined
@@ -143,7 +146,7 @@ export function deriveResearchFrontier(expected: { messageID: string; promptHash
       if (parts.length !== attempt.result.toolCalls.length || row.content.some((part: unknown) => !researchObject(part) || !['text', 'reasoning', 'tool'].includes(part.type as string)
         || part.type !== 'tool' && !text(part.text, 24000))) return null;
       const outgoing = messages[offset++];
-      const prior = outgoing?.role === 'assistant' ? parsedCalls(outgoing.tool_calls) : null;
+      const prior = outgoing?.role === 'assistant' ? parsedCalls(outgoing.tool_calls, toolName) : null;
       if (!prior || hashResearchValue(prior) !== hashResearchValue(attempt.result.toolCalls)) return null;
       const frontierCalls: ResearchFrontierCall[] = [];
       for (const call of attempt.result.toolCalls) {
@@ -174,7 +177,7 @@ export type ResearchProviderRequest = { method: string; path: string; headers: R
 export type ResearchProviderResponse = { status: number; contentType: string; body: Buffer };
 export type ResearchProviderIdentity = { sessionID: string; kind: 'primary'; generation: string; requestHash: string; body: ResearchProviderBody };
 export type ResearchProviderOptions<Binding, Grant> = {
-  token: string; sessionID: string; generation: string; signal: AbortSignal;
+  token: string; sessionID: string; generation: string; signal: AbortSignal; profile?: ResearchProfileID;
   authorize(identity: ResearchProviderIdentity): Promise<Binding | null>;
   current(binding: Binding): Promise<boolean>;
   claim(binding: Binding): Promise<{ state: 'dispatch' | 'unknown' | 'conflict' } | { state: 'cached'; result: ResearchProviderResult }>;
@@ -204,8 +207,9 @@ function sse(result: ResearchProviderResult): ResearchProviderResponse {
   return { status: 200, contentType: 'text/event-stream', body: Buffer.from(output) };
 }
 
-/** B supports injected synthetic completion only; no real provider URL, key or retry path exists here. */
+/** Both profiles support injected synthetic completion only; no real model key or retry path exists here. */
 export function createResearchProviderGateway<Binding, Grant>(options: ResearchProviderOptions<Binding, Grant>) {
+  const { toolName } = researchProfileSelection(options.profile === undefined ? 'synthetic-echo' : options.profile);
   if (!hex(options.token) || !hex(options.generation) || !nativeID(options.sessionID, 'ses')) throw Error('invalid_research_gateway');
   const secret = Buffer.from('Bearer ' + options.token), controllers = new Set<AbortController>();
   let closed = false;
@@ -226,7 +230,7 @@ export function createResearchProviderGateway<Binding, Grant>(options: ResearchP
         if (typeof request.body === 'string' && !request.body.isWellFormed()) return response(400);
         body = strictJson(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(request.body)));
       } catch { return response(400); }
-      if (!validBody(body)) return response(400);
+      if (!validBody(body, toolName)) return response(400);
       const reviewed = freeze(structuredClone(body));
       const identity = freeze({ sessionID: options.sessionID, generation: options.generation, kind: 'primary' as const, requestHash: hashResearchValue(reviewed), body: reviewed });
       const binding = await options.authorize(identity);
@@ -235,7 +239,7 @@ export function createResearchProviderGateway<Binding, Grant>(options: ResearchP
       if (claimed.state === 'unknown' || claimed.state === 'conflict') return response(409);
       let result: ResearchProviderResult;
       if (claimed.state === 'cached') {
-        if (!validResult(claimed.result)) return response(503);
+        if (!validResult(claimed.result, toolName)) return response(503);
         result = freeze(structuredClone(claimed.result));
       } else {
         let beforeUsed = false, grant: Grant | null = null;
@@ -247,7 +251,7 @@ export function createResearchProviderGateway<Binding, Grant>(options: ResearchP
           return grant !== null;
         };
         const completed = await options.complete(reviewed, beforeSend, signal);
-        if (!beforeUsed || grant === null || !validResult(completed)) return response(503);
+        if (!beforeUsed || grant === null || !validResult(completed, toolName)) return response(503);
         result = freeze(structuredClone(completed));
         // An exact already-sent receipt must survive cancellation/rotation; settlement never grants release.
         await options.settle(binding, grant, result);

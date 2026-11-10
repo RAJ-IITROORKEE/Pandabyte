@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { searchPublicWeb } from '../src/search/tavily.ts';
 
 const response = (results) => new Response(JSON.stringify({ results }), { status: 200, headers: { 'content-type': 'application/json' } });
@@ -72,3 +73,17 @@ test('stalled DNS resolution is bounded', async () => fixture(async (options) =>
   assert.deepEqual(sources, []);
   assert.ok(Date.now() - start < 5000);
 }));
+
+test('legacy flags and invalid key retain their public errors before reservation', async () => fixture(async options => {
+  for (const extra of [{ enabled: false }, { freeOnly: false }, { enabled: 1 }, { freeOnly: 1 }]) {
+    await assert.rejects(searchPublicWeb('public guide', { ...options, ...extra }), { message: 'Web search disabled' });
+  }
+  await assert.rejects(searchPublicWeb('public guide', { ...options, apiKey: '' }), { message: 'Web search unavailable' });
+  await assert.rejects(readFile(path.join(options.ledgerDir, 'quota.json')), { code: 'ENOENT' });
+}));
+
+test('legacy production denial remains even when hosted search is available', () => {
+  const script = `import {searchPublicWeb} from ${JSON.stringify(new URL('../src/search/tavily.ts', import.meta.url).href)}; try { await searchPublicWeb('public guide',{enabled:true,freeOnly:true,apiKey:'fixture'}); process.exit(2); } catch(error) { if(error.message !== 'Web search disabled') process.exit(3); }`;
+  const child = spawnSync(process.execPath, ['--input-type=module', '-e', script], { env: { ...process.env, NODE_ENV: 'production' }, encoding: 'utf8' });
+  assert.equal(child.status, 0, child.stderr);
+});

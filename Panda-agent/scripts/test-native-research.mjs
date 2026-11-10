@@ -13,26 +13,31 @@ import {createResearchProviderGateway,deriveResearchFrontier,hashResearchValue} 
 import {openResearchRuntimeStore,hashResearchJSON} from '../src/server/research-runtime-store.ts';
 import {createResearchDockerTransport} from '../src/server/research-docker-transport.ts';
 import {reserveDockerHostSlot} from '../src/server/native-docker-host-quota.ts';
+import {createResearchSearchBroker,verifyResearchSearchFixtureAnswer} from '../src/server/research-search-broker.ts';
+import {searchHostedPublicWeb,hostedTavilyRequestHash} from '../src/search/tavily.ts';
 
 const exec=promisify(execFile),digest=value=>createHash('sha256').update(value).digest('hex'),hex=()=>randomBytes(32).toString('hex');
 const operationIdentity=({kind,key,requestHash})=>({kind,key,requestHash});
-const pause=ms=>new Promise(done=>setTimeout(done,ms)),root=process.argv[3];
-if(process.argv[2]!=='--aws-synthetic'||process.env.PANDA_RESEARCH_AWS_FIXTURE!=='i-05bcf2573a0b77f7a'||process.platform!=='linux'||process.getuid?.()!==0||!/^\/opt\/panda-research-tests\/[a-f0-9]{32}\/runtime$/.test(root??''))throw Error('Explicit selected-host synthetic invocation required');
+const pause=ms=>new Promise(done=>setTimeout(done,ms)),root=process.argv[3],mode=process.argv[2];
+const searchMode=mode==='--aws-search-injected'?'injected':mode==='--aws-search-real'?'real':null,profile=searchMode?'tavily-search':'synthetic-echo',toolName=searchMode?'panda_research_search':'panda_research_echo';
+if(!['--aws-synthetic','--aws-search-injected','--aws-search-real'].includes(mode)||process.argv.length!==4||process.env.PANDA_RESEARCH_AWS_FIXTURE!=='i-05bcf2573a0b77f7a'||process.platform!=='linux'||process.getuid?.()!==0||!/^\/opt\/panda-research-tests\/[a-f0-9]{32}\/runtime$/.test(root??''))throw Error('Explicit selected-host fixture invocation required');
 const command=async(args,env)=> (await exec('docker',args,{timeout:65000,maxBuffer:2097152,env:env?{PATH:process.env.PATH,...env}:undefined})).stdout.trim();
 let stage='preflight',runtimeStep='preflight',active,store,codeDirectory,profileHash,retainedUnknown=false;
 const counts={providerDispatches:0,toolDispatches:0,deniedAuxiliary:0,unknownReplayDenials:0},checks=[],started=performance.now();
+const publicQuery='RP2040 PIO official documentation';let realSearchCalls=0,searchReceipt,searchKey;
+if(searchMode==='real'){const credential=path.join(path.dirname(root),'credentials.json'),stat=await fs.lstat(credential);assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.nlink===1&&stat.uid===0&&(stat.mode&0o777)===0o600);const value=JSON.parse(await fs.readFile(credential,'utf8'));assert.deepEqual(Object.keys(value),['TAVILY_API_KEY']);assert.ok(typeof value.TAVILY_API_KEY==='string'&&value.TAVILY_API_KEY.trim()&&!/[\r\n\0]/.test(value.TAVILY_API_KEY));searchKey=value.TAVILY_API_KEY;await fs.unlink(credential);}
 const rootStat=await fs.lstat(root);assert.ok(rootStat.isDirectory()&&!rootStat.isSymbolicLink()&&rootStat.uid===0&&(rootStat.mode&0o777)===0o700);
 const image=JSON.parse(await command(['image','inspect',researchImageId]));assert.equal(image.length,1);assert.equal(image[0].Id,researchImageId);assert.equal(image[0].Architecture,'arm64');
 const mem=await fs.readFile('/proc/meminfo','utf8');assert.ok(Number(/^MemAvailable:\s+(\d+)/m.exec(mem)?.[1])>=1048576);
 const disk=await promisify(execFile)('df',['-Pk',root]);assert.ok(Number(disk.stdout.trim().split('\n').at(-1).trim().split(/\s+/)[3])>=2097152);
 const codeSource=fileURLToPath(new URL('../runtime/opencode/',import.meta.url));
 const source=Object.fromEntries(await Promise.all(researchCodeFiles.map(async name=>[name,await fs.readFile(path.join(codeSource,name))])));
-profileHash=researchProfileHash(source);
+profileHash=researchProfileHash(source,profile);
 
 async function prepareCode(){
  await fs.mkdir(path.join(root,'code'),{mode:0o700});codeDirectory=path.join(root,'code','mount');await fs.mkdir(codeDirectory,{mode:0o755});
  const files={},directories=new Set();for(const name of researchCodeFiles){const file=path.join(codeDirectory,name),directory=path.dirname(file);if(directory!==codeDirectory&&!directories.has(directory)){await fs.mkdir(directory,{mode:0o700});directories.add(directory);}await fs.writeFile(file,source[name],{mode:0o444,flag:'wx'});await fs.chmod(file,0o444);files[name]=digest(source[name]);}for(const directory of directories)await fs.chmod(directory,0o555);
- const manifest=path.join(codeDirectory,'manifest.json');await fs.writeFile(manifest,JSON.stringify({imageId:researchImageId,profileHash,files}),{mode:0o444,flag:'wx'});await fs.chmod(manifest,0o444);await fs.chmod(codeDirectory,0o555);
+ const manifest=path.join(codeDirectory,'manifest.json');await fs.writeFile(manifest,JSON.stringify({imageId:researchImageId,profileHash,profile,files}),{mode:0o444,flag:'wx'});await fs.chmod(manifest,0o444);await fs.chmod(codeDirectory,0o555);
 }
 async function json(transport,method,route,body){const r=await transport.request(method,route,body);assert.equal(r.status,200);return JSON.parse(r.body);}
 async function owned(ctx){
@@ -49,7 +54,7 @@ async function messages(ctx){
 }
 async function observation(ctx){
  const state=await owned(ctx),activeMap=(await json(ctx.transport,'GET','/api/session/active')).data,rows=await messages(ctx);
- return {state,rows,result:projectResearchTurn({messageID:ctx.run.messageID,promptHash:ctx.run.promptHash},{...(state.outcome?{outcome:state.outcome}:{}),time:state.time},Object.hasOwn(activeMap,ctx.binding.sessionID),rows,['panda_research_echo'])};
+ return {state,rows,result:projectResearchTurn({messageID:ctx.run.messageID,promptHash:ctx.run.promptHash},{...(state.outcome?{outcome:state.outcome}:{}),time:state.time},Object.hasOwn(activeMap,ctx.binding.sessionID),rows,[toolName])};
 }
 async function terminalProof(ctx){const o=await observation(ctx);if(o.result.state!=='terminal')return null;return {sessionID:ctx.binding.sessionID,messageID:ctx.run.messageID,promptHash:ctx.run.promptHash,outcome:o.result.outcome,active:false};}
 async function waitTerminal(ctx,limit=30000){const end=Date.now()+limit;for(;;){const o=await observation(ctx);if(o.result.state==='terminal')return o;if(Date.now()>end)throw Error('native_terminal_timeout');await pause(100);}}
@@ -59,10 +64,10 @@ async function replayMcpConnection(ctx,value){
  return new Promise((resolve,reject)=>{
   let buffer='',done=false,bytes=0;const finish=error=>{if(done)return;done=true;clearTimeout(timer);child.stdin.end();child.kill();if(error)reject(error);else resolve();};
   const timer=setTimeout(()=>finish(Error('mcp_replay_timeout')),10000);child.on('error',()=>finish(Error('mcp_replay_unavailable')));child.stdin.on('error',()=>finish(Error('mcp_replay_unavailable')));
-  child.stdout.on('data',part=>{try{bytes+=part.length;if(bytes>65536)throw Error();buffer+=part.toString('utf8');let at;while((at=buffer.indexOf('\n'))!==-1){const reply=JSON.parse(buffer.slice(0,at));buffer=buffer.slice(at+1);if(reply.id===2){assert.ok(reply.result&&!reply.result.isError);assert.ok(JSON.stringify(reply.result).includes('synthetic-public-evidence'));finish();}}}catch{finish(Error('mcp_replay_invalid'));}});
+  child.stdout.on('data',part=>{try{bytes+=part.length;if(bytes>65536)throw Error();buffer+=part.toString('utf8');let at;while((at=buffer.indexOf('\n'))!==-1){const reply=JSON.parse(buffer.slice(0,at));buffer=buffer.slice(at+1);if(reply.id===2){assert.ok(reply.result&&!reply.result.isError);assert.ok(JSON.stringify(reply.result).includes(searchMode?'tavily_excerpt':'synthetic-public-evidence'));finish();}}}catch{finish(Error('mcp_replay_invalid'));}});
   child.on('close',()=>{if(!done)finish(Error('mcp_replay_closed'));});
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'synthetic-reconnect',version:'1'}}})+'\n');
-  child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/call',params:{name:'echo',arguments:{...value.input,__pandaNative:envelope},_meta:{'ai.opencode/sessionID':value.sessionID}}})+'\n');
+  child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/call',params:{name:searchMode?'search':'echo',arguments:{...value.input,__pandaNative:envelope},_meta:{'ai.opencode/sessionID':value.sessionID}}})+'\n');
  });
 }
 async function disconnectChannel(ctx){
@@ -72,8 +77,8 @@ async function disconnectChannel(ctx){
 
 async function attach(ctx){
  runtimeStep='attach_channels';
- ctx.transport=createResearchDockerTransport({containerId:ctx.containerId,sessionID:ctx.binding.sessionID,generation:ctx.generation,directory:'/runtime/workspace',ownership:{binding:ctx.binding.binding,owner:ctx.binding.owner,profileHash}});
- const options={token:ctx.environment.PANDA_RESEARCH_CHANNEL_TOKEN,sessionID:ctx.binding.sessionID,generation:ctx.generation,signal:new AbortController().signal,
+ ctx.transport=createResearchDockerTransport({containerId:ctx.containerId,sessionID:ctx.binding.sessionID,generation:ctx.generation,profile,directory:'/runtime/workspace',ownership:{binding:ctx.binding.binding,owner:ctx.binding.owner,profileHash}});
+ const options={token:ctx.environment.PANDA_RESEARCH_CHANNEL_TOKEN,sessionID:ctx.binding.sessionID,generation:ctx.generation,profile,signal:new AbortController().signal,
   denied:async()=>{counts.deniedAuxiliary++;},
   authorize:async identity=>{
    if(!ctx.run||!await store.current(ctx.run)){counts.unknownReplayDenials++;return null;}
@@ -81,7 +86,7 @@ async function attach(ctx){
    const duplicate=record.operations.find(op=>op.kind==='primary'&&op.requestHash===identity.requestHash);
    if(duplicate)return{receipt:ctx.run,operation:{kind:duplicate.kind,key:duplicate.key,requestHash:duplicate.requestHash}};
    const attempts=[];for(const op of record.operations.filter(op=>op.kind==='primary'&&op.state==='settled')){const recovered=await store.recoverOperation(ctx.run,operationIdentity(op));if(recovered.state!=='cached')return null;attempts.push({attemptKey:op.key,result:recovered.result,...(op.association?{assistantMessageID:op.association.assistantMessageID}:{})});}
-   const nativeRows=await messages(ctx),frontier=deriveResearchFrontier(ctx.run,nativeRows,attempts,identity.body);if(!frontier){await fs.writeFile(path.join(path.dirname(root),'private-frontier.json'),JSON.stringify({expected:{messageID:ctx.run.messageID,promptHash:ctx.run.promptHash},nativeMessages:nativeRows,attempts,providerBody:identity.body}),{mode:0o600,flag:'wx'});return null;}
+   const nativeRows=await messages(ctx),frontier=deriveResearchFrontier(ctx.run,nativeRows,attempts,identity.body,profile);if(!frontier){await fs.writeFile(path.join(path.dirname(root),'private-frontier.json'),JSON.stringify({expected:{messageID:ctx.run.messageID,promptHash:ctx.run.promptHash},nativeMessages:nativeRows,attempts,providerBody:identity.body}),{mode:0o600,flag:'wx'});return null;}
    for(const association of frontier.associations){const op=record.operations.find(op=>op.key===association.attemptKey);const step=frontier.frontier.steps.find(step=>step.attemptKey===association.attemptKey);if(!op||!step||!await store.associateOperation(ctx.run,operationIdentity(op),{assistantMessageID:association.assistantMessageID,callsDigest:hashResearchValue(step.calls)}))return null;}
    return {receipt:ctx.run,operation:{kind:'primary',key:hashResearchValue(frontier.frontier),requestHash:identity.requestHash}};
   },
@@ -91,6 +96,12 @@ async function attach(ctx){
   complete:async(body,beforeSend)=>{
    if(ctx.scenario==='claim_disconnect')throw Error('synthetic_disconnect_before_send');
    assert.equal(await beforeSend(),true);counts.providerDispatches++;ctx.lastProviderBody=body;
+   if(ctx.scenario==='search'){
+    const tool=body.messages.findLast(message=>message.role==='tool');if(!tool)return{toolCalls:[{id:'call_search_'+ctx.run.runID,name:toolName,arguments:{query:publicQuery}}],usage:{inputTokens:100,outputTokens:20,costNanoUsd:0}};
+    const evidence=JSON.parse(typeof tool.content==='string'?tool.content:tool.content.map(part=>part.text).join(''));assert.equal(evidence.kind,'tavily_excerpt');assert.ok(Array.isArray(evidence.sources));
+    const source=evidence.sources[0],quote=source?Array.from(source.content).slice(0,200).join(''):'';
+    return{content:JSON.stringify({answer:quote,evidence:source?[{handle:source.handle,quote}]:[]}),usage:{inputTokens:100,outputTokens:50,costNanoUsd:0}};
+   }
    if(ctx.scenario==='hold'){ctx.holdStarted?.();return new Promise((resolve,reject)=>{ctx.rejectHeld=reject;});}
    if(ctx.scenario==='tool'&&!body.messages.some(m=>m.role==='tool'))return{toolCalls:[{id:'call_fixture_'+ctx.run.runID,name:'panda_research_echo',arguments:{query:'Public I2C fixture'}}],usage:{inputTokens:100,outputTokens:20,costNanoUsd:0}};
    if(ctx.scenario==='recall')assert.ok(JSON.stringify(body.messages).includes('SYNTHETIC-ORCHID-47'));
@@ -107,7 +118,16 @@ async function attach(ctx){
   if(result.status===200&&ctx.scenario==='native_http_429')return{status:429,contentType:'application/json',body:'{"error":{"message":"Synthetic channel fault"}}'};
   return result;
  });
+ const searchBroker=searchMode?createResearchSearchBroker({store,binding:ctx.binding,generation:ctx.generation,currentReceipt:()=>ctx.run??null,
+  readNative:async()=>({session:await owned(ctx),active:Object.hasOwn((await json(ctx.transport,'GET','/api/session/active')).data,ctx.binding.sessionID),messages:await messages(ctx)}),
+  allowPublicQuery:query=>query===publicQuery,
+  search:async(query,beforeSend,signal)=>{
+   if(searchMode==='real'){searchReceipt=await searchHostedPublicWeb(query,{apiKey:searchKey,beforeSend:async()=>{const allowed=await beforeSend();if(allowed){counts.toolDispatches++;realSearchCalls++;}return allowed;},signal});}
+   else{assert.equal(await beforeSend(),true);counts.toolDispatches++;const capturedAt=new Date().toISOString(),url='https://www.raspberrypi.com/documentation/microcontrollers/rp2040.html',content='PIO provides programmable input/output state machines.';searchReceipt={version:1,provider:'tavily',operation:'search',requestHash:hostedTavilyRequestHash(query),requestId:null,startedAt:capturedAt,completedAt:capturedAt,durationMs:0,usage:{credits:null,costNanoUsd:null},sources:[{handle:`web:${digest(url)}:${digest(content)}:${digest(content)}`,url,title:'RP2040 documentation',content,capturedAt}]};}
+   return searchReceipt;
+  }}):null;
  await ctx.transport.broker(async request=>{
+  if(searchBroker){const result=await searchBroker.handle(request);if(result.status===200&&ctx.probeMcp&&!ctx.probeMcpStarted){ctx.probeMcpStarted=true;const before=counts.toolDispatches;await replayMcpConnection(ctx,JSON.parse(request.body.toString()));assert.equal(counts.toolDispatches,before);checks.push('native_search_duplicate_cached');}return result;}
   const error=()=>({status:403,contentType:'application/json',body:'{}'});
   if(!ctx.run||!await store.current(ctx.run))return error();
   const value=JSON.parse(request.body.toString('utf8'));if(!value||Object.keys(value).sort().join(',')!=='assistantMessageID,generation,input,inputHash,sessionID,toolID'||value.generation!==ctx.generation||value.sessionID!==ctx.binding.sessionID||hashResearchValue(value.input)!==value.inputHash)return error();
@@ -126,12 +146,12 @@ async function attach(ctx){
  });
  runtimeStep='native_readiness';const end=Date.now()+60000;for(;;){try{const info=await json(ctx.transport,'GET','/api/info');assert.equal(info.version,'2.2.5');ctx.pid=info.pid;break;}catch{if(Date.now()>end)throw Error('native_readiness_timeout');await pause(100);}}
  runtimeStep='loaded_config';
- const loaded=await json(ctx.transport,'GET','/api/config');assert.equal(verifiedResearchConfig(loaded,researchConfig(ctx.generation,ctx.environment.PANDA_RESEARCH_CHANNEL_TOKEN)),true);
+ const loaded=await json(ctx.transport,'GET','/api/config');assert.equal(verifiedResearchConfig(loaded,researchConfig(ctx.generation,ctx.environment.PANDA_RESEARCH_CHANNEL_TOKEN,profile)),true);
 }
 async function launch(ctx){
  runtimeStep='create_container';
  const labels={'panda.research.binding':ctx.binding.binding,'panda.research.profile':profileHash,'panda.native.lease':ctx.lease};
- ctx.environment={PANDA_NATIVE_PASSWORD:hex(),PANDA_RESEARCH_CHANNEL_TOKEN:hex(),PANDA_RESEARCH_GENERATION:ctx.generation};
+ ctx.environment={PANDA_NATIVE_PASSWORD:hex(),PANDA_RESEARCH_CHANNEL_TOKEN:hex(),PANDA_RESEARCH_GENERATION:ctx.generation,PANDA_RESEARCH_PROFILE:profile};
  const args=['create','--pull=never','--name',ctx.lease,'--network','none','--user','10001:10001','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--memory','384m','--memory-swap','384m','--cpus','1','--pids-limit','128','--workdir','/runtime/workspace','--tmpfs','/tmp:rw,noexec,nosuid,nodev,size=16777216,uid=10001,gid=10001,mode=0700','--mount',`type=bind,source=${ctx.nativeDirectory},target=/runtime`,'--mount',`type=bind,source=${codeDirectory},target=/research-code,readonly`];
  for(const[k,v]of Object.entries(labels))args.push('--label',k+'='+v);for(const key of Object.keys(ctx.environment))args.push('--env',key);args.push('--entrypoint','node',researchImageId,'/research-code/research-controller.mjs');
  ctx.createOutcome='uncertain';const created=await command(args,ctx.environment);if(ctx.loseCreateReceipt)throw Error('synthetic_lost_create_receipt');assert.match(created,/^[a-f0-9]{64}$/);ctx.containerId=created;ctx.createOutcome='created';
@@ -164,6 +184,17 @@ async function prompt(ctx,text,scenario){
 }
 let output;
 try{
+ if(searchMode){
+  stage='native_search_tool_loop';const ctx=await newOwner();ctx.probeMcp=true;await prompt(ctx,'Find public RP2040 PIO official documentation.','search');const observed=await waitTerminal(ctx,60000);
+  assert.equal(observed.result.outcome,'succeeded');assert.equal(observed.result.tools.length,1);assert.equal(observed.result.tools[0].name,toolName);assert.equal(observed.result.tools[0].status,'completed');assert.equal(counts.providerDispatches,2);assert.equal(counts.toolDispatches,1);
+  const record=await store.readRun(ctx.run),tool=observed.result.tools[0],key=hashResearchJSON({runID:ctx.run.runID,assistantMessageID:tool.assistantMessageID,toolID:tool.id});
+  const attempts=record.operations.filter(op=>op.kind==='tool'&&op.key===key);assert.equal(attempts.length,1);const op=operationIdentity(attempts[0]),recovered=await store.recoverOperation(ctx.run,op);assert.equal(recovered.state,'cached');assert.equal(await store.authorizeRelease(ctx.run,op,hashResearchJSON(recovered.result)),true);
+  assert.deepEqual(tool.content,recovered.result.mcp.content.map(part=>part.text));const answer=verifyResearchSearchFixtureAnswer(observed.result.text,[recovered.result.receipt]);assert.equal(answer.state,'evidence');assert.equal(answer.citations.length,1);checks.push('native_search_exact_final_quote');
+  const forged=JSON.parse(observed.result.text);forged.evidence[0].quote='Unsupported changed quote';assert.equal(verifyResearchSearchFixtureAnswer(JSON.stringify(forged),[recovered.result.receipt]).state,'invalid');checks.push('native_search_changed_quote_rejected');
+  assert.equal(await store.finishRun(ctx.run,()=>terminalProof(ctx)),true);assert.equal(await store.current(ctx.run),false);assert.equal((await store.recoverOperation(ctx.run,op)).state,'cached');assert.equal(await store.current(ctx.run),false);checks.push('native_search_receipt_read_without_activation');
+  await remove(ctx);active=null;
+  output={state:'native_search_passed',fullPhaseC1Gate:false,mode:searchMode,version:'2.2.5',profileHash,checks,counts,search:{sourceCount:searchReceipt.sources.length,requestIdPresent:searchReceipt.requestId!==null,credits:searchReceipt.usage.credits,durationMs:searchReceipt.durationMs},realProviderCalls:0,realSearchCalls,durationMs:Math.round(performance.now()-started)};
+ }else{
  stage='native_tool_loop';const first=await newOwner();first.probeMcp=true;await prompt(first,'Use the synthetic public echo fixture.','tool');const tool=await waitTerminal(first);assert.equal(tool.result.outcome,'succeeded');assert.equal(tool.result.tools.length,1);assert.equal(counts.toolDispatches,1);assert.equal(counts.providerDispatches,2);const readCount=counts.providerDispatches;assert.equal(await store.finishRun(first.run,()=>terminalProof(first)),true);assert.equal(await store.current(first.run),false);for(const op of (await store.readRun(first.run)).operations)assert.equal((await store.recoverOperation(first.run,operationIdentity(op))).state,'cached');assert.equal(await store.current(first.run),false);assert.equal(counts.providerDispatches,readCount);checks.push('settled_receipt_read_without_activation');checks.push('native_tool_continuation');
  stage='native_multiturn';await prompt(first,'Remember SYNTHETIC-ORCHID-47 for this synthetic conversation.','plain');assert.equal((await waitTerminal(first)).result.outcome,'succeeded');checks.push('native_two_turn_history');
  stage='native_persistence_restart';const oldGeneration=first.generation;await remove(first,false);first.generation=hex();first.pid=null;assert.equal(await store.startGeneration(first.binding,oldGeneration,first.generation),true);const beforeRestart=counts.providerDispatches;await launch(first);await owned(first);assert.equal(await store.reconcileTerminal(first.binding,first.generation,()=>terminalProof(first)),true);assert.equal(counts.providerDispatches,beforeRestart);checks.push('settled_restart_terminal_reconciliation');await prompt(first,'Recall the earlier synthetic marker.','recall');assert.equal((await waitTerminal(first)).result.outcome,'succeeded');assert.equal(await store.finishRun(first.run,()=>terminalProof(first)),true);checks.push('native_persistent_restart');
@@ -177,6 +208,7 @@ try{
  stage='claim_disconnect';const beforeClaim=counts.providerDispatches;await prompt(second,'Synthetic disconnect before transport send.','claim_disconnect');assert.equal((await waitTerminal(second)).result.outcome,'failed');assert.equal(counts.providerDispatches,beforeClaim);const claimed=(await store.readRun(second.run)).operations;assert.equal(claimed.length,1);assert.equal(claimed[0].state,'claimed');assert.equal((await store.claimOperation(second.run,operationIdentity(claimed[0]))).state,'unknown');assert.equal(await store.reconcileTerminal(second.binding,second.generation,()=>terminalProof(second)),false);checks.push('claim_disconnect_no_dispatch');await remove(second);active=null;
  stage='lost_container_create_receipt';const dispatchesBeforeCreate=counts.providerDispatches;await assert.rejects(()=>newOwner(true),/synthetic_lost_create_receipt/);assert.equal(active.createOutcome,'uncertain');assert.equal(active.containerId,undefined);await remove(active);active=null;assert.equal(counts.providerDispatches,dispatchesBeforeCreate);checks.push('lost_container_create_receipt_exact_cleanup');
  output={state:'initial_smoke_passed',fullPhaseBGate:false,version:'2.2.5',profileHash,checks,counts,retainedUnknown,realProviderCalls:0,realSearchCalls:0,durationMs:Math.round(performance.now()-started)};
+ }
 }catch(error){
  const inspection=active?.inspection;let nativeDiagnostic;
  if(active?.run&&active.transport)try{
@@ -184,6 +216,6 @@ try{
   nativeDiagnostic={outcome:observed.state.outcome??null,projection:observed.result.state,records:observed.rows.map(row=>({type:row.type,...(row.type==='assistant'?{finish:row.finish??null,contentTypes:(row.content??[]).map(part=>part.type),errorKeys:row.error&&typeof row.error==='object'?Object.keys(row.error):[],timeKeys:Object.keys(row.time??{})}:{})})),gatewayRequests:active.gatewayRequests??0,gatewayStatuses:active.gatewayStatuses??[]};
  }catch{}
  let cleanup='not_needed';if(active)try{await remove(active);active=null;cleanup='exact_container_removed';}catch{cleanup='needs_review';}
- output={state:'failed',stage,failureAt:runtimeStep,version:'2.2.5',profileHash,checks,counts,retainedUnknown,cleanup,...(nativeDiagnostic?{nativeDiagnostic}:{}),...(runtimeStep==='inspect_container'?{inspection}:{}),realProviderCalls:0,realSearchCalls:0,errorClass:error instanceof assert.AssertionError?'assertion':'unavailable',durationMs:Math.round(performance.now()-started)};process.exitCode=1;
+ output={state:'failed',stage,failureAt:runtimeStep,version:'2.2.5',profileHash,checks,counts,retainedUnknown,cleanup,...(nativeDiagnostic?{nativeDiagnostic}:{}),...(runtimeStep==='inspect_container'?{inspection}:{}),realProviderCalls:0,realSearchCalls,errorClass:error instanceof assert.AssertionError?'assertion':'unavailable',durationMs:Math.round(performance.now()-started)};process.exitCode=1;
 }
 await fs.writeFile(path.join(path.dirname(root),'evidence.json'),JSON.stringify(output,null,2),{mode:0o600,flag:'wx'});console.log(JSON.stringify(output));

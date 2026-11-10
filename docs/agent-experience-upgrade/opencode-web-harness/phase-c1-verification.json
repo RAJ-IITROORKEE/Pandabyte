@@ -1,0 +1,162 @@
+{
+  "date": "2026-11-11",
+  "phase": "C1",
+  "accepted": true,
+  "scope": "native Tavily search with synthetic model; real model and hosted chat pending",
+  "local": {
+    "build": "passed",
+    "nativeTypecheck": "passed",
+    "server": {
+      "skipped": 32,
+      "failed": 0,
+      "passed": 1035,
+      "total": 1067
+    },
+    "scopedLint": "passed",
+    "focused": {
+      "skipped": 0,
+      "failed": 0,
+      "passed": 97,
+      "total": 97
+    }
+  },
+  "injected": {
+    "result": {
+      "state": "native_search_passed",
+      "fullPhaseC1Gate": false,
+      "mode": "injected",
+      "version": "2.2.5",
+      "profileHash": "625603676d6375a6680e1ab62b1c1fbfdb6c3af912d7fb8655d1341f9dc8dfcc",
+      "checks": [
+        "native_search_duplicate_cached",
+        "native_search_exact_final_quote",
+        "native_search_changed_quote_rejected",
+        "native_search_receipt_read_without_activation"
+      ],
+      "counts": {
+        "providerDispatches": 2,
+        "toolDispatches": 1,
+        "deniedAuxiliary": 0,
+        "unknownReplayDenials": 0
+      },
+      "search": {
+        "sourceCount": 1,
+        "requestIdPresent": false,
+        "credits": null,
+        "durationMs": 0
+      },
+      "realProviderCalls": 0,
+      "realSearchCalls": 0,
+      "durationMs": 22445
+    },
+    "sourceArchiveSha256": "bc01a80298150878359edcea3ad6399730ebd1a3874f413fe436842e0658361e",
+    "commandId": "9b4f703c-abf6-48cc-a980-8d69b8c34205"
+  },
+  "nativeRegression": {
+    "result": {
+      "state": "initial_smoke_passed",
+      "fullPhaseBGate": false,
+      "version": "2.2.5",
+      "profileHash": "0c8441b365edd8cad5081732e8fee38c5ee086c749d1401edaacf4017d999e46",
+      "checks": [
+        "mcp_fresh_connection_duplicate_cached",
+        "settled_receipt_read_without_activation",
+        "native_tool_continuation",
+        "native_two_turn_history",
+        "settled_restart_terminal_reconciliation",
+        "native_persistent_restart",
+        "unknown_restart_no_dispatch",
+        "two_owner_isolation",
+        "native_http_429_no_redispatch",
+        "settled_disconnect_no_redispatch",
+        "retire_after_settle_no_redispatch",
+        "claim_disconnect_no_dispatch",
+        "lost_container_create_receipt_exact_cleanup"
+      ],
+      "counts": {
+        "providerDispatches": 9,
+        "toolDispatches": 1,
+        "deniedAuxiliary": 0,
+        "unknownReplayDenials": 0
+      },
+      "retainedUnknown": true,
+      "realProviderCalls": 0,
+      "realSearchCalls": 0,
+      "durationMs": 68684
+    },
+    "sourceArchiveSha256": "d50e678971b914bb5696d3e8cd665a562d957a144b9b2369cb38cc9c4690ec8e",
+    "commandId": "f5a9b9c5-d8e9-4287-9067-1ffa4324a277"
+  },
+  "realSearch": {
+    "result": {
+      "state": "native_search_passed",
+      "fullPhaseC1Gate": false,
+      "mode": "real",
+      "version": "2.2.5",
+      "profileHash": "625603676d6375a6680e1ab62b1c1fbfdb6c3af912d7fb8655d1341f9dc8dfcc",
+      "checks": [
+        "native_search_duplicate_cached",
+        "native_search_exact_final_quote",
+        "native_search_changed_quote_rejected",
+        "native_search_receipt_read_without_activation"
+      ],
+      "counts": {
+        "providerDispatches": 2,
+        "toolDispatches": 1,
+        "deniedAuxiliary": 0,
+        "unknownReplayDenials": 0
+      },
+      "search": {
+        "sourceCount": 3,
+        "requestIdPresent": true,
+        "credits": 1,
+        "durationMs": 5181.451687999999
+      },
+      "realProviderCalls": 0,
+      "realSearchCalls": 1,
+      "durationMs": 25522
+    },
+    "sourceArchiveSha256": "293fc23d7dc4590819bd0d9c33215a90aad8787e6eb345f14264a2c40b0525a5",
+    "commandId": "eb4798a5-3f8d-4ad2-8aae-ddafd8df8690"
+  },
+  "credentialHandoff": {
+    "encrypted": "RSA-OAEP-SHA256",
+    "existingKeyOnly": true,
+    "installCommand": "ca751c4c-791d-4210-9822-a7997625236d",
+    "cleanupProbe": "10a48c26-7f8c-4821-94b9-448b34eaa2cb",
+    "nativeHasProviderKey": false,
+    "keyCreationCommand": "84a36341-385d-4c76-bbbb-6dc94c497df2",
+    "plaintextInCommands": false,
+    "cleanupVerified": true
+  },
+  "postRunHealth": {
+    "gateway": "active",
+    "nativeSlot": "free",
+    "status": "Success",
+    "fixtureCredentials": "removed",
+    "lightweight": "healthy",
+    "commandId": "10a48c26-7f8c-4821-94b9-448b34eaa2cb"
+  },
+  "sourceSha256": {
+    "Panda-agent/runtime/opencode/research-binding/index.ts": "0098a98470d68679561db20ee171ee4d2cffd722c02caf4b10d0d57f754c7126",
+    "Panda-agent/runtime/opencode/research-controller.mjs": "0ea5288ec6851e4ba5809fdd2fbd57fb04692f0bdffb588403b14df4a44311fb",
+    "Panda-agent/runtime/opencode/research-http-proxy.mjs": "80a2cd40f126f5a3094da83b0712305609310e7ac897f548c8065bead38c65bc",
+    "Panda-agent/runtime/opencode/research-mcp-shim.mjs": "81619769f7d432a19365d877908f85aa6bdee48b776c0cbd0f49185640791e9a",
+    "Panda-agent/runtime/opencode/research-profile.mjs": "be79cc4c580f669e6d14e3d4f4c4f465f8a05db92031075dd5bac17d4782b89c",
+    "Panda-agent/runtime/opencode/research-provider-channel.mjs": "ee30f986eb709feb86a5db3ca981c83e751d58c958849dfdc2dc9680ad2b817b",
+    "Panda-agent/scripts/test-native-research.mjs": "6c9774da8659dbf555308098488cbdde38b2af3f3c6f105c8781c4e523f1befc",
+    "Panda-agent/scripts/test-native-search.mjs": "5fc890b4a54388d0c9a7991332259be2c903337528539a203afa758353b8bc0b",
+    "Panda-agent/src/opencode/research-provider-gateway.ts": "b80ec2c8f159bedae7122cb466f29224000a6509f52b13ca3c4d329cd3d97f35",
+    "Panda-agent/src/opencode/research-runtime.ts": "437037ef99848e9222d963063726219c79d8abe27e75b6536bca64326d555e67",
+    "Panda-agent/src/search/tavily.ts": "f9a87d19cb587d879e62fe5b71b30ca660423c2aa791eccd1a47eb00bde48c0f",
+    "Panda-agent/src/server/research-docker-transport.ts": "5c626cb2033e28b4256ae52dec24daa563753e16ee7abe6b2be8c22d15b8dcb5",
+    "Panda-agent/src/server/research-search-broker.ts": "2210267051d963cd76667fbe979ab1af2d55a22016387ff27c5f4536ad53877e",
+    "Panda-agent/tests/research-binding-plugin.test.mjs": "cff76d2bd542cee1f842d635a7cd6a352e2d07e143bd9ff6d7815940702c7ded",
+    "Panda-agent/tests/research-docker-transport.test.mjs": "2d23f709caf62002d3d9890b03aad417ec8e4543d3ab5a3e19c3eb46cba448cd",
+    "Panda-agent/tests/research-provider-gateway.test.mjs": "8f998852fa21e3ec4d4293772f84cd4ecd0f14003b4f42d9e21236aea090d5d3",
+    "Panda-agent/tests/research-runtime.test.mjs": "8df6440bbdb39a2639079b365ce385d2898edb9b6aa9f483a769db46eccd3422",
+    "Panda-agent/tests/research-search-broker.test.mjs": "f2b30af89c143d37ddfec29f80536c80561dfdcece51dd40cbdd6edad8128830",
+    "Panda-agent/tests/tavily-research.test.mjs": "68f267c914768fb1958d236084be54164676f122a81abb74f472f0eb1ee6c408",
+    "Panda-agent/tests/tavily-search.test.mjs": "04f2e03dc154c20220a7999b53379519ff7823f9b41bfba89b028689383efad6"
+  }
+}

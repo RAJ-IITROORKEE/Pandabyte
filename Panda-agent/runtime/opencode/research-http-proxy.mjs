@@ -1,13 +1,14 @@
 // Fixed private Docker-exec API; native credentials never leave the container.
 import {timingSafeEqual} from 'node:crypto';
+import {researchProfileSelection} from './research-profile.mjs';
 const fail=()=>{throw Error('research_proxy_unavailable');};
 const hex=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 const nativeID=(v,p)=>typeof v==='string'&&new RegExp('^'+p+'[a-f0-9]{12}[A-Za-z0-9]{14}$').test(v);
-const password=process.env.PANDA_NATIVE_PASSWORD,generation=process.env.PANDA_RESEARCH_GENERATION;
+const password=process.env.PANDA_NATIVE_PASSWORD,generation=process.env.PANDA_RESEARCH_GENERATION,profile=process.env.PANDA_RESEARCH_PROFILE,selected=researchProfileSelection(profile);
 if(!hex(password)||!hex(generation))fail();
 let size=0;const chunks=[];for await(const part of process.stdin){size+=part.length;if(size>200704)fail();chunks.push(part);}
 const q=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks)));
-if(!q||Object.keys(q).some(k=>!['sessionID','generation','directory','ownership','method','path','body'].includes(k))||!nativeID(q.sessionID,'ses_')||!hex(q.generation)||!timingSafeEqual(Buffer.from(generation),Buffer.from(q.generation))||q.directory!=='/runtime/workspace'
+if(!q||Object.keys(q).some(k=>!['sessionID','generation','profile','directory','ownership','method','path','body'].includes(k))||q.profile!==profile||!nativeID(q.sessionID,'ses_')||!hex(q.generation)||!timingSafeEqual(Buffer.from(generation),Buffer.from(q.generation))||q.directory!=='/runtime/workspace'
  ||!q.ownership||Object.keys(q.ownership).sort().join(',')!=='binding,owner,profileHash'||!Object.values(q.ownership).every(hex)||!['GET','POST'].includes(q.method)||typeof q.path!=='string')fail();
 const base='/api/session/'+q.sessionID;
 if(q.method==='GET'){
@@ -15,7 +16,7 @@ if(q.method==='GET'){
 }else{
  if(typeof q.body!=='string'||Buffer.byteLength(q.body)>98304)fail();const body=JSON.parse(q.body);
  if(q.path==='/api/session'){
-  const expected={id:q.sessionID,title:'panda-research-'+q.ownership.binding,agent:'panda-research',model:{providerID:'panda-research-fixture',id:'panda-fixture'},location:{directory:q.directory},metadata:{pandaResearch:q.ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:'panda_research_echo',resource:'*',effect:'allow'}]};
+  const expected={id:q.sessionID,title:'panda-research-'+q.ownership.binding,agent:'panda-research',model:{providerID:'panda-research-fixture',id:'panda-fixture'},location:{directory:q.directory},metadata:{pandaResearch:q.ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:selected.toolName,resource:'*',effect:'allow'}]};
   if(JSON.stringify(body)!==JSON.stringify(expected))fail();
  }else if(q.path===base+'/prompt'){
   if(!body||Object.keys(body).sort().join(',')!=='id,text'||!nativeID(body.id,'msg_')||typeof body.text!=='string'||!body.text.trim()||!body.text.isWellFormed()||Buffer.byteLength(body.text)>96000)fail();

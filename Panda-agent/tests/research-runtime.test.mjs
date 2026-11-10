@@ -11,7 +11,7 @@ const expected = {
   imageMetadata:selectedImage,
   containerId: 'c'.repeat(64), nativeDirectory: '/opt/panda-research/bindings/' + 'd'.repeat(64) + '/native', codeDirectory: '/opt/panda-research/code/' + 'e'.repeat(64),
   labels: { 'panda.research.binding': 'd'.repeat(64), 'panda.research.profile': 'e'.repeat(64), 'panda.native.lease': 'panda-n45-' + 'f'.repeat(32) },
-  environment: { PANDA_NATIVE_PASSWORD: '1'.repeat(64), PANDA_RESEARCH_CHANNEL_TOKEN: token, PANDA_RESEARCH_GENERATION: generation },
+  environment: { PANDA_NATIVE_PASSWORD: '1'.repeat(64), PANDA_RESEARCH_CHANNEL_TOKEN: token, PANDA_RESEARCH_GENERATION: generation, PANDA_RESEARCH_PROFILE: 'synthetic-echo' },
 };
 
 test('configured binding is a directory with its conventional entrypoint inside the immutable code hash', async () => {
@@ -48,7 +48,7 @@ test('research profile exposes only the fixture model and echo tool with automat
   assert.equal(config.providers['panda-research-fixture'].settings.baseURL, 'http://127.0.0.1:4175/v1');
   assert.equal(config.providers['panda-research-fixture'].models['panda-fixture'].capabilities.tools, true);
   assert.deepEqual(config.mcp.servers.panda_research.command, ['node', '/research-code/research-mcp-shim.mjs']);
-  assert.deepEqual(config.mcp.servers.panda_research.environment, { PANDA_RESEARCH_CHANNEL_TOKEN: token, PANDA_RESEARCH_GENERATION: generation });
+  assert.deepEqual(config.mcp.servers.panda_research.environment, { PANDA_RESEARCH_CHANNEL_TOKEN: token, PANDA_RESEARCH_GENERATION: generation, PANDA_RESEARCH_PROFILE: 'synthetic-echo' });
   assert.deepEqual(config.plugins, ['-opencode.tool.*', '-opencode.skill', '/research-code/research-binding']);
   assert.deepEqual(config.compaction, { auto: false });
   assert.deepEqual(config.experimental, { background_compaction: false, schedules: false, subagent_depth: 0 });
@@ -57,6 +57,26 @@ test('research profile exposes only the fixture model and echo tool with automat
   for (const value of ['', 'A'.repeat(64), 'x\n', 'a'.repeat(65)]) {
     assert.throws(() => researchConfig(value, token)); assert.throws(() => researchConfig(generation, value));
   }
+});
+
+test('selected search profile binds one tool and a distinct immutable hash while retaining the synthetic model', () => {
+  const config = researchConfig(generation, token, 'tavily-search');
+  assert.deepEqual(config.permissions, [{ action: '*', resource: '*', effect: 'deny' }, { action: 'panda_research_search', resource: '*', effect: 'allow' }]);
+  assert.equal(config.mcp.servers.panda_research.environment.PANDA_RESEARCH_PROFILE, 'tavily-search');
+  assert.deepEqual(config.model, { providerID: 'panda-research-fixture', model: 'panda-fixture' });
+  assert.ok(config.policies.some(rule => rule.action === 'tool.use' && rule.resource === 'panda_research_search:*' && rule.effect === 'allow'));
+  assert.equal(config.policies.some(rule => rule.resource === 'panda_research_echo:*'), false);
+  assert.notEqual(researchProfileHash(code), researchProfileHash(code, 'tavily-search'));
+  for (const profile of ['', 'search', 'real-model', null]) {
+    assert.throws(() => researchConfig(generation, token, profile));
+    assert.throws(() => researchProfileHash(code, profile));
+  }
+  const searchExpected = { ...expected, environment: { ...expected.environment, PANDA_RESEARCH_PROFILE: 'tavily-search' } };
+  const actual = inspect(); actual.Config.Env = actual.Config.Env.map(value => value === 'PANDA_RESEARCH_PROFILE=synthetic-echo' ? 'PANDA_RESEARCH_PROFILE=tavily-search' : value);
+  assert.equal(verifyResearchContainer(actual, searchExpected), true);
+  assert.equal(verifyResearchContainer(actual, expected), false);
+  const missing = inspect(); missing.Config.Env = missing.Config.Env.filter(value => !value.startsWith('PANDA_RESEARCH_PROFILE='));
+  assert.equal(verifyResearchContainer(missing, expected), false);
 });
 
 test('immutable profile hash binds every reviewed code file and refuses missing or added code', () => {

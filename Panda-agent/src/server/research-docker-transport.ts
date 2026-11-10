@@ -1,8 +1,10 @@
 import { spawn } from 'node:child_process';
 import { researchJSON, researchObject } from '../opencode/research-values.ts';
+import { researchProfileSelection } from '../../runtime/opencode/research-profile.mjs';
+import type { ResearchProfileID } from '../opencode/research-runtime.ts';
 
 export type ResearchWireResponse = { status:number; contentType:string; body:string };
-type Wire = {sessionID:string;generation:string;directory:string;ownership:{binding:string;owner:string;profileHash:string};method:string;path:string;body?:string};
+type Wire = {sessionID:string;generation:string;profile:ResearchProfileID;directory:string;ownership:{binding:string;owner:string;profileHash:string};method:string;path:string;body?:string};
 type ChannelRequest = {method:string;path:string;headers:Record<string,string>;body:Buffer};
 type ChannelHandler = (request:ChannelRequest)=>Promise<{status:number;contentType:string;body:Buffer|string}>;
 const hex=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
@@ -18,13 +20,14 @@ function response(value:unknown):ResearchWireResponse{
   ||typeof value.contentType!=='string'||!['application/json','text/event-stream'].includes(value.contentType)||typeof value.body!=='string'||!value.body.isWellFormed()||Buffer.byteLength(value.body)>1048576)throw unavailable();
  return {status:value.status as number,contentType:value.contentType,body:value.body};
 }
-export function createResearchDockerTransport(config:{containerId:string;sessionID:string;directory:string;generation:string;ownership:{binding:string;owner:string;profileHash:string};run?:(request:Wire)=>Promise<ResearchWireResponse>}){
+export function createResearchDockerTransport(config:{containerId:string;sessionID:string;directory:string;generation:string;profile?:ResearchProfileID;ownership:{binding:string;owner:string;profileHash:string};run?:(request:Wire)=>Promise<ResearchWireResponse>}){
+ const profile=config.profile===undefined?'synthetic-echo':config.profile,selected=researchProfileSelection(profile);
  if(!config||!hex(config.containerId)||!nativeID(config.sessionID,'ses_')||config.directory!=='/runtime/workspace'||!hex(config.generation)||!researchObject(config.ownership)
   ||Object.keys(config.ownership).sort().join(',')!=='binding,owner,profileHash'||!Object.values(config.ownership).every(hex))throw unavailable();
  const {containerId,sessionID,directory,generation}=config,ownership=Object.freeze({...config.ownership}),base='/api/session/'+sessionID;
  let closed=false,channel:ReturnType<typeof spawn>|undefined,ready:Promise<void>|undefined,provider:ChannelHandler|undefined,broker:ChannelHandler|undefined;
  const pendingChildren=new Set<ReturnType<typeof spawn>>();
- const createBody={id:sessionID,title:'panda-research-'+ownership.binding,agent:'panda-research',model:{providerID:'panda-research-fixture',id:'panda-fixture'},location:{directory},metadata:{pandaResearch:ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:'panda_research_echo',resource:'*',effect:'allow'}]};
+ const createBody={id:sessionID,title:'panda-research-'+ownership.binding,agent:'panda-research',model:{providerID:'panda-research-fixture',id:'panda-fixture'},location:{directory},metadata:{pandaResearch:ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:selected.toolName,resource:'*',effect:'allow'}]};
  function valid(method:string,path:string,body:unknown){
   if(closed||typeof path!=='string'||!['GET','POST'].includes(method))return false;
   if(method==='GET')return body===undefined&&(['/api/info','/api/config','/api/model','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(path)
@@ -62,7 +65,7 @@ export function createResearchDockerTransport(config:{containerId:string;session
       const value:unknown=JSON.parse(decode(line));if(!researchObject(value))throw unavailable();
       if(!started){if(JSON.stringify(value)!=='{"version":1,"type":"ready"}')throw unavailable();started=true;clearTimeout(timer);resolve();continue;}
       if(Object.keys(value).sort().join(',')!=='body,channel,headers,id,method,path,type,version'||value.version!==1||value.type!=='request'||value.id!==last+1||!['provider','broker'].includes(value.channel as string)
-       ||value.method!=='POST'||value.path!==(value.channel==='provider'?'/v1/chat/completions':'/echo')||!researchObject(value.headers)||!Object.values(value.headers).every(v=>typeof v==='string'&&v.length<=256)||++active>8)throw unavailable();
+       ||value.method!=='POST'||value.path!==(value.channel==='provider'?'/v1/chat/completions':selected.path)||!researchObject(value.headers)||!Object.values(value.headers).every(v=>typeof v==='string'&&v.length<=256)||++active>8)throw unavailable();
       last=value.id as number;const id=last,handler=value.channel==='provider'?provider:broker,body=b64(value.body,value.channel==='provider'?131072:16384);
       const request={method:'POST',path:value.path as string,headers:structuredClone(value.headers) as Record<string,string>,body};
       void (async()=>{try{
@@ -78,7 +81,7 @@ export function createResearchDockerTransport(config:{containerId:string;session
  }
  return Object.freeze({
   sessionID,generation,createBody:structuredClone(createBody),
-  async request(method:string,path:string,body?:unknown){if(!valid(method,path,body))throw unavailable();return run({sessionID,generation,directory,ownership,method,path,...(body===undefined?{}:{body:JSON.stringify(body)})});},
+  async request(method:string,path:string,body?:unknown){if(!valid(method,path,body))throw unavailable();return run({sessionID,generation,profile,directory,ownership,method,path,...(body===undefined?{}:{body:JSON.stringify(body)})});},
   async provider(handler:ChannelHandler){if(closed||provider||typeof handler!=='function')throw unavailable();provider=handler;await startChannels();},
   async broker(handler:ChannelHandler){if(closed||broker||typeof handler!=='function')throw unavailable();broker=handler;await startChannels();},
   async close(){closed=true;channel?.stdin?.end();channel?.kill();for(const child of pendingChildren)child.kill();pendingChildren.clear();},

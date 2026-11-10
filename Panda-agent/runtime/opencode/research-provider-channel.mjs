@@ -3,6 +3,8 @@ import {createServer} from 'node:http';
 import {timingSafeEqual} from 'node:crypto';
 import {createHash} from 'node:crypto';
 import fs from 'node:fs';
+import {researchProfileSelection} from './research-profile.mjs';
+const selected=researchProfileSelection(process.env.PANDA_RESEARCH_PROFILE);
 const token=process.env.PANDA_RESEARCH_CHANNEL_TOKEN,generation=process.env.PANDA_RESEARCH_GENERATION;
 if(!/^[a-f0-9]{64}$/.test(token??'')||!/^[a-f0-9]{64}$/.test(generation??''))throw Error('research_channel_unavailable');
 const secret=Buffer.from('Bearer '+token),active=new Map();let next=0,buffer=Buffer.alloc(0),closed=false;
@@ -32,7 +34,7 @@ function serverFor(channel,port,path,max){
  });server.requestTimeout=120000;server.headersTimeout=5000;
  return {server,port};
 }
-const definitions=[serverFor('provider',4175,'/v1/chat/completions',131072),serverFor('broker',4174,'/echo',16384)],servers=definitions.map(v=>v.server);
+const definitions=[serverFor('provider',4175,'/v1/chat/completions',131072),serverFor('broker',4174,selected.path,16384)],servers=definitions.map(v=>v.server);
 process.stdin.on('data',part=>{
  try{
   buffer=Buffer.concat([buffer,part]);if(buffer.length>2850000)throw Error();let at;

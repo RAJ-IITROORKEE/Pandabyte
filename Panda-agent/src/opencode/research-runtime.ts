@@ -1,16 +1,18 @@
 import { createHash } from 'node:crypto';
 import { posix } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { researchProfile } from '../../runtime/opencode/research-profile.mjs';
+import { researchProfile, researchProfileSelection } from '../../runtime/opencode/research-profile.mjs';
 import { researchJSON, researchObject } from './research-values.ts';
 
 export const researchNativeVersion = '2.2.5';
 export const researchImageId = 'sha256:bbcbbcf6fd524caefa0063d6334e31889153e2c492713cf7f87e6eeb1cce33df';
 export const researchToolName = 'panda_research_echo';
+export type ResearchProfileID = 'synthetic-echo' | 'tavily-search';
 export const researchCodeFiles = ['research-binding/index.ts', 'research-controller.mjs', 'research-http-proxy.mjs', 'research-mcp-shim.mjs', 'research-profile.mjs', 'research-provider-channel.mjs'] as const;
 export const researchConfig = researchProfile;
 
-export function researchProfileHash(codeFiles: Record<string, string | Buffer>): string {
+export function researchProfileHash(codeFiles: Record<string, string | Buffer>, profile: ResearchProfileID = 'synthetic-echo'): string {
+  researchProfileSelection(profile);
   if (!codeFiles || !isDeepStrictEqual(Object.keys(codeFiles).sort(), [...researchCodeFiles])) throw Error('research_code_invalid');
   const code = researchCodeFiles.map(name => {
     const value = codeFiles[name];
@@ -18,7 +20,7 @@ export function researchProfileHash(codeFiles: Record<string, string | Buffer>):
     return [name, createHash('sha256').update(value).digest('hex')];
   });
   return createHash('sha256').update(JSON.stringify({ image: researchImageId, version: researchNativeVersion,
-    profile: researchProfile('0'.repeat(64), '0'.repeat(64)), code })).digest('hex');
+    profileID: profile, profile: researchProfile('0'.repeat(64), '0'.repeat(64), profile), code })).digest('hex');
 }
 
 export function verifiedResearchConfig(loaded: unknown, config: ReturnType<typeof researchConfig>): boolean {
@@ -32,7 +34,7 @@ export type ResearchContainerExpected = {
   containerId: string; nativeDirectory: string; codeDirectory: string;
   imageMetadata: {Id:string;Architecture:string;Config:{Labels:Record<string,string>;Env:string[]}};
   labels: { 'panda.research.binding': string; 'panda.research.profile': string; 'panda.native.lease': string };
-  environment: { PANDA_NATIVE_PASSWORD: string; PANDA_RESEARCH_CHANNEL_TOKEN: string; PANDA_RESEARCH_GENERATION: string };
+  environment: { PANDA_NATIVE_PASSWORD: string; PANDA_RESEARCH_CHANNEL_TOKEN: string; PANDA_RESEARCH_GENERATION: string; PANDA_RESEARCH_PROFILE: ResearchProfileID };
 };
 type Inspect = {
   Id?: unknown; Image?: unknown; Platform?: unknown;
@@ -53,8 +55,9 @@ export function verifyResearchContainer(value: unknown, expected: ResearchContai
       || !/^[a-f0-9]{64}$/.test(expected.labels['panda.research.binding']) || !/^[a-f0-9]{64}$/.test(expected.labels['panda.research.profile'])
       || !/^panda-n45-[a-f0-9]{32}$/.test(expected.labels['panda.native.lease'])
       || !isDeepStrictEqual(Object.keys(expected.labels).sort(), ['panda.native.lease', 'panda.research.binding', 'panda.research.profile'])
-      || !isDeepStrictEqual(Object.keys(expected.environment).sort(), ['PANDA_NATIVE_PASSWORD', 'PANDA_RESEARCH_CHANNEL_TOKEN', 'PANDA_RESEARCH_GENERATION'])
-      || !Object.values(expected.environment).every(v => /^[a-f0-9]{64}$/.test(v))) return false;
+      || !isDeepStrictEqual(Object.keys(expected.environment).sort(), ['PANDA_NATIVE_PASSWORD', 'PANDA_RESEARCH_CHANNEL_TOKEN', 'PANDA_RESEARCH_GENERATION', 'PANDA_RESEARCH_PROFILE'])
+      || ![expected.environment.PANDA_NATIVE_PASSWORD, expected.environment.PANDA_RESEARCH_CHANNEL_TOKEN, expected.environment.PANDA_RESEARCH_GENERATION].every(v => /^[a-f0-9]{64}$/.test(v))) return false;
+    researchProfileSelection(expected.environment.PANDA_RESEARCH_PROFILE);
     const selected=expected.imageMetadata;
     if(!selected||selected.Id!==researchImageId||selected.Architecture!=='arm64'||!selected.Config||!researchObject(selected.Config.Labels)
       ||!isDeepStrictEqual(Object.keys(selected.Config.Labels).sort(),['panda.fixture.run','panda.fixture.source-sha256','panda.native.config-sha256'])
