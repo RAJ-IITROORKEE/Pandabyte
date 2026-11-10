@@ -32,6 +32,12 @@ test('short pronoun hardware follow-ups are grounded and explicit product identi
   'Explain Bluetooth in one sentence.','Explain it more simply.','Explain it in JavaScript.','Explain UART.','Hello!'])assert.equal(isImplicitProductFollowup(question,catalog),false,question);
 });
 
+test('long factual references request grounded clarification without inheriting an implicit product',()=>{
+ const question='Does it support '+Array(35).fill('this feature').join(' ')+'?';
+ assert.equal(isMainProductQuestion(question,catalog),true);
+ assert.equal(isImplicitProductFollowup(question,catalog),false);
+});
+
 function historyFixture(){
  const citation={id:'S1',title:catalog[0].title,sourceUrl:catalog[0].sourceUrl,capturedAt:'2026-10-31T00:00:00Z',sectionPath:['Specs'],quote:'Reviewed source'};
  return {thread:{id:turn.thread,title:'Disposable',updatedAt:'2026-11-10T00:00:00Z',status:'idle'},messages:[],turns:[{

@@ -28,11 +28,12 @@ const namedProduct = (question:string,catalog:Catalog) => {
   ||/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text);
 };
 
+const factualReference = (text:string) => /\b(?:it|its|this board|that board|this product|that product)\b/.test(text)
+ && /^(?:what|which|whose|where|when|why|how|does|do|did|is|are|was|were|can|could|will|would|should|has|have)\b/.test(text);
 export function isImplicitProductFollowup(question:string,catalog:Catalog):boolean {
  const text=question.normalize('NFKC').toLowerCase();
  return text.length<=240&&text.split(/\s+/).length<=24&&!namedProduct(question,catalog)
-  &&/\b(?:it|its|this board|that board|this product|that product)\b/.test(text)
-  &&/^(?:what|which|whose|where|when|why|how|does|do|did|is|are|was|were|can|could|will|would|should|has|have)\b/.test(text);
+  &&factualReference(text);
 }
 
 /** Masked, owner-scoped SQL history can carry identity, never the previous answer as evidence. */
@@ -52,6 +53,7 @@ export function isMainProductQuestion(question:string,catalog:Catalog):boolean {
  if(isUnscopedConversation(question))return false;
  const text=question.normalize('NFKC').toLowerCase();
  if(namedProduct(question,catalog)||resolveMultiProductIdentity(catalog,question).kind==='planned'||isImplicitProductFollowup(question,catalog))return true;
+ if(factualReference(text))return true;
  if(/\b(?:its|this board|that board|this product|that product)\b/.test(text)&&/\b(?:usb|connector|mcu|cpu|pins?|pinout|voltage|current|flash|memory|psram|specifications?)\b/.test(text))return true;
  if(/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text))return true;
  return !['conversation','manufacturer'].includes(conversationRoute(question,catalog).kind);

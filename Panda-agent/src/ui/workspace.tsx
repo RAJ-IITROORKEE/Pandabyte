@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent } from "react";
-import { UserAvatar, useClerk, useUser } from "@clerk/nextjs";
+import { UserAvatar, useAuth, useClerk, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import {parseVendorCitation,parseCompositeVendorCitation,type VendorCitation} from "../diagnostics/contracts";
@@ -23,6 +23,7 @@ import { Shimmer } from "./ai-elements/shimmer";
 import { createReadAloud } from "./read-aloud";
 import { clearActiveChat, readActiveChat, writeActiveChat } from "./active-chat";
 import { completedAttempt, createAttemptGuard } from "./cancel-attempt";
+import { readWithFreshSession, reconcileSavedAnswer } from "./reconcile-answer";
 import type { ProjectMemory } from "./guide-form";
 import { ProjectMemoryPanel } from "./project-memory-panel";
 import { guideDisabled, diagnosticDisabled, messagePayload, messageQuestion, type MessageInput } from "./guide-input";
@@ -62,6 +63,7 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
   const modelAssistant = nativeAssistant || directAssistant;
   const expectedMode = directAssistant ? "direct_assistant" : "native_assistant";
   const { signOut } = useClerk();
+  const { getToken } = useAuth();
   const mobile = useSyncExternalStore(subscribeMobile, isMobile, () => true);
   const [sidebarOverride, setSidebarOpen] = useState<boolean | null>(null);
   const sidebarOpen = sidebarOverride ?? !mobile;
@@ -110,12 +112,14 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/panda-agent/capabilities", { cache: "no-store", signal: controller.signal })
-      .then(async response => response.ok ? parseCapabilities(await readJson(response)) : null)
+      .then(async response => response.status === 401
+        ? parseCapabilities(await readWithFreshSession("/api/panda-agent/capabilities", { getToken, readJson, signal: controller.signal, isCurrent: () => active.current }))
+        : response.ok ? parseCapabilities(await readJson(response)) : null)
       .then(result => { if (!controller.signal.aborted) setCapabilities(result); })
       .catch(() => { if (!controller.signal.aborted) setCapabilities(null); })
       .finally(() => { if (!controller.signal.aborted) setCapabilityLoading(false); });
     return () => controller.abort();
-  }, [busy]);
+  }, [busy, getToken]);
 
   const nativeToolsReady = nativeAssistant && nativeTools && capabilities?.mode === "native_assistant" && capabilities.status === "ready" && capabilities.tools.length === 3 && capabilities.skills.length === 4;
   const [webSearch, setWebSearch] = useState(false);
@@ -235,6 +239,15 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
       setRestoreDraft(null); setSelected(data.thread); setMessages(data.messages); setActivityComplete(true); setThreads(previous => [data.thread, ...previous.filter(item => item.id !== data.thread.id)]);
     } catch {
       setQueuePaused(true);
+      if (thread && attempt && active.current && attempts.current.current(attempt) && !controller.signal.aborted) {
+        const recovered = await reconcileSavedAnswer<Detail>(thread.id, requestId, { getToken, readJson, signal: controller.signal, isCurrent: () => active.current && Boolean(attempt && attempts.current.current(attempt)) });
+        if (recovered && active.current && attempts.current.current(attempt) && !controller.signal.aborted) {
+          completed = true;
+          setProjectMemory(recovered.projectMemory ?? null); setRestoreDraft(null); setSelected(recovered.thread); setMessages(recovered.messages); setContext(null); setActivityComplete(true); setUncertain(false); setError("");
+          setThreads(previous => [recovered.thread, ...previous.filter(item => item.id !== recovered.thread.id)]);
+          return;
+        }
+      }
       if (active.current && (!attempt || attempts.current.current(attempt))) {
         if (controller.signal.aborted && !attempt) {
           setMessages(previous => previous.filter(message => message.id !== optimisticId));
@@ -326,7 +339,7 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
     event.preventDefault(); setWidth(clampWidth(next));
   }
   function resizeWithPointer(event: PointerEvent<HTMLDivElement>) { if (event.buttons === 1) { event.currentTarget.setPointerCapture(event.pointerId); setWidth(clampWidth(event.clientX)); } }
-  async function handleSignOut() { setSigningOut(true); setSignOutError(""); try { await signOut({ redirectUrl: "/" }); } catch { setSigningOut(false); setSignOutError("Could not sign you out. Please try again."); } }
+  async function handleSignOut() { requestController.current?.abort(); setSigningOut(true); setSignOutError(""); try { await signOut({ redirectUrl: "/" }); } catch { setSigningOut(false); setSignOutError("Could not sign you out. Please try again."); } }
   function newChat() { if (busyRef.current || loading || mutating) return; if (queue.length) setQueuePaused(true); setView("chat"); if (mobile) { restoreFocus.current = true; setSidebarOpen(false); } resumeAttempted.current = true; currentAttempt.current = null; clearActiveChat(tabStorage(), user.id); speech?.stop(); dictation.cancel(); setRestoreDraft(null); setComposerEpoch(previous => previous + 1); generation.current++; setSelected(null); setProjectMemory(null); setSelectedArchived(false); if (archived) { setThreads([]); setArchived(false); } setMessages([]); setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(false); setWebSearch(false); setLoading(archived); }
   async function changeChat(thread: Chat, action: "archive" | "restore" | "delete") {
     if (busyRef.current || loading || mutating || thread.status !== "idle") return;
