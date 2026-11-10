@@ -1,23 +1,27 @@
 # Agent Experience Upgrade — current handoff
 
-10 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
+10 November 2026. Current release branch: `codex/conversation-memory-speed`; native development remains in its original checkout.
 Use `git log -1` for the local checkpoint. Latest native/UI follow-up is below; earlier Control Room and grounded RAG evidence is retained. Prior basic-history checkpoint is `72b2a20`.
 The owner now authorizes commit, merge to main and push after the requested local
-experience works and is validated. Deployment, commerce and provider-policy
-changes are not included. Historical restrictions below describe earlier scope.
+experience works and is validated. The latest direct-demo request authorizes its Vercel update; commerce and provider-policy
+changes remain excluded. Historical restrictions below describe earlier scope.
 Prior detailed evidence remains in the verification JSON and Git history.
 
 ## Conversation-memory and latency follow-up, 10 November 2026
 
-Latest user authorization adds automatic same-chat follow-ups and response-speed work to the direct LLM release, including subagents, Codex Browser validation, live update and handoff. RAG, external memory services and AWS/OpenCode remain separate. Strict ZDR and the original cumulative USD1 reservation ledger remain unchanged.
+The owner authorized automatic same-chat follow-ups, response-speed work, subagents, Codex Browser tests, main publication and a live update. Code **139fa22** is pushed to main and deployed as **dpl_8wLq3Lr2ayRfyxx6RNewC2bHhqLa**, Ready and promoted at https://pandabyte-iot.vercel.app/panda-agent. Active release checkout: C:/Users/rajra/.codex/worktrees/direct-llm-release/Pandabyte, branch codex/conversation-memory-speed. Original native checkout and unfinished work remain preserved. Separate RAG source/documentation through ec5529a is retained; no main-chat retrieval or AWS/OpenCode execution was enabled.
 
-The new v2 signed RPC selects up to six preceding verified direct-journal turns, intersected with the existing masked history. Cancelled, pending, foreign, cited/RAG and unverified records are excluded. A context fingerprint is rechecked before dispatch and publication. Whole oldest pairs are dropped until the exact serialized request fits 7,000 UTF-8 bytes, preserving the 8,024-input/700-output bounds and one 1,597,640-nanoUSD reservation. This is recent conversational context, not unlimited or cross-chat memory.
+The additive v2 signed RPC selects up to six preceding verified direct-journal turns, intersected with existing masked history. Cancelled, pending, foreign, cited/RAG and unverified records are excluded. A context fingerprint is rechecked before dispatch and publication. Whole oldest pairs are dropped until the exact serialized request fits 7,000 UTF-8 bytes, preserving the 8,024-input/700-output bounds and one 1,597,640-nanoUSD reservation. This is recent same-chat context, not unlimited or cross-chat memory or full Mem0 acceptance. No external memory service or new dependency.
 
-The additive migration 20261110140000_direct-conversation-memory.sql is applied; v1 remains unchanged. All six disposable database checks passed with cleanup confirmed and no provider requests. See [database evidence](conversation-memory-database-verification.json). Independent review found no material blocker. Production build (42 pages), TypeScript, scoped lint and 97 affected unit/handler tests passed. In Codex Browser on localhost, a real seed message and follow-up after reload recalled MaplePanda/ESP32-C3/SCD41 and saved correctly.
+Migration 20261110140000_direct-conversation-memory.sql is applied; v1 remains unchanged. Six disposable real-database checks passed with cleanup and zero provider calls. See [database evidence](conversation-memory-database-verification.json). TypeScript, scoped lint, production builds and 97 affected automated tests passed. The 97-task register validates; broad Phase1 statuses remain partial. Terra high implementation workers and an independent integration review found no material blocker.
 
-Speed changes overlap independent read-only session/history/token checks, avoid legacy classification for new direct requests, and overlap current policy with exact endpoint/ZDR metadata and pre-send checks. No completed privacy/session cache or provider retries were added. A passive Codex Browser baseline on the old live code measured first headers at 2,238 ms and durable response completion at 6,657 ms (one warm sample). See [baseline](conversation-memory-baseline.json). New hosted timing and acceptance are pending release; no sub-second claim.
+Real Codex Browser checks passed locally (MaplePanda/ESP32-C3/SCD41 recall after reload) and on the hosted domain: CopperLeaf/ESP32-C6/BME280 recall after reload; sensor correction to SHT31; subsequent correct recall; persisted answer after reopening; and a fresh chat correctly reported no knowledge from another chat. All six updated live message POSTs returned200 and saved. [Release evidence](conversation-memory-release-verification.json).
 
-Context validation and the subsequent POST/finish are separate operations; this is a checked snapshot, not a transaction spanning the provider. There is no history-edit/withdraw operation in this scope. The existing owner-only prototype and metadata-only tracing remain.
+Independent current read-only session/history/token checks overlap; new direct requests skip legacy classification probes. Fresh policy, endpoint/ZDR and pre-send checks overlap where independent. No completed privacy/session cache or retries. A same-prompt hosted comparison completed in 4,899 ms versus 6,657 ms before (26.4% lower for one sample); first headers were 2,456 versus 2,238 ms. Updated varied-prompt completions ranged 3,670–7,903 ms. This is limited evidence, not a sub-second SLA or latency distribution. [Baseline](conversation-memory-baseline.json).
+
+Strict ZDR, pinned Azure US Luna, no fallbacks, no response cache and metadata-only tracing remain. Current account privacy/destination settings were reviewed read-only; no account or hosted profile changes. Nine real calls in this checkpoint (one old-code baseline, two local, six hosted). The original USD1 cumulative ledger is unchanged: 936,631,200 nanoUSD reserved and **63,368,800 nanoUSD (USD0.0633688) remaining**. This conservative reservation balance is not billed spend; no refund/reset. A bounded 50-row runtime sample had six message POST200s, no error/fatal rows and no HTTP5xx.
+
+Context validation and POST/finish are separate operations: a checked snapshot, not a provider-spanning transaction. No history-edit/withdraw operation is introduced. Next: owner tests follow-ups on the live demo within the small remaining allowance. RAG, broader memory management and native harness integration remain separate; Phase2 stays gated. Rollback candidate a45fc29 / dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb is retained; no rollback executed.
 
 ## Historical direct-release priority: client demo (10 November 2026)
 

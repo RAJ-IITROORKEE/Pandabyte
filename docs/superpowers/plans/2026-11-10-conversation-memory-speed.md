@@ -16,7 +16,7 @@ No RAG retrieval, external memory service, new dependency, provider retry, cap r
 - [x] Memory worker: additive v2 RPC/readiness migration; bounded direct manifest and context hash; provider whole-pair byte fitting; direct store/service integration; tests for provenance, chronology, unicode, changed history, new chat/isolation, exact wire hash and budget limits.
 - [x] Latency worker: overlap independent checks/read-only calls in owned policy/runtime/handler/connection files; controlled interleaving tests preserve revocation, cancellation and no duplicate POST. Coordinate provider/service changes with the memory worker.
 - [x] Root: baseline passive browser timing; review/apply additive development migration with disposable fixture and cleanup; build/typecheck/lint plus focused tests; independent review.
-- [ ] Root: local Codex Browser follow-up/reload/new-chat checks, compare request timing without repeating uncertain requests. Publish tested source to main and Vercel, verify real hosted follow-ups and reload, record remaining original allowance and handoff.
+- [x] Root: local Codex Browser follow-up/reload/new-chat checks, compare request timing without repeating uncertain requests. Publish tested source to main and Vercel, verify real hosted follow-ups and reload, record remaining original allowance and handoff.
 
 ## Review focus
 

@@ -430,6 +430,10 @@
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
           "verified": "10 Nov: signed classification/one-use claim, read-only recovery, basic-specific logical cancel and late-save fence;26real backend assertions, mounted off-gate APIs and Codex Browser.647regressions pass/16skip plus2dictation.",
           "limitations": "No new inference call; live application admission hardOFF. Original P1 row status unchanged; no Phase2 advancement."
+        },
+        "directConversationFollowup": {
+          "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
+          "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
         }
       }
     },
@@ -597,6 +601,10 @@
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.phase1ProjectMemoryControls",
           "verified": "9 Nov: owner/thread intent add/correct/clear, version tombstone, uncertain-write recovery; development migration, 23 mounted HTTP checks with real disposable Clerk users, final built Codex Browser checks; 601 regressions pass,16 skip, plus2 dictation.",
           "limitations": "Mem0 and cross-surface native memory unfinished; no live inference, no Phase2 advancement."
+        },
+        "directConversationFollowup": {
+          "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
+          "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
         }
       }
     },
@@ -1317,7 +1325,13 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "directConversationFollowup": {
+          "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
+          "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
+        }
+      }
     },
     {
       "id": "SPEC.8g",
@@ -1394,7 +1408,13 @@
       "dependsOn": [
         "P1.8"
       ],
-      "claim": null
+      "claim": null,
+      "executionEvidence": {
+        "directConversationFollowup": {
+          "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
+          "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
+        }
+      }
     },
     {
       "id": "SPEC.11",
@@ -2368,7 +2388,11 @@
       "claim": null,
       "executionEvidence": {
         "record": "docs/agent-experience-upgrade/p1-implementation-verification.json",
-        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503."
+        "limitations": "Partial implementation checkpoint; native execution not mounted, general LLM and full management/Playground/memory acceptance remain unfinished. Admin child UI browser acceptance blocked by existing parent staff-access 503.",
+        "directConversationFollowup": {
+          "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
+          "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
+        }
       }
     },
     {

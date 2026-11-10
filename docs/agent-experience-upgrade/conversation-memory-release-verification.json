@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-10",
+  "codeCommit": "139fa22",
+  "branch": "codex/conversation-memory-speed",
+  "deploymentId": "dpl_8wLq3Lr2ayRfyxx6RNewC2bHhqLa",
+  "deploymentUrl": "https://pandabyte-r89ci2bv9-unfiltered-iit-ians.vercel.app",
+  "liveUrl": "https://pandabyte-iot.vercel.app/panda-agent",
+  "aliasReadyVerified": true,
+  "scope": "Direct LLM with system prompt and bounded verified same-chat memory; RAG and AWS/OpenCode separate",
+  "memory": {
+    "maxPriorPairs": 6,
+    "maxSerializedRequestBytes": 7000,
+    "source": "Verified direct journal intersected with existing masked ChatRead",
+    "excluded": [
+      "other owners/chats",
+      "cancelled/pending/unverified",
+      "cited/RAG/non-direct"
+    ],
+    "fingerprintRechecked": true,
+    "externalMemoryService": false,
+    "wholeOldestPairsDropped": true
+  },
+  "checks": {
+    "affectedTests": 97,
+    "failed": 0,
+    "skipped": 0,
+    "typecheck": "pass",
+    "scopedLint": "pass",
+    "productionBuild": "pass",
+    "requirementRegisterTasks": 97,
+    "realDisposableDatabaseChecks": 6,
+    "fixtureCleanup": true,
+    "fixtureProviderPosts": 0,
+    "independentReview": "No material blocker"
+  },
+  "localBrowser": {
+    "surface": "Codex in-app browser",
+    "realCalls": 2,
+    "seed": "MaplePanda / ESP32-C3 / SCD41",
+    "reloadRecall": "MaplePanda, ESP32-C3, SCD41",
+    "answerSaved": true
+  },
+  "liveBrowser": {
+    "surface": "Codex in-app browser",
+    "realUpdatedCalls": 6,
+    "allMessagePostStatus": 200,
+    "seedSaved": true,
+    "reloadRecall": "CopperLeaf, ESP32-C6, BME280",
+    "correctionAcknowledged": true,
+    "correctedRecall": "CopperLeaf, ESP32-C6, SHT31",
+    "newChatAnswer": "I do not know; none were provided in this conversation.",
+    "reopenedCorrectedAnswerPersisted": true
+  },
+  "timing": {
+    "method": "Passive CDP Network: message POST start to first SSE headers and response completion after durable save; not time to first token",
+    "baseline": {
+      "headersMs": 2238,
+      "completeMs": 6657,
+      "samples": 1
+    },
+    "updated": [
+      {
+        "label": "updated-i2c-1",
+        "status": 200,
+        "headersMs": 2456,
+        "completeMs": 4899
+      },
+      {
+        "label": "live-seed",
+        "status": 200,
+        "headersMs": 2228,
+        "completeMs": 5510
+      },
+      {
+        "label": "live-recall-after-reload",
+        "status": 200,
+        "headersMs": 1453,
+        "completeMs": 3670
+      },
+      {
+        "label": "live-correction",
+        "status": 200,
+        "headersMs": 1410,
+        "completeMs": 7903
+      },
+      {
+        "label": "live-corrected-recall",
+        "status": 200,
+        "headersMs": 1279,
+        "completeMs": 3840
+      },
+      {
+        "label": "live-new-chat-isolation",
+        "status": 200,
+        "headersMs": 1591,
+        "completeMs": 3928
+      }
+    ],
+    "samePromptComparison": {
+      "baselineCompleteMs": 6657,
+      "updatedCompleteMs": 4899,
+      "percentReduction": 26.4
+    },
+    "limits": "One same-prompt before/after sample; remaining updated cases have different prompts/history. Not a distribution, causal guarantee or sub-second SLA. Updated completion range 3670-7903 ms."
+  },
+  "privacy": {
+    "strictZdr": true,
+    "endpoint": "Pinned Azure US Luna endpoint",
+    "freshMetadataPerDispatch": true,
+    "providerFallbacks": false,
+    "providerRetries": 0,
+    "responseCache": false,
+    "accountSettingsChanged": false,
+    "operatorPrivacyReview": "Read-only current account/destination review; metadata-only privacy mode, prompts/completions excluded; per-request strict ZDR remains enforced",
+    "hostedProfileChanged": false
+  },
+  "budget": {
+    "limitNanoUsd": "1000000000",
+    "remainingNanoUsd": "63368800",
+    "reservedNanoUsd": "936631200",
+    "reset": false,
+    "refund": false,
+    "semantics": "Conservative cumulative reserved allowance, not billed spend",
+    "thisCheckpointRealCalls": 9,
+    "breakdown": {
+      "oldDeploymentBaseline": 1,
+      "localMemory": 2,
+      "updatedLiveMemory": 6
+    }
+  },
+  "runtimeSample": {
+    "rows": 50,
+    "errorFatal": 0,
+    "http5xx": 0,
+    "messagePost200": 6
+  },
+  "remaining": [
+    "Original cumulative reserved allowance is only USD0.0633688; no cap increase or reset authorized",
+    "Recent memory is bounded, not unlimited/cross-chat or Mem0 acceptance",
+    "General inference remains owner-bound; no new public access",
+    "Provider generation/network latency remains variable; no sub-second SLA",
+    "Broader native harness and Phase 2 gates remain unchanged"
+  ],
+  "rollback": {
+    "codeCommit": "a45fc29",
+    "deploymentId": "dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb",
+    "migration": "Additive v2 leaves v1 unchanged; no rollback/destructive migration executed"
+  }
+}
