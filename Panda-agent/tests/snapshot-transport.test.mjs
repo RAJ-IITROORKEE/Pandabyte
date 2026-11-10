@@ -39,9 +39,10 @@ test('pooled snapshot requests isolate actor headers, bound decoded bodies, and 
  });
  server.listen(0,'127.0.0.1');await once(server,'listening');
  t.after(()=>{server.closeAllConnections();server.close();});
- const agents=[];
+ const agents=[],connectionOptions=[];
  // Substitute only the TLS dial. Real ClientRequest, Agent pooling, sockets and streaming stay active.
- t.mock.method(https.Agent.prototype,'createConnection',function(){
+ t.mock.method(https.Agent.prototype,'createConnection',function(options){
+  connectionOptions.push(options);
   agents.push(this);return net.connect(server.address().port,'127.0.0.1');
  });
  const unexpected=()=>assert.fail('snapshot ran a fallback');
@@ -55,6 +56,9 @@ test('pooled snapshot requests isolate actor headers, bound decoded bodies, and 
  assert.deepEqual(observed.map(o=>o.auth),['Bearer actor0','Bearer actor1','Bearer actor2']);
  assert.ok(observed.every(o=>o.socket===observed[0].socket && o.body==='{}' && o.url===path));
  assert.equal(agents.length,1);assert.equal(agents[0].maxSockets,8);assert.equal(agents[0].maxFreeSockets,2);
+ assert.equal(connectionOptions[0].autoSelectFamily,true);
+ assert.equal(connectionOptions[0].autoSelectFamilyAttemptTimeout,750);
+ assert.equal(connectionOptions[0].family,undefined);
  variant='denied';const denied=await post(first,'denied');assert.equal(denied.status,403);assert.deepEqual(await denied.json(),{code:'forbidden'});
  variant='redirect';await assert.rejects(post(first,'redirect'));assert.equal(observed.length,5);
  variant='oversize';await assert.rejects(post(first,'large'),/too large/);

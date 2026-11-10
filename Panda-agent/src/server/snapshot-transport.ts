@@ -1,4 +1,5 @@
 import https from 'node:https';
+import type { TcpSocketConnectOpts } from 'node:net';
 import { Readable, pipeline } from 'node:stream';
 import type { ReadableStream as NodeWebStream } from 'node:stream/web';
 import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib';
@@ -7,6 +8,10 @@ import { boundedAgentFetch } from './lightweight-fetch.ts';
 // The agent holds only transport connections, keyed by TLS origin. Actor headers belong to each request.
 const agent = new https.Agent({ keepAlive: true, maxSockets: 8, maxFreeSockets: 2, timeout: 60_000 });
 const snapshotPath = '/api/database/rpc/panda_agent_runtime_admin_snapshot';
+// The first healthy address can take >250 ms. Keep fallback to the other DNS answers.
+const addressSelection = {
+    autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 750,
+} satisfies Pick<TcpSocketConnectOpts, 'autoSelectFamily' | 'autoSelectFamilyAttemptTimeout'>;
 
 const fetchSnapshot = boundedAgentFetch(async (input, init) => {
     const request = new Request(input, init);
@@ -22,6 +27,7 @@ const fetchSnapshot = boundedAgentFetch(async (input, init) => {
     return new Promise<Response>((resolve, reject) => {
         const outgoing = https.request(request.url, {
             method: 'POST', agent, rejectUnauthorized: true, headers: Object.fromEntries(headers), signal: request.signal,
+            ...addressSelection,
         }, response => {
             try {
                 const status = response.statusCode ?? 0;

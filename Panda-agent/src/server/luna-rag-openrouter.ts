@@ -30,13 +30,13 @@ async function readJSON(response: Response, limit: number): Promise<unknown> {
 }
 
 // Convert the provider's decimal receipt without floating-point multiplication rounding.
-function costNanoUsd(value: unknown): number | null {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > lunaRagReservationNanoUsd / 1e9) return null;
+function costNanoUsd(value: unknown, maximum = lunaRagReservationNanoUsd): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > maximum / 1e9) return null;
   const [decimal, exponent = '0'] = String(value).toLowerCase().split('e');
   const [whole, fraction = ''] = decimal.split('.');
   const digits = BigInt(whole + fraction), power = Number(exponent) - fraction.length + 9;
   const nano = power >= 0 ? digits * (BigInt(10) ** BigInt(power)) : (digits + BigInt(10) ** BigInt(-power) - BigInt(1)) / (BigInt(10) ** BigInt(-power));
-  return nano <= BigInt(lunaRagReservationNanoUsd) ? Number(nano) : null;
+  return nano <= BigInt(maximum) ? Number(nano) : null;
 }
 
 function zeroDetails(value: unknown, keys: string[]): boolean {
@@ -44,11 +44,34 @@ function zeroDetails(value: unknown, keys: string[]): boolean {
   return object(value) && Object.entries(value).every(([key, count]) => keys.includes(key) && count === 0);
 }
 
-function validateLunaEnvelope(value: unknown) {
+function boundedPromptDetails(value: unknown, tokens: unknown): boolean {
+  if(value===undefined)return true;
+  if(!object(value)||!Number.isSafeInteger(tokens)||(tokens as number)<0)return false;
+  let cached=0;
+  for(const [key,count] of Object.entries(value)){
+    if(!Number.isSafeInteger(count)||(count as number)<0)return false;
+    if(key==='cached_tokens'||key==='cache_write_tokens')cached+=count as number;
+    else if(!['audio_tokens','video_tokens'].includes(key)||count!==0)return false;
+  }
+  return cached<=(tokens as number);
+}
+
+function boundedCachePrice(value:unknown):boolean{
+  if(typeof value!=='string'||value.length>32||!/^\d+(?:\.\d+)?$/.test(value))return false;
+  const [whole,fraction='']=value.split('.');
+  return BigInt(whole+fraction)*BigInt(1000000000)<=BigInt(138)*(BigInt(10)**BigInt(fraction.length));
+}
+
+function validateLunaEnvelope(value: unknown, receiptPolicy?: 'hosted') {
   const choices = object(value) && Array.isArray(value.choices) ? value.choices : [];
   const first = choices[0], usage = object(value) ? value.usage : null;
   const message = object(first) ? first.message : null;
-  const cost = object(usage) ? costNanoUsd(usage.cost) : null;
+  const hosted=receiptPolicy==='hosted';
+  const maximum=hosted&&object(usage)&&Number.isSafeInteger(usage.prompt_tokens)&&Number.isSafeInteger(usage.completion_tokens)
+    &&(usage.prompt_tokens as number)>=0&&(usage.prompt_tokens as number)<=lunaRagMaxInputTokens
+    &&(usage.completion_tokens as number)>=0&&(usage.completion_tokens as number)<=lunaRagMaxOutputTokens
+      ?(usage.prompt_tokens as number)*138+(usage.completion_tokens as number)*550:lunaRagReservationNanoUsd;
+  const cost = object(usage) ? costNanoUsd(usage.cost,maximum) : null;
   // Both exact IDs are established by the fresh catalog's id and the pinned endpoint name.
   if (!object(value) || Object.hasOwn(value, 'error') || ![lunaRagModel, lunaRagReportedModel].includes(value.model as string)
     || value.provider !== 'Azure' || choices.length !== 1
@@ -57,7 +80,7 @@ function validateLunaEnvelope(value: unknown) {
     || (message.reasoning_details !== undefined && (!Array.isArray(message.reasoning_details) || message.reasoning_details.length > 0))
     || !object(usage) || cost === null
     || !zeroDetails(usage.completion_tokens_details, ['reasoning_tokens', 'image_tokens', 'audio_tokens', 'accepted_prediction_tokens', 'rejected_prediction_tokens'])
-    || !zeroDetails(usage.prompt_tokens_details, ['cached_tokens', 'cache_write_tokens', 'audio_tokens', 'video_tokens'])
+    || !(hosted?boundedPromptDetails(usage.prompt_tokens_details,usage.prompt_tokens):zeroDetails(usage.prompt_tokens_details, ['cached_tokens', 'cache_write_tokens', 'audio_tokens', 'video_tokens']))
     || !Number.isSafeInteger(usage.prompt_tokens) || (usage.prompt_tokens as number) < 0 || (usage.prompt_tokens as number) > lunaRagMaxInputTokens
     || !Number.isSafeInteger(usage.completion_tokens) || (usage.completion_tokens as number) < 0 || (usage.completion_tokens as number) > lunaRagMaxOutputTokens)
     throw new BasicRagProviderError('outcome_unknown');
@@ -65,8 +88,8 @@ function validateLunaEnvelope(value: unknown) {
 }
 
 /** Pure receipt validation also permits offline reconciliation of a retained, already-spent response. */
-export function validateLunaRagResponse(value: unknown, passages: Input['passages']) {
-  const { content, usage } = validateLunaEnvelope(value);
+export function validateLunaRagResponse(value: unknown, passages: Input['passages'], receiptPolicy?: 'hosted') {
+  const { content, usage } = validateLunaEnvelope(value,receiptPolicy);
   let evaluation: unknown;
   try { evaluation = strictJson(content); } catch { throw new BasicRagProviderError('outcome_unknown'); }
   if (!validatePlaygroundEvaluation(evaluation, passages.map(p => ({ handle: String(p.rank), text: p.text })))) throw new BasicRagProviderError('outcome_unknown');
@@ -83,7 +106,7 @@ export function validateLunaChatResponse(value: unknown) {
   return { answer: parsed.answer, usage };
 }
 
-function approvedEndpoint(catalog: unknown, policy: unknown): boolean {
+function approvedEndpoint(catalog: unknown, policy: unknown, receiptPolicy?: 'hosted'): boolean {
   if (!object(catalog) || !object(catalog.data) || catalog.data.id !== lunaRagModel
     || !object(catalog.data.architecture) || catalog.data.architecture.tokenizer !== 'GPT' || !Array.isArray(catalog.data.endpoints)
     || !object(policy) || !Array.isArray(policy.data)) return false;
@@ -100,6 +123,7 @@ function approvedEndpoint(catalog: unknown, policy: unknown): boolean {
     || typeof endpoint.max_completion_tokens !== 'number' || endpoint.max_completion_tokens < lunaRagMaxOutputTokens
     || (endpoint.max_prompt_tokens !== null && (typeof endpoint.max_prompt_tokens !== 'number' || endpoint.max_prompt_tokens < lunaRagMaxInputTokens))) return false;
   const price = endpoint.pricing;
+  if(receiptPolicy==='hosted'&&['input_cache_read','input_cache_write'].some(key=>!boundedCachePrice(price[key])))return false;
   if (price.prompt !== '0.00000011' || price.completion !== '0.00000055' || price.discount !== 0
     || Object.keys(price).some(k => !['prompt', 'completion', 'web_search', 'input_cache_read', 'input_cache_write', 'discount', 'overrides'].includes(k))
     || (price.overrides !== undefined && (!Array.isArray(price.overrides) || price.overrides.some(o => !object(o)
@@ -118,6 +142,7 @@ type LunaCompletionOptions = {
   claim(): Promise<boolean>;
   dispatchCurrent?(): boolean;
   preClaimCurrent?(): boolean;
+  receiptPolicy?: 'hosted';
 };
 type Timing = { admissionMs: number; providerRoundTripMs: number };
 type RagCompletion = (input: Input, beforeSend: () => Promise<boolean>, signal: AbortSignal) => Promise<ReturnType<typeof validateLunaRagResponse> & { timing?: Timing }>;
@@ -153,7 +178,7 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
         return readJSON(r, 4_000_000);
       };
       const [catalog, policy] = await Promise.all([get('/models/' + lunaRagModel + '/endpoints'), get('/endpoints/zdr')]);
-      if (!approvedEndpoint(catalog, policy)) throw new BasicRagProviderError('not_admitted');
+      if (!approvedEndpoint(catalog, policy, options.receiptPolicy)) throw new BasicRagProviderError('not_admitted');
       // Complete slow policy/claim work before the one final network-backed source and actor check.
       if (deadline.aborted || (options.preClaimCurrent ? options.preClaimCurrent() !== true : !await options.policyCurrent()) || !await options.claim() || deadline.aborted
         || !await options.policyCurrent() || deadline.aborted || !await beforeSend() || deadline.aborted
@@ -178,7 +203,7 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
         throw new BasicRagProviderError('outcome_unknown', response.status);
       }
       if (deadline.aborted) throw Error();
-      const result = mode === 'rag' ? validateLunaRagResponse(value, passages) : validateLunaChatResponse(value);
+      const result = mode === 'rag' ? validateLunaRagResponse(value, passages, options.receiptPolicy) : validateLunaChatResponse(value);
       const admissionMs = Math.round(providerStarted - started), providerRoundTripMs = Math.round(providerFinished - providerStarted);
       const validTiming = [admissionMs, providerRoundTripMs].every(n => Number.isSafeInteger(n) && n >= 0 && n <= 120000);
       return { ...result, ...(validTiming ? { timing: { admissionMs, providerRoundTripMs } } : {}) };

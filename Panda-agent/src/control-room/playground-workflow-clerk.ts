@@ -10,6 +10,8 @@ import {createBasicRagPolicy,createLunaTestPolicy,createLunaPrototypePolicy} fro
 import {readLunaPrototypeProfile} from '../server/luna-prototype-profile';
 import {readLunaTestProfile} from '../server/luna-test-profile';
 import {createBasicRagPlayground} from '../server/basic-rag-playground';
+import {createHostedRagPolicy} from '../server/hosted-rag-policy';
+import {createHostedRagPlayground} from '../server/hosted-rag-playground';
 
 type WorkflowContext = Exclude<WorkflowAdmission,{kind:'admin'}> | (Extract<WorkflowAdmission,{kind:'admin'}> & {client:NonNullable<Awaited<ReturnType<typeof authenticateLightweight>>>['client']});
 
@@ -29,6 +31,8 @@ export async function authenticateRagWorkflow(request:Request):Promise<WorkflowC
     return active&&!v.error&&Array.isArray(v.data)&&v.data.length===1&&v.data[0]?.role==='ADMIN';
    }catch{return false;}};
    const requestOrigin=new URL(request.url).origin;
+   const hosted=process.env.PANDA_AGENT_HOSTED_GROUNDED_ENABLED==='true';
+   const hostedPolicy=hosted?createHostedRagPolicy({env:process.env,subject,requestOrigin,actor:{subject,sessionId,client},current}):null;
    const prototype=process.env.PANDA_AGENT_LUNA_PROTOTYPE_PROFILE_FILE!==undefined;
    const luna=prototype||process.env.PANDA_AGENT_LUNA_PROFILE_FILE!==undefined;
    const availability=prototype?createLunaPrototypePolicy({env:process.env,subject,requestOrigin,current,actor:{subject,sessionId,client}}):(luna?createLunaTestPolicy:createBasicRagPolicy)({env:process.env,subject,requestOrigin,current});
@@ -38,8 +42,9 @@ export async function authenticateRagWorkflow(request:Request):Promise<WorkflowC
     retrieval:{authorize:admittedSessionCurrent,
      prepare:createWorkflowProductContextPreparer({actor:{subject},client,createAdapters:()=>createInsforgeAdapters(client,async()=>({selections:[]})),authorizeCurrent:admittedSessionCurrent})},
     generationScope:'multiple_products',
-    usagePolicy:luna?'bounded_luna_test' as const:'zero_cost' as const,
+    usagePolicy:hosted||luna?'bounded_luna_test' as const:'zero_cost' as const,
     generate:async(input,beforeSend,signal)=>{
+     if(hostedPolicy)return createHostedRagPlayground(hostedPolicy)(input,beforeSend,signal);
      const profile=await (prototype?readLunaPrototypeProfile:luna?readLunaTestProfile:readBasicRagProfile)({env:process.env,subject,requestOrigin});
      if(!profile)throw Object.assign(Error('Model unavailable'),{code:'not_admitted'});
      return createBasicRagPlayground({subject,requestOrigin,env:process.env,profile,availability,mode:prototype?'prototype':luna?'luna':'free'})(input,beforeSend,signal);

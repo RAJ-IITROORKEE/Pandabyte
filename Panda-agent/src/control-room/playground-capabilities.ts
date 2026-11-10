@@ -6,7 +6,7 @@ export type PlaygroundCapabilities = {
   model: 'openai/gpt-4o-mini' | 'xingchen-agi/xing4.0-29b-a4b:free' | 'openai/gpt-6-luna';
   connection: 'not_configured' | 'configured_unverified';
   transport: 'unconfigured' | 'hosted' | 'local';
-  profile: 'mini-two-case-v1' | 'product-playground-v1' | 'basic-rag-v1' | 'luna-rag-test-v1' | 'luna-rag-prototype-v1' | null;
+  profile: 'mini-two-case-v1' | 'product-playground-v1' | 'basic-rag-v1' | 'luna-rag-test-v1' | 'luna-rag-prototype-v1' | 'hosted-rag-v1' | null;
   approvedQuestions: string[];
   remainingNanoUsd?: number;
   expiresAt?: string;

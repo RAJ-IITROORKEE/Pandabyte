@@ -15,6 +15,8 @@ const sources = {
   '../server/luna-prototype-profile': 'export const readLunaPrototypeProfile=async()=>null',
   '../server/basic-rag-runtime': 'export const createBasicRagPolicy=()=>({}); export const createLunaTestPolicy=createBasicRagPolicy; export const createLunaPrototypePolicy=createBasicRagPolicy',
   '../server/basic-rag-playground': 'export const createBasicRagPlayground=()=>({})',
+  '../server/hosted-rag-policy': 'export const createHostedRagPolicy=()=>({})',
+  '../server/hosted-rag-playground': 'export const createHostedRagPlayground=()=>({})',
 };
 registerHooks({ resolve(specifier, context, nextResolve) {
   if (Object.hasOwn(sources, specifier)) return { url: 'data:text/javascript,' + encodeURIComponent(sources[specifier]), shortCircuit: true };
