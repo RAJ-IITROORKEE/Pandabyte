@@ -99,3 +99,21 @@ test('denied, ambiguous, or replayed durable claims are never retried',async()=>
   options.env.VERCEL_ENV='preview';assert.equal(await policy.current(),false);
   await assert.rejects(policy.claimRequest(input),{code:'not_admitted'});assert.equal(claims.length,0);
 });
+
+
+test('hosted model selection changes admission binding and invalidates an in-flight configuration',async()=>{
+ const f=fixture(),legacy=readHostedRagProfile(f.options);f.env.PANDA_AGENT_HOSTED_MODEL='openai/gpt-oss-20b';
+ const selected=readHostedRagProfile(f.options);assert.ok(selected);assert.notEqual(selected.binding,legacy.binding);assert.equal(legacy.dispatchCurrent(),false);
+ const policy=createHostedRagPolicy(f.options);assert.equal(await policy.enabled(),true);
+ f.env.PANDA_AGENT_HOSTED_MODEL='unsupported/model';assert.equal(selected.dispatchCurrent(),false);assert.equal(readHostedRagProfile(f.options),null);
+ assert.equal(await policy.current(),false);await assert.rejects(policy.claimRequest(input),{code:'not_admitted'});assert.equal(f.claims.length,0);
+});
+
+
+test('a model change before admission cannot bind a different model to the retained transport',async()=>{
+ for(const [initial,next] of [[undefined,'openai/gpt-oss-20b'],['openai/gpt-oss-20b','openai/gpt-6-luna']]){
+  const f=fixture();if(initial!==undefined)f.env.PANDA_AGENT_HOSTED_MODEL=initial;
+  const policy=createHostedRagPolicy(f.options);f.env.PANDA_AGENT_HOSTED_MODEL=next;
+  assert.equal(await policy.enabled(),false);assert.equal(policy.dispatchCurrent(),false);assert.equal(f.requests.length,0);assert.equal(f.claims.length,0);
+ }
+});

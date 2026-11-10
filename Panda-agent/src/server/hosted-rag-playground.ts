@@ -1,14 +1,19 @@
 import 'server-only';
 import type { RagWorkflowDependencies } from '../control-room/rag-workflow';
-import { BasicRagProviderError } from './basic-rag-openrouter';
-import { createLunaRagCompletion } from './luna-rag-openrouter';
-import { createHostedRagPolicy } from './hosted-rag-policy';
+import { BasicRagProviderError } from './basic-rag-openrouter.ts';
+import { createLunaRagCompletion } from './luna-rag-openrouter.ts';
+import { createHostedRagPolicy } from './hosted-rag-policy.ts';
+import { createHostedRagCompletion } from './hosted-model-openrouter.ts';
+import { fastHostedModel, hostedModelSelection } from '../hosted-model.ts';
 
 /** Persistent hosted admission; the database claim prevents a second dispatch for the same request. */
-export function createHostedRagPlayground(policy: ReturnType<typeof createHostedRagPolicy>): NonNullable<RagWorkflowDependencies['generate']> {
+export function createHostedRagPlayground(policy: ReturnType<typeof createHostedRagPolicy>, env: NodeJS.ProcessEnv = process.env): NonNullable<RagWorkflowDependencies['generate']> {
  return async (input,beforeSend,signal) => {
+  const selected=hostedModelSelection(env);
+  if(!selected)throw Object.assign(Error('Model unavailable'),{code:'not_admitted'});
   if (!await policy.enabled()) throw Object.assign(Error('Model unavailable'),{code:'not_admitted'});
-  const complete=createLunaRagCompletion({apiKey:policy.key(),policyCurrent:policy.current,dispatchCurrent:policy.dispatchCurrent,receiptPolicy:'hosted',
+  const factory=env.VERCEL==='1'&&selected.id===fastHostedModel.id?createHostedRagCompletion:createLunaRagCompletion;
+  const complete=factory({apiKey:policy.key(),policyCurrent:policy.current,dispatchCurrent:policy.dispatchCurrent,receiptPolicy:'hosted',
    preClaimCurrent:policy.dispatchCurrent,
    claim:()=>policy.claimRequest({request:input.requestId,surface:'playground',fingerprint:input.context.digest})});
   try {

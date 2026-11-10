@@ -1,4 +1,6 @@
 import 'server-only';
+import { createHostedRagCompletion } from './hosted-model-openrouter.ts';
+import { fastHostedModel, hostedModelSelection } from '../hosted-model.ts';
 import { createHash } from 'node:crypto';
 import { conversationRoute, isUnscopedConversation } from '../retrieval/conversation-route.ts';
 import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforge-adapters.ts';
@@ -117,6 +119,7 @@ export async function prepareMainRagContext(options:{subject:string;question:str
 export function mainRagChatForActor(options:{actor:ChatActor;request:Request;direct:BasicRagChatBridge;legacy:BasicRagChatBridge;
  current():Promise<boolean>;env?:NodeJS.ProcessEnv}):BasicRagChatBridge {
  const {actor}=options,env=options.env??process.env;
+ const selected=hostedModelSelection(env),fast=env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
  const current=async()=>{try{
   const [active,role]=await Promise.all([options.current(),actor.client.database.from('staff_role_memberships').select('role').eq('user_id',actor.subject).limit(1)]);
   return active&&!role.error&&Array.isArray(role.data)&&role.data.length===1&&role.data[0]?.role==='ADMIN';
@@ -143,7 +146,7 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
   completion:(claim,requestId)=>{
    ownRequest=requestId;
    let claimed=false;
-   return (input,beforeSend,signal)=>createLunaRagCompletion({apiKey:policy.key(),policyCurrent:policy.current,dispatchCurrent:policy.dispatchCurrent,
+   return (input,beforeSend,signal)=>(fast?createHostedRagCompletion:createLunaRagCompletion)({apiKey:policy.key(),policyCurrent:policy.current,dispatchCurrent:policy.dispatchCurrent,
     preClaimCurrent:policy.dispatchCurrent,receiptPolicy:'hosted',claim:async()=>{
      if(claimed||!await claim())return false;claimed=true;
      return policy.claimRequest({request:requestId,surface:'chat',fingerprint:createHash('sha256').update(JSON.stringify(input)).digest('hex')});
@@ -151,7 +154,7 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
   },
  });
  return createMainRagRouter({direct:options.direct,legacy:options.legacy,rag,
-  modelAllowed:()=>!options.request.headers.has('X-Panda-Model')||options.request.headers.get('X-Panda-Model')==='openai/gpt-6-luna',
+  modelAllowed:()=>!!selected&&(!options.request.headers.has('X-Panda-Model')||options.request.headers.get('X-Panda-Model')===(fast?selected.id:'openai/gpt-6-luna')),
   route:async(question,signal,report,thread)=>{
    if(signal.aborted)throw new ChatStoreError('unavailable');
    if(isUnscopedConversation(question))return 'direct';

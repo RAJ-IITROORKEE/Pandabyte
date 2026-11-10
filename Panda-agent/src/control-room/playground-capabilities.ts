@@ -1,9 +1,10 @@
 import { approvedPlaygroundQuestions } from './playground-intent.ts';
+import { fastHostedModel, hostedModelSelection, type HostedModelId } from '../hosted-model.ts';
 
 type Admission = { allowed: true } | { allowed: false; status: 401 | 403 | 503 };
 type Flags = NodeJS.ProcessEnv;
 export type PlaygroundCapabilities = {
-  model: 'openai/gpt-4o-mini' | 'xingchen-agi/xing4.0-29b-a4b:free' | 'openai/gpt-6-luna';
+  model: 'openai/gpt-4o-mini' | 'xingchen-agi/xing4.0-29b-a4b:free' | 'openai/gpt-6-luna' | HostedModelId;
   connection: 'not_configured' | 'configured_unverified';
   transport: 'unconfigured' | 'hosted' | 'local';
   profile: 'mini-two-case-v1' | 'product-playground-v1' | 'basic-rag-v1' | 'luna-rag-test-v1' | 'luna-rag-prototype-v1' | 'hosted-rag-v1' | null;
@@ -11,6 +12,23 @@ export type PlaygroundCapabilities = {
   remainingNanoUsd?: number;
   expiresAt?: string;
 };
+
+export function hostedRagPlaygroundCapabilities(flags: Flags, verified: boolean): PlaygroundCapabilities {
+  const selected = flags.VERCEL === '1' ? hostedModelSelection({ PANDA_AGENT_HOSTED_MODEL: flags.PANDA_AGENT_HOSTED_MODEL }) : null;
+  const ready = verified && selected !== null;
+  return { model: selected?.id ?? 'openai/gpt-6-luna', connection: ready ? 'configured_unverified' : 'not_configured', transport: ready ? 'hosted' : 'unconfigured', profile: ready ? 'hosted-rag-v1' : null, approvedQuestions: [] };
+}
+
+export function parsePlaygroundCapabilities(value: unknown): PlaygroundCapabilities | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const c = value as Record<string, unknown>;
+  if (!['openai/gpt-4o-mini', 'xingchen-agi/xing4.0-29b-a4b:free', 'openai/gpt-6-luna', fastHostedModel.id].includes(String(c.model)) || !['not_configured', 'configured_unverified'].includes(String(c.connection)) || !['unconfigured', 'hosted', 'local'].includes(String(c.transport)) || ![null, 'mini-two-case-v1', 'product-playground-v1', 'basic-rag-v1', 'luna-rag-test-v1', 'luna-rag-prototype-v1', 'hosted-rag-v1'].includes(c.profile as string | null) || !Array.isArray(c.approvedQuestions) || c.approvedQuestions.length > 2 || c.approvedQuestions.some(question => typeof question !== 'string' || question.length > 2000)) return null;
+  if (c.remainingNanoUsd !== undefined && (!Number.isSafeInteger(c.remainingNanoUsd) || (c.remainingNanoUsd as number) < 0 || (c.remainingNanoUsd as number) > 1000000000)) return null;
+  if (c.expiresAt !== undefined && (typeof c.expiresAt !== 'string' || !Number.isFinite(Date.parse(c.expiresAt)))) return null;
+  if (c.profile === 'luna-rag-prototype-v1' && (c.remainingNanoUsd === undefined || c.expiresAt === undefined)) return null;
+  if (c.model === fastHostedModel.id && (c.remainingNanoUsd !== undefined || c.expiresAt !== undefined || c.approvedQuestions.length !== 0 || !(c.profile === 'hosted-rag-v1' && c.transport === 'hosted' && c.connection === 'configured_unverified' || c.profile === null && c.transport === 'unconfigured' && c.connection === 'not_configured'))) return null;
+  return c as PlaygroundCapabilities;
+}
 
 export function hostedPlaygroundEnabled(flags: Flags): boolean {
   return flags.VERCEL === '1' && (flags.PANDA_AGENT_PLAYGROUND_TRANSPORT === undefined || flags.PANDA_AGENT_PLAYGROUND_TRANSPORT === 'hosted') && playgroundFlagsEnabled(flags);

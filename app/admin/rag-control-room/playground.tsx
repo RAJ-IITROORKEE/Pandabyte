@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "./playground.module.css";
 import { PlaygroundToolFixture } from "./playground-tool-fixture";
+import { fastHostedModel } from "@/Panda-agent/src/hosted-model";
+import { parsePlaygroundCapabilities, type PlaygroundCapabilities } from "@/Panda-agent/src/control-room/playground-capabilities";
 
 type Passage = { rank: number; title: string; sourceUrl: string; capturedAt: string; sectionPath: string[]; text: string; productSku?: string; productTitle?: string; lexicalOverlap: { matched: number; total: number } };
 type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; products?: { sku: string; title: string }[]; workflow?: { stage: "authorize" | "retrieve" | "augment" | "generate" | "validate" | "release"; status: "completed" | "skipped"; elapsedMs: number }[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null; admissionMs?: number | null; providerRoundTripMs?: number | null; contextRevalidationMs?: number | null; contextRevalidationCount?: number }; model: { status: "not_requested" | "guard_unavailable" } | { status: "not_run"; reason?: "multi_product_guard_unavailable" | "no_retrieved_context" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
-type Capability = { model: "openai/gpt-4o-mini" | "xingchen-agi/xing4.0-29b-a4b:free" | "openai/gpt-6-luna"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | "basic-rag-v1" | "luna-rag-test-v1" | "luna-rag-prototype-v1" | "hosted-rag-v1" | null; approvedQuestions: string[]; remainingNanoUsd?: number; expiresAt?: string };
+type Capability = PlaygroundCapabilities;
 const outcomeKey = "panda-playground-unknown-outcome";
 
 export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
@@ -43,11 +45,8 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
     fetch("/api/admin/panda-agent/playground", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         if (!response.ok) throw Error();
-        const value = await response.json();
-        if (!["openai/gpt-4o-mini", "xingchen-agi/xing4.0-29b-a4b:free", "openai/gpt-6-luna"].includes(value?.model) || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1", "luna-rag-prototype-v1", "hosted-rag-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
-        if (value.remainingNanoUsd !== undefined && (!Number.isSafeInteger(value.remainingNanoUsd) || value.remainingNanoUsd < 0 || value.remainingNanoUsd > 1000000000)) throw Error();
-        if (value.expiresAt !== undefined && (typeof value.expiresAt !== "string" || !Number.isFinite(Date.parse(value.expiresAt)))) throw Error();
-        if (value.profile === "luna-rag-prototype-v1" && (value.remainingNanoUsd === undefined || value.expiresAt === undefined)) throw Error();
+        const value = parsePlaygroundCapabilities(await response.json());
+        if (!value) throw Error();
         if (!controller.signal.aborted) { setCapability(value); setCapabilityError(false); if (value.connection !== "configured_unverified") setEvaluate(false); }
       })
       .catch(() => { if (!controller.signal.aborted) setCapabilityError(true); });
@@ -56,7 +55,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
 
   const modelAvailable = capability?.connection === "configured_unverified" && (["mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1", "luna-rag-prototype-v1", "hosted-rag-v1"].includes(capability.profile ?? "")) && capability.transport !== "unconfigured";
   const canEvaluate = guardReady && !unknownOutcome && modelAvailable;
-  const modelName = capability?.model === "openai/gpt-6-luna" ? "GPT-6 Luna" : capability?.model === "xingchen-agi/xing4.0-29b-a4b:free" ? "Xing 4.0" : "GPT-4o-mini";
+  const modelName = !capability ? "Model" : capability.model === fastHostedModel.id ? fastHostedModel.label : capability.model === "openai/gpt-6-luna" ? "GPT-6 Luna" : capability?.model === "xingchen-agi/xing4.0-29b-a4b:free" ? "Xing 4.0" : "GPT-4o-mini";
 
   function startNewTest() {
     if (busy) return;
@@ -135,8 +134,8 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
             ? rejectedOutcome ? "The previous model answer failed validation and was withheld. Usage may have incurred. You can explicitly start a separate new test; the previous request will not be retried." : "The previous model test is unconfirmed and may have incurred usage. It will not be retried. Retrieval remains available; you can explicitly start a separate new test."
             : capabilityError ? "Model status could not be checked. Retrieval remains available."
             : !capability ? "Checking model availability. You can inspect retrieval now."
-            : !modelAvailable ? capability.model === "openai/gpt-6-luna" ? "Model generation is unavailable. Refresh connection to check again. Document retrieval remains available." : "No model connection is configured for this build. Document retrieval remains available."
-            : capability.profile === "hosted-rag-v1" ? "GPT-6 Luna · grounded answers · no application budget cap. Usage is billed by OpenRouter."
+            : !modelAvailable ? (capability.model === "openai/gpt-6-luna" || capability.model === fastHostedModel.id) ? "Model generation is unavailable. Refresh connection to check again. Document retrieval remains available." : "No model connection is configured for this build. Document retrieval remains available."
+            : capability.profile === "hosted-rag-v1" ? `${modelName} · grounded answers · no application budget cap. Usage is billed by OpenRouter.`
             : capability.profile === "luna-rag-prototype-v1" ? `GPT-6 Luna · strict ZDR · $1 total prototype cap. Conservative allowance remaining (USD): ${((capability.remainingNanoUsd ?? 0) / 1e9).toFixed(3)}. Privacy verification expires at ${new Date(capability.expiresAt!).toLocaleTimeString()}. No automatic retry.`
             : capability.profile === "luna-rag-test-v1" ? "GPT-6 Luna · strict ZDR · approved test budget only. No automatic retry."
             : capability.profile === "basic-rag-v1" ? "Xing 4.0 · zero cost · strict ZDR. Provider capacity is checked for each request."

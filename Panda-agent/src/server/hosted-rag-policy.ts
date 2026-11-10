@@ -3,7 +3,7 @@ import { createHash, createHmac } from 'node:crypto';
 import { strictJson } from '../lightweight/client.ts';
 import { BasicRagProviderError } from './basic-rag-openrouter.ts';
 import { uuid, type ChatActor } from './chat-contracts.ts';
-import { lunaRagModel, lunaRagProvider } from './luna-rag-openrouter.ts';
+import { hostedModelSelection } from '../hosted-model.ts';
 
 const stableOrigin = 'https://pandabyte-iot.vercel.app';
 const hash = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');
@@ -18,14 +18,15 @@ type Claim = { request: string; surface: 'playground' | 'chat'; fingerprint: str
 export function readHostedRagProfile({ env, subject, requestOrigin }: Context) {
   const configKeys = ['VERCEL', 'VERCEL_ENV', 'NODE_ENV', 'VERCEL_URL', 'PANDA_AGENT_HOSTED_GROUNDED_ENABLED',
     'PANDA_AGENT_HOSTED_GROUNDED_PROFILE', 'PANDA_AGENT_OPENROUTER_OBSERVABILITY', 'OPENROUTER_API_KEY',
-    'PANDA_AGENT_LIGHTWEIGHT_DB_KEY', 'CLERK_SECRET_KEY', 'PANDA_AGENT_INSFORGE_BASE_URL', 'PANDA_AGENT_CLERK_JWT_TEMPLATE'];
+    'PANDA_AGENT_LIGHTWEIGHT_DB_KEY', 'CLERK_SECRET_KEY', 'PANDA_AGENT_INSFORGE_BASE_URL', 'PANDA_AGENT_CLERK_JWT_TEMPLATE', 'PANDA_AGENT_HOSTED_MODEL'];
   const snapshot = configKeys.map(key => env[key]);
   const key = env.OPENROUTER_API_KEY, raw = env.PANDA_AGENT_HOSTED_GROUNDED_PROFILE;
+  const model = hostedModelSelection(env);
   const deployment = env.VERCEL_URL;
   const deploymentOrigin = deployment && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.vercel\.app$/.test(deployment)
     ? 'https://' + deployment : null;
   if (env.VERCEL !== '1' || env.VERCEL_ENV !== 'production' || env.NODE_ENV !== 'production'
-    || env.PANDA_AGENT_HOSTED_GROUNDED_ENABLED !== 'true' || env.PANDA_AGENT_OPENROUTER_OBSERVABILITY !== 'langsmith_metadata_only'
+    || !model || env.PANDA_AGENT_HOSTED_GROUNDED_ENABLED !== 'true' || env.PANDA_AGENT_OPENROUTER_OBSERVABILITY !== 'langsmith_metadata_only'
     || typeof requestOrigin !== 'string' || (requestOrigin !== stableOrigin && requestOrigin !== deploymentOrigin) || !raw || Buffer.byteLength(raw) > 4096
     || typeof subject !== 'string' || !subject.trim() || subject.length > 512 || !subject.isWellFormed()
     || !key || !/^sk-or-v1-[a-f0-9]{64}$/i.test(key) || !hex(env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY)) return null;
@@ -38,7 +39,7 @@ export function readHostedRagProfile({ env, subject, requestOrigin }: Context) {
       || profile.privacy.logging !== false || profile.privacy.traces !== true
       || profile.privacy.dataDiscount !== false || profile.privacy.publicPrompts !== false) return null;
     return Object.freeze({
-      binding: hash(JSON.stringify(['hosted-grounded-v1', hash(raw), requestOrigin, lunaRagModel, lunaRagProvider])),
+      binding: hash(JSON.stringify(['hosted-grounded-v1', hash(raw), requestOrigin, model.id, model.provider])),
       workspaceSha256: profile.workspaceSha256,
       dispatchCurrent: () => configKeys.every((name, index) => env[name] === snapshot[index]),
     });
@@ -70,9 +71,14 @@ async function keyWorkspaceMatches(key: string, workspace: string, fetcher: type
 }
 
 export function createHostedRagPolicy(options: Context & { actor: ChatActor; current(): Promise<boolean>; fetcher?: typeof fetch }) {
+  const selected = hostedModelSelection(options.env);
+  const selectionCurrent = () => {
+    const current = hostedModelSelection(options.env);
+    return !!selected && current?.id === selected.id && current.provider === selected.provider;
+  };
   let admitted: ReturnType<typeof readHostedRagProfile> = null;
   let used = false;
-  const dispatchCurrent = () => options.actor.subject === options.subject && admitted?.dispatchCurrent() === true;
+  const dispatchCurrent = () => selectionCurrent() && options.actor.subject === options.subject && admitted?.dispatchCurrent() === true;
   async function current() {
     try {
       if (dispatchCurrent() && await options.current() && dispatchCurrent()) return true;
@@ -83,6 +89,7 @@ export function createHostedRagPolicy(options: Context & { actor: ChatActor; cur
   return {
     async enabled() {
       admitted = null;
+      if (!selectionCurrent()) return false;
       const profile = readHostedRagProfile(options);
       if (!profile || options.actor.subject !== options.subject) return false;
       try {

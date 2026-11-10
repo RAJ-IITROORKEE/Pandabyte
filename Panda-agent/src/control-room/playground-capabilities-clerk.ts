@@ -1,7 +1,7 @@
 import 'server-only';
 import { controlRoomAdminAccess } from './clerk';
 import { auth } from '@clerk/nextjs/server';
-import { createPlaygroundCapabilitiesHandler, basicRagPlaygroundCapabilities } from './playground-capabilities';
+import { createPlaygroundCapabilitiesHandler, basicRagPlaygroundCapabilities, hostedRagPlaygroundCapabilities } from './playground-capabilities';
 import { readBasicRagProfile } from '../server/basic-rag-profile';
 import { readLunaTestProfile } from '../server/luna-test-profile';
 import { authenticateLightweight, currentLightweightSession } from '../server/lightweight-connection';
@@ -12,13 +12,13 @@ export const playgroundCapabilitiesGET = createPlaygroundCapabilitiesHandler(con
   const session = await auth();
   if (!session.isAuthenticated || session.sessionStatus !== 'active' || !session.userId) throw Error('Access unavailable');
   if(process.env.PANDA_AGENT_HOSTED_GROUNDED_ENABLED==='true'){
-    if(!request)return {model:'openai/gpt-6-luna',connection:'not_configured',transport:'unconfigured',profile:null,approvedQuestions:[]};
+    if(!request)return hostedRagPlaygroundCapabilities(process.env,false);
     const actor=await authenticateLightweight({admin:true});
     if(!actor||actor.subject!==session.userId||!('admin' in actor)||!actor.admin)throw Error('Access unavailable');
     const policy=createHostedRagPolicy({env:process.env,subject:actor.subject,requestOrigin:new URL(request.url).origin,actor,
       current:async()=>!!actor.sessionId&&await currentLightweightSession(actor.subject,actor.sessionId)});
     const ready=await policy.enabled();
-    return {model:'openai/gpt-6-luna',connection:ready?'configured_unverified':'not_configured',transport:ready?'hosted':'unconfigured',profile:ready?'hosted-rag-v1':null,approvedQuestions:[]};
+    return hostedRagPlaygroundCapabilities(process.env,ready);
   }
   if (process.env.PANDA_AGENT_LUNA_PROTOTYPE_PROFILE_FILE !== undefined) {
     if (!request) return basicRagPlaygroundCapabilities(false, 'prototype');

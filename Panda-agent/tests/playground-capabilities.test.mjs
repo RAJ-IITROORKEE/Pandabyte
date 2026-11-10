@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { approvedPlaygroundQuestions, matchApprovedPlaygroundCase } from '../src/control-room/playground-intent.ts';
-import { playgroundCapabilities, basicRagPlaygroundCapabilities, createPlaygroundCapabilitiesHandler } from '../src/control-room/playground-capabilities.ts';
+import { playgroundCapabilities, basicRagPlaygroundCapabilities, hostedRagPlaygroundCapabilities, parsePlaygroundCapabilities, createPlaygroundCapabilitiesHandler } from '../src/control-room/playground-capabilities.ts';
 const flags={VERCEL:'1',PANDA_AGENT_PLAYGROUND_GATEWAY_ENABLED:'true',PANDA_AGENT_PLAYGROUND_GATEWAY_PROTOCOL:'v3-context-digest',PANDA_AGENT_PLAYGROUND_PROFILE:'mini-two-case-v1'};
 
 test('basic RAG capability needs a verified local lease and does not name the historical paid model',()=>{
@@ -40,4 +40,16 @@ test('new profile must be explicitly configured and does not offer consumed case
  const result=playgroundCapabilities({...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1'},true);
  assert.equal(result.profile,'product-playground-v1');assert.equal(result.connection,'configured_unverified');assert.deepEqual(result.approvedQuestions,[]);
  assert.equal(playgroundCapabilities({...flags,PANDA_AGENT_PLAYGROUND_PROFILE:'product-playground-v1'},false).profile,null);
+});
+
+test('fast Playground metadata is confined to the verified hosted profile',()=>{
+ const env={VERCEL:'1',PANDA_AGENT_HOSTED_MODEL:'openai/gpt-oss-20b'};
+ const ready=hostedRagPlaygroundCapabilities(env,true),off=hostedRagPlaygroundCapabilities(env,false);
+ assert.equal(ready.model,'openai/gpt-oss-20b');assert.equal(ready.profile,'hosted-rag-v1');assert.ok(parsePlaygroundCapabilities(ready));
+ assert.equal(off.connection,'not_configured');assert.ok(parsePlaygroundCapabilities(off));
+ for(const change of [{transport:'local'},{profile:'luna-rag-test-v1'},{model:'foreign'},{remainingNanoUsd:1},{approvedQuestions:['foreign']}])assert.equal(parsePlaygroundCapabilities({...ready,...change}),null);
+ assert.equal(hostedRagPlaygroundCapabilities({...env,PANDA_AGENT_HOSTED_MODEL:'unknown'},true).connection,'not_configured');
+ assert.equal(hostedRagPlaygroundCapabilities({...env,VERCEL:undefined},true).model,'openai/gpt-6-luna');
+ assert.equal(basicRagPlaygroundCapabilities(true,'luna').model,'openai/gpt-6-luna');
+ assert.ok(parsePlaygroundCapabilities(basicRagPlaygroundCapabilities(true,'luna')));
 });

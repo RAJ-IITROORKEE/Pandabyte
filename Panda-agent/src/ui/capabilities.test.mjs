@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCapabilities, modelChoices, disabledModelReasons, activeModelLabel } from './capabilities.ts';
+import { parseCapabilities, modelChoices, disabledModelReasons, hostedModelChoices, hostedDisabledModelReasons, activeModelLabel, isChatModelId } from './capabilities.ts';
 const models=modelChoices.map((m,i)=>({...m,enabled:i===0,reason:i===0?null:disabledModelReasons[i]}));
 const valid = {models,mode:'native_assistant',model:'GPT-6 Luna',status:'ready',reason:null,rag:false,tools:[],skills:[],budget:{limitNanoUsd:1000000000,remainingNanoUsd:750000000}};
 test('accepts a bounded native capability response',()=>assert.deepEqual(parseCapabilities(valid),valid));
@@ -44,4 +44,19 @@ test('direct assistant exposes Luna only with no native tools or skills',()=>{
  assert.equal(parseCapabilities({...direct,tools:['read_public_docs']}),null);
  assert.equal(parseCapabilities({...direct,skills:['embedded-explainer']}),null);
  assert.equal(parseCapabilities({...direct,models:models.map((m,i)=>i===3?{...m,enabled:true,reason:null}:m)}),null);
+});
+
+test('hosted direct capabilities name and enable only the exact fast model', () => {
+ const hosted = { ...valid, mode:'direct_assistant', model:'GPT-OSS 20B', budget:null, rag:true, models:hostedModelChoices.map((m,i)=>({...m,enabled:i===6,reason:i===6?null:hostedDisabledModelReasons[i]})) };
+ assert.deepEqual(parseCapabilities(hosted),hosted);
+ assert.equal(activeModelLabel(hosted.models,'openai/gpt-oss-20b',null),'GPT-OSS 20B');
+ const off={...hosted,model:null,status:'unavailable',reason:'connection_unavailable',rag:false,models:hostedModelChoices.map((m,i)=>({...m,enabled:false,reason:hostedDisabledModelReasons[i]}))};
+ assert.deepEqual(parseCapabilities(off),off);
+ for(const change of [{mode:'native_assistant'},{mode:'basic_rag'},{model:'GPT-6 Luna'},{status:'unavailable'},{reason:'disabled'},{budget:valid.budget},{tools:['convert_units']},{models:hosted.models.map((m,i)=>i===0?{...m,enabled:true,reason:null}:m)},{models:hosted.models.map((m,i)=>i===6?{...m,label:'Invented',extra:true}:m)}]) assert.equal(parseCapabilities({...hosted,...change}),null);
+ assert.equal(parseCapabilities({...off,model:'GPT-OSS 20B'}),null);
+ assert.equal(parseCapabilities({...off,rag:true}),null);
+ assert.equal(parseCapabilities({...valid,model:'GPT-OSS 20B'}),null);
+ assert.equal(isChatModelId('openai/gpt-oss-20b'),true);
+ assert.equal(isChatModelId('unverified-model'),false);
+ assert.equal(modelChoices.length,6);
 });

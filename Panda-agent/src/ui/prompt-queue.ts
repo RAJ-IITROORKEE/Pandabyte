@@ -1,8 +1,8 @@
-import { isNativeModelId, type NativeModelId } from '../opencode/native-model-profiles.ts';
-export type QueuedPrompt = { id: string; threadId: string; text: string; modelId?: NativeModelId };
+import { isChatModelId, type ChatModelId } from './capabilities.ts';
+export type QueuedPrompt = { id: string; threadId: string; text: string; modelId?: ChatModelId };
 export function enqueuePrompt(queue: QueuedPrompt[], item: QueuedPrompt): QueuedPrompt[] {
   const text = item.text.trim();
-  if ((item.modelId !== undefined && !isNativeModelId(item.modelId)) || queue.length >= 3 || !item.id || !item.threadId || !text || text.length > 2000) return queue;
+  if ((item.modelId !== undefined && !isChatModelId(item.modelId)) || queue.length >= 3 || !item.id || !item.threadId || !text || text.length > 2000) return queue;
   return [...queue, { ...item, text }];
 }
 export function nextQueuedPrompt(queue: QueuedPrompt[], threadId: string): QueuedPrompt | null {

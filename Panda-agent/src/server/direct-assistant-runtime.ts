@@ -10,6 +10,8 @@ import {createPlainLlmChatService,createPlainLlmStore} from './plain-llm-chat.ts
 import {currentLightweightSession} from './lightweight-connection';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
+import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
+import {fastHostedModel,hostedModelSelection} from '../hosted-model.ts';
 
 export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.ProcessEnv=process.env){
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
@@ -29,8 +31,13 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
  const key=process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'';
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
+ const selected=hostedModelSelection(process.env),fast=process.env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
  const direct=createDirectAssistantChat({actor,key,current,budgetRefs:policy.budgetRefs,
-  policy:{...policy,enabled:()=>requested!==null&&requested!=='openai/gpt-6-luna'?Promise.resolve(false):policy.enabled()},
+  ...(fast?{completion:createHostedDirectCompletion}:{}),
+  policy:{...policy,enabled:async()=>{
+   if(!selected||requested!==null&&requested!==(fast?selected.id:'openai/gpt-6-luna')||!await policy.enabled())return false;
+   return !fast||('isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true);
+  }},
   store:createDirectAssistantStore(actor,key)});
  const legacy=createPlainLlmChatService({store:createPlainLlmStore(actor,key),current,enabled:async()=>false,complete:()=>{throw Error('legacy_execution_disabled');}});
  if(process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true')return mainRagChatForActor({actor,request,direct,legacy,current});

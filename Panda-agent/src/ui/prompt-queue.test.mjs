@@ -13,3 +13,12 @@ test('a queued model is never replaced when its readiness changes',()=>{
  assert.equal(queuedModelReady(item,[{id:item.modelId,enabled:true}]),true);
  assert.equal(queuedModelReady({...item,modelId:undefined},[{id:'openai/gpt-6-luna',enabled:true}]),false);
 });
+
+test('hosted queued text dispatches only when the exact hosted model remains enabled', () => {
+ const item={id:'hosted',threadId:'t',text:'follow-up',modelId:'openai/gpt-oss-20b'};
+ assert.equal(enqueuePrompt([],item)[0].modelId,item.modelId);
+ assert.equal(queuedModelReady(item,[]),false);
+ assert.equal(queuedModelReady(item,[{id:item.modelId,enabled:false}]),false);
+ assert.equal(queuedModelReady(item,[{id:'openai/gpt-6-luna',enabled:true}]),false);
+ assert.equal(queuedModelReady(item,[{id:item.modelId,enabled:true}]),true);
+});
