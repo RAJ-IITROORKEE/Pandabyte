@@ -2,14 +2,14 @@ import {registerHooks} from 'node:module';import {test} from 'node:test';import 
 registerHooks({resolve(specifier,context,next){
  const code={
  'server-only':'export {}',
- '@clerk/nextjs/server':'export const auth=async()=>globalThis.admissionFixture.session;export const clerkClient=async()=>({sessions:{getSession:async()=>globalThis.admissionFixture.live()}})',
+ '@clerk/nextjs/server':'export const auth=async()=>globalThis.admissionFixture.session;export const clerkClient=async()=>({sessions:{getSession:async(id)=>globalThis.admissionFixture.live(id)}})',
  '@insforge/sdk':'export const createClient=()=>({database:{rpc:async(name)=>{globalThis.admissionFixture.calls.push(name);return {data:globalThis.admissionFixture.data,error:null}}}})',
  './lightweight-fetch':'export const boundedAgentFetch=()=>async()=>{throw Error("unexpected network")}',
  './snapshot-transport':'export const createSnapshotTransport=(_base,fallback)=>fallback'
  }[specifier];
  return code?{url:'data:text/javascript,'+encodeURIComponent(code),shortCircuit:true}:next(specifier,context);
 }});
-const {authenticateLightweight}=await import('../src/server/lightweight-connection.ts');
+const {authenticateLightweight,currentLightweightSession}=await import('../src/server/lightweight-connection.ts');
 const original={url:process.env.PANDA_AGENT_INSFORGE_BASE_URL,template:process.env.PANDA_AGENT_CLERK_JWT_TEMPLATE};
 process.env.PANDA_AGENT_INSFORGE_BASE_URL='https://fixture.us-east.insforge.app';process.env.PANDA_AGENT_CLERK_JWT_TEMPLATE='fixture';
 function fixture(data={subject:'owner',admin:true}){
@@ -49,4 +49,52 @@ test('document-only connection uses verified active request claims and defers Ad
  assert.equal(actor.subject,'owner');assert.equal(await actor.sessionCurrent,true);assert.equal(backendCalls,0);assert.deepEqual(f.calls,[]);
  f.session.isAuthenticated=false;assert.equal(await openLightweightConnection({sessionVerification:'request'}),null);
  f.session.isAuthenticated=true;f.session.sessionStatus='pending';assert.equal(await openLightweightConnection({sessionVerification:'request'}),null);
+});
+
+test('overlapping live checks share one backend read and settled results never mask revocation',async()=>{
+ const f=fixture();let release,reads=0;
+ f.live=()=>{reads++;return new Promise(resolve=>{release=resolve;});};
+ const first=currentLightweightSession('owner','session'),second=currentLightweightSession('owner','session');
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(reads,1);
+ release({status:'active',userId:'owner'});assert.deepEqual(await Promise.all([first,second]),[true,true]);
+ f.live=async()=>{reads++;return {status:'revoked',userId:'owner'};};
+ assert.equal(await currentLightweightSession('owner','session'),false);assert.equal(reads,2);
+ f.live=async()=>{reads++;return {status:'active',userId:'owner'};};
+ assert.equal(await currentLightweightSession('owner','session'),true);assert.equal(reads,3);
+});
+
+test('different actors and sessions cannot share a live authorization result',async()=>{
+ const f=fixture(),releases=[];let reads=0;
+ f.live=id=>{reads++;return new Promise(resolve=>{releases.push(()=>resolve({status:'active',userId:id==='other-session'?'other':'owner'}));});};
+ const pending=[currentLightweightSession('owner','session'),currentLightweightSession('other','session'),currentLightweightSession('other','other-session')];
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(reads,3);releases.forEach(release=>release());
+ assert.deepEqual(await Promise.all(pending),[true,false,true]);
+});
+
+test('failed and timed out checks are evicted and a late old response cannot evict a new check',async t=>{
+ const f=fixture();let reads=0;
+ f.live=async()=>{reads++;throw Error('private provider error');};
+ assert.equal(await currentLightweightSession('owner','session'),false);
+ assert.equal(await currentLightweightSession('owner','session'),false);assert.equal(reads,2);
+ t.mock.timers.enable({apis:['setTimeout']});
+ const releases=[];f.live=()=>{reads++;return new Promise(resolve=>{releases.push(resolve);});};
+ const expired=currentLightweightSession('owner','session');await Promise.resolve();t.mock.timers.tick(3000);
+ assert.equal(await expired,false);assert.equal(reads,3);
+ const fresh=currentLightweightSession('owner','session');await Promise.resolve();assert.equal(reads,4);
+ releases[0]({status:'active',userId:'owner'});await Promise.resolve();
+ const shared=currentLightweightSession('owner','session');assert.equal(shared,fresh);assert.equal(reads,4);
+ releases[1]({status:'revoked',userId:'owner'});assert.deepEqual(await Promise.all([fresh,shared]),[false,false]);
+});
+
+test('in-flight keys and map capacity are bounded without changing unshared checks',async()=>{
+ const f=fixture(),releases=[];let reads=0;
+ f.live=()=>{reads++;return new Promise(resolve=>{releases.push(()=>resolve({status:'active',userId:'owner'}));});};
+ const pending=Array.from({length:256},(_,index)=>currentLightweightSession('owner',`session-${index}`));
+ const shared=currentLightweightSession('owner','session-0');assert.equal(shared,pending[0]);
+ pending.push(currentLightweightSession('owner','overflow'),currentLightweightSession('owner','overflow'));
+ pending.push(currentLightweightSession('owner','x'.repeat(257)),currentLightweightSession('owner','x'.repeat(257)));
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(reads,260);
+ releases.forEach(release=>release());assert.ok((await Promise.all(pending)).every(Boolean));
+ f.live=async()=>{reads++;return {status:'revoked',userId:'owner'};};
+ assert.equal(await currentLightweightSession('owner','session-0'),false);assert.equal(reads,261);
 });

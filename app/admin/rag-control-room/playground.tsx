@@ -57,6 +57,14 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
   const canEvaluate = guardReady && !unknownOutcome && modelAvailable;
   const modelName = capability?.model === "openai/gpt-6-luna" ? "GPT-6 Luna" : capability?.model === "xingchen-agi/xing4.0-29b-a4b:free" ? "Xing 4.0" : "GPT-4o-mini";
 
+  function startNewTest() {
+    if (busy) return;
+    try { sessionStorage.removeItem(outcomeKey); }
+    catch { setError("Session storage is unavailable. Model testing stays paused to prevent an uncertain retry."); return; }
+    request.current?.abort(); request.current = null; evaluationId.current = null;
+    setUnknownOutcome(false); setEvaluate(false); setError(""); setCapabilityAttempt(value => value + 1);
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const query = question.trim();
@@ -120,7 +128,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
             <span>Also generate a grounded answer{capability ? ` with ${modelName}` : ""}</span>
           </label>
           <p id="evaluation-help" role="status">{unknownOutcome
-            ? "A previous evaluation may have an unknown outcome, or session storage is unavailable. Check the server-side status before evaluating again. Retrieval remains available."
+            ? "The previous model test is unconfirmed and may have incurred usage. It will not be retried. Retrieval remains available; you can explicitly start a separate new test."
             : capabilityError ? "Model status could not be checked. Retrieval remains available."
             : !capability ? "Checking model availability. You can inspect retrieval now."
             : !modelAvailable ? capability.model === "openai/gpt-6-luna" ? "Model generation is unavailable. Refresh connection to check again. Document retrieval remains available." : "No model connection is configured for this build. Document retrieval remains available."
@@ -131,6 +139,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
             : capability.profile === "mini-two-case-v1" ? "Only the approved questions below can be evaluated within the profile allowance."
             : "Evaluation is optional and subject to the configured profile allowance."}</p>
         </div>
+        {unknownOutcome && <button type="button" disabled={busy} onClick={startNewTest}>Start a separate new model test</button>}
         <div className={styles.presets}><button type="button" disabled={busy} onClick={() => { capabilityRequest.current?.abort(); setEvaluate(false); setCapability(null); setCapabilityError(false); setCapabilityAttempt(value => value + 1); }}>Refresh connection</button></div>
         {capability?.profile === "mini-two-case-v1" && capability.approvedQuestions.length > 0 && <div className={styles.presets}><p>Approved evaluation questions. For other queries, uncheck evaluation to inspect retrieval.</p>{capability.approvedQuestions.map(preset => <button key={preset} type="button" disabled={busy} onClick={() => { if (!unknownOutcome) evaluationId.current = null; setQuestion(preset); setResult(null); setError(""); }}>{preset}</button>)}</div>}
         <button type="submit" disabled={busy || !question.trim() || (evaluate && !canEvaluate)}>{busy ? evaluate ? "Retrieving and generating…" : "Retrieving documents…" : evaluate ? "Retrieve and generate answer" : "Retrieve documents"}</button>

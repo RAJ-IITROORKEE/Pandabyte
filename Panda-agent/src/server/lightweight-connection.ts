@@ -43,7 +43,23 @@ export async function authenticateLightweight(options?: { admin?: boolean }) {
   return { subject, sessionId, client };
 }
 
-export async function currentLightweightSession(subject: string, sessionId: string) {
+const inFlightSessions = new Map<string, Promise<boolean>>();
+
+export function currentLightweightSession(subject: string, sessionId: string): Promise<boolean> {
+  // Share only overlapping reads; every later boundary must observe revocation afresh.
+  const key = typeof subject === 'string' && typeof sessionId === 'string' && subject.length <= 256 && sessionId.length <= 256
+    ? JSON.stringify([subject, sessionId]) : null;
+  const existing = key === null ? undefined : inFlightSessions.get(key);
+  if (existing) return existing;
+  if (key === null || inFlightSessions.size >= 256) return readCurrentLightweightSession(subject, sessionId);
+  const pending = readCurrentLightweightSession(subject, sessionId).finally(() => {
+    if (inFlightSessions.get(key) === pending) inFlightSessions.delete(key);
+  });
+  inFlightSessions.set(key, pending);
+  return pending;
+}
+
+async function readCurrentLightweightSession(subject: string, sessionId: string) {
   let timer:ReturnType<typeof setTimeout>|undefined;
   try {
     const current = await Promise.race([(async()=> (await clerkClient()).sessions.getSession(sessionId))(),new Promise<null>(resolve=>{timer=setTimeout(()=>resolve(null),3000);})]);

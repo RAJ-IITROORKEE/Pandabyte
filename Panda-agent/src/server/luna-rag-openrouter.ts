@@ -15,8 +15,9 @@ export const lunaChatSystemPrompt = 'You are Panda Agent, a helpful and concise 
 type Input = { question: string; passages: Array<{ rank: number; text: string }> };
 type ChatInput = { question: string };
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
-const diagnostic = (stage: 'receipt-rejected' | 'json-rejected' | 'evidence-rejected' | 'answer-markers-rejected' | 'provider-http-ok' | 'response-validated') => {
-  if(process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS==='true')console.info('[grounded-rag]',stage);
+const diagnostic = (stage: 'receipt-rejected' | 'response-truncated' | 'json-rejected' | 'evidence-rejected' | 'answer-markers-rejected' | 'provider-http-ok' | 'response-validated' | 'metadata-validated' | 'dispatch-ready' | 'provider-round-trip' | 'failed-not-admitted' | 'failed-outcome-unknown', elapsedMs?:number) => {
+  if(process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS==='true')console.info('[grounded-rag]',stage,
+    ...(typeof elapsedMs==='number'&&Number.isSafeInteger(elapsedMs)&&elapsedMs>=0&&elapsedMs<=120000?[elapsedMs]:[]));
 };
 
 async function readJSON(response: Response, limit: number): Promise<unknown> {
@@ -86,7 +87,7 @@ function validateLunaEnvelope(value: unknown, receiptPolicy?: 'hosted') {
     || !(hosted?boundedPromptDetails(usage.prompt_tokens_details,usage.prompt_tokens):zeroDetails(usage.prompt_tokens_details, ['cached_tokens', 'cache_write_tokens', 'audio_tokens', 'video_tokens']))
     || !Number.isSafeInteger(usage.prompt_tokens) || (usage.prompt_tokens as number) < 0 || (usage.prompt_tokens as number) > lunaRagMaxInputTokens
     || !Number.isSafeInteger(usage.completion_tokens) || (usage.completion_tokens as number) < 0 || (usage.completion_tokens as number) > lunaRagMaxOutputTokens)
-    { diagnostic('receipt-rejected'); throw new BasicRagProviderError('outcome_unknown'); }
+    { diagnostic(object(first)&&first.finish_reason==='length'?'response-truncated':'receipt-rejected'); throw new BasicRagProviderError('outcome_unknown'); }
   return { content: message.content, usage: { inputTokens: usage.prompt_tokens as number, outputTokens: usage.completion_tokens as number, costNanoUsd: cost } };
 }
 
@@ -184,12 +185,14 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
       };
       const [catalog, policy] = await Promise.all([get('/models/' + lunaRagModel + '/endpoints'), get('/endpoints/zdr')]);
       if (!approvedEndpoint(catalog, policy, options.receiptPolicy)) throw new BasicRagProviderError('not_admitted');
+      diagnostic('metadata-validated',Math.round(performance.now()-started));
       // Complete slow policy/claim work before the one final network-backed source and actor check.
       if (deadline.aborted || (options.preClaimCurrent ? options.preClaimCurrent() !== true : !await options.policyCurrent()) || !await options.claim() || deadline.aborted
         || !await options.policyCurrent() || deadline.aborted || !await beforeSend() || deadline.aborted
         || (options.dispatchCurrent !== undefined && !options.dispatchCurrent()) || deadline.aborted) throw new BasicRagProviderError('not_admitted');
       sent = true;
       const providerStarted = performance.now();
+      diagnostic('dispatch-ready',Math.round(providerStarted-started));
       const response = await fetcher(api + '/chat/completions', {
         method: 'POST', redirect: 'error', credentials: 'omit', cache: 'no-store', signal: deadline,
         headers: { Authorization: 'Bearer ' + options.apiKey, 'Content-Type': 'application/json', 'X-OpenRouter-Cache': 'false' },
@@ -204,6 +207,7 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
       diagnostic('provider-http-ok');
       const value = await readJSON(response, 64000);
       const providerFinished = performance.now();
+      diagnostic('provider-round-trip',Math.round(providerFinished-providerStarted));
       if (object(value) && Object.hasOwn(value, 'error')) {
         if (Object.keys(value).length === 1 && object(value.error) && value.error.code === 429) throw new BasicRagProviderError('rate_limited', response.status);
         throw new BasicRagProviderError('outcome_unknown', response.status);
@@ -215,6 +219,7 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
       const validTiming = [admissionMs, providerRoundTripMs].every(n => Number.isSafeInteger(n) && n >= 0 && n <= 120000);
       return { ...result, ...(validTiming ? { timing: { admissionMs, providerRoundTripMs } } : {}) };
     } catch (error) {
+      diagnostic(error instanceof BasicRagProviderError&&error.code==='not_admitted'?'failed-not-admitted':'failed-outcome-unknown',Math.round(performance.now()-started));
       if (error instanceof BasicRagProviderError) throw error;
       throw new BasicRagProviderError(sent ? 'outcome_unknown' : 'unavailable');
     }

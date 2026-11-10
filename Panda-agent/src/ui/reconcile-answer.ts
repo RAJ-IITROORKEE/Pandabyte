@@ -6,11 +6,46 @@ type FreshReadOptions = {
   fetcher?: typeof fetch;
 };
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-const chatRead = new RegExp(`^/api/panda-agent/chats/${uuid}\\?requestId=${uuid}$`);
+const chatRead = new RegExp(`^/api/panda-agent/chats/${uuid}(?:\\?requestId=${uuid})?$`);
+const sessionReadAllowed = (path: string) => path === '/api/panda-agent/capabilities' || chatRead.test(path);
+
+/** Bound fetch and body parsing together, even when an operation ignores abort. */
+export async function boundedOperation<T>(operation: (signal: AbortSignal) => Promise<T>, cleanupSignal: AbortSignal, timeoutMs = 8000): Promise<T> {
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), timeoutMs);
+  const signal = AbortSignal.any([cleanupSignal, deadline.signal]);
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(new Error('Operation timed out or superseded'));
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+  try {
+    if (signal.aborted) throw new Error('Operation superseded');
+    return await Promise.race([operation(signal), aborted]);
+  } finally {
+    clearTimeout(timer);
+    if (onAbort) signal.removeEventListener('abort', onAbort);
+    deadline.abort();
+  }
+}
+
+/** An ordinary GET may refresh its JWT once on 401; mutations never enter here. */
+export async function readSessionJson(path: string, options: FreshReadOptions): Promise<unknown> {
+  if (!sessionReadAllowed(path)) throw new Error('Unsupported read');
+  return boundedOperation(async signal => {
+    if (!options.isCurrent()) throw new Error('Read superseded');
+    const response = await (options.fetcher ?? fetch)(path, { method: 'GET', cache: 'no-store', redirect: 'error', signal });
+    if (response.status === 401) return readWithFreshSession(path, { ...options, signal });
+    if (!response.ok || response.redirected) throw new Error('Read unavailable');
+    const data = await options.readJson(response);
+    if (!options.isCurrent()) throw new Error('Read superseded');
+    return data;
+  }, options.signal);
+}
 
 /** One bounded authenticated read; this never retries a message or changes a session. */
 export async function readWithFreshSession(path: string, options: FreshReadOptions): Promise<unknown | null> {
-  if (path !== '/api/panda-agent/capabilities' && !chatRead.test(path)) return null;
+  if (!sessionReadAllowed(path)) return null;
   const deadline = new AbortController();
   const timer = setTimeout(() => deadline.abort(), 5000);
   const signal = AbortSignal.any([options.signal, deadline.signal]);

@@ -100,11 +100,15 @@ export async function prepareMainRagContext(options:{subject:string;question:str
  const prepared=await prepareProductContextSet({actor:{subject},question,client:snapshotClient,signal,
   createAdapters:()=>createInsforgeAdapters(snapshotClient,async()=>({selections:[]})),authorizeCurrent:async()=>!signal.aborted},'at_workflow_release');
  if(prepared.kind!=='ready')return prepared;
+ const authorized=async()=>{
+  const [active,admin]=await Promise.all([authorizeCurrent(),adminCurrent()]);
+  return active&&admin;
+ };
  return Object.freeze({...prepared,authorizedBy:authorizeCurrent,revalidate:async()=>{
-  if(signal.aborted||!await authorizeCurrent()||!await adminCurrent()||(historyCurrent&&!await historyCurrent()))return false;
+  if(signal.aborted||!await authorized()||(historyCurrent&&!await historyCurrent()))return false;
   const fresh=await prepareProductContextSet({actor:{subject},question,client:liveClient,signal,authorizeCurrent,
    createAdapters:()=>createInsforgeAdapters(liveClient,async()=>({selections:[]}))},'at_workflow_release');
-  return !signal.aborted&&fresh.kind==='ready'&&fresh.digest===prepared.digest&&await authorizeCurrent()&&await adminCurrent()
+  return !signal.aborted&&fresh.kind==='ready'&&fresh.digest===prepared.digest&&await authorized()
    &&(!historyCurrent||await historyCurrent());
  }});
 }

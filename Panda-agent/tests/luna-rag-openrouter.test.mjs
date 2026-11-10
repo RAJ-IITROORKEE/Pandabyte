@@ -59,6 +59,21 @@ test('model-supplied citation markers or URLs are withheld without another provi
  }
 });
 
+test('failure diagnostics identify truncated responses using fixed tags and bounded timing only',async()=>{
+ const before=process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS,original=console.info,logs=[];
+ process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS='true';console.info=(...values)=>logs.push(values);
+ try{
+  const value=receipt();value.choices[0].finish_reason='length';value.choices[0].message.content='PRIVATE_MODEL_RESPONSE';
+  const f=fixture({response:()=>Response.json(value)});
+  await assert.rejects(run(f),e=>e.code==='outcome_unknown');
+  assert.ok(logs.some(row=>row[1]==='response-truncated'));
+  assert.ok(logs.some(row=>row[1]==='provider-round-trip'));
+  assert.doesNotMatch(JSON.stringify(logs),/PRIVATE|synthetic-never-live|TEST8266|Bearer/);
+  assert.ok(logs.every(row=>row[0]==='[grounded-rag]'&&typeof row[1]==='string'&&(row.length===2||row.length===3&&Number.isSafeInteger(row[2])&&row[2]>=0&&row[2]<=120000)));
+  assert.equal(posts(f).length,1);
+ }finally{console.info=original;if(before===undefined)delete process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS;else process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS=before;}
+});
+
 test('reports bounded admission and provider round-trip timing on a validated response', async () => {
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const f = fixture({ policy: async () => { await sleep(8); return true; }, response: async () => { await sleep(15); return Response.json(receipt()); } });

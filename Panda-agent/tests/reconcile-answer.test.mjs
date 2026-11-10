@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readWithFreshSession, reconcileSavedAnswer } from '../src/ui/reconcile-answer.ts';
+import { boundedOperation, readSessionJson, readWithFreshSession, reconcileSavedAnswer } from '../src/ui/reconcile-answer.ts';
+import { readFile } from 'node:fs/promises';
 
 const threadId = '11111111-1111-4111-8111-111111111111';
 const requestId = '22222222-2222-4222-8222-222222222222';
@@ -150,7 +151,7 @@ test('redirects, non-JSON and rejected bounded parsing stay uncertain', async ()
 });
 
 test('fresh session reads are restricted to the fixed local read endpoints', async () => {
-  for (const url of ['https://evil.example/api/panda-agent/capabilities', '//evil.example', '/api/panda-agent/chats', `${path}&redirect=https://evil.example`, '/api/panda-agent/chats/not-a-uuid?requestId=bad']) {
+  for (const url of ['https://evil.example/api/panda-agent/capabilities', '//evil.example', '/api/panda-agent/chats', `${path}&redirect=https://evil.example`, '/api/panda-agent/chats/not-a-uuid?requestId=bad', `/api/panda-agent/chats/${threadId}?archived=true`, `/api/panda-agent/chats/${threadId}/cancel`, `/api/panda-agent/chats/${threadId}/messages`, `/api/panda-agent/chats/${threadId}?requestId=${requestId}&requestId=${requestId}`]) {
     const f = fixture();
     assert.equal(await readWithFreshSession(url, f.options), null);
     assert.equal(f.tokens.length, 0);
@@ -158,6 +159,77 @@ test('fresh session reads are restricted to the fixed local read endpoints', asy
   const f = fixture();
   assert.deepEqual(await readWithFreshSession('/api/panda-agent/capabilities', f.options), saved());
   assert.equal(f.reads.length, 1);
+  const bare = fixture();
+  assert.deepEqual(await readWithFreshSession(`/api/panda-agent/chats/${threadId}`, bare.options), saved());
+  assert.equal(bare.reads[0].init.method, 'GET');
+});
+
+test('manual bare-detail or exact-request status read refreshes once on cookie 401 and never posts', async () => {
+  for (const url of [`/api/panda-agent/chats/${threadId}`, path]) {
+    const reads = [];
+    const f = fixture({ fetcher: async (url, init) => {
+      reads.push({ url, init });
+      return reads.length === 1 ? new Response(null, { status: 401 }) : Response.json(saved());
+    } });
+    assert.deepEqual(await readSessionJson(url, f.options), saved());
+    assert.equal(reads.length, 2);
+    assert.equal(f.tokens.length, 1);
+    assert.ok(reads.every(read => read.url === url && read.init.method === 'GET' && read.init.body === undefined));
+    assert.equal(reads[1].init.credentials, 'omit');
+  }
+  let count = 0;
+  const denied = fixture({ fetcher: async () => { count++; return new Response(null, { status: 401 }); } });
+  assert.equal(await readSessionJson(path, denied.options), null);
+  assert.equal(count, 2);
+  assert.equal(denied.tokens.length, 1);
+});
+
+test('explicit capability retry is a bounded read and a transient 503 does not require a mutation', async () => {
+  const reads = [];
+  const f = fixture({ fetcher: async (url, init) => {
+    reads.push({ url, init });
+    return reads.length === 1 ? new Response(null, { status: 503 }) : Response.json({ status: 'ready' });
+  } });
+  await assert.rejects(readSessionJson('/api/panda-agent/capabilities', f.options));
+  assert.deepEqual(await readSessionJson('/api/panda-agent/capabilities', f.options), { status: 'ready' });
+  assert.equal(reads.length, 2);
+  assert.ok(reads.every(read => read.init.method === 'GET' && read.init.body === undefined));
+  assert.equal(f.tokens.length, 0);
+  const workspace = await readFile(new URL('../src/ui/workspace.tsx', import.meta.url), 'utf8');
+  assert.match(workspace, /\[busy, getToken, capabilityAttempt\]/);
+  assert.match(workspace, /setCapabilityAttempt\(previous => previous \+ 1\);[^<]+}>Refresh model connection/);
+});
+
+test('eight-second operation deadline releases finally locks while preserving the cleanup signal', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const cleanup = new AbortController();
+  let signal, released = false;
+  const result = boundedOperation(value => { signal = value; return new Promise(() => {}); }, cleanup.signal)
+    .finally(() => { released = true; });
+  const rejected = assert.rejects(result, /timed out/);
+  t.mock.timers.tick(7999);
+  await Promise.resolve();
+  assert.equal(released, false);
+  t.mock.timers.tick(1);
+  await rejected;
+  assert.equal(signal.aborted, true);
+  assert.equal(cleanup.signal.aborted, false);
+  assert.equal(released, true);
+});
+
+test('operation deadline covers a hanging body and rejects late data', async () => {
+  let releaseBody, requestSignal;
+  const cleanup = new AbortController();
+  const result = boundedOperation(async signal => {
+    requestSignal = signal;
+    const response = Response.json({ thread: 'late' });
+    await new Promise(resolve => { releaseBody = resolve; });
+    return response.json();
+  }, cleanup.signal, 20);
+  await assert.rejects(result, /timed out/);
+  releaseBody();
+  assert.equal(requestSignal.aborted, true);
+  assert.equal(cleanup.signal.aborted, false);
 });
 
 test('the entire read including a hanging token refresh is bounded to five seconds', { timeout: 7000 }, async () => {

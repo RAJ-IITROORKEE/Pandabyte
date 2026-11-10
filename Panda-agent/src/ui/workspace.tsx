@@ -12,6 +12,7 @@ import { Archive, ArchiveRestore, ArrowUp, Brain, Check, ChevronDown, Copy, Exte
 import { ThemeToggle } from "@/components/theme-toggle";
 import styles from "./workspace.module.css";
 import { enqueuePrompt, nextQueuedPrompt, queuedModelReady, type QueuedPrompt } from "./prompt-queue";
+import { composerGates, recoveredDraft } from "./composer-gates";
 import { parseCapabilities, activeModelLabel, type Capabilities, type NativeModelId } from "./capabilities";
 import { isNativeModelId } from "../opencode/native-model-profiles";
 import { readChatStream, type ContextSummary, type Stage } from "./chat-stream";
@@ -23,7 +24,7 @@ import { Shimmer } from "./ai-elements/shimmer";
 import { createReadAloud } from "./read-aloud";
 import { clearActiveChat, readActiveChat, writeActiveChat } from "./active-chat";
 import { completedAttempt, createAttemptGuard } from "./cancel-attempt";
-import { readWithFreshSession, reconcileSavedAnswer } from "./reconcile-answer";
+import { boundedOperation, readSessionJson, reconcileSavedAnswer } from "./reconcile-answer";
 import type { ProjectMemory } from "./guide-form";
 import { ProjectMemoryPanel } from "./project-memory-panel";
 import { guideDisabled, diagnosticDisabled, messagePayload, messageQuestion, type MessageInput } from "./guide-input";
@@ -55,7 +56,7 @@ function tabStorage(): Storage | null { try { return window.sessionStorage; } ca
 
 export function PandaAgentWorkspace({ plainLlm = false, nativeAssistant = false, directAssistant = false, nativeTools = false, previewReadOnly = false, guidesEnabled = false, diagnosticsEnabled = false, agenticEnabled = false, canManageSkills = false }: { plainLlm?: boolean; nativeAssistant?: boolean; directAssistant?: boolean; nativeTools?: boolean; previewReadOnly?: boolean; guidesEnabled?: boolean; diagnosticsEnabled?: boolean; agenticEnabled?: boolean; canManageSkills?: boolean }) {
   const { user, isLoaded } = useUser();
-  if (!isLoaded || !user) return <p className={styles.loading}>Loading account…</p>;
+  if (!isLoaded || !user) return <p className={styles.loading}>Loading accountÃ¢â‚¬Â¦</p>;
   return <Workspace key={user.id} user={user} plainLlm={plainLlm} nativeAssistant={nativeAssistant} directAssistant={directAssistant} nativeTools={nativeTools} previewReadOnly={previewReadOnly} guidesEnabled={guidesEnabled} diagnosticsEnabled={diagnosticsEnabled} agenticEnabled={agenticEnabled} canManageSkills={canManageSkills} />;
 }
 
@@ -84,6 +85,8 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
   const [activity, setActivity] = useState<Stage[]>([]);
   const [restoreDraft, setRestoreDraft] = useState<{ text: string; id: number } | null>(null);
   const requestController = useRef<AbortController | null>(null);
+  const detailController = useRef<AbortController | null>(null);
+  const cancelController = useRef<AbortController | null>(null);
   const attempts = useRef(createAttemptGuard());
   const currentAttempt = useRef<ReturnType<ReturnType<typeof createAttemptGuard>["begin"]> | null>(null);
   const cancelBusy = useRef(false);
@@ -107,19 +110,18 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
   const [queuePaused, setQueuePaused] = useState(false);
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [capabilityLoading, setCapabilityLoading] = useState(true);
+  const [capabilityAttempt, setCapabilityAttempt] = useState(0);
   const [selectedModel, setSelectedModel] = useState<NativeModelId>('openai/gpt-6-luna');
   const [activeModel, setActiveModel] = useState<NativeModelId | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/panda-agent/capabilities", { cache: "no-store", signal: controller.signal })
-      .then(async response => response.status === 401
-        ? parseCapabilities(await readWithFreshSession("/api/panda-agent/capabilities", { getToken, readJson, signal: controller.signal, isCurrent: () => active.current }))
-        : response.ok ? parseCapabilities(await readJson(response)) : null)
+    readSessionJson("/api/panda-agent/capabilities", { getToken, readJson, signal: controller.signal, isCurrent: () => active.current && !controller.signal.aborted })
+      .then(parseCapabilities)
       .then(result => { if (!controller.signal.aborted) setCapabilities(result); })
       .catch(() => { if (!controller.signal.aborted) setCapabilities(null); })
       .finally(() => { if (!controller.signal.aborted) setCapabilityLoading(false); });
     return () => controller.abort();
-  }, [busy, getToken]);
+  }, [busy, getToken, capabilityAttempt]);
 
   const nativeToolsReady = nativeAssistant && nativeTools && capabilities?.mode === "native_assistant" && capabilities.status === "ready" && capabilities.tools.length === 3 && capabilities.skills.length === 4;
   const [webSearch, setWebSearch] = useState(false);
@@ -139,15 +141,17 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
   useEffect(() => {
     active.current = true;
     const generationRef = generation;
-    return () => { active.current = false; generationRef.current++; requestController.current?.abort(); };
+    return () => { active.current = false; generationRef.current++; requestController.current?.abort(); detailController.current?.abort(); cancelController.current?.abort(); };
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     let loadingChat = false;
-    fetch(`/api/panda-agent/chats${archived ? "?archived=true" : ""}`, { cache: "no-store", signal: controller.signal }).then(async response => {
+    boundedOperation(async signal => {
+      const response = await fetch(`/api/panda-agent/chats${archived ? "?archived=true" : ""}`, { cache: "no-store", signal });
       if (!response.ok) throw new Error();
-      const data = await readJson(response) as { threads: Chat[] };
+      return await readJson(response) as { threads: Chat[] };
+    }, controller.signal).then(async data => {
       if (!active.current || controller.signal.aborted) return;
       setThreads(data.threads);
       if (!archived && !resumeAttempted.current) {
@@ -167,21 +171,21 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
     speech?.stop();
     dictation.cancel();
     const ticket = ++generation.current;
+    const controller = new AbortController(); detailController.current = controller;
     setLoading(true); setError("");
     try {
-      const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(id)}${queried ? `?requestId=${encodeURIComponent(queried.requestId)}` : ""}`, { cache: "no-store" });
-      if (!response.ok) throw new Error();
-      const data = await readJson(response) as Detail & { attemptStatus?: unknown };
+      const path = `/api/panda-agent/chats/${encodeURIComponent(id)}${queried ? `?requestId=${encodeURIComponent(queried.requestId)}` : ""}`;
+      const data = await readSessionJson(path, { getToken, readJson, signal: controller.signal, isCurrent: () => active.current && ticket === generation.current }) as Detail & { attemptStatus?: unknown };
       if (data?.thread?.id !== id || !Array.isArray(data.messages)) throw new Error("Invalid chat");
       if (queried && (typeof data.attemptStatus !== "string" || !["complete", "pending", "absent"].includes(data.attemptStatus))) throw new Error("Invalid attempt status");
       if (!active.current || ticket !== generation.current) return;
       if (queried && completedAttempt(currentAttempt.current, queried, data.attemptStatus)) currentAttempt.current = null;
       writeActiveChat(tabStorage(), user.id, data.thread.id);
       setProjectMemory(data.projectMemory ?? null);
-      setComposerEpoch(previous => previous + 1); setSelected(data.thread); setSelectedArchived(archived); setMessages(data.messages); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(Boolean(currentAttempt.current)); setWebSearch(false);
+      if (selected?.id !== id) setComposerEpoch(previous => previous + 1); setSelected(data.thread); setSelectedArchived(archived); setMessages(data.messages); setActivity([]); setContext(null); setActivityComplete(false); setUncertain(Boolean(currentAttempt.current)); setWebSearch(false);
       setThreads(previous => previous.map(thread => thread.id === id ? data.thread : thread));
     } catch { if (active.current && ticket === generation.current) setError("Could not load this chat. Please try again."); }
-    finally { chatLoading.current = false; if (active.current && ticket === generation.current) setLoading(false); }
+    finally { if (detailController.current === controller) detailController.current = null; chatLoading.current = false; if (active.current && ticket === generation.current) setLoading(false); }
   }
 
   async function onNew(message: AppendMessage) {
@@ -269,28 +273,32 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
     const threadId = attempt?.threadId ?? selected?.id;
     if (!threadId) return;
     cancelBusy.current = true; setMutating(true);
+    const controller = new AbortController(); cancelController.current = controller;
+    const ticket = generation.current;
     let confirmed = false;
     if (attempt) { attempts.current.invalidate(); requestController.current?.abort(); if (!attemptIsGuide.current) setRestoreDraft({ text: attemptQuestion.current, id: Date.now() }); }
     try {
-      const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(threadId)}/cancel`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(attempt ? { requestId: attempt.requestId } : {}), cache: "no-store" });
-      if (!response.ok) throw new Error("Unconfirmed");
-      const data = await readJson(response) as Detail;
+      const data = await boundedOperation(async signal => {
+        const response = await fetch(`/api/panda-agent/chats/${encodeURIComponent(threadId)}/cancel`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(attempt ? { requestId: attempt.requestId } : {}), cache: "no-store", signal });
+        if (!response.ok) throw new Error("Unconfirmed");
+        return await readJson(response) as Detail;
+      }, controller.signal);
       if (data?.thread?.id !== threadId || !Array.isArray(data.messages)) throw new Error("Invalid response");
-      if (!active.current) return;
+      if (!active.current || ticket !== generation.current) return;
       confirmed = true;
       if ("projectMemory" in data) setProjectMemory(data.projectMemory ?? null);
       setSelected(data.thread); setMessages(data.messages); setThreads(previous => [data.thread, ...previous.filter(item => item.id !== threadId)]);
       setActivity([]); setContext(null); setActivityComplete(false); setError(""); setUncertain(data.thread.status !== "idle");
     } catch {
-      if (active.current) { setError("Cancellation could not be confirmed. Check status or cancel the pending request again."); setUncertain(true); }
+      if (active.current && ticket === generation.current) { setError("Cancellation could not be confirmed. Check status or cancel the pending request again."); setUncertain(true); }
     } finally {
+      if (cancelController.current === controller) cancelController.current = null;
       if (confirmed) currentAttempt.current = null;
       requestController.current = null; busyRef.current = false; cancelBusy.current = false;
       if (active.current) { if (modelAssistant && busy) setCapabilityLoading(true); setBusy(false); setActiveModel(null); setMutating(false); }
     }
   }
-  const baseDisabled = previewReadOnly || (modelAssistant && (capabilities?.mode !== expectedMode || capabilities.status !== "ready" || capabilityLoading || !capabilities.models.some(model => model.id === selectedModel && model.enabled))) || loading || mutating || selectedArchived || uncertain || selected?.status === "pending" || selected?.status === "blocked";
-  const composerDisabled=baseDisabled;
+  const { draftDisabled, sendDisabled, reason: sendDisabledReason } = composerGates({ previewReadOnly, selectedArchived, modelUnavailable: modelAssistant && (capabilities?.mode !== expectedMode || capabilities.status !== "ready" || !capabilities.models.some(model => model.id === selectedModel && model.enabled)), capabilityLoading: modelAssistant && capabilityLoading, loading, mutating, uncertain, status: selected?.status, running: busy });
   useEffect(() => {
     if (!modelAssistant || busy || uncertain || loading || mutating || selectedArchived || (selected && selected.status !== "idle") || queue.length || capabilityLoading || capabilities?.status !== "ready" || capabilities.models.some(model => model.id === selectedModel && model.enabled)) return;
     const fallback = capabilities.models.find(model => model.enabled && isNativeModelId(model.id));
@@ -306,12 +314,12 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
     void sendMessage({ question: item.text, webSearch: false }, item.modelId);
   });
   useEffect(() => {
-    if (busy || queuePaused || baseDisabled || !selected || selected.status !== "idle") return;
+    if (busy || queuePaused || sendDisabled || !selected || selected.status !== "idle") return;
     const item = nextQueuedPrompt(queue, selected.id);
     if (item) { let cancelled = false; queueMicrotask(() => { if (!cancelled) dispatchQueued(item); }); return () => { cancelled = true; }; }
-  }, [busy, queuePaused, baseDisabled, selected, queue]);
+  }, [busy, queuePaused, sendDisabled, selected, queue]);
 
-  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: busy ? false : composerDisabled, adapters: { dictation: dictation.adapter } });
+  const runtime = useExternalStoreRuntime({ messages, convertMessage, onNew, isRunning: busy, isDisabled: draftDisabled, isSendDisabled: sendDisabled, adapters: { dictation: dictation.adapter } });
 
   useEffect(() => {
     if (!sidebarOpen && restoreFocus.current) { restoreFocus.current = false; toggleRef.current?.focus(); }
@@ -376,14 +384,14 @@ function Workspace({ user, plainLlm, nativeAssistant, directAssistant, nativeToo
             <button type="button" aria-label={archived ? "Restore chat" : "Archive chat"} disabled={busy || loading || mutating || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, archived ? "restore" : "archive"); }}>{archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}{archived ? "Restore" : "Archive"}</button>
             <button type="button" aria-label="Delete chat" disabled={busy || loading || mutating || thread.status !== "idle"} title={thread.status !== "idle" ? "Unavailable while this chat needs review" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); void changeChat(thread, "delete"); }}><Trash2 size={16} />Delete</button>
           </div></details></div>)}{!loading && !historyError && !threads.length && <p>{archived ? "No archived chats." : "No saved chats yet."}</p>}{!loading && threads.length > 0 && !threads.some(thread => thread.title.toLowerCase().includes(query.toLowerCase())) && <p>No chats match your search.</p>}</nav></ScrollArea>
-      </div><div className={styles.account}><details className={styles.accountMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.accountTrigger} aria-label="Account menu"><span className={styles.avatar} aria-hidden="true"><UserAvatar rounded /></span><span className={styles.accountName}>{displayName}</span><MoreHorizontal size={18} /></summary><div className={styles.accountPanel}><div className={styles.identity}><span className={styles.identityText}><strong>{displayName}</strong><span>{user.primaryEmailAddress?.emailAddress ?? "Signed in"}</span></span></div><nav className={styles.accountLinks} aria-label="Account and workspace"><button type="button" aria-current={view === "memory" ? "page" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); setView("memory"); if (mobile) { restoreFocus.current = false; setSidebarOpen(false); } requestAnimationFrame(() => viewTitle.current?.focus()); }}><Brain size={16} aria-hidden="true" /> Memory &amp; context</button><Link href="/account"><UserRound size={16} /> Account</Link><Link href="/account/settings"><Settings size={16} /> Account settings</Link>{canManageSkills && <><Link href="/panda-agent/skills"><Settings size={16} /> Manage agent skills</Link><Link href="/panda-agent/documentation"><FileText size={16}/> Review vendor documentation</Link></>}</nav><div className={styles.themeMenu}><span>Appearance</span><ThemeToggle /></div>{signOutError && <p className={styles.error} role="alert">{signOutError}</p>}<button className={styles.logout} type="button" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut size={16} />{signingOut ? "Signing out…" : "Logout"}</button></div></details></div>
+      </div><div className={styles.account}><details className={styles.accountMenu} name="sidebar-menu" onKeyDown={closeMenuOnEscape}><summary className={styles.accountTrigger} aria-label="Account menu"><span className={styles.avatar} aria-hidden="true"><UserAvatar rounded /></span><span className={styles.accountName}>{displayName}</span><MoreHorizontal size={18} /></summary><div className={styles.accountPanel}><div className={styles.identity}><span className={styles.identityText}><strong>{displayName}</strong><span>{user.primaryEmailAddress?.emailAddress ?? "Signed in"}</span></span></div><nav className={styles.accountLinks} aria-label="Account and workspace"><button type="button" aria-current={view === "memory" ? "page" : undefined} onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); setView("memory"); if (mobile) { restoreFocus.current = false; setSidebarOpen(false); } requestAnimationFrame(() => viewTitle.current?.focus()); }}><Brain size={16} aria-hidden="true" /> Memory &amp; context</button><Link href="/account"><UserRound size={16} /> Account</Link><Link href="/account/settings"><Settings size={16} /> Account settings</Link>{canManageSkills && <><Link href="/panda-agent/skills"><Settings size={16} /> Manage agent skills</Link><Link href="/panda-agent/documentation"><FileText size={16}/> Review vendor documentation</Link></>}</nav><div className={styles.themeMenu}><span>Appearance</span><ThemeToggle /></div>{signOutError && <p className={styles.error} role="alert">{signOutError}</p>}<button className={styles.logout} type="button" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut size={16} />{signingOut ? "Signing outÃ¢â‚¬Â¦" : "Logout"}</button></div></details></div>
     </aside>
     {sidebarOpen && <div className={styles.resizer} role="separator" aria-label="Resize conversation sidebar" aria-controls="agent-sidebar" aria-orientation="vertical" aria-valuemin={MIN_WIDTH} aria-valuemax={MAX_WIDTH} aria-valuenow={width} tabIndex={0} onKeyDown={resizeWithKeyboard} onPointerDown={resizeWithPointer} onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) setWidth(clampWidth(event.clientX)); }} onPointerUp={event => event.currentTarget.releasePointerCapture(event.pointerId)} />}
-    <main id="main" tabIndex={-1} className={styles.main} inert={mobile && sidebarOpen}><header className={styles.header}><div className={styles.headerStart}><button ref={toggleRef} className={styles.menuButton} type="button" aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen} aria-controls="agent-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><div className={styles.model}><strong>Panda Agent</strong><span>{modelAssistant ? activeModelLabel(capabilities?.models ?? [], selectedModel, activeModel) : capabilities?.model ?? "Model unavailable"} · {busy ? "Running" : capabilityLoading ? "Checking" : capabilities?.status === "ready" && (!modelAssistant || capabilities.models.some(model => model.id === (activeModel ?? selectedModel) && model.enabled)) ? "Ready" : "Unavailable"}</span></div><span className={styles.badge}>Preview</span></div></header>
+    <main id="main" tabIndex={-1} className={styles.main} inert={mobile && sidebarOpen}><header className={styles.header}><div className={styles.headerStart}><button ref={toggleRef} className={styles.menuButton} type="button" aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen} aria-controls="agent-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={20} /></button><div className={styles.model}><strong>Panda Agent</strong><span>{modelAssistant ? activeModelLabel(capabilities?.models ?? [], selectedModel, activeModel) : capabilities?.model ?? "Model unavailable"} Ã‚Â· {busy ? "Running" : capabilityLoading ? "Checking" : capabilities?.status === "ready" && (!modelAssistant || capabilities.models.some(model => model.id === (activeModel ?? selectedModel) && model.enabled)) ? "Ready" : "Unavailable"}</span></div><span className={styles.badge}>Preview</span></div></header>
       <section className={styles.memoryView} hidden={view !== "memory"} aria-labelledby="memory-title"><h1 id="memory-title" ref={viewTitle} tabIndex={-1}>Memory &amp; context</h1><p>{nativeAssistant ? "Saved chat history and project memory are separate. Neither is supplied to native requests yet. Native working context is not shown here." : "Review the project context saved with the selected conversation."}</p>{!selected ? <p>Select a saved chat to review its project context.</p> : loading ? <p role="status">Loading chat context...</p> : <ProjectMemoryPanel key={selected.id} thread={selected.id} owner={user.id} memory={projectMemory} disabled={previewReadOnly || busy || mutating || selectedArchived || uncertain || selected.status !== "idle"} onMemory={setProjectMemory} />}<button type="button" onClick={() => { setView("chat"); requestAnimationFrame(() => { const input = document.querySelector<HTMLTextAreaElement>('[aria-label="Message Panda Agent"]'); if (input && !input.disabled) input.focus(); else document.getElementById("main")?.focus(); }); }}>Back to conversation</button></section><ThreadPrimitive.Root className={styles.thread} hidden={view !== "chat"}><ThreadPrimitive.Viewport className={styles.viewport}>
-        {!messages.length && !busy && <Welcome plainLlm={plainLlm || modelAssistant} nativeAssistant={modelAssistant} nativeToolsReady={Boolean(nativeToolsReady)} ragReady={Boolean(directAssistant && capabilities?.rag)} disabled={Boolean(composerDisabled)} />}
+        {!messages.length && !busy && <Welcome plainLlm={plainLlm || modelAssistant} nativeAssistant={modelAssistant} nativeToolsReady={Boolean(nativeToolsReady)} ragReady={Boolean(directAssistant && capabilities?.rag)} disabled={draftDisabled} />}
         <div className={styles.messageList}><ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage: () => <AssistantMessage messages={messages} speech={speech} speaking={speaking} nativeAssistant={modelAssistant} /> }} />{busy && toolActivity.length > 0 && <ToolProgress tools={toolActivity} />}{(busy || activity.length > 0) && <Activity stages={activity} context={context} busy={busy} complete={activityComplete} />}</div>
-      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{busy && <div className={styles.working} role="status"><Shimmer>Working…</Shimmer></div>}{queue.length > 0 && <section className={styles.queue} aria-label="Local prompt queue"><div className={styles.queueHeader}><strong>Queued for {threads.find(thread => thread.id === queue[0].threadId)?.title || "saved chat"} · {queue.length}/3</strong>{queuePaused && <span>Paused</span>}</div><ol>{queue.map((item, index) => <li key={item.id}><span>{item.text}{item.modelId && <small> · {capabilities?.models.find(model => model.id === item.modelId)?.label ?? item.modelId}</small>}</span><button type="button" aria-label={`Remove queued prompt ${index + 1}`} onClick={() => setQueue(previous => previous.filter(entry => entry.id !== item.id))}>Remove</button></li>)}</ol><p>Queued prompts are kept in this page only and are lost on reload.</p></section>}{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{selected && (uncertain || selected.status !== "idle") && <details className={styles.recovery}><summary>Request needs attention</summary><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result. The outcome is not yet confirmed."}</span><button ref={statusButton} type="button" disabled={busy || mutating} onClick={() => void loadChat(selected.id)}>Check status</button><button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button></details>}<ChatComposer key={composerEpoch} showModels={modelAssistant} models={modelAssistant ? capabilities?.models ?? [] : []} selectedModel={selectedModel} onModelChange={setSelectedModel} modelDisabled={busy || loading || mutating || uncertain || previewReadOnly || selectedArchived || (selected !== null && selected.status !== "idle") || capabilityLoading || capabilities?.status !== "ready"} restoreDraft={restoreDraft} webSearch={webSearch} disabled={composerDisabled} running={busy} canQueue={Boolean(selected && !mutating && !cancelBusy.current && !queuePaused && queue.length < 3 && (!queue.length || queue[0].threadId === selected.id))} onQueue={text => { if (!selected || mutating || cancelBusy.current || queuePaused || (queue.length > 0 && queue[0].threadId !== selected.id)) return false; const updated = enqueuePrompt(queue, { id: crypto.randomUUID(), threadId: selected.id, text, ...(modelAssistant ? { modelId: selectedModel } : {}) }); if (updated === queue) return false; setQueue(updated); return true; }} canResume={Boolean(queuePaused && !busy && !baseDisabled && selected && nextQueuedPrompt(queue, selected.id) && (!modelAssistant || queuedModelReady(queue[0], capabilities?.models ?? [])))} onResume={() => setQueuePaused(false)} cancelDisabled={loading || mutating} onCancel={() => void cancelRequest()} cancelDictation={dictation.cancel} /><p className={styles.disclaimer}>Responses may be limited. Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
+      </ThreadPrimitive.Viewport><div className={styles.composerArea}>{busy && <div className={styles.working} role="status"><Shimmer>WorkingÃ¢â‚¬Â¦</Shimmer></div>}{queue.length > 0 && <section className={styles.queue} aria-label="Local prompt queue"><div className={styles.queueHeader}><strong>Queued for {threads.find(thread => thread.id === queue[0].threadId)?.title || "saved chat"} Ã‚Â· {queue.length}/3</strong>{queuePaused && <span>Paused</span>}</div><ol>{queue.map((item, index) => <li key={item.id}><span>{item.text}{item.modelId && <small> Ã‚Â· {capabilities?.models.find(model => model.id === item.modelId)?.label ?? item.modelId}</small>}</span><button type="button" aria-label={`Remove queued prompt ${index + 1}`} onClick={() => setQueue(previous => previous.filter(entry => entry.id !== item.id))}>Remove</button></li>)}</ol><p>Queued prompts are kept in this page only and are lost on reload.</p></section>}{previewReadOnly && <p className={styles.status} role="status">Panda Agent is disabled. Existing chat records are preserved. New answers and web search are unavailable.</p>}{error && <p className={styles.error} role="alert">{error}</p>}{selectedArchived && <p className={styles.status} role="status">Restore this chat to continue the conversation.</p>}{!busy && !capabilityLoading && !previewReadOnly && (capabilities?.status !== "ready" || (modelAssistant && (capabilities.mode !== expectedMode || !capabilities.models.some(model => model.id === selectedModel && model.enabled)))) && <button type="button" disabled={loading || mutating} onClick={() => { setCapabilityLoading(true); setCapabilityAttempt(previous => previous + 1); }}>Refresh model connection</button>}{selected && (uncertain || selected.status !== "idle") && <details className={styles.recovery}><summary>Request needs attention</summary><span>{selected.status === "pending" ? "This chat has a pending request." : selected.status === "blocked" ? "This chat needs review before it can continue." : "Check this chat for the saved result. The outcome is not yet confirmed."}</span><button ref={statusButton} type="button" disabled={busy || mutating} onClick={() => void loadChat(selected.id)}>Check status</button><button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={() => void cancelRequest()}>Cancel pending request</button><button type="button" disabled={busy || loading || mutating || previewReadOnly} onClick={newChat}>New chat</button></details>}<ChatComposer key={composerEpoch} showModels={modelAssistant} models={modelAssistant ? capabilities?.models ?? [] : []} selectedModel={selectedModel} onModelChange={setSelectedModel} modelDisabled={busy || loading || mutating || uncertain || previewReadOnly || selectedArchived || (selected !== null && selected.status !== "idle") || capabilityLoading || capabilities?.status !== "ready"} restoreDraft={restoreDraft} webSearch={webSearch} disabled={draftDisabled} sendDisabled={sendDisabled} disabledReason={sendDisabledReason} running={busy} canQueue={Boolean(selected && !draftDisabled && !loading && !uncertain && !mutating && !cancelBusy.current && !queuePaused && queue.length < 3 && (!queue.length || queue[0].threadId === selected.id))} onQueue={text => { if (!selected || draftDisabled || loading || uncertain || mutating || cancelBusy.current || queuePaused || (queue.length > 0 && queue[0].threadId !== selected.id)) return false; const updated = enqueuePrompt(queue, { id: crypto.randomUUID(), threadId: selected.id, text, ...(modelAssistant ? { modelId: selectedModel } : {}) }); if (updated === queue) return false; setQueue(updated); return true; }} canResume={Boolean(queuePaused && !busy && !sendDisabled && selected && nextQueuedPrompt(queue, selected.id) && (!modelAssistant || queuedModelReady(queue[0], capabilities?.models ?? [])))} onResume={() => setQueuePaused(false)} cancelDisabled={loading || mutating} onCancel={() => void cancelRequest()} cancelDictation={dictation.cancel} /><p className={styles.disclaimer}>Responses may be limited. Verify hardware connections before applying power.</p></div></ThreadPrimitive.Root>
     </main></div></AssistantRuntimeProvider>;
 }
 
@@ -394,19 +402,19 @@ function closeMenuOnEscape(event: KeyboardEvent<HTMLDetailsElement>) {
   event.currentTarget.querySelector<HTMLElement>("summary")?.focus();
 }
 
-function ChatComposer({ showModels, models, selectedModel, onModelChange, modelDisabled, restoreDraft, webSearch, disabled, running, canQueue, onQueue, canResume, onResume, cancelDisabled, onCancel, cancelDictation }: { showModels: boolean; models: Capabilities["models"]; selectedModel: NativeModelId; onModelChange: (model: NativeModelId) => void; modelDisabled: boolean; restoreDraft: { text: string; id: number } | null; webSearch: boolean; disabled: boolean; running: boolean; canQueue: boolean; onQueue: (text: string) => boolean; canResume: boolean; onResume: () => void; cancelDisabled: boolean; onCancel: () => void; cancelDictation: () => void }) {
+function ChatComposer({ showModels, models, selectedModel, onModelChange, modelDisabled, restoreDraft, webSearch, disabled, sendDisabled, disabledReason, running, canQueue, onQueue, canResume, onResume, cancelDisabled, onCancel, cancelDictation }: { showModels: boolean; models: Capabilities["models"]; selectedModel: NativeModelId; onModelChange: (model: NativeModelId) => void; modelDisabled: boolean; restoreDraft: { text: string; id: number } | null; webSearch: boolean; disabled: boolean; sendDisabled: boolean; disabledReason: string | null; running: boolean; canQueue: boolean; onQueue: (text: string) => boolean; canResume: boolean; onResume: () => void; cancelDisabled: boolean; onCancel: () => void; cancelDictation: () => void }) {
   const text = useAuiState(state => state.composer.text);
   const listening = useAuiState(state => state.composer.dictation != null);
   const aui = useAui();
   const voiceSupported = useSyncExternalStore(subscribeVoiceSupport, WebSpeechDictationAdapter.isSupported, () => false);
-  useEffect(() => { if (restoreDraft) aui.thread.composer().setText(restoreDraft.text); }, [aui, restoreDraft]);
+  useEffect(() => { if (restoreDraft) aui.thread.composer().setText(recoveredDraft(aui.thread.composer().getState().text, restoreDraft.text)); }, [aui, restoreDraft]);
   useEffect(() => { if (disabled) cancelDictation(); }, [disabled, cancelDictation]);
   const tooLong = text.trim().length > 2000;
   const invalidSearch = webSearch && (text.trim().length > 400 || /[\r\n]/.test(text.trim()));
-  return <ComposerPrimitive.Root className={styles.composer} onSubmit={event => { if (running) { event.preventDefault(); if (canQueue && !tooLong && text.trim() && onQueue(text)) { aui.thread.composer().setText(""); cancelDictation(); } } else if (invalidSearch || tooLong) event.preventDefault(); else cancelDictation(); }}>
-    <div className={styles.composerRow}><ComposerPrimitive.Input disabled={running ? !canQueue : disabled} autoFocus={Boolean(restoreDraft) && !disabled} aria-label="Message Panda Agent" aria-describedby="composer-notice" aria-invalid={invalidSearch || tooLong || undefined} placeholder={webSearch ? "Ask a public web question…" : "Ask anything…"} maxLength={webSearch ? 400 : 2000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { if (running) { event.preventDefault(); if (canQueue && !tooLong && text.trim() && onQueue(text)) { aui.thread.composer().setText(""); cancelDictation(); } } else if (invalidSearch || tooLong) event.preventDefault(); } }} />
-    <div className={styles.composerActions}><div className={styles.actionGroup}>{showModels && <label className={styles.modelPicker}><select aria-label="Choose model" value={selectedModel} disabled={modelDisabled} onChange={event => { const model=models.find(item=>item.id===event.target.value && item.enabled); if (model && isNativeModelId(model.id)) onModelChange(model.id); }} autoComplete="off">{!models.some(model => model.enabled) && <option value={selectedModel}>Model unavailable</option>}{models.filter(model => model.enabled).map(model=><option key={model.id} value={model.id}>{model.label}</option>)}</select><ChevronDown aria-hidden="true" size={15} /></label>}{listening ? <ComposerPrimitive.StopDictation className={styles.iconAction} aria-label="Stop dictation" aria-describedby="voice-notice" disabled={disabled}><MicOff size={18}/></ComposerPrimitive.StopDictation> : voiceSupported ? <ComposerPrimitive.Dictate className={styles.iconAction} aria-label="Start voice dictation" title="Voice dictation may use an online browser service." aria-describedby="voice-notice" disabled={disabled}><Mic size={18}/></ComposerPrimitive.Dictate> : <button className={styles.iconAction} type="button" aria-label="Voice dictation unavailable" aria-describedby="voice-notice" disabled><Mic size={18}/></button>}{running && text.trim() && <button className={styles.iconAction} type="button" aria-label="Stop request" title="Stop request" disabled={cancelDisabled} onClick={onCancel}><Square size={17} aria-hidden="true" /></button>}{running ? text.trim() ? <button className={styles.sendButton} type="submit" aria-label="Queue follow-up" disabled={!canQueue || tooLong}><ArrowUp size={19} /></button> : <button className={styles.sendButton} type="button" aria-label="Stop request" title="Stop request" disabled={cancelDisabled} onClick={onCancel}><Square size={17} aria-hidden="true" /></button> : canResume && !text.trim() ? <button className={styles.sendButton} type="button" aria-label="Resume queue" title="Resume queue" onClick={onResume}><ArrowUp size={19} /></button> : <ComposerPrimitive.Send className={styles.sendButton} aria-label="Send message" disabled={disabled || invalidSearch || tooLong}><ArrowUp size={19} /></ComposerPrimitive.Send>}</div></div></div>
-    <p className={styles.searchNotice} id="composer-notice" role="status">{tooLong ? "Messages must be 2,000 characters or fewer. Shorten your message to send." : invalidSearch ? "Use one public question, on one line, up to 400 characters. Shorten it or turn Search off." : ""}</p>
+  return <ComposerPrimitive.Root className={styles.composer} onSubmit={event => { if (running) { event.preventDefault(); if (canQueue && !tooLong && text.trim() && onQueue(text)) { aui.thread.composer().setText(""); cancelDictation(); } } else if (sendDisabled || invalidSearch || tooLong) event.preventDefault(); else cancelDictation(); }}>
+    <div className={styles.composerRow}><ComposerPrimitive.Input disabled={disabled} autoFocus={Boolean(restoreDraft) && !disabled} aria-label="Message Panda Agent" aria-describedby="composer-notice" aria-invalid={invalidSearch || tooLong || undefined} placeholder={webSearch ? "Ask a public web questionÃ¢â‚¬Â¦" : "Ask anythingÃ¢â‚¬Â¦"} maxLength={webSearch ? 400 : 2000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { if (running) { event.preventDefault(); if (canQueue && !tooLong && text.trim() && onQueue(text)) { aui.thread.composer().setText(""); cancelDictation(); } } else if (sendDisabled || invalidSearch || tooLong) event.preventDefault(); } }} />
+    <div className={styles.composerActions}><div className={styles.actionGroup}>{showModels && <label className={styles.modelPicker}><select aria-label="Choose model" value={selectedModel} disabled={modelDisabled} onChange={event => { const model=models.find(item=>item.id===event.target.value && item.enabled); if (model && isNativeModelId(model.id)) onModelChange(model.id); }} autoComplete="off">{!models.some(model => model.enabled) && <option value={selectedModel}>Model unavailable</option>}{models.filter(model => model.enabled).map(model=><option key={model.id} value={model.id}>{model.label}</option>)}</select><ChevronDown aria-hidden="true" size={15} /></label>}{listening ? <ComposerPrimitive.StopDictation className={styles.iconAction} aria-label="Stop dictation" aria-describedby="voice-notice" disabled={disabled}><MicOff size={18}/></ComposerPrimitive.StopDictation> : voiceSupported ? <ComposerPrimitive.Dictate className={styles.iconAction} aria-label="Start voice dictation" title="Voice dictation may use an online browser service." aria-describedby="voice-notice" disabled={disabled}><Mic size={18}/></ComposerPrimitive.Dictate> : <button className={styles.iconAction} type="button" aria-label="Voice dictation unavailable" aria-describedby="voice-notice" disabled><Mic size={18}/></button>}{running && text.trim() && <button className={styles.iconAction} type="button" aria-label="Stop request" title="Stop request" disabled={cancelDisabled} onClick={onCancel}><Square size={17} aria-hidden="true" /></button>}{running ? text.trim() ? <button className={styles.sendButton} type="submit" aria-label="Queue follow-up" disabled={!canQueue || tooLong}><ArrowUp size={19} /></button> : <button className={styles.sendButton} type="button" aria-label="Stop request" title="Stop request" disabled={cancelDisabled} onClick={onCancel}><Square size={17} aria-hidden="true" /></button> : canResume && !text.trim() ? <button className={styles.sendButton} type="button" aria-label="Resume queue" title="Resume queue" onClick={onResume}><ArrowUp size={19} /></button> : <ComposerPrimitive.Send className={styles.sendButton} aria-label="Send message" disabled={sendDisabled || invalidSearch || tooLong}><ArrowUp size={19} /></ComposerPrimitive.Send>}</div></div></div>
+    <p className={styles.searchNotice} id="composer-notice" role="status">{tooLong ? "Messages must be 2,000 characters or fewer. Shorten your message to send." : invalidSearch ? "Use one public question, on one line, up to 400 characters. Shorten it or turn Search off." : !disabled && !running ? disabledReason : ""}</p>
     <span className={styles.srOnly} id="voice-notice">{voiceSupported ? "Voice dictation may use an online browser service." : "Voice dictation is unavailable in this browser."}</span>
   </ComposerPrimitive.Root>;
 }
@@ -419,13 +427,13 @@ function ToolProgress({tools}:{tools:ToolActivity[]}) {
  return <p className={styles.status} role="status">{toolNames[latest.toolId]}: {latest.state==='running'?'Working':latest.state==='unknown'?'Outcome unknown':latest.origin==='recorded'?'Previously recorded result':'Complete'}</p>;
 }
 function SavedToolCards({cards}:{cards:NonNullable<ChatMessage['toolCards']>}) {
- return <div className={styles.sources}><strong>Observed tools</strong>{cards.map((card,index)=><div className={styles.savedTool} key={index}>{toolNames[card.toolId]} · {card.state==='complete'?'Complete':'Outcome unknown'}</div>)}</div>;
+ return <div className={styles.sources}><strong>Observed tools</strong>{cards.map((card,index)=><div className={styles.savedTool} key={index}>{toolNames[card.toolId]} Ã‚Â· {card.state==='complete'?'Complete':'Outcome unknown'}</div>)}</div>;
 }
 const externalReferenceUrl='https://docs.espressif.com/projects/esp-idf/en/v5.5.1/esp32/api-reference/peripherals/gpio.html';
 function ExternalReference({text}:{text:string}) {
  const match=text.match(/Unreviewed external reference: GPIO & RTC GPIO \(([^)]+)\) https:\/\/docs\.espressif\.com\/projects\/esp-idf\/en\/v5\.5\.1\/esp32\/api-reference\/peripherals\/gpio\.html/);
  if(!match || !Number.isFinite(Date.parse(match[1]))) return null;
- return <details className={styles.sourceCard}><summary>External reference · ESP-IDF 5.5.1 <ChevronDown size={16} aria-hidden="true" /></summary><div className={styles.sourceContent}><strong>GPIO &amp; RTC GPIO</strong><small>docs.espressif.com · retrieved {match[1]}</small><p>This reference does not establish board applicability or wiring.</p><a href={externalReferenceUrl} target="_blank" rel="noopener noreferrer">Open reference <ExternalLink size={13} aria-hidden="true" /></a></div></details>;
+ return <details className={styles.sourceCard}><summary>External reference Ã‚Â· ESP-IDF 5.5.1 <ChevronDown size={16} aria-hidden="true" /></summary><div className={styles.sourceContent}><strong>GPIO &amp; RTC GPIO</strong><small>docs.espressif.com Ã‚Â· retrieved {match[1]}</small><p>This reference does not establish board applicability or wiring.</p><a href={externalReferenceUrl} target="_blank" rel="noopener noreferrer">Open reference <ExternalLink size={13} aria-hidden="true" /></a></div></details>;
 }
 function AssistantMessage({ messages, speech, speaking, nativeAssistant }: { messages: ChatMessage[]; speech: ReturnType<typeof createReadAloud> | null; speaking: string | null; nativeAssistant: boolean }) {
   const id = useAuiState(state => state.message.id);
@@ -442,15 +450,15 @@ function SourceCitation({ citation, messageId }: { citation: Citation; messageId
   return <details className={styles.sourceCard} id={`source-${messageId}-${citation.id}`}>
     <summary><span className={styles.sourceSummary}><span className={styles.sourceId}>{citation.id}</span><span><strong>{citation.title}</strong><small>{domain}</small></span></span><ChevronDown size={16} aria-hidden="true" /></summary>
     <div className={styles.sourceContent}>
-      {webExcerpt && <strong className={styles.sourceKind}>Web search excerpt</strong>}{vendor&&<strong className={styles.sourceKind}>Espressif · {vendor.chip.toUpperCase()} · ESP-IDF {vendor.frameworkVersion} · reviewed API reference</strong>}
+      {webExcerpt && <strong className={styles.sourceKind}>Web search excerpt</strong>}{vendor&&<strong className={styles.sourceKind}>Espressif Ã‚Â· {vendor.chip.toUpperCase()} Ã‚Â· ESP-IDF {vendor.frameworkVersion} Ã‚Â· reviewed API reference</strong>}
       <blockquote>{citation.quote}</blockquote>
-      <small>{webExcerpt ? "Tavily search excerpt; full page and manufacturer claims not verified" : citation.sectionPath.join(" / ")} · {webExcerpt ? "retrieved" : "captured"} {citation.capturedAt}</small>
+      <small>{webExcerpt ? "Tavily search excerpt; full page and manufacturer claims not verified" : citation.sectionPath.join(" / ")} Ã‚Â· {webExcerpt ? "retrieved" : "captured"} {citation.capturedAt}</small>
       {href && <a href={href} target="_blank" rel="noopener noreferrer">Open source <ExternalLink size={13} aria-hidden="true" /></a>}
     </div>
   </details>;
 }
 
 function Activity({ stages, context, busy, complete }: { stages: Stage[]; context: ContextSummary | null; busy: boolean; complete: boolean }) {
-  const label = complete ? "Answer saved" : busy ? stages.length ? activityLabels[stages[stages.length - 1]] : "Sending…" : "Activity interrupted";
-  return <div className={styles.activity}><p className={styles.activityStatus} role="status"><span className={busy ? styles.activityPulse : styles.activityMark} aria-hidden="true">{complete ? <Check size={13} /> : null}</span>{busy ? <Shimmer>{label}</Shimmer> : <span>{label}</span>}</p>{busy && <div className={styles.activitySkeleton} aria-hidden="true"><span /><span /></div>}{stages.length > 0 && <details className={styles.activityDetails}><summary>View activity <ChevronDown size={15} aria-hidden="true" /></summary><ol>{stages.map((stage, index) => <li key={index}>{activityLabels[stage]}</li>)}</ol>{context && <p className={styles.contextSummary}>Supplied context: {context.fragments} {context.fragments === 1 ? "fragment" : "fragments"}, {context.characters.toLocaleString()} characters{context.duplicatesRemoved > 0 ? ` · ${context.duplicatesRemoved} duplicate ${context.duplicatesRemoved === 1 ? "fragment" : "fragments"} removed` : ""} (limit {context.limitCharacters.toLocaleString()} characters).</p>}</details>}</div>;
+  const label = complete ? "Answer saved" : busy ? stages.length ? activityLabels[stages[stages.length - 1]] : "SendingÃ¢â‚¬Â¦" : "Activity interrupted";
+  return <div className={styles.activity}><p className={styles.activityStatus} role="status"><span className={busy ? styles.activityPulse : styles.activityMark} aria-hidden="true">{complete ? <Check size={13} /> : null}</span>{busy ? <Shimmer>{label}</Shimmer> : <span>{label}</span>}</p>{busy && <div className={styles.activitySkeleton} aria-hidden="true"><span /><span /></div>}{stages.length > 0 && <details className={styles.activityDetails}><summary>View activity <ChevronDown size={15} aria-hidden="true" /></summary><ol>{stages.map((stage, index) => <li key={index}>{activityLabels[stage]}</li>)}</ol>{context && <p className={styles.contextSummary}>Supplied context: {context.fragments} {context.fragments === 1 ? "fragment" : "fragments"}, {context.characters.toLocaleString()} characters{context.duplicatesRemoved > 0 ? ` Ã‚Â· ${context.duplicatesRemoved} duplicate ${context.duplicatesRemoved === 1 ? "fragment" : "fragments"} removed` : ""} (limit {context.limitCharacters.toLocaleString()} characters).</p>}</details>}</div>;
 }
