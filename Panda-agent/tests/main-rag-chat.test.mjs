@@ -17,7 +17,7 @@ test('catalog identity, descriptive product questions, unknown models and mixed 
  for(const question of ['What MCU does BOARDGREEN use?','What flash does xGreen32 have?','How long is the Type-C charging USB cable?',
   'Does PandaByte sell a board with Bluetooth?','Which MCU does xMystery999 use?','Does xUnknown support Wi-Fi?','What voltage does this board use?',
   'What memory does the ESP32 board have?','Does BOARDGREEN have UL certification?','Tell a joke and tell me the voltage of BOARDGREEN',
-  'Compare BOARDGREEN with xUnknown90'])assert.equal(isMainProductQuestion(question,catalog),true,question);
+  'Compare BOARDGREEN with xUnknown90','What is its USB connector?','What MCU does that board use?'])assert.equal(isMainProductQuestion(question,catalog),true,question);
  for(const question of ['Hello!','Who are you?','Explain UART in one sentence.','How do I format a Markdown table?','What is 2 + 2?'])
   assert.equal(isMainProductQuestion(question,catalog),false,question);
 });

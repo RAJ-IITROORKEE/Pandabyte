@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createHmac} from 'node:crypto';
+import {createHash,createHmac} from 'node:crypto';
 import {createDirectAssistantStore} from '../src/server/direct-assistant-store.ts';
 import {createDirectAssistantChat} from '../src/server/direct-assistant-chat.ts';
 const turn={thread:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',request:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',question:'Explain sensors'};
@@ -49,11 +49,15 @@ test('uncapped claims propagate rejected actor or MAC proofs without an execute 
 });
 
 function uncappedFixture(){
- const records=new Map();let sends=0,receipts=0,finishes=0,active=true,beforeClaim=async()=>{};
+ const records=new Map(),historyInputs=[];let sends=0,receipts=0,finishes=0,active=true,beforeClaim=async()=>{};
  const ref=(_thread,request)=>records.get(request);
+ const context=request=>{const rows=[...records],boundary=rows.findIndex(([id])=>id===request);
+  const eligible=rows.slice(0,boundary).filter(([,r])=>r.status==='complete'&&!r.cancelled&&r.answer).slice(-6);
+  return {contextRequestIds:eligible.map(([id])=>id),contextHash:createHash('sha256').update(JSON.stringify(eligible)).digest('hex')};};
+ const turns=()=>[...records].map(([requestId,r])=>({requestId,question:r.question,status:r.status,response:r.answer??null}));
  const store={
-  async state(thread,request){const r=ref(thread,request);return r&&{question:r.question,status:r.status,claimed:r.claimed,cancelled:r.cancelled};},
-  async begin(_thread,request,question){if(records.has(request))return {admitted:false};records.set(request,{question,status:'pending',claimed:false,cancelled:false});return {admitted:true};},
+  async state(thread,request){const r=ref(thread,request);return r&&{question:r.question,status:r.status,claimed:r.claimed,cancelled:r.cancelled,contextHash:context(request).contextHash};},
+  async begin(_thread,request,question){if(records.has(request))return {admitted:false};records.set(request,{question,status:'pending',claimed:false,cancelled:false});return {admitted:true,turns:turns(),...context(request)};},
   async claim(){throw Error('Capped claim reached');},async receipt(){throw Error('Capped receipt reached');},
   async claimUnmetered(thread,request,hash){assert.equal(hash,'d'.repeat(64));const r=ref(thread,request);if(r.status!=='pending'||r.claimed||r.cancelled)return false;r.claimed=true;return true;},
   async receiptUnmetered(thread,request,_hash,answer,usage){const r=ref(thread,request);if(r.status!=='pending'||r.cancelled)return false;assert.ok(r.claimed);r.answer=answer;r.usage=usage;receipts++;return true;},
@@ -61,10 +65,10 @@ function uncappedFixture(){
   async cancel(thread,request){const r=ref(thread,request);r.status='complete';r.cancelled=true;return{};},
  };
  const policy={enabled:async()=>true,current:async()=>active,dispatchCurrent:()=>active,key:()=> 'fixture',binding:()=> 'fixture',isUnmetered:()=>active};
- const completion=options=>async(_input,beforeSend)=>{await beforeClaim();if(!await options.claim('d'.repeat(64))||!await beforeSend())throw Error('Not admitted');sends++;return{answer:'Answer',usage:{inputTokens:3,outputTokens:2,costNanoUsd:100}};};
+ const completion=options=>async(input,beforeSend)=>{historyInputs.push(input.history);await beforeClaim();if(!await options.claim('d'.repeat(64))||!await beforeSend())throw Error('Not admitted');sends++;return{answer:'Answer',usage:{inputTokens:3,outputTokens:2,costNanoUsd:100}};};
  const create=()=>createDirectAssistantChat({actor:{subject:'fixture'},key:'a'.repeat(64),current:async()=>active,policy,
   budgetRefs:()=>{throw Error('Uncapped chat consulted budget');},store,completion});
- return {create,records,counts:()=>({sends,receipts,finishes}),beforeClaim:fn=>beforeClaim=fn,revoke:()=>active=false};
+ return {create,records,historyInputs,counts:()=>({sends,receipts,finishes}),beforeClaim:fn=>beforeClaim=fn,revoke:()=>active=false};
 }
 
 test('uncapped owner can make repeated new requests and reload saved states without consulting the exhausted budget',async()=>{
@@ -76,6 +80,7 @@ test('uncapped owner can make repeated new requests and reload saved states with
   assert.deepEqual(await f.create().start({...turn,request},signal()),{status:'saved'});
  }
  assert.deepEqual(f.counts(),{sends:4,receipts:4,finishes:4});
+ assert.deepEqual(f.historyInputs.map(history=>history.length),[0,1,2,3]);
 });
 
 test('concurrent duplicate uncapped requests have one admitted dispatch',async()=>{

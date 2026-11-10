@@ -19,6 +19,7 @@ import type {createAgenticStore,CompositeExecution} from './agentic-store.ts';
 import {parseToolActivity} from '../agentic/tool-activity.ts';
 import type {NativeChatBridge} from './native-chat-service.ts';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
+import {isContextSummary} from '../retrieval/context-summary.ts';
 
 type Store = ReturnType<typeof createLightweightStore> & {guide?:ReturnType<typeof createGuideStore>;diagnostic?:ReturnType<typeof createDiagnosticStore>;agentic?:ReturnType<typeof createAgenticStore>};
 type Dependencies = {
@@ -295,7 +296,7 @@ export function createLightweightHandler(deps:Dependencies) {
         const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
         if(llm && deps.llmNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
-            const result=await llm.start({thread:id!,request:requestId,question},signal,progress);
+            const result=await llm.start({thread:id!,request:requestId,question},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined));
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             return releaseBasic(requestId,question);
           };
@@ -330,7 +331,7 @@ export function createLightweightHandler(deps:Dependencies) {
         if(basicRag && !deps.llmNewMessages?.() && deps.basicRagNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
           const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
-            const result=await basicRag.start({thread:id!,request:requestId,question},signal,progress);
+            const result=await basicRag.start({thread:id!,request:requestId,question},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined));
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             return releaseBasic(requestId,question);
           };

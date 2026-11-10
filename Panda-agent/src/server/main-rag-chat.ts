@@ -28,6 +28,7 @@ export function isMainProductQuestion(question:string,catalog:Catalog):boolean {
  if(catalog.some(row=>contains(text,row.sku)||contains(text,row.title)
   ||(row.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[]).some(alias=>contains(text,alias))))return true;
  if(resolveMultiProductIdentity(catalog,question).kind==='planned')return true;
+ if(/\b(?:its|this board|that board|this product|that product)\b/.test(text)&&/\b(?:usb|connector|mcu|cpu|pins?|pinout|voltage|current|flash|memory|psram|specifications?)\b/.test(text))return true;
  if(/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text))return true;
  return !['conversation','manufacturer'].includes(conversationRoute(question,catalog).kind);
 }

@@ -188,6 +188,16 @@ test('basic RAG SSE streams unique activity and only releases the saved answer',
   assert.ok(events.slice(0,-1).every(e=>!JSON.stringify(e).includes('ESP8266')));assert.match(JSON.stringify(events.at(-1).data),/ESP8266/);
   assert.equal(f.calls.filter(x=>x==='basic_start').length,1);
 });
+test('basic RAG forwards only validated aggregate retrieval timing, without tool payloads',async()=>{
+ const f=fixture({basicNew:true}),start=f.basic.start;
+ f.basic.start=async(turn,signal,progress)=>{progress('reading_sources',{fragments:4,characters:2516,duplicatesRemoved:0,limitCharacters:20000,retrievalMs:0});return start(turn,signal,progress);};
+ const response=await f.handler.messagePOST(message(undefined,{accept:'text/event-stream'}),thread);
+ const events=(await privateWire(response)).trim().split('\n\n').map(part=>JSON.parse(part.slice(6)));
+ const context=events.find(e=>e.type==='context');assert.equal(context.fragments,4);assert.equal(context.retrievalMs,0);
+ assert.ok(Number.isSafeInteger(context.requestElapsedMs)&&context.requestElapsedMs>=0);
+ assert.equal(events.at(-1).type,'complete');
+});
+
 test('basic RAG SSE never releases a provisional answer when pending or owner access is revoked',async()=>{
   for(const pending of [true,false]){
     const f=fixture({basicNew:true,pendingStart:pending});const start=f.basic.start;

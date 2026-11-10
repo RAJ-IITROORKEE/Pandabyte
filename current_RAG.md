@@ -1,5 +1,13 @@
 # Current RAG system: implementation and engineering handoff
 
+## Main Panda Agent integration, 10 November 2026
+
+The owner authorized connecting the working RAG to the main Panda Agent chat and removing its cumulative application testing cap. This supersedes the earlier main-chat RAG deferral and earlier separation of general-chat budgets below. The original local/native ledger is untouched. Product, unknown-model and unsupported specification questions use RAG, quoted sources and honest clarification/abstention. General conversation retains the verified same-chat memory from 139fa22. Ambiguous product follow-ups and multiple-product questions require an exact product rather than guessing.
+
+Server-only Production flags PANDA_AGENT_MAIN_RAG_ENABLED and PANDA_AGENT_MAIN_CHAT_UNCAPPED enable the existing hosted owner/Admin profile. Migration 20261110150000_direct-unmetered.sql adds signed uncapped direct claims/receipts and preserves capped history; rollback/ACL rehearsal passed and it was applied without ledger changes. The direct v2 memory wrapper remains compatible. Selection reads one fresh immutable source snapshot per request; live source/Admin checks still bracket model generation and publication. Bounded retrievalMs and server requestElapsedMs are emitted before any provider metadata request. The combined live deployment and browser measurements are pending.
+
+Earlier dated sections below retain historical evidence and do not override this scope.
+
 ## Hosted Admin grounded-answer release, 10 November 2026
 
 The live [Control Room Playground](https://pandabyte-iot.vercel.app/admin/rag-control-room#playground) now generates grounded GPT-6 Luna answers. Eight actual model requests passed in the browser, including five on the primary domain, repeated identical questions and page reloads. Every selected quotation matched its retrieved passage. The latest primary deployment checked was `dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb`; it retains the RAG implementation from `ab763c9`, which is included in main.
