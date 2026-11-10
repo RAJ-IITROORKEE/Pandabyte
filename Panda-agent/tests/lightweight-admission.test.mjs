@@ -31,6 +31,16 @@ test('token preparation overlaps live-session read and inactive sessions never r
 test('default callers retain the original identity RPC and actor shape',async()=>{
  const f=fixture('owner');const actor=await authenticateLightweight();assert.deepEqual(Object.keys(actor).sort(),['client','sessionId','subject']);assert.deepEqual(f.calls,['requesting_user_id']);
 });
+test('default token preparation overlaps live session and a revoked session never reaches the database',async()=>{
+ for(const active of [true,false]){
+  const f=fixture('owner');let release,tokenStarted=false;const gate=new Promise(resolve=>{release=resolve;});
+  f.live=async()=>{await gate;return {status:active?'active':'revoked',userId:'owner'};};
+  f.session.getToken=async()=>{tokenStarted=true;return 'fixture-token';};
+  const pending=authenticateLightweight();await new Promise(resolve=>setImmediate(resolve));
+  try{assert.equal(tokenStarted,true);}finally{release();}
+  const actor=await pending;assert.equal(Boolean(actor),active);assert.deepEqual(f.calls,active?['requesting_user_id']:[]);
+ }
+});
 test.after(()=>{if(original.url===undefined)delete process.env.PANDA_AGENT_INSFORGE_BASE_URL;else process.env.PANDA_AGENT_INSFORGE_BASE_URL=original.url;if(original.template===undefined)delete process.env.PANDA_AGENT_CLERK_JWT_TEMPLATE;else process.env.PANDA_AGENT_CLERK_JWT_TEMPLATE=original.template;});
 test('document-only connection uses verified active request claims and defers Admin proof to the snapshot',async()=>{
  const {openLightweightConnection}=await import('../src/server/lightweight-connection.ts');

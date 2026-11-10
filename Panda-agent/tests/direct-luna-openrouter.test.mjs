@@ -50,3 +50,23 @@ test('diagnostics are opt-in and contain only fixed stages and HTTP status',asyn
   assert.deepEqual(logs,[['[direct-chat]','metadata-start'],['[direct-chat]','metadata-received'],['[direct-chat]','claim-start'],['[direct-chat]','claim-recorded'],['[direct-chat]','claim-and-send-gates-passed'],['[direct-chat]','provider-http',200],['[direct-chat]','provider-json-read'],['[direct-chat]','provider-response-validated']]);
  } finally { console.info=info; if(previous===undefined)delete process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS;else process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS=previous; }
 });
+
+test('history fits whole pairs, preserves latest correction and binds exact wire',async()=>{
+ const f=fixture();const history=[{question:'old',answer:'🙂'.repeat(1800)}, {question:'The board is C3',answer:'C3'}, {question:'Correction: C6',answer:'C6'}];
+ await run(f,{question:'Which board?',history});const req=posts(f)[0].init,body=JSON.parse(req.body);
+ assert.ok(Buffer.byteLength(req.body,'utf8')<=7000);assert.deepEqual(body.messages.slice(1),[{role:'user',content:'The board is C3'},{role:'assistant',content:'C3'},{role:'user',content:'Correction: C6'},{role:'assistant',content:'C6'},{role:'user',content:'Which board?'}]);
+ assert.match(body.messages[0].content,/same-chat conversation history/);assert.equal(f.fingerprint,createHash('sha256').update(req.body).digest('hex'));
+ const g=fixture();await run(g,{question:'Which board?',history:[{question:'The board is C3',answer:'C3'}]});assert.notEqual(f.fingerprint,g.fingerprint);
+});
+test('malformed or excessive history never reaches the provider',async()=>{
+ for(const history of [[{question:'q',answer:'a',extra:true}],Array(7).fill({question:'q',answer:'a'}),[{question:'q',answer:'\ud800'}]]){const f=fixture();await assert.rejects(run(f,{question:'q',history}));assert.equal(posts(f).length,0);assert.equal(f.claims,0);}
+});
+
+
+test('metadata and policy checks overlap, and a denied fresh post-claim gate prevents POST',async()=>{
+ let release,policyStarted=false,metadataStarted=0,posts=0,claims=0;
+ const gate=new Promise(r=>release=r);
+ const fetcher=async(url,init)=>{if(init.method==='POST'){posts++;throw Error('unexpected POST');} metadataStarted++;await gate;return Response.json(url.endsWith('/endpoints/zdr')?{data:[{model_id:lunaRagModel,tag:'azure/us',safety_retention:false}]}:{data:{id:lunaRagModel,architecture:{tokenizer:'GPT'},endpoints:[endpoint()]}});};
+ let policies=0;const complete=createDirectLunaCompletion({apiKey:'fixture',fetcher,dispatchCurrent:()=>true,policyCurrent:async()=>{policies++;if(policies===1){policyStarted=true;await gate;return true;}return false;},claim:async()=>{claims++;return true;}});
+ const result=complete({question:'question'},async()=>true,new AbortController().signal);await new Promise(r=>setImmediate(r));assert.equal(metadataStarted,2);assert.equal(policyStarted,true);release();await assert.rejects(result);assert.equal(claims,1);assert.equal(posts,0);
+});

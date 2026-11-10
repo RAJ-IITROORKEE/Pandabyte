@@ -14,10 +14,14 @@ export async function openLightweightConnection(options?: { parallelSession?: bo
   const url = new URL(baseUrl);
   if (url.protocol !== 'https:' || !/^[a-z0-9]+\.[a-z0-9-]+\.insforge\.app$/.test(url.hostname) || url.pathname !== '/' || url.port || url.username || url.password || url.search || url.hash) throw Error('Agent connection unavailable');
   const sessionCurrent = options?.sessionVerification === 'request' ? Promise.resolve(true) : currentLightweightSession(session.userId, session.sessionId);
+  const tokenResult = (async () => {
+    try { return { token: await session.getToken({ template }) }; }
+    catch (error) { return { error }; }
+  })();
   if (!options?.parallelSession && !await sessionCurrent) return null;
-  let accessToken: string | null;
-  try { accessToken = await session.getToken({ template }); }
-  catch (error) { if (!await sessionCurrent) return null; throw error; }
+  const result = await tokenResult;
+  if ('error' in result) { if (!await sessionCurrent) return null; throw result.error; }
+  const accessToken = result.token;
   if (!accessToken) { if (!await sessionCurrent) return null; throw Error('Agent connection unavailable'); }
   const transport = boundedAgentFetch();
   const client = createClient({ baseUrl, accessToken, timeout:8000, retryCount:0, debug:false,

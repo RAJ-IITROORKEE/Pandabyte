@@ -11,7 +11,7 @@ test('store signs the direct RPC contract and validates response shapes',async()
  const key='a'.repeat(64),calls=[];let reply={data:{execute:true},error:null};
  const actor={subject:'fixture',client:{database:{rpc:async(name,args)=>{calls.push({name,args});return reply;}}}};
  const store=createDirectAssistantStore(actor,key);assert.equal(await store.claim(turn.thread,turn.request,refs,'c'.repeat(64)),true);
- const call=calls[0],payload=JSON.parse(call.args.p_payload);assert.equal(call.name,'panda_agent_direct_chat');assert.equal(payload.action,'direct_chat');
+ const call=calls[0],payload=JSON.parse(call.args.p_payload);assert.equal(call.name,'panda_agent_direct_chat_v2');assert.equal(payload.action,'direct_chat');
  assert.deepEqual(payload.input,{op:'claim',thread:turn.thread,request:turn.request,budget:refs.budgetId,keySha256:refs.keySha256,workspaceSha256:refs.workspaceSha256,bodyHash:'c'.repeat(64)});
  assert.equal(call.args.p_mac,createHmac('sha256',Buffer.from(key,'hex')).update('panda-llm-db-v1\n'+call.args.p_payload).digest('hex'));
  reply={data:{recorded:true},error:null};const answer={outcome:'conversation',text:'Answer',citations:[]},usage={inputTokens:3,outputTokens:2,costNanoUsd:1};
@@ -20,14 +20,14 @@ test('store signs the direct RPC contract and validates response shapes',async()
 });
 
 function fixture(){let state=null,sends=0,receipts=0,finishes=0,current=true,afterSend=async()=>{},allow=true,receiptAllowed=true;
- const store={async state(){return state&&{...state};},async begin(_t,_r,question){state={question,status:'pending',claimed:false,cancelled:false};return{admitted:true};},
+ const store={async state(){return state&&{...state};},async begin(_t,_r,question){state={question,status:'pending',claimed:false,cancelled:false,contextHash:'e'.repeat(64)};return{admitted:true,turns:[{requestId:turn.request,question,status:'pending',response:null}],contextRequestIds:[],contextHash:'e'.repeat(64)};},
   async claim(_t,_r,r,hash){assert.deepEqual(r,refs);assert.equal(hash,'d'.repeat(64));if(state.claimed)return false;state.claimed=true;return true;},
   async receipt(_t,_r,hash,answer,usage){assert.equal(hash,'d'.repeat(64));assert.equal(answer.outcome,'conversation');assert.equal(usage.costNanoUsd,100);receipts++;return receiptAllowed&&!state.cancelled;},
   async finish(){finishes++;state.status='complete';return{};},async cancel(){state.status='complete';state.cancelled=true;return{};}};
  const policy={enabled:async()=>allow,current:async()=>current,dispatchCurrent:()=>current,key:()=> 'fixture',binding:()=> 'fixture'};
  const completion=options=>async(_input,beforeSend)=>{if(!await options.claim('d'.repeat(64))||!await beforeSend())throw Error();sends++;await afterSend();return{answer:'Answer',usage:{inputTokens:3,outputTokens:2,costNanoUsd:100}};};
  const service=createDirectAssistantChat({actor:{subject:'fixture'},key:'a'.repeat(64),current:async()=>current,policy,budgetRefs:()=>refs,store,completion});
- return{service,counts:()=>({sends,receipts,finishes}),setAfterSend:fn=>afterSend=fn,revoke:()=>current=false,deny:()=>allow=false,denyReceipt:()=>receiptAllowed=false};}
+ return{service,counts:()=>({sends,receipts,finishes}),setAfterSend:fn=>afterSend=fn,changeContext:()=>state.contextHash='f'.repeat(64),revoke:()=>current=false,deny:()=>allow=false,denyReceipt:()=>receiptAllowed=false};}
 
 test('direct request reserves once, records receipt before finish, and never replays',async()=>{
  const f=fixture();assert.deepEqual(await f.service.start(turn,signal()),{status:'saved'});assert.deepEqual(f.counts(),{sends:1,receipts:1,finishes:1});
@@ -45,4 +45,8 @@ test('uncertain post-dispatch outcomes stay pending and are not retried',async()
 test('an unrecorded receipt cannot publish or cause a second provider request',async()=>{
  const f=fixture();f.denyReceipt();assert.deepEqual(await f.service.start(turn,signal()),{status:'unknown'});
  assert.deepEqual(await f.service.start(turn,signal()),{status:'unknown'});assert.deepEqual(f.counts(),{sends:1,receipts:1,finishes:0});
+});
+
+test('a changed context after provider completion fences receipt and publication',async()=>{
+ const f=fixture();f.setAfterSend(()=>f.changeContext());assert.deepEqual(await f.service.start(turn,signal()),{status:'unknown'});assert.deepEqual(f.counts(),{sends:1,receipts:0,finishes:0});
 });

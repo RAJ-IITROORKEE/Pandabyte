@@ -18,6 +18,29 @@ function fixture(options={}) {
 }
 function privateResponse(response){assert.equal(response.headers.get('cache-control'),'private, no-store');}
 
+test('history read overlaps the live check but never releases data if revoked',async()=>{
+ for(const allowed of [true,false]) {
+  const f=fixture({saved:true});let releaseCheck;const gate=new Promise(resolve=>{releaseCheck=resolve;});let reads=0, checks=0;
+  f.deps.current=async()=>{checks++;return checks===1?gate:true;};
+  const original=f.native.read;f.native.read=async()=>{reads++;return original();};
+  const handler=createLightweightHandler(f.deps);
+  const pending=handler.readGET(new Request(`http://localhost/api/panda-agent/chats/${thread}`),thread);
+  await new Promise(resolve=>setImmediate(resolve));
+  try {assert.equal(reads,1,'read must start while the live check is pending');} finally {releaseCheck(allowed);}
+  const response=await pending;assert.equal(response.status,allowed?200:401);
+  if(!allowed)assert.doesNotMatch(await response.text(),/Current fenced answer/);
+ }
+});
+
+test('an absent request goes straight to the atomic direct admission',async()=>{
+ const f=fixture({empty:true});let starts=0;
+ f.deps.llm=()=>({state:async()=>{throw Error('unnecessary direct state lookup');},start:async()=>{starts++;return {status:'unknown'};}});
+ f.deps.llmNewMessages=()=>true;
+ const response=await createLightweightHandler(f.deps).messagePOST(post(),thread);
+ assert.equal(response.status,503);assert.equal(starts,1);
+ assert.equal(f.calls.includes('classify'),false);
+});
+
 test('new native selection runs before legacy begin; denied or unknown work never falls back',async()=>{
  for(const deny of [false,true]){
   const f=fixture({empty:true,selectNew:true,deny});const response=await f.handler.messagePOST(post(),thread);

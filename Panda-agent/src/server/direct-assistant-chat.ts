@@ -4,6 +4,7 @@ import { uuid } from './chat-contracts.ts';
 import type { BasicRagChatBridge } from './basic-rag-chat-contracts.ts';
 import { ChatStoreError } from './chat-store.ts';
 import { createDirectAssistantStore, type DirectBudgetRefs, type DirectState } from './direct-assistant-store.ts';
+import { directHistory } from './direct-conversation-history.ts';
 import { createDirectLunaCompletion, directDiagnostic } from './direct-luna-openrouter.ts';
 
 type DirectPolicy = { enabled():Promise<boolean>; current():Promise<boolean>; dispatchCurrent():boolean; key():string; binding():string };
@@ -15,7 +16,7 @@ export function createDirectAssistantChat(options:Options):BasicRagChatBridge {
   const store=options.store ?? createDirectAssistantStore(options.actor,options.key), completion=options.completion ?? createDirectLunaCompletion;
   const valid=(thread:string,request:string)=>{if(!uuid(thread)||!uuid(request)||request!==request.toLowerCase())throw new ChatStoreError('invalid');};
   const current=async()=>{if(!await options.current())throw new ChatStoreError('unauthenticated');};
-  const read=async(thread:string,request:string)=>{valid(thread,request);await current();const state=await store.state(thread,request);await current();return state;};
+  const read=async(thread:string,request:string)=>{valid(thread,request);const [,state]=await Promise.all([current(),store.state(thread,request)]);await current();return state;};
   const status=(s:DirectState)=>({status:s.status==='complete'?'saved' as const:s.claimed?'unknown' as const:'pending' as const});
   return {
     async state(thread,request){return await read(thread,request)!==null;},
@@ -31,14 +32,15 @@ export function createDirectAssistantChat(options:Options):BasicRagChatBridge {
       await current();const refs=options.budgetRefs();if(!refs)throw new ChatStoreError('unavailable');
       const begun=await store.begin(turn.thread,turn.request,turn.question);
       if(!begun.admitted){const old=await read(turn.thread,turn.request);return old?status(old):{status:'unknown'};}
+      const history=directHistory(begun.turns,turn.request,begun.contextRequestIds);
       let bodyHash:string|undefined,attempted=false;
       const beforeSend=async()=>{if(signal.aborted||!options.policy.dispatchCurrent())return false;
-        const s=await read(turn.thread,turn.request);return !!s&&s.status==='pending'&&s.claimed&&!s.cancelled&&s.question===turn.question&&!signal.aborted&&options.policy.dispatchCurrent();};
+        const s=await read(turn.thread,turn.request);return !!s&&s.status==='pending'&&s.claimed&&!s.cancelled&&s.question===turn.question&&s.contextHash===begun.contextHash&&!signal.aborted&&options.policy.dispatchCurrent();};
       try {
         try{progress?.('routing_question');}catch{/* Presentation only. */}
         const complete=completion({apiKey:options.policy.key(),policyCurrent:options.policy.current,dispatchCurrent:options.policy.dispatchCurrent,
           claim:async hash=>{if(attempted||signal.aborted)return false;attempted=true;await current();bodyHash=hash;return store.claim(turn.thread,turn.request,refs,hash);}});
-        const result=await complete({question:turn.question},beforeSend,signal);
+        const result=await complete({question:turn.question,history},beforeSend,signal);
         if(!bodyHash||!await beforeSend()){directDiagnostic('receipt-gate-denied');return {status:'unknown'};}
         const answer={outcome:'conversation' as const,text:result.answer,citations:[]};
         directDiagnostic('receipt-start');

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-10",
+  "scope": "pre-memory hosted direct-chat baseline",
+  "codeCommit": "a45fc294754b377fb996b795175ce7db2713da0f",
+  "deploymentId": "dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb",
+  "surface": "Codex in-app browser",
+  "measurement": "Passive CDP Network timestamps; message POST only, SSE response completion after durable save",
+  "samples": [{"status":200,"headersMs":2238,"completeMs":6657}],
+  "verifiedAnswerSaved": true,
+  "sampleLimit": "One warm hosted request; not a distribution or sub-second SLA",
+  "providerCalls": 1,
+  "retries": 0,
+  "budgetReset": false
+}

@@ -7,7 +7,19 @@ experience works and is validated. Deployment, commerce and provider-policy
 changes are not included. Historical restrictions below describe earlier scope.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Current release priority: direct LLM client demo (10 November 2026)
+## Conversation-memory and latency follow-up, 10 November 2026
+
+Latest user authorization adds automatic same-chat follow-ups and response-speed work to the direct LLM release, including subagents, Codex Browser validation, live update and handoff. RAG, external memory services and AWS/OpenCode remain separate. Strict ZDR and the original cumulative USD1 reservation ledger remain unchanged.
+
+The new v2 signed RPC selects up to six preceding verified direct-journal turns, intersected with the existing masked history. Cancelled, pending, foreign, cited/RAG and unverified records are excluded. A context fingerprint is rechecked before dispatch and publication. Whole oldest pairs are dropped until the exact serialized request fits 7,000 UTF-8 bytes, preserving the 8,024-input/700-output bounds and one 1,597,640-nanoUSD reservation. This is recent conversational context, not unlimited or cross-chat memory.
+
+The additive migration 20261110140000_direct-conversation-memory.sql is applied; v1 remains unchanged. All six disposable database checks passed with cleanup confirmed and no provider requests. See [database evidence](conversation-memory-database-verification.json). Independent review found no material blocker. Production build (42 pages), TypeScript, scoped lint and 97 affected unit/handler tests passed. In Codex Browser on localhost, a real seed message and follow-up after reload recalled MaplePanda/ESP32-C3/SCD41 and saved correctly.
+
+Speed changes overlap independent read-only session/history/token checks, avoid legacy classification for new direct requests, and overlap current policy with exact endpoint/ZDR metadata and pre-send checks. No completed privacy/session cache or provider retries were added. A passive Codex Browser baseline on the old live code measured first headers at 2,238 ms and durable response completion at 6,657 ms (one warm sample). See [baseline](conversation-memory-baseline.json). New hosted timing and acceptance are pending release; no sub-second claim.
+
+Context validation and the subsequent POST/finish are separate operations; this is a checked snapshot, not a transaction spanning the provider. There is no history-edit/withdraw operation in this scope. The existing owner-only prototype and metadata-only tracing remain.
+
+## Historical direct-release priority: client demo (10 November 2026)
 
 The owner explicitly deferred new RAG and AWS/OpenCode harness integration. Ship the existing Panda Agent UI with a direct OpenRouter LLM and system prompt first. Commit, push to main, Vercel deployment, server-only required keys and Codex Browser validation are authorized for this checkpoint. Preserve separately owned Control Room source and deployment work. This supersedes older no-deploy statements below only for this release.
 

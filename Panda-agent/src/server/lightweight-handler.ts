@@ -122,8 +122,11 @@ export function createLightweightHandler(deps:Dependencies) {
         return json(await store.delete(id!));
       }
       const safeRead=async () => {
-        if(!await deps.current(actor))throw new ChatStoreError('unauthenticated');
-        const saved=await (native ? native.read(id!) : store.read(id!));
+        const [check,read]=await Promise.allSettled([deps.current(actor),native ? native.read(id!) : store.read(id!)]);
+        if(check.status==='rejected')throw check.reason;
+        if(!check.value)throw new ChatStoreError('unauthenticated');
+        if(read.status==='rejected')throw read.reason;
+        const saved=read.value;
         if(!await deps.current(actor))throw new ChatStoreError('unauthenticated');
         return saved;
       };
@@ -289,6 +292,15 @@ export function createLightweightHandler(deps:Dependencies) {
       if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unavailable');
       if(native || basicRag || llm) {
         const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
+        if(llm && deps.llmNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
+          const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
+            const result=await llm.start({thread:id!,request:requestId,question},signal,stage=>progress(stage));
+            if(result.status!=='saved')throw new ChatStoreError('unavailable');
+            return releaseBasic(requestId,question);
+          };
+          if(wantsStream(request))return streamWork(request,execute);
+          return json(await execute(()=>{},request.signal));
+        }
         if(llm && await llm.state(id!,requestId)) {
           const turn=existing ?? (await safeRead()).turns.find(t=>t.requestId===requestId);
           if(!turn || turn.question!==question || turn.workflow || guideInput || diagnosticInput || agenticInput)throw new ChatStoreError('conflict');
@@ -313,15 +325,6 @@ export function createLightweightHandler(deps:Dependencies) {
           const result=await basicRag.status({thread:id!,request:requestId},request.signal);
           if(result.status!=='saved')throw new ChatStoreError('unavailable');
           return json(await releaseBasic(requestId,question));
-        }
-        if(llm && deps.llmNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
-          const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
-            const result=await llm.start({thread:id!,request:requestId,question},signal,stage=>progress(stage));
-            if(result.status!=='saved')throw new ChatStoreError('unavailable');
-            return releaseBasic(requestId,question);
-          };
-          if(wantsStream(request))return streamWork(request,execute);
-          return json(await execute(()=>{},request.signal));
         }
         if(basicRag && !deps.llmNewMessages?.() && deps.basicRagNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');

@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-10",
+  "migration": "20261110140000_direct-conversation-memory.sql",
+  "sha256": "bea8cb76977f3cd394f6b8240efb5b4f30620c64901356fbba32d11e2040bae7",
+  "checks": [
+    "v2 ready is additive and private manifest inaccessible",
+    "verified direct history survives read and is bound to state",
+    "corrupt history changes the manifest and stays masked",
+    "same-owner new chat is empty and foreign owner denied",
+    "manifest keeps only six newest verified pairs and excludes cancelled or non-direct turns",
+    "archive blocks context and no fixture provider was invoked"
+  ],
+  "providerPosts": 0,
+  "fixtureOnly": true,
+  "cleanup": true,
+  "pass": 6
+}

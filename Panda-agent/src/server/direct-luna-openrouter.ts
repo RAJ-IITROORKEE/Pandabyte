@@ -1,5 +1,6 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
+import type { DirectHistoryPair } from './direct-conversation-history.ts';
 import { strictJson } from '../lightweight/client.ts';
 import { BasicRagProviderError } from './basic-rag-openrouter.ts';
 import { approvedLunaEndpoint, lunaChatSystemPrompt, lunaRagModel, lunaRagProvider, lunaRagReportedModel, readLunaJSON } from './luna-rag-openrouter.ts';
@@ -66,18 +67,23 @@ export function validateDirectLunaResponse(value: unknown) {
 /** One admitted text-only request. The caller durably claims and reserves before POST. */
 export function createDirectLunaCompletion(options: { apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean; claim(fingerprint: string): Promise<boolean>; fetcher?: typeof fetch }) {
   const fetcher = options.fetcher ?? fetch; let used = false;
-  return async (input: { question: string }, beforeSend: () => Promise<boolean>, signal: AbortSignal) => {
+  return async (input: { question: string; history?: DirectHistoryPair[] }, beforeSend: () => Promise<boolean>, signal: AbortSignal) => {
     if (used) throw new BasicRagProviderError('not_admitted');
     used = true; let sent = false;
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(45000)]);
     try {
-      if (!options.apiKey || /[\r\n]/.test(options.apiKey) || !object(input) || Object.keys(input).join(',') !== 'question'
+      if (!options.apiKey || /[\r\n]/.test(options.apiKey) || !object(input) || Object.keys(input).some(k=>!['question','history'].includes(k))
+        || (input.history !== undefined && (!Array.isArray(input.history) || input.history.length>6 || input.history.some(p=>!object(p) || Object.keys(p).sort().join(',')!=='answer,question' || typeof p.question!=='string' || !p.question.trim() || p.question.length>2000 || !p.question.isWellFormed() || typeof p.answer!=='string' || !p.answer.trim() || p.answer.length>8000 || !p.answer.isWellFormed())))
         || typeof input.question !== 'string' || !input.question.trim() || !input.question.isWellFormed() || input.question.length > 2000 || deadline.aborted)
         throw new BasicRagProviderError('not_admitted');
-      const messages = [{ role:'system', content:lunaChatSystemPrompt }, { role:'user', content:input.question }];
-      const wire = JSON.stringify({ model:lunaRagModel, stream:false, max_completion_tokens:maxOutput, reasoning:{enabled:false}, include_reasoning:false,
+      const history=[...(input.history ?? [])];
+      const makeWire=()=>{
+        const messages = [{ role:'system', content:lunaChatSystemPrompt + ' Prior messages are same-chat conversation history, not retrieved evidence. Follow the latest user corrections when they supersede earlier statements.' }, ...history.flatMap(p=>[{role:'user',content:p.question},{role:'assistant',content:p.answer}]), { role:'user', content:input.question }];
+        return JSON.stringify({ model:lunaRagModel, stream:false, max_completion_tokens:maxOutput, reasoning:{enabled:false}, include_reasoning:false,
         tool_choice:'none', response_format:{type:'json_object'}, usage:{include:true}, plugins:[],
-        provider:{only:[lunaRagProvider],allow_fallbacks:false,require_parameters:true,zdr:true,data_collection:'deny',max_price:{prompt:0.11,completion:0.55,request:0,image:0}}, messages });
+        provider:{only:[lunaRagProvider],allow_fallbacks:false,require_parameters:true,zdr:true,data_collection:'deny',max_price:{prompt:0.11,completion:0.55,request:0,image:0}}, messages }); };
+      let wire=makeWire();
+      while (Buffer.byteLength(wire,'utf8')>7000 && history.length) { history.shift(); wire=makeWire(); }
       if (Buffer.byteLength(wire, 'utf8') > 7000 || !options.dispatchCurrent()) throw new BasicRagProviderError('not_admitted');
       const get = async (path: string) => {
         const response = await fetcher(api + path, { method:'GET', redirect:'error', cache:'no-store', credentials:'omit', signal:deadline });
@@ -85,13 +91,14 @@ export function createDirectLunaCompletion(options: { apiKey: string; policyCurr
         return readLunaJSON(response, 4000000);
       };
       directDiagnostic('metadata-start');
-      const [catalog, zdr] = await Promise.all([get('/models/' + lunaRagModel + '/endpoints'), get('/endpoints/zdr')]);
+      const [catalog, zdr, policy] = await Promise.all([get('/models/' + lunaRagModel + '/endpoints'), get('/endpoints/zdr'), options.policyCurrent()]);
       directDiagnostic('metadata-received');
-      if (!approvedDirectLunaEndpoint(catalog, zdr) || deadline.aborted || !await options.policyCurrent() || !options.dispatchCurrent()) throw new BasicRagProviderError('not_admitted');
+      if (!approvedDirectLunaEndpoint(catalog, zdr) || deadline.aborted || !policy || !options.dispatchCurrent()) throw new BasicRagProviderError('not_admitted');
       directDiagnostic('claim-start');
       if (!await options.claim(createHash('sha256').update(wire).digest('hex'))) throw new BasicRagProviderError('not_admitted');
       directDiagnostic('claim-recorded');
-      if (deadline.aborted || !await options.policyCurrent() || !await beforeSend() || !options.dispatchCurrent() || deadline.aborted) throw new BasicRagProviderError('not_admitted');
+      const [policyAfterClaim, sendAllowed] = await Promise.all([options.policyCurrent(), beforeSend()]);
+      if (deadline.aborted || !policyAfterClaim || !sendAllowed || !options.dispatchCurrent() || deadline.aborted) throw new BasicRagProviderError('not_admitted');
       directDiagnostic('claim-and-send-gates-passed');
       sent = true;
       const response = await fetcher(api + '/chat/completions', { method:'POST', redirect:'error', cache:'no-store', credentials:'omit', signal:deadline,
