@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { conversationRoute } from '../src/retrieval/conversation-route.ts';
+import { conversationRoute, isProjectMemoryQuestion } from '../src/retrieval/conversation-route.ts';
 const catalog = [{sku:'ESPX8266',title:'PandaByte x8266 WiFi Development Board'}];
 test('greetings, capabilities and general explanation do not require a product', () => {
   for (const text of ['hi','what you can do actually','what can you do?','Explain a pull-up resistor','Write a Python loop']) assert.equal(conversationRoute(text,catalog).kind,'conversation',text);
@@ -32,4 +32,12 @@ test('ordinary conversation mentioning a manufacturer does not request document 
   for (const text of ['Tell me a joke about Espressif', 'Who founded Espressif?']) {
     assert.equal(conversationRoute(text, catalog).kind, 'conversation', text);
   }
+});
+
+test('explicit project recall is independent of prior product scope, and cannot absorb mixed facts',()=>{
+ const question='What is my project name and its current deadline? Reply in one short sentence.';
+ assert.equal(isProjectMemoryQuestion(question),true);
+ assert.equal(conversationRoute(question,catalog,'ESPX8266').kind,'conversation');
+ for(const text of ['What is my project name and its voltage?','What is my project name and its weight?','What is its current deadline?','What is my project name and its xUnknown99 deadline?']) assert.equal(isProjectMemoryQuestion(text),false,text);
+ assert.equal(conversationRoute('What is my project name and its x8266 voltage?',catalog).kind,'resolved');
 });

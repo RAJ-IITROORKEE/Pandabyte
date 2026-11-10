@@ -2,7 +2,7 @@ import 'server-only';
 import { createHostedRagCompletion } from './hosted-model-openrouter.ts';
 import { fastHostedModel, hostedModelSelection } from '../hosted-model.ts';
 import { createHash } from 'node:crypto';
-import { conversationRoute, isUnscopedConversation } from '../retrieval/conversation-route.ts';
+import { conversationRoute, isUnscopedConversation, isProjectMemoryQuestion } from '../retrieval/conversation-route.ts';
 import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforge-adapters.ts';
 import { resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
 import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
@@ -34,7 +34,7 @@ const factualReference = (text:string) => /\b(?:it|its|this board|that board|thi
  && /^(?:what|which|whose|where|when|why|how|does|do|did|is|are|was|were|can|could|will|would|should|has|have)\b/.test(text);
 export function isImplicitProductFollowup(question:string,catalog:Catalog):boolean {
  const text=question.normalize('NFKC').toLowerCase();
- return text.length<=240&&text.split(/\s+/).length<=24&&!namedProduct(question,catalog)
+ return text.length<=240&&text.split(/\s+/).length<=24&&!namedProduct(question,catalog)&&!isProjectMemoryQuestion(question)
   &&factualReference(text);
 }
 
@@ -54,7 +54,9 @@ export function resolveMainFollowupScope(history:ChatRead,catalog:Catalog,thread
 export function isMainProductQuestion(question:string,catalog:Catalog):boolean {
  if(isUnscopedConversation(question))return false;
  const text=question.normalize('NFKC').toLowerCase();
- if(namedProduct(question,catalog)||resolveMultiProductIdentity(catalog,question).kind==='planned'||isImplicitProductFollowup(question,catalog))return true;
+ if(namedProduct(question,catalog)||resolveMultiProductIdentity(catalog,question).kind==='planned')return true;
+ if(isProjectMemoryQuestion(question))return false;
+ if(isImplicitProductFollowup(question,catalog))return true;
  if(factualReference(text))return true;
  if(/\b(?:its|this board|that board|this product|that product)\b/.test(text)&&/\b(?:usb|connector|mcu|cpu|pins?|pinout|voltage|current|flash|memory|psram|specifications?)\b/.test(text))return true;
  if(/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text))return true;

@@ -32,6 +32,33 @@ test('short pronoun hardware follow-ups are grounded and explicit product identi
   'Explain Bluetooth in one sentence.','Explain it more simply.','Explain it in JavaScript.','Explain UART.','Hello!'])assert.equal(isImplicitProductFollowup(question,catalog),false,question);
 });
 
+test('explicit project name/deadline recall stays conversational despite its pronoun',async()=>{
+ for(const question of [
+  'What is my project name and its current deadline? Reply in one short sentence.',
+  "What is my project's name and its updated deadline?",
+  'Remind me of my project name and deadline.',
+  'What is the current deadline of my project?',
+  'When is my project due?',
+ ]){
+  assert.equal(isImplicitProductFollowup(question,catalog),false,question);
+  assert.equal(isMainProductQuestion(question,catalog),false,question);
+  const f=fixture();await f.router.start({...turn,question},signal());
+  assert.deepEqual(f.calls.map(c=>c[0]),['route','direct'],question);
+ }
+});
+
+test('project-memory wording cannot bypass product identities, mixed hardware or ambiguous follow-ups',()=>{
+ for(const question of [
+  'What is my project name and its BOARDGREEN voltage?',
+  'What is my project name and its xUnknown99 MCU?',
+  'What is my project name and its pinout?',
+  'What is my project deadline and can it run from 5 V?',
+  'What is its name and current deadline?',
+  'What are its specifications?',
+  'What is my project name and its weight?',
+ ])assert.equal(isMainProductQuestion(question,catalog),true,question);
+});
+
 test('long factual references request grounded clarification without inheriting an implicit product',()=>{
  const question='Does it support '+Array(35).fill('this feature').join(' ')+'?';
  assert.equal(isMainProductQuestion(question,catalog),true);
