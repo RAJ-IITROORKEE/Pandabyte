@@ -1,5 +1,15 @@
 # Current RAG system: implementation and engineering handoff
 
+## Hosted Admin grounded-answer release, 10 November 2026
+
+The live [Control Room Playground](https://pandabyte-iot.vercel.app/admin/rag-control-room#playground) now generates grounded GPT-6 Luna answers. Eight actual model requests passed in the browser, including five on the primary domain, repeated identical questions and page reloads. Every selected quotation matched its retrieved passage. The latest primary deployment checked was `dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb`; it retains the RAG implementation from `ab763c9`, which is included in main.
+
+Hosted owner/Admin RAG has no application spending cap or expiring prototype lease. Its persistent deployment profile, live access/source checks, strict provider ZDR and signed single-dispatch claims remain enforced. The separate local/native and general-chat budgets are outside this change.
+
+Five primary-domain document-only HTTP responses took 568–973 ms. The five primary-domain model HTTP responses took 3,136–3,627 ms. These are sequential observed samples, not a maximum-latency guarantee. Anonymous capability access returned 401 with private/no-store. See [the release evidence](Panda-agent/docs/control-room/hosted-grounded-20261110.md) and [numeric receipt](Panda-agent/docs/verification/hosted-grounded-20261110.json).
+
+The deployment and hosted-answer checks below that say pending are earlier checkpoints, superseded by this verified release.
+
 ## Current completion and latency work, 10 November 2026
 
 Latest priority: finish the Admin RAG Control Room's hosted grounded answers first. The owner asked to stop cross-chat Agent coordination and explicitly removed the production Admin RAG application spending cap for repeated personal testing. The original local/native prototype ledger remains unchanged. Hosted admission is persistent, bound to the owner, exact Production origin, key and workspace, and an explicit enable flag. Operator-attested account privacy does not constitute a fresh automatic account-settings check. The transport independently verifies the current model's strict ZDR endpoint, safety-retention and price contract before each provider request.

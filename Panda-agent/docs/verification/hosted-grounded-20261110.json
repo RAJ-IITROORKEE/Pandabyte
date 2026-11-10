@@ -1,0 +1,152 @@
+{
+  "verifiedAt": "2026-11-10T07:33:15.803Z",
+  "entry": "https://pandabyte-iot.vercel.app/admin/rag-control-room#playground",
+  "ragCommit": "ab763c9",
+  "initialRagDeployment": "dpl_vZKe4gwtVcgMUvRWWc996HrYS1pn",
+  "currentPrimaryDeployment": "dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb",
+  "applicationBudgetCap": false,
+  "prototypeLeaseRequired": false,
+  "model": "openai/gpt-6-luna",
+  "provider": "azure/us",
+  "modelRuns": [
+    {
+      "environment": "staged",
+      "httpMs": null,
+      "serverMs": 3424,
+      "providerMs": 1330,
+      "inputTokens": 822,
+      "outputTokens": 54,
+      "costNanoUsd": 120120,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "staged",
+      "httpMs": null,
+      "serverMs": 2893,
+      "providerMs": 1019,
+      "inputTokens": 823,
+      "outputTokens": 43,
+      "costNanoUsd": 114180,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "staged",
+      "httpMs": null,
+      "serverMs": 3140,
+      "providerMs": 1476,
+      "inputTokens": 823,
+      "outputTokens": 43,
+      "costNanoUsd": 114180,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "primary",
+      "httpMs": 3136,
+      "serverMs": 2851,
+      "providerMs": 1175,
+      "inputTokens": 822,
+      "outputTokens": 52,
+      "costNanoUsd": 119020,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "primary",
+      "httpMs": 3401,
+      "serverMs": 2977,
+      "providerMs": 1283,
+      "inputTokens": 823,
+      "outputTokens": 43,
+      "costNanoUsd": 114180,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "primary",
+      "httpMs": 3363,
+      "serverMs": 3042,
+      "providerMs": 1157,
+      "inputTokens": 823,
+      "outputTokens": 42,
+      "costNanoUsd": 113630,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "primary",
+      "httpMs": 3151,
+      "serverMs": 2869,
+      "providerMs": 1133,
+      "inputTokens": 822,
+      "outputTokens": 51,
+      "costNanoUsd": 118470,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    },
+    {
+      "environment": "primary",
+      "httpMs": 3627,
+      "serverMs": 3112,
+      "providerMs": 1241,
+      "inputTokens": 822,
+      "outputTokens": 42,
+      "costNanoUsd": 113520,
+      "status": "evaluated",
+      "literalEvidenceValid": true
+    }
+  ],
+  "documentRuns": [
+    {
+      "outcome": "retrieved",
+      "httpMs": 799,
+      "serverMs": 322,
+      "snapshotMs": 194,
+      "passages": 3,
+      "modelStatus": "not_requested"
+    },
+    {
+      "outcome": "retrieved",
+      "httpMs": 731,
+      "serverMs": 230,
+      "snapshotMs": 119,
+      "passages": 3,
+      "modelStatus": "not_requested"
+    },
+    {
+      "outcome": "insufficient",
+      "httpMs": 973,
+      "serverMs": 201,
+      "snapshotMs": 88,
+      "passages": 0,
+      "modelStatus": "not_requested"
+    },
+    {
+      "outcome": "clarification",
+      "httpMs": 635,
+      "serverMs": 175,
+      "snapshotMs": 92,
+      "passages": 0,
+      "modelStatus": "not_requested"
+    },
+    {
+      "outcome": "insufficient",
+      "httpMs": 568,
+      "serverMs": 187,
+      "snapshotMs": 95,
+      "passages": 0,
+      "modelStatus": "not_requested"
+    }
+  ],
+  "anonymousReadStatus": 401,
+  "regression": {
+    "passed": 319,
+    "skipped": 0
+  },
+  "independentRelease": {
+    "passed": 13,
+    "skipped": 0
+  }
+}
