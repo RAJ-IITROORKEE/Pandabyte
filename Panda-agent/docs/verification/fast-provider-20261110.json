@@ -1,0 +1,925 @@
+{
+  "date": "2026-11-10",
+  "runtime": "739e0da",
+  "state": "verified-and-promoted",
+  "selectedModel": "openai/gpt-oss-20b",
+  "provider": "groq",
+  "ratesUsdPerMillion": {
+    "input": 0.075,
+    "output": 0.3,
+    "cachedInput": 0.0375
+  },
+  "cumulativeHostedApplicationBudgetCap": false,
+  "matchedComparison": {
+    "promptVersion": "before specification prompt correction",
+    "rounds": 3,
+    "casesPerRound": 3,
+    "luna": {
+      "accepted": 9,
+      "total": 9,
+      "medianMs": 1893,
+      "minMs": 1025,
+      "maxMs": 5158,
+      "costUsd": 0.00120252
+    },
+    "groq": {
+      "accepted": 9,
+      "total": 9,
+      "medianMs": 637,
+      "minMs": 258,
+      "maxMs": 3204,
+      "costUsd": 0.00092685,
+      "duplicateNormalizationSamples": 2
+    }
+  },
+  "benchmarkPhases": [
+    {
+      "phase": "phase1",
+      "completionPostAttempts": 18,
+      "records": 18,
+      "states": {
+        "passed": 4,
+        "failed": 13,
+        "unknown": 1
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-6-luna",
+          "attempts": 3,
+          "states": {
+            "passed": 2,
+            "failed": 1
+          },
+          "recordedCostUsd": 0.00044737,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "z-ai/glm-5.3-flash",
+          "attempts": 6,
+          "states": {
+            "failed": 6
+          },
+          "recordedCostUsd": 0,
+          "missingCostReceipts": 6
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 3,
+          "states": {
+            "failed": 3
+          },
+          "recordedCostUsd": 0,
+          "missingCostReceipts": 3
+        },
+        {
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "attempts": 3,
+          "states": {
+            "unknown": 1,
+            "passed": 1,
+            "failed": 1
+          },
+          "recordedCostUsd": 0.00014916,
+          "missingCostReceipts": 1
+        },
+        {
+          "model": "qwen/qwen3-30b-a3b-instruct-2507",
+          "attempts": 3,
+          "states": {
+            "failed": 2,
+            "passed": 1
+          },
+          "recordedCostUsd": 0.0004549,
+          "missingCostReceipts": 0
+        }
+      ]
+    },
+    {
+      "phase": "phase2",
+      "completionPostAttempts": 24,
+      "records": 24,
+      "states": {
+        "failed": 9,
+        "unknown": 2,
+        "passed": 13
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-6-luna",
+          "attempts": 6,
+          "states": {
+            "failed": 1,
+            "passed": 5
+          },
+          "recordedCostUsd": 0.00092169,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "z-ai/glm-5.3-flash",
+          "attempts": 12,
+          "states": {
+            "failed": 3,
+            "unknown": 2,
+            "passed": 7
+          },
+          "recordedCostUsd": 0.000499222,
+          "missingCostReceipts": 2
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 6,
+          "states": {
+            "failed": 5,
+            "passed": 1
+          },
+          "recordedCostUsd": 0.000555075,
+          "missingCostReceipts": 1
+        }
+      ]
+    },
+    {
+      "phase": "phase3",
+      "completionPostAttempts": 27,
+      "records": 27,
+      "states": {
+        "passed": 23,
+        "failed": 4
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-6-luna",
+          "attempts": 9,
+          "states": {
+            "passed": 9
+          },
+          "recordedCostUsd": 0.00107019,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "z-ai/glm-5.3-flash",
+          "attempts": 9,
+          "states": {
+            "passed": 8,
+            "failed": 1
+          },
+          "recordedCostUsd": 0.0004974408,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 9,
+          "states": {
+            "passed": 6,
+            "failed": 3
+          },
+          "recordedCostUsd": 0.000921975,
+          "missingCostReceipts": 0
+        }
+      ]
+    },
+    {
+      "phase": "phase4",
+      "completionPostAttempts": 18,
+      "records": 18,
+      "states": {
+        "passed": 14,
+        "failed": 4
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-6-luna",
+          "attempts": 9,
+          "states": {
+            "passed": 9
+          },
+          "recordedCostUsd": 0.00121187,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 9,
+          "states": {
+            "passed": 5,
+            "failed": 4
+          },
+          "recordedCostUsd": 0.00104235,
+          "missingCostReceipts": 0
+        }
+      ]
+    },
+    {
+      "phase": "phase5",
+      "completionPostAttempts": 3,
+      "records": 3,
+      "states": {
+        "passed": 1,
+        "failed": 2
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 3,
+          "states": {
+            "passed": 1,
+            "failed": 2
+          },
+          "recordedCostUsd": 0.00032985,
+          "missingCostReceipts": 0
+        }
+      ]
+    },
+    {
+      "phase": "final",
+      "completionPostAttempts": 18,
+      "records": 18,
+      "states": {
+        "passed": 15,
+        "failed": 3
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-6-luna",
+          "attempts": 9,
+          "states": {
+            "passed": 9
+          },
+          "recordedCostUsd": 0.00121352,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 9,
+          "states": {
+            "passed": 6,
+            "failed": 3
+          },
+          "recordedCostUsd": 0.00088275,
+          "missingCostReceipts": 0
+        }
+      ]
+    },
+    {
+      "phase": "verified",
+      "completionPostAttempts": 18,
+      "records": 18,
+      "states": {
+        "passed": 18
+      },
+      "byModel": [
+        {
+          "model": "openai/gpt-6-luna",
+          "attempts": 9,
+          "states": {
+            "passed": 9
+          },
+          "recordedCostUsd": 0.00120252,
+          "missingCostReceipts": 0
+        },
+        {
+          "model": "openai/gpt-oss-20b",
+          "attempts": 9,
+          "states": {
+            "passed": 9
+          },
+          "recordedCostUsd": 0.00092685,
+          "missingCostReceipts": 0
+        }
+      ]
+    }
+  ],
+  "focusedPowerRepair": [
+    {
+      "caseId": "specifications",
+      "round": 0,
+      "status": "passed",
+      "checks": {
+        "nonempty": true,
+        "voltage": true,
+        "frequencyAsPower": false,
+        "exactQuotes": true,
+        "separateLines": 6
+      },
+      "usage": {
+        "inputTokens": 1221,
+        "outputTokens": 303,
+        "costNanoUsd": 182475
+      }
+    },
+    {
+      "caseId": "power-source",
+      "round": 0,
+      "status": "passed",
+      "checks": {
+        "nonempty": true,
+        "voltage": true,
+        "frequencyAsPower": false,
+        "exactQuotes": true,
+        "separateLines": 1
+      },
+      "usage": {
+        "inputTokens": 1248,
+        "outputTokens": 196,
+        "costNanoUsd": 152400
+      }
+    },
+    {
+      "caseId": "specifications",
+      "round": 1,
+      "status": "passed",
+      "checks": {
+        "nonempty": true,
+        "voltage": true,
+        "frequencyAsPower": false,
+        "exactQuotes": true,
+        "separateLines": 6
+      },
+      "usage": {
+        "inputTokens": 1233,
+        "outputTokens": 302,
+        "costNanoUsd": 183075
+      }
+    },
+    {
+      "caseId": "power-source",
+      "round": 1,
+      "status": "passed",
+      "checks": {
+        "nonempty": true,
+        "voltage": true,
+        "frequencyAsPower": false,
+        "exactQuotes": true,
+        "separateLines": 1
+      },
+      "usage": {
+        "inputTokens": 1308,
+        "outputTokens": 176,
+        "costNanoUsd": 150900
+      }
+    },
+    {
+      "caseId": "specifications",
+      "round": 2,
+      "status": "passed",
+      "checks": {
+        "nonempty": true,
+        "voltage": true,
+        "frequencyAsPower": false,
+        "exactQuotes": true,
+        "separateLines": 12
+      },
+      "usage": {
+        "inputTokens": 1221,
+        "outputTokens": 351,
+        "costNanoUsd": 196875
+      }
+    },
+    {
+      "caseId": "power-source",
+      "round": 2,
+      "status": "passed",
+      "checks": {
+        "nonempty": true,
+        "voltage": true,
+        "frequencyAsPower": false,
+        "exactQuotes": true,
+        "separateLines": 1
+      },
+      "usage": {
+        "inputTokens": 1284,
+        "outputTokens": 202,
+        "costNanoUsd": 156900
+      }
+    }
+  ],
+  "candidateApplicationObservations": [
+    {
+      "time": "2026-11-10T11:48:14.898Z",
+      "status": 200,
+      "surface": "main-chat",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 238,
+          "admissionMs": 992,
+          "firstContentDeltaMs": 572,
+          "providerRoundTripMs": 629,
+          "totalMs": 1622,
+          "httpStatus": 200,
+          "inputTokens": 1605,
+          "outputTokens": 113,
+          "costNanoUsd": 154275,
+          "reasoningTokens": 20,
+          "cachedTokens": 0
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T11:47:52.046Z",
+      "status": 200,
+      "surface": "main-chat",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 243,
+          "admissionMs": 978,
+          "firstContentDeltaMs": 660,
+          "providerRoundTripMs": 679,
+          "totalMs": 1659,
+          "httpStatus": 200,
+          "inputTokens": 1208,
+          "outputTokens": 295,
+          "costNanoUsd": 179100,
+          "reasoningTokens": 59,
+          "cachedTokens": 0
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T11:47:22.242Z",
+      "status": 200,
+      "surface": "control-room",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 404,
+          "admissionMs": 799,
+          "firstContentDeltaMs": 1448,
+          "providerRoundTripMs": 1464,
+          "totalMs": 2263,
+          "httpStatus": 200,
+          "inputTokens": 868,
+          "outputTokens": 49,
+          "costNanoUsd": 70200,
+          "reasoningTokens": 28,
+          "cachedTokens": 256
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T11:47:14.260Z",
+      "status": 200,
+      "surface": "control-room",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 354,
+          "admissionMs": 797,
+          "firstContentDeltaMs": 591,
+          "providerRoundTripMs": 621,
+          "totalMs": 1419,
+          "httpStatus": 200,
+          "inputTokens": 1659,
+          "outputTokens": 162,
+          "costNanoUsd": 173025,
+          "reasoningTokens": 30,
+          "cachedTokens": 0
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T11:46:52.773Z",
+      "status": 200,
+      "surface": "control-room",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 334,
+          "admissionMs": 714,
+          "firstContentDeltaMs": 577,
+          "providerRoundTripMs": 588,
+          "totalMs": 1304,
+          "httpStatus": 200,
+          "inputTokens": 1245,
+          "outputTokens": 269,
+          "costNanoUsd": 174075,
+          "reasoningTokens": 22,
+          "cachedTokens": 0
+        }
+      ]
+    }
+  ],
+  "langsmith": {
+    "applicationGenerationMatched": true,
+    "inputTokens": 1245,
+    "outputTokens": 269,
+    "providerMs": 588,
+    "inputsPresent": false,
+    "outputUsageOnly": true,
+    "live": {
+      "applicationGenerationMatched": true,
+      "inputTokens": 1659,
+      "outputTokens": 127,
+      "providerRoundTripMs": 3329,
+      "noInputs": true,
+      "usageOutput": true,
+      "liveModelRowsObserved": 5
+    }
+  },
+  "limitations": [
+    "Small sequential diagnostic samples, not SLA or throughput load test.",
+    "Recorded benchmark costs omit missing receipts; unknown outcomes are not assumed free.",
+    "Exact quotation membership does not establish answer entailment.",
+    "Initial candidate causal error and project-memory routing failure retained; final prompt/routing repairs passed candidate and primary browser checks.",
+    "Frozen twenty-case retrieval regressions are not twenty fresh live model answers."
+  ],
+  "deployment": {
+    "id": "dpl_ADhJaJJ19NtUhUzyH8ffPwWHV8zR",
+    "runtime": "739e0da",
+    "alias": "https://pandabyte-iot.vercel.app",
+    "candidate": "https://pandabyte-6nn3c8luf-unfiltered-iit-ians.vercel.app",
+    "ready": true,
+    "promoted": true
+  },
+  "browser": [
+    {
+      "surface": "candidate-control-room",
+      "caseId": "specifications",
+      "httpMs": 3346,
+      "metrics": {
+        "elapsedMs": 2696,
+        "contextPassages": 3,
+        "contextCharacters": 1703,
+        "inputTokens": 1245,
+        "outputTokens": 269,
+        "costUsd": 0.000174075,
+        "admissionMs": 714,
+        "providerRoundTripMs": 588,
+        "contextRevalidationMs": 423,
+        "contextRevalidationCount": 2
+      },
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "candidate-control-room",
+      "caseId": "power-source",
+      "httpMs": 3250,
+      "metrics": {
+        "elapsedMs": 2696,
+        "contextPassages": 4,
+        "contextCharacters": 2485,
+        "inputTokens": 1659,
+        "outputTokens": 162,
+        "costUsd": 0.000173025,
+        "admissionMs": 797,
+        "providerRoundTripMs": 621,
+        "contextRevalidationMs": 454,
+        "contextRevalidationCount": 2
+      },
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "candidate-control-room",
+      "caseId": "unsupported-physical-revision",
+      "httpMs": 3845,
+      "metrics": {
+        "elapsedMs": 3343,
+        "contextPassages": 3,
+        "contextCharacters": 820,
+        "inputTokens": 868,
+        "outputTokens": 49,
+        "costUsd": 0.0000702,
+        "admissionMs": 799,
+        "providerRoundTripMs": 1464,
+        "contextRevalidationMs": 393,
+        "contextRevalidationCount": 2
+      },
+      "quality": "manual-abstention-pass"
+    },
+    {
+      "surface": "candidate-main",
+      "caseId": "specifications",
+      "httpMs": 4995,
+      "retrievalMs": 233,
+      "contextReadyMs": 1003,
+      "quality": "manual-pass",
+      "draftWhileRunning": true
+    },
+    {
+      "surface": "candidate-main",
+      "caseId": "bluetooth-follow-up",
+      "httpMs": 5499,
+      "retrievalMs": 205,
+      "contextReadyMs": 983,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "candidate-main",
+      "caseId": "general-project-plan",
+      "httpMs": 3066,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "candidate-main",
+      "caseId": "general-correction",
+      "httpMs": 3208,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "candidate-main",
+      "caseId": "general-current-memory",
+      "httpMs": 2156,
+      "completed": true,
+      "quality": "failed-existing-memory-routing"
+    },
+    {
+      "surface": "candidate-main",
+      "caseId": "general-explicit-recall",
+      "httpMs": 3109,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "candidate-control-room",
+      "caseId": "documents-only",
+      "httpMs": 912,
+      "metrics": {
+        "elapsedMs": 392,
+        "contextPassages": 3,
+        "contextCharacters": 1703,
+        "inputTokens": null,
+        "outputTokens": null,
+        "costUsd": null,
+        "admissionMs": null,
+        "providerRoundTripMs": null,
+        "contextRevalidationMs": 7,
+        "contextRevalidationCount": 1,
+        "databaseSnapshotMs": 208
+      },
+      "quality": "retrieval-pass",
+      "modelStatus": "not_requested"
+    },
+    {
+      "surface": "final-candidate-main",
+      "caseId": "repaired-exact-memory",
+      "httpMs": 3696,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "final-candidate-main",
+      "caseId": "specifications",
+      "httpMs": 5156,
+      "retrievalMs": 234,
+      "contextReadyMs": 945,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "final-candidate-control-room",
+      "caseId": "x8266-mcu-usb",
+      "httpMs": 2682,
+      "metrics": {
+        "elapsedMs": 2339,
+        "contextPassages": 4,
+        "contextCharacters": 2588,
+        "inputTokens": 1543,
+        "outputTokens": 136,
+        "costUsd": 0.000156525,
+        "admissionMs": 667,
+        "providerRoundTripMs": 389,
+        "contextRevalidationMs": 474,
+        "contextRevalidationCount": 2
+      },
+      "modelStatus": "evaluated",
+      "quality": "manual-pass",
+      "literalMatches": true
+    },
+    {
+      "surface": "primary-main",
+      "caseId": "specifications",
+      "httpMs": 4927,
+      "retrievalMs": 206,
+      "contextReadyMs": 773,
+      "completed": true,
+      "quality": "manual-pass",
+      "draftWhileRunning": true
+    },
+    {
+      "surface": "primary-main",
+      "caseId": "bluetooth-follow-up",
+      "httpMs": 7912,
+      "retrievalMs": 112,
+      "contextReadyMs": 831,
+      "completed": true,
+      "quality": "manual-pass"
+    },
+    {
+      "surface": "primary-control-room",
+      "caseId": "x8266-documents-only",
+      "httpMs": 679,
+      "metrics": {
+        "elapsedMs": 356,
+        "contextPassages": 4,
+        "contextCharacters": 2588,
+        "inputTokens": null,
+        "outputTokens": null,
+        "costUsd": null,
+        "admissionMs": null,
+        "providerRoundTripMs": null,
+        "contextRevalidationMs": 5,
+        "contextRevalidationCount": 1,
+        "databaseSnapshotMs": 201
+      },
+      "modelStatus": "not_requested",
+      "quality": "retrieval-pass",
+      "literalMatches": true
+    },
+    {
+      "surface": "primary-control-room",
+      "caseId": "x8266-mcu-usb",
+      "httpMs": 4180,
+      "metrics": {
+        "elapsedMs": 3876,
+        "contextPassages": 4,
+        "contextCharacters": 2588,
+        "inputTokens": 1639,
+        "outputTokens": 126,
+        "costUsd": 0.000151125,
+        "admissionMs": 625,
+        "providerRoundTripMs": 2061,
+        "contextRevalidationMs": 416,
+        "contextRevalidationCount": 2
+      },
+      "modelStatus": "evaluated",
+      "quality": "manual-pass",
+      "literalMatches": true
+    },
+    {
+      "surface": "primary-control-room",
+      "caseId": "unsupported-physical-revision",
+      "httpMs": 2761,
+      "metrics": {
+        "elapsedMs": 2451,
+        "contextPassages": 3,
+        "contextCharacters": 820,
+        "inputTokens": 836,
+        "outputTokens": 26,
+        "costUsd": 0.0000705,
+        "admissionMs": 812,
+        "providerRoundTripMs": 391,
+        "contextRevalidationMs": 419,
+        "contextRevalidationCount": 2
+      },
+      "modelStatus": "evaluated",
+      "quality": "manual-abstention-pass",
+      "literalMatches": true
+    },
+    {
+      "surface": "primary-main",
+      "caseId": "repaired-exact-memory",
+      "httpMs": 3171,
+      "completed": true,
+      "quality": "manual-pass"
+    }
+  ],
+  "primaryApplicationObservations": [
+    {
+      "time": "2026-11-10T12:04:19.986Z",
+      "status": 200,
+      "surface": "main-chat",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 311,
+          "admissionMs": 590,
+          "firstContentDeltaMs": 260,
+          "providerRoundTripMs": 272,
+          "totalMs": 863,
+          "httpStatus": 200,
+          "inputTokens": 409,
+          "outputTokens": 34,
+          "costNanoUsd": 40875,
+          "reasoningTokens": 6,
+          "cachedTokens": 0
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T12:03:12.863Z",
+      "status": 200,
+      "surface": "control-room",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 397,
+          "admissionMs": 812,
+          "firstContentDeltaMs": 345,
+          "providerRoundTripMs": 391,
+          "totalMs": 1204,
+          "httpStatus": 200,
+          "inputTokens": 836,
+          "outputTokens": 26,
+          "costNanoUsd": 70500,
+          "reasoningTokens": 5,
+          "cachedTokens": 0
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T12:02:45.015Z",
+      "status": 200,
+      "surface": "control-room",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 235,
+          "admissionMs": 625,
+          "firstContentDeltaMs": 2040,
+          "providerRoundTripMs": 2061,
+          "totalMs": 2687,
+          "httpStatus": 200,
+          "inputTokens": 1639,
+          "outputTokens": 126,
+          "costNanoUsd": 151125,
+          "reasoningTokens": 13,
+          "cachedTokens": 256
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T12:02:32.446Z",
+      "status": 200,
+      "surface": "control-room",
+      "observations": []
+    },
+    {
+      "time": "2026-11-10T12:01:08.981Z",
+      "status": 200,
+      "surface": "main-chat",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 227,
+          "admissionMs": 997,
+          "firstContentDeltaMs": 3315,
+          "providerRoundTripMs": 3329,
+          "totalMs": 4327,
+          "httpStatus": 200,
+          "inputTokens": 1659,
+          "outputTokens": 127,
+          "costNanoUsd": 152925,
+          "reasoningTokens": 27,
+          "cachedTokens": 256
+        }
+      ]
+    },
+    {
+      "time": "2026-11-10T12:00:41.937Z",
+      "status": 200,
+      "surface": "main-chat",
+      "observations": [
+        {
+          "model": "openai/gpt-oss-20b",
+          "provider": "groq",
+          "stage": "validated",
+          "metadataMs": 336,
+          "admissionMs": 1069,
+          "firstContentDeltaMs": 766,
+          "providerRoundTripMs": 779,
+          "totalMs": 1849,
+          "httpStatus": 200,
+          "inputTokens": 1232,
+          "outputTokens": 309,
+          "costNanoUsd": 185100,
+          "reasoningTokens": 5,
+          "cachedTokens": 0
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "serverTests": 450,
+    "uiTests": 22,
+    "totalTests": 472,
+    "failures": 0,
+    "skipped": 0,
+    "typecheck": true,
+    "scopedLint": true,
+    "productionBuild": true,
+    "primarySavedReload": true,
+    "primaryDraftDuringGeneration": true,
+    "primaryExactMemoryRepair": true,
+    "primaryUnsupportedFactAbstention": true
+  }
+}

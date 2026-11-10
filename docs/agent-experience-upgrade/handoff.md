@@ -1,11 +1,17 @@
 # Agent Experience Upgrade — current handoff
 
-10 November 2026. Current incident branch: `codex/rag-input-latency`; native development remains in its original checkout.
+10 November 2026. Current hosted provider branch: `codex/rag-provider-latency`; native development remains in its original checkout.
 Use `git log -1` for the local checkpoint. Latest native/UI follow-up is below; earlier Control Room and grounded RAG evidence is retained. Prior basic-history checkpoint is `72b2a20`.
 The owner now authorizes commit, merge to main and push after the requested local
 experience works and is validated. The latest direct-demo request authorizes its Vercel update; commerce and provider-policy
 changes remain excluded. Historical restrictions below describe earlier scope.
 Prior detailed evidence remains in the verification JSON and Git history.
+
+## Latest hosted provider selection and live checks, 10 November 2026
+
+Runtime `739e0da`, deployment `dpl_ADhJaJJ19NtUhUzyH8ffPwWHV8zR`, is promoted on the primary domain. Hosted main/Control Room select GPT-OSS 20B pinned to Groq, with exact source quote selection and safe per-call numeric/provider observations. Hosted owner testing remains uncapped; native/local profiles, ledger and migrations are unchanged. Targeted EGM reviews rechecked admission repairs and the narrow explicit project-memory routing fix. 472 affected tests pass without skips/failures; typecheck, lint and production build pass.
+
+Primary-domain browser checks passed grounded xC3 specifications, Bluetooth follow-up, x8266 MCU/USB, unsupported physical-revision abstention, typing during generation, saved reload and exact corrected project-memory recall. Documents took 679 ms; context was ready in 773/831 ms. Main full answers took 4.93/7.91 seconds, with provider round trips 779/3,329 ms. Actual five-call LangSmith delivery was observed; the slow generation ID matched the application record with no inputs/usage-only output. Faster matched provider median and lower sample cost do not imply a full-answer maximum. The earlier semantic/routing failures and full comparison phases are retained in [the release report](../../Panda-agent/docs/control-room/fast-provider-20261110.md). Hosted private-pack Evaluation and full native/OpenCode acceptance remain separate.
 
 ## Latest live incident repair, 10 November 2026
 
