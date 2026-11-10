@@ -73,7 +73,7 @@ export function createBasicRagPlayground(options: Options): Generate {
         async () => !signal.aborted && await beforeSend() && !signal.aborted, signal);
     } catch (error) {
       const code = error instanceof BasicRagProviderError
-        ? error.code === 'rate_limited' ? 'quota' : error.code === 'outcome_unknown' ? 'outcome_unknown' : 'not_admitted'
+        ? error.code === 'rate_limited' ? 'quota' : error.code === 'outcome_unknown' || error.code === 'response_rejected' ? error.code : 'not_admitted'
         : 'outcome_unknown';
       throw Object.assign(Error('Model unavailable'), { code });
     }

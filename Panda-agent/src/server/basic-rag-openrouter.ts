@@ -7,7 +7,7 @@ const api = 'https://openrouter.ai/api/v1';
 type Input = { question: string; passages: Array<{ rank: number; text: string }> };
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 export class BasicRagProviderError extends Error {
-  readonly code: 'not_admitted' | 'rate_limited' | 'unavailable' | 'outcome_unknown';
+  readonly code: 'not_admitted' | 'rate_limited' | 'unavailable' | 'outcome_unknown' | 'response_rejected';
   readonly httpStatus?: number;
   constructor(code: BasicRagProviderError['code'], httpStatus?: number) {
     super(code); this.code = code; this.httpStatus = httpStatus;

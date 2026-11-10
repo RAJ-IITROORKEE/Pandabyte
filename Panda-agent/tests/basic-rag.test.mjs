@@ -2,9 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runBasicRag } from '../src/retrieval/basic-rag.ts';
 import { createBasicRagCompletion, basicRagModel } from '../src/server/basic-rag-openrouter.ts';
+import { BasicRagProviderError } from '../src/server/basic-rag-openrouter.ts';
 
 const question = 'Which MCU does the x8266 use?';
 const input = () => ({ question, signal: new AbortController().signal });
+
+test('known rejected content becomes unavailable while an ambiguous provider outcome remains unknown',async()=>{
+ for(const [code,status] of [['response_rejected','unavailable'],['outcome_unknown','outcome_unknown']]){
+  const f=fixture();let sends=0;
+  f.deps.complete=async(_input,beforeSend)=>{assert.equal(await beforeSend(),true);sends++;throw new BasicRagProviderError(code);};
+  const result=await runBasicRag(input(),f.deps);assert.equal(result.status,status);assert.equal(sends,1);
+  assert.equal('answer' in result,false);assert.equal('usage' in result,false);
+ }
+});
 
 test('bounded paid receipt requires explicit test policy and does not change zero-cost default',async()=>{
  for(const policy of [undefined,'bounded_luna_test']){

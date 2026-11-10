@@ -138,7 +138,7 @@ test('workflow HTTP boundary preserves Admin, origin, exact payload and UUID gua
  const denied=createPlaygroundWorkflowHandler(async()=>({kind:'unauthorized'}));assert.equal((await denied(request({question}))).status,401);
 });
 test('quota, known denial and ambiguous model outcomes remain distinct with no automatic retry',async()=>{
- for(const code of ['quota','not_admitted','outcome_unknown']){const f=fixture();let sends=0;f.deps.generate=async()=>{sends++;throw Object.assign(Error('Guarded fixture outcome'),{code});};
+ for(const code of ['quota','not_admitted','outcome_unknown','response_rejected']){const f=fixture();let sends=0;f.deps.generate=async()=>{sends++;throw Object.assign(Error('Guarded fixture outcome'),{code});};
   const handler=createPlaygroundWorkflowHandler(async()=>({kind:'admin',subject:'owner',dependencies:f.deps}));
   const request=new Request('https://app.example/api',{method:'POST',headers:{origin:'https://app.example','content-type':'application/json'},body:JSON.stringify({question,evaluate:true,requestId})});
   const response=await handler(request);assert.equal(response.status,503);assert.equal((await response.json()).error.code,code);assert.equal(sends,1);

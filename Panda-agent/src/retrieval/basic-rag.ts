@@ -106,7 +106,7 @@ export async function runBasicRag(input: { question: string; signal: AbortSignal
   } catch (error) {
     if (signal?.aborted || (gateCalls > 0 && !gatePassed)) return fail('unavailable');
     const code = (error as { code?: unknown } | null)?.code;
-    if (!attempted || code === 'quota' || code === 'rate_limited' || code === 'not_admitted') return fail('unavailable');
+    if (!attempted || code === 'quota' || code === 'rate_limited' || code === 'not_admitted' || code === 'response_rejected') return fail('unavailable');
     return fail('outcome_unknown');
   }
 }

@@ -1,6 +1,7 @@
 import 'server-only';
 import { strictJson } from '../lightweight/client.ts';
 import { validatePlaygroundEvaluation, type PlaygroundEvaluationRejection } from '../control-room/playground-evaluation.ts';
+import { reconcileLiteralEvidence } from '../control-room/literal-evidence.ts';
 import { BasicRagProviderError } from './basic-rag-openrouter.ts';
 
 export const lunaRagModel = 'openai/gpt-6-luna';
@@ -15,7 +16,7 @@ export const lunaChatSystemPrompt = 'You are Panda Agent, a helpful and concise 
 type Input = { question: string; passages: Array<{ rank: number; text: string }> };
 type ChatInput = { question: string };
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
-const diagnostic = (stage: 'receipt-rejected' | 'response-truncated' | 'json-rejected' | 'evidence-rejected' | `evidence-rejected:${PlaygroundEvaluationRejection}` | 'answer-markers-rejected' | 'provider-http-ok' | 'response-validated' | 'metadata-validated' | 'dispatch-ready' | 'provider-round-trip' | 'failed-not-admitted' | 'failed-outcome-unknown', elapsedMs?:number) => {
+const diagnostic = (stage: 'receipt-rejected' | 'response-truncated' | 'json-rejected' | 'evidence-rejected' | `evidence-rejected:${PlaygroundEvaluationRejection}` | 'answer-markers-rejected' | 'provider-http-ok' | 'response-validated' | 'metadata-validated' | 'dispatch-ready' | 'provider-round-trip' | 'failed-not-admitted' | 'failed-outcome-unknown' | 'failed-response-rejected', elapsedMs?:number) => {
   if(process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS==='true')console.info('[grounded-rag]',stage,
     ...(typeof elapsedMs==='number'&&Number.isSafeInteger(elapsedMs)&&elapsedMs>=0&&elapsedMs<=120000?[elapsedMs]:[]));
 };
@@ -95,11 +96,12 @@ function validateLunaEnvelope(value: unknown, receiptPolicy?: 'hosted') {
 export function validateLunaRagResponse(value: unknown, passages: Input['passages'], receiptPolicy?: 'hosted') {
   const { content, usage } = validateLunaEnvelope(value,receiptPolicy);
   let evaluation: unknown;
-  try { evaluation = strictJson(content); } catch { diagnostic('json-rejected'); throw new BasicRagProviderError('outcome_unknown'); }
+  try { evaluation = strictJson(content); } catch { diagnostic('json-rejected'); throw new BasicRagProviderError('response_rejected'); }
+  evaluation = reconcileLiteralEvidence(evaluation, passages);
   const checked=validatePlaygroundEvaluation(evaluation, passages.map(p => ({ handle: String(p.rank), text: p.text })),
     reason=>diagnostic(`evidence-rejected:${reason}`));
-  if (!checked) { diagnostic('evidence-rejected'); throw new BasicRagProviderError('outcome_unknown'); }
-  if (/(?:\[S\d+\]|https?:\/\/|www\.)/i.test(checked.answer)) { diagnostic('answer-markers-rejected'); throw new BasicRagProviderError('outcome_unknown'); }
+  if (!checked) { diagnostic('evidence-rejected'); throw new BasicRagProviderError('response_rejected'); }
+  if (/(?:\[S\d+\]|https?:\/\/|www\.)/i.test(checked.answer)) { diagnostic('answer-markers-rejected'); throw new BasicRagProviderError('response_rejected'); }
   return { evaluation, usage };
 }
 
@@ -220,7 +222,8 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
       const validTiming = [admissionMs, providerRoundTripMs].every(n => Number.isSafeInteger(n) && n >= 0 && n <= 120000);
       return { ...result, ...(validTiming ? { timing: { admissionMs, providerRoundTripMs } } : {}) };
     } catch (error) {
-      diagnostic(error instanceof BasicRagProviderError&&error.code==='not_admitted'?'failed-not-admitted':'failed-outcome-unknown',Math.round(performance.now()-started));
+      diagnostic(error instanceof BasicRagProviderError&&error.code==='not_admitted'?'failed-not-admitted'
+        :error instanceof BasicRagProviderError&&error.code==='response_rejected'?'failed-response-rejected':'failed-outcome-unknown',Math.round(performance.now()-started));
       if (error instanceof BasicRagProviderError) throw error;
       throw new BasicRagProviderError(sent ? 'outcome_unknown' : 'unavailable');
     }

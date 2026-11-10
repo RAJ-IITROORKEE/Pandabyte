@@ -55,3 +55,14 @@ Run affected tests with the original reviewed private fixtures supplied from the
 
 ## Fresh repair-review follow-up
 A third fresh Goldfish review completed against d9a3a39. It found draft text could survive genuine chat-identity changes because the external-store composer outlives the keyed UI. The repair now explicitly clears on a genuine composer mount, preserves later same-chat null restore updates, and adds installed-SDK tests for chat switch/New chat/archive/delete isolation. It also corrected this brief: separate-new-test acknowledgement may refresh capabilities but makes no generation request. Neither finding was dismissed as a clean review. Final live confirmation is still in progress.
+
+## Confirmed model failure and repair
+The signed-in candidate e032ee6 reproduced the exact xC3 specifications question. Safe runtime diagnostics show metadata226ms, pre-dispatch585ms, provider round trip2457ms, then `evidence-rejected:quote-whitespace-mismatch`. The provider receipt and inner JSON were valid; this was not a retrieval failure or token truncation. An earlier candidate showed provider2932ms and the same broad evidence-rejected stage. The Vercel connector returned403; the authenticated official CLI's documented request-log endpoint supplied the fixed stage labels without disclosing model content.
+
+Luna now reconciles only uniquely identifiable whitespace-equivalent quotations to the exact original source substring before the unchanged strict validator. Original and recovered quotes remain bounded to600characters; ambiguous occurrences, changed words/numbers/punctuation/case/soft hyphens and Unicode normalization remain rejected. The returned evaluation contains the exact source bytes for subsequent source revalidation. This changes neither stored source material nor other providers.
+
+After a valid Luna RAG receipt, rejected inner JSON/evidence/answer markers now produce typed `response_rejected`. Main chat saves its existing fixed safe unavailable answer while retaining the consumed claim; an uncertain transport/receipt/truncated response remains unknown. Both Playground adapters and its API preserve the new code; the UI keeps a separate-test guard with distinct persisted rejection wording. No retry, refund or claim removal is introduced.
+
+The repair reviewer rechecked draft isolation and corrected documentation, then reviewed typed rejection and quote reconciliation including the composed downstream tests. It found no remaining blocker/major in the reviewed changes. This is a targeted repair review, not five-stage EGM convergence or full native-harness acceptance.
+
+Candidate browser input checks passed: an existing blocked chat allowed typing while Send remained disabled, status GET preserved the draft, and New chat cleared it. Final repaired model/browser verification follows the next candidate build.

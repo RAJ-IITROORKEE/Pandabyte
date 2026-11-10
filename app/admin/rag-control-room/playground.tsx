@@ -13,6 +13,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
   const [question, setQuestion] = useState("");
   const [evaluate, setEvaluate] = useState(false);
   const [unknownOutcome, setUnknownOutcome] = useState(false);
+  const [rejectedOutcome, setRejectedOutcome] = useState(false);
   const [guardReady, setGuardReady] = useState(false);
   const [capability, setCapability] = useState<Capability | null>(null);
   const [capabilityError, setCapabilityError] = useState(false);
@@ -28,7 +29,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
 
   useEffect(() => {
     queueMicrotask(() => {
-      try { if (sessionStorage.getItem(outcomeKey) !== null) { setUnknownOutcome(true); setEvaluate(false); } }
+      try { const prior = sessionStorage.getItem(outcomeKey); if (prior !== null) { setUnknownOutcome(true); setRejectedOutcome(prior === "response_rejected"); setEvaluate(false); } }
       catch { setUnknownOutcome(true); setEvaluate(false); }
       setGuardReady(true);
     });
@@ -62,7 +63,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
     try { sessionStorage.removeItem(outcomeKey); }
     catch { setError("Session storage is unavailable. Model testing stays paused to prevent an uncertain retry."); return; }
     request.current?.abort(); request.current = null; evaluationId.current = null;
-    setUnknownOutcome(false); setEvaluate(false); setError(""); setCapabilityAttempt(value => value + 1);
+    setUnknownOutcome(false); setRejectedOutcome(false); setEvaluate(false); setError(""); setCapabilityAttempt(value => value + 1);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -75,7 +76,10 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
         sessionStorage.setItem(outcomeKey, "1");
       } catch { setUnknownOutcome(true); setEvaluate(false); return; }
     }
-    const lock = () => { setUnknownOutcome(true); setEvaluate(false); };
+    const lock = (rejected = false) => {
+      setUnknownOutcome(true); setRejectedOutcome(rejected); setEvaluate(false);
+      if (rejected) { try { sessionStorage.setItem(outcomeKey, "response_rejected"); } catch { /* The original guard remains authoritative. */ } }
+    };
     const clearGuard = () => {
       try { sessionStorage.removeItem(outcomeKey); return true; }
       catch { lock(); return false; }
@@ -90,8 +94,8 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
       });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
-        if (!controller.signal.aborted && evaluate) { if (["quota", "not_admitted"].includes(data?.error?.code)) clearGuard(); else lock(); }
-        if (!controller.signal.aborted) setError(data?.error?.code === "not_admitted" ? capability?.profile === "mini-two-case-v1" ? "No model request was admitted. Use an approved validation question or inspect retrieval." : "No model request was admitted. Check the profile and allowance, or inspect retrieval." : data?.error?.code === "quota" ? "Model quota is unavailable or exhausted. No automatic retry was made." : data?.error?.code === "outcome_unknown" ? "The model call outcome is unknown. Check its status before submitting again; no automatic retry was made." : evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
+        if (!controller.signal.aborted && evaluate) { if (["quota", "not_admitted"].includes(data?.error?.code)) clearGuard(); else lock(data?.error?.code === "response_rejected"); }
+        if (!controller.signal.aborted) setError(data?.error?.code === "not_admitted" ? capability?.profile === "mini-two-case-v1" ? "No model request was admitted. Use an approved validation question or inspect retrieval." : "No model request was admitted. Check the profile and allowance, or inspect retrieval." : data?.error?.code === "quota" ? "Model quota is unavailable or exhausted. No automatic retry was made." : data?.error?.code === "response_rejected" ? "The model returned an answer that failed validation. No answer was released; usage may have incurred. No automatic retry was made." : data?.error?.code === "outcome_unknown" ? "The model call outcome is unknown. Check its status before submitting again; no automatic retry was made." : evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
         return;
       }
       const data = await response.json();
@@ -128,7 +132,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
             <span>Also generate a grounded answer{capability ? ` with ${modelName}` : ""}</span>
           </label>
           <p id="evaluation-help" role="status">{unknownOutcome
-            ? "The previous model test is unconfirmed and may have incurred usage. It will not be retried. Retrieval remains available; you can explicitly start a separate new test."
+            ? rejectedOutcome ? "The previous model answer failed validation and was withheld. Usage may have incurred. You can explicitly start a separate new test; the previous request will not be retried." : "The previous model test is unconfirmed and may have incurred usage. It will not be retried. Retrieval remains available; you can explicitly start a separate new test."
             : capabilityError ? "Model status could not be checked. Retrieval remains available."
             : !capability ? "Checking model availability. You can inspect retrieval now."
             : !modelAvailable ? capability.model === "openai/gpt-6-luna" ? "Model generation is unavailable. Refresh connection to check again. Document retrieval remains available." : "No model connection is configured for this build. Document retrieval remains available."

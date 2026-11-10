@@ -23,6 +23,6 @@ export function createPlaygroundWorkflowHandler(authenticate:()=>Promise<Workflo
   const v=value as Record<string,unknown>;
   if(Object.keys(v).some(k=>!['question','evaluate','requestId'].includes(k))||!parseQuestion({question:v.question})||(v.evaluate!==undefined&&typeof v.evaluate!=='boolean')||(v.evaluate===true?typeof v.requestId!=='string'||!uuid(v.requestId)||v.requestId!==v.requestId.toLowerCase():v.requestId!==undefined))return fail(400,'invalid_request');
   try{return json(200,await runRagWorkflow({question:(v.question as string).trim(),evaluate:v.evaluate===true,requestId:v.requestId as string|undefined,signal},admission.dependencies));}
-  catch(e){const code=(e as {code?:unknown})?.code;return fail(503,['quota','not_admitted','outcome_unknown'].includes(String(code))?String(code):'unavailable');}
+  catch(e){const code=(e as {code?:unknown})?.code;return fail(503,['quota','not_admitted','outcome_unknown','response_rejected'].includes(String(code))?String(code):'unavailable');}
  };
 }

@@ -53,7 +53,7 @@ test('model-supplied citation markers or URLs are withheld without another provi
  for(const suffix of [' [S1]',' https://example.com',' www.example.com']){
   const value=receipt(),parsed=JSON.parse(value.choices[0].message.content);parsed.answer+=suffix;value.choices[0].message.content=JSON.stringify(parsed);
   const f=fixture({response:()=>Response.json(value)});
-  await assert.rejects(run(f),e=>e.code==='outcome_unknown');
+  await assert.rejects(run(f),e=>e.code==='response_rejected');
   await assert.rejects(run(f),e=>e.code==='not_admitted');
   assert.equal(f.claims,1);assert.equal(posts(f).length,1);
  }
@@ -82,12 +82,13 @@ test('evidence rejection diagnostics expose only the fixed validation reason and
  value.id='PRIVATE_PROVIDER_ID';value.choices[0].message.content=JSON.stringify(parsed);
  try{
   delete process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS;
-  assert.throws(()=>validateLunaRagResponse(value,input.passages),e=>e.code==='outcome_unknown');assert.deepEqual(logs,[]);
+  assert.throws(()=>validateLunaRagResponse(value,input.passages),e=>e.code==='response_rejected');assert.deepEqual(logs,[]);
   process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS='true';
   const f=fixture({response:()=>Response.json(value)});
-  await assert.rejects(run(f),e=>e.code==='outcome_unknown');
+  await assert.rejects(run(f),e=>e.code==='response_rejected');
   assert.ok(logs.some(row=>row[1]==='evidence-rejected:quote-not-literal'));
   assert.ok(logs.some(row=>row[1]==='evidence-rejected'));
+  assert.ok(logs.some(row=>row[1]==='failed-response-rejected'));
   assert.doesNotMatch(JSON.stringify(logs),/PRIVATE|synthetic-never-live|TEST8266|Bearer|MCU/);
   assert.ok(logs.every(row=>row[0]==='[grounded-rag]'&&typeof row[1]==='string'
    &&(row.length===2||row.length===3&&Number.isSafeInteger(row[2])&&row[2]>=0&&row[2]<=120000)));
@@ -241,13 +242,23 @@ test('exact served identity, no tools/reasoning, JSON quotes and receipts gate r
       ...[null, [], { reasoning_tokens: 1 }, { reasoning_tokens: '0' }, { reasoning_tokens: -1 }, { hidden_tokens: 0 }]
         .map(completion_tokens_details => ({ completion_tokens_details }))]
       .map(change => ({ ...good, usage: { ...good.usage, ...change } })),
-    ...[{ tool_calls: [{}] }, { reasoning: 'private' }, { reasoning_details: [{}] }, { content: 'not JSON' },
-      { content: '{"answer":"a","answer":"b","evidence":[]}' },
-      { content: '{"answer":"invented","evidence":[{"rank":1,"quote":"absent","reason":"unsupported"}]}' }]
+    ...[{ tool_calls: [{}] }, { reasoning: 'private' }, { reasoning_details: [{}] }]
       .map(change => ({ ...good, choices: [{ finish_reason: 'stop', message: { ...m, ...change } }] })),
     { ...good, choices: [{ finish_reason: 'length', message: m }] },
   ];
   for (const value of bad) { const f = fixture({ response: () => Response.json(value) }); await assert.rejects(run(f), e => e.code === 'outcome_unknown'); assert.equal(posts(f).length, 1); }
+});
+
+test('only complete validated RAG receipts classify inner JSON or evidence rejection as terminal without retry',async()=>{
+ for(const content of ['not JSON','{"answer":"a","answer":"b","evidence":[]}',
+  '{"answer":"invented","evidence":[{"rank":1,"quote":"absent","reason":"unsupported"}]}']){
+  const value=receipt();value.choices[0].message.content=content;
+  const f=fixture({response:()=>Response.json(value)});
+  await assert.rejects(run(f),e=>e.code==='response_rejected');
+  await assert.rejects(run(f),e=>e.code==='not_admitted');assert.equal(posts(f).length,1);assert.equal(f.claims,1);
+  value.provider='Unverified';
+  assert.throws(()=>validateLunaRagResponse(value,input.passages),e=>e.code==='outcome_unknown','receipt proof must precede inner-content classification');
+ }
 });
 
 test('actual decimal costs round upward to nanoUSD without binary multiplication error', async () => {
@@ -273,4 +284,33 @@ test('only the exact catalog alias or pinned dated identity may reconcile a reta
     const value = receipt(); value.model = model;
     assert.throws(() => validateLunaRagResponse(value, input.passages), e => e.code === 'outcome_unknown');
   }
+});
+
+
+test('Luna reconciles whitespace-only quotes to original source bytes before both grounding validators', async () => {
+ const source={question:'Which MCU?',passages:[{rank:1,text:'MCU: ESP32C3\u00a0processor\n • 4 MB flash.'}]};
+ const value=receipt();value.choices[0].message.content=JSON.stringify({answer:'ESP32C3 processor with 4 MB flash.',evidence:[{rank:1,quote:'ESP32C3 processor • 4 MB flash.',reason:'Lists the processor and flash.'}]});
+ const f=fixture({response:()=>Response.json(value)});const result=await run(f,source);
+ assert.equal(result.evaluation.evidence[0].quote,'ESP32C3\u00a0processor\n • 4 MB flash.');
+ assert.equal(source.passages[0].text.includes(result.evaluation.evidence[0].quote),true);
+ assert.equal(posts(f).length,1);assert.equal(f.claims,1);
+});
+
+
+test('reconciled Luna quotes survive main RAG validation; changed facts and ambiguous matches stay withheld', async () => {
+ for(const [text,quote,expected] of [
+  ['MCU: ESP32C3\u00a0processor.', 'ESP32C3 processor', 'answered'],
+  ['MCU: ESP32C3\u00a0processor.', 'ESP32C6 processor', 'unavailable'],
+  ['ESP32C3\nprocessor; ESP32C3\u00a0processor.', 'ESP32C3 processor', 'unavailable'],
+ ]) {
+  const value=receipt();value.choices[0].message.content=JSON.stringify({answer:'The listing names ESP32C3.',evidence:[{rank:1,quote,reason:'Names the processor.'}]});
+  const f=fixture({response:()=>Response.json(value)});
+  const result=await runBasicRag({question:'Which MCU does the xC3 use?',signal:new AbortController().signal},{usagePolicy:'bounded_luna_test',authorize:async()=>true,
+   prepare:async()=>({kind:'ready',products:[{id:'fixture',sku:'XC3',title:'xC3'}],digest:'a'.repeat(64),sourceProofs:[],revalidate:async()=>true,
+    passages:[{rank:1,text,productSku:'XC3',productTitle:'xC3',title:'xC3 listing',sourceUrl:'https://www.pandabyte.in/product-page/xc3',capturedAt:'2026-11-10T00:00:00Z',sectionPath:['Specifications']}]}),
+   complete:f.complete});
+  assert.equal(result.status,expected);assert.equal(posts(f).length,1);assert.equal(f.claims,1);
+  if(expected==='answered')assert.equal(result.answer.citations[0].quote,'ESP32C3\u00a0processor');
+  else assert.equal('answer' in result,false);
+ }
 });
