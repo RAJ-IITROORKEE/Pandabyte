@@ -74,6 +74,27 @@ test('failure diagnostics identify truncated responses using fixed tags and boun
  }finally{console.info=original;if(before===undefined)delete process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS;else process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS=before;}
 });
 
+test('evidence rejection diagnostics expose only the fixed validation reason and never raw model or source content',async()=>{
+ const before=process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS,original=console.info,logs=[];
+ console.info=(...values)=>logs.push(values);
+ const value=receipt(),parsed=JSON.parse(value.choices[0].message.content);
+ parsed.answer='PRIVATE_MODEL_ANSWER';parsed.evidence[0].quote='PRIVATE_MODEL_QUOTE';parsed.evidence[0].reason='PRIVATE_MODEL_REASON';
+ value.id='PRIVATE_PROVIDER_ID';value.choices[0].message.content=JSON.stringify(parsed);
+ try{
+  delete process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS;
+  assert.throws(()=>validateLunaRagResponse(value,input.passages),e=>e.code==='outcome_unknown');assert.deepEqual(logs,[]);
+  process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS='true';
+  const f=fixture({response:()=>Response.json(value)});
+  await assert.rejects(run(f),e=>e.code==='outcome_unknown');
+  assert.ok(logs.some(row=>row[1]==='evidence-rejected:quote-not-literal'));
+  assert.ok(logs.some(row=>row[1]==='evidence-rejected'));
+  assert.doesNotMatch(JSON.stringify(logs),/PRIVATE|synthetic-never-live|TEST8266|Bearer|MCU/);
+  assert.ok(logs.every(row=>row[0]==='[grounded-rag]'&&typeof row[1]==='string'
+   &&(row.length===2||row.length===3&&Number.isSafeInteger(row[2])&&row[2]>=0&&row[2]<=120000)));
+  await assert.rejects(run(f),e=>e.code==='not_admitted');assert.equal(posts(f).length,1);assert.equal(f.claims,1);
+ }finally{console.info=original;if(before===undefined)delete process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS;else process.env.PANDA_AGENT_DIRECT_DIAGNOSTICS=before;}
+});
+
 test('reports bounded admission and provider round-trip timing on a validated response', async () => {
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const f = fixture({ policy: async () => { await sleep(8); return true; }, response: async () => { await sleep(15); return Response.json(receipt()); } });

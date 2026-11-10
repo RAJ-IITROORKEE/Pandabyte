@@ -23,6 +23,7 @@ export function composerGates(state: ComposerState) {
 }
 
 // A failed/cancelled request must not replace a follow-up the user has already typed.
-export function recoveredDraft(current: string, previous: string) {
+export function recoveredDraft(current: string, previous: string | null, newIdentity = false) {
+  if (previous === null) return newIdentity ? "" : current;
   return current.length ? current : previous;
 }

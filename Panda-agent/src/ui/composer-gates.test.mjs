@@ -47,6 +47,32 @@ test('recovery and cancellation restore a sent question only when the draft is e
   assert.equal(recoveredDraft(' ', 'original question'), ' ');
 });
 
+test('a different chat, New chat, archive or deletion clears the shared runtime draft before sending', async () => {
+  let sends = 0;
+  const thread = new ExternalStoreThreadRuntimeCore({ getModelContext: () => ({}) }, {
+    messages: [], onNew: async () => { sends++; },
+  });
+  for (const transition of ['different chat', 'New chat', 'archive', 'delete']) {
+    thread.composer.setText('draft for chat A');
+    thread.composer.setText(recoveredDraft(thread.composer.text, null, true));
+    assert.equal(thread.composer.text, '', transition);
+    assert.equal(thread.composer.canSend, false, transition);
+    await thread.composer.send();
+    assert.equal(sends, 0, transition);
+  }
+});
+
+test('same-chat status, capability refresh and clearing a recovery hint preserve the current draft', () => {
+  const thread = new ExternalStoreThreadRuntimeCore({ getModelContext: () => ({}) }, {
+    messages: [], onNew: async () => {},
+  });
+  thread.composer.setText('typed follow-up');
+  for (const restoreDraft of [null, 'original cancelled question', null]) {
+    thread.composer.setText(recoveredDraft(thread.composer.text, restoreDraft, false));
+    assert.equal(thread.composer.text, 'typed follow-up');
+  }
+});
+
 test('installed runtime keeps drafts through recovery states and blocks programmatic sends', async () => {
   let sends = 0;
   const adapter = { messages: [], onNew: async () => { sends++; } };
