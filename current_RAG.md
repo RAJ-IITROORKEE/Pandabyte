@@ -1,5 +1,37 @@
 # Current RAG system: implementation and engineering handoff
 
+## Retrieval repair and browser verification, 10 November 2026
+
+The owner resumed the separate RAG repair on `codex/panda-agent-fastapi-replacement` and requested one live model check. The merge milestone is the complete web harness after end-to-end acceptance. Sections 1–16 below describe the earlier handoff and pause.
+
+The repair plan was to reproduce five fixed queries, correct observed retrieval misses, reduce duplicate work while preserving current authorization and source checks, and compare the same requests in the authenticated Control Room.
+
+Commit `b3a32d6` matches MCU and microcontroller as whole words. Product and native evidence selection fill up to eight passages after duplicates and over-budget hits have been skipped. The native path still bounds the serialized context and issues contiguous evidence aliases. The main-chat RAG core removes a repeated actor check where the same authorization callback brackets fresh source reads. The synthetic count fell from seven to six on that path. The Documents view now labels the two private upload counts as prepared. Its 46-row table also includes two withdrawn upload records.
+
+The private captured snapshot test uses the real ranking and membership checks with fixture RPCs and synthetic actor/SKUs. Set `PANDA_TEST_RAG_SNAPSHOT` to the absolute path of the existing ignored `Panda-agent/artifacts/phase-4/native-snapshot.json`. After the URL-label fix in `2ea6469`, all 205 RAG, chat, document and workflow tests passed in a clean checkout with zero skips. The shared feature worktree passed all 221, including in-progress tests outside that commit. The production build and scoped ESLint checks passed.
+
+| Signed-in Playground query | Baseline elapsed | Candidate elapsed | Candidate outcome |
+| --- | ---: | ---: | --- |
+| Which MCU does the PandaByte x8266 use? | 3,398 ms | 3,301 ms | Four passages, including the specification naming ESP8266 |
+| Which USB connector does the PandaByte x8266 use? | 4,101 ms | 3,799 ms | Four passages, including USB Type-C |
+| What is the maximum GPIO input voltage on the PandaByte x8266? | 1,353 ms | 3,807 ms | Insufficient evidence |
+| Which ESP32 board has 8 MB of PSRAM? | 1,336 ms | 1,347 ms | Clarification |
+| Which USB connector does the PandaByte x8266 use, and what is its maximum GPIO input voltage? | 1,321 ms | 6,493 ms | Insufficient evidence |
+
+Each cell is one sequential retrieval-only request on localhost. Baseline build `dnJaZh3sWQuP5Dxgxbwt4` and candidate `EsZgnC8nJ-RUHmqj8k2E9` used the development services. Two positive queries were faster and three negative or ambiguous queries were slower. These samples do not establish an overall latency improvement. This intermediate candidate ranked a source-URL-only passage above the MCU specification. Commit `2ea6469` excludes that exact standalone label from answer candidates and retains the URL in citations and Admin inspection. On the captured snapshot, both positive queries returned three passages with the explicit specification second.
+
+The final production build `FhHPBZNqv_CJG3LGjRDcz` passed the same five retrieval-only questions in signed-in Brave on localhost:3020. Both positive answers returned three passages (2,432 characters) with the factual listing prose first and the explicit specification second. All three other questions returned zero passages. Generation was disabled for these five checks.
+
+| Query | Final elapsed | Final result |
+| --- | ---: | --- |
+| x8266 MCU | 3,322 ms | Microcontroller: ESP8266 |
+| x8266 USB | 3,312 ms | USB Interface: USB Type-C |
+| x8266 maximum GPIO input voltage | 1,329 ms | Insufficient evidence |
+| ESP32 board with 8 MB of PSRAM | 1,295 ms | Clarification |
+| x8266 USB and maximum GPIO input voltage | 1,623 ms | Insufficient evidence |
+
+The separate paid check used `openai/gpt-6-luna` on the existing localhost:3001 production preview after fresh signed-in Brave privacy checks and a key/workspace match. The Playground returned **“The PandaByte x8266 uses the ESP8266 MCU.”** Its selected quote was **“ESP8266-based microcontroller board”** from the [PandaByte listing](https://www.pandabyte.in/product-page/pandabyte-x8266-wifi-development-board). The app reported 279 input tokens, 54 output tokens, USD 0.00006039, 24,582 ms elapsed, 9,384 ms admission, 2,846 ms model roundtrip and 7,913 ms context revalidation. These intervals overlap. Remaining conservative allowance displayed to three decimals moved from USD 0.982 to USD 0.980. The two-passage input identifies this as the pre-repair preview. Open acceptance items include paid generation on the candidate build and full native web-harness end-to-end verification.
+
 **Checkpoint: 10 November 2026.** Branch `codex/panda-agent-fastapi-replacement`; committed baseline `73fa69f` (`Verify guarded Luna RAG in Control Room and main chat`). This document also describes the current **uncommitted** prototype allowance and latency work. It is an engineering handoff, not a deployment or production-readiness certificate.
 
 ## 1. Read this before continuing
