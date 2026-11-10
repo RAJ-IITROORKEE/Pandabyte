@@ -6,8 +6,10 @@ export type PlaygroundCapabilities = {
   model: 'openai/gpt-4o-mini' | 'xingchen-agi/xing4.0-29b-a4b:free' | 'openai/gpt-6-luna';
   connection: 'not_configured' | 'configured_unverified';
   transport: 'unconfigured' | 'hosted' | 'local';
-  profile: 'mini-two-case-v1' | 'product-playground-v1' | 'basic-rag-v1' | 'luna-rag-test-v1' | null;
+  profile: 'mini-two-case-v1' | 'product-playground-v1' | 'basic-rag-v1' | 'luna-rag-test-v1' | 'luna-rag-prototype-v1' | null;
   approvedQuestions: string[];
+  remainingNanoUsd?: number;
+  expiresAt?: string;
 };
 
 export function hostedPlaygroundEnabled(flags: Flags): boolean {
@@ -29,8 +31,8 @@ export function playgroundCapabilities(flags: Flags, hostedConfigValid: boolean,
   return { model:'openai/gpt-4o-mini', connection:configured ? 'configured_unverified' : 'not_configured', transport, profile:configured ? flags.PANDA_AGENT_PLAYGROUND_PROFILE as 'mini-two-case-v1' | 'product-playground-v1' : null, approvedQuestions:flags.PANDA_AGENT_PLAYGROUND_PROFILE === 'product-playground-v1' ? [] : approvedPlaygroundQuestions() };
 }
 
-export function basicRagPlaygroundCapabilities(verified: boolean, mode: 'free' | 'luna' = 'free'): PlaygroundCapabilities {
-  return { model: mode === 'luna' ? 'openai/gpt-6-luna' : 'xingchen-agi/xing4.0-29b-a4b:free', connection: verified ? 'configured_unverified' : 'not_configured', transport: verified ? 'local' : 'unconfigured', profile: verified ? mode === 'luna' ? 'luna-rag-test-v1' : 'basic-rag-v1' : null, approvedQuestions: [] };
+export function basicRagPlaygroundCapabilities(verified: boolean, mode: 'free' | 'luna' | 'prototype' = 'free', allowance?: {remainingNanoUsd:number;expiresAt:string}): PlaygroundCapabilities {
+  return { model: mode === 'free' ? 'xingchen-agi/xing4.0-29b-a4b:free' : 'openai/gpt-6-luna', connection: verified ? 'configured_unverified' : 'not_configured', transport: verified ? 'local' : 'unconfigured', profile: verified ? mode === 'prototype' ? 'luna-rag-prototype-v1' : mode === 'luna' ? 'luna-rag-test-v1' : 'basic-rag-v1' : null, approvedQuestions: [], ...(mode === 'prototype' && allowance ? allowance : {}) };
 }
 
 export function createPlaygroundCapabilitiesHandler(authorize: () => Promise<Admission>, getCapabilities: (request?: Request) => PlaygroundCapabilities | Promise<PlaygroundCapabilities>) {

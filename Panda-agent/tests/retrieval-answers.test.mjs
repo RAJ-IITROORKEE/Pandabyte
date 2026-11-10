@@ -19,6 +19,14 @@ const make = (overrides = {}) => {
     return { calls, scope, adapters };
 };
 const ask = (a, q = { question: 'How many pins?', productSku: 'SKU1' }) => answerQuestion(actor, q, a);
+test('listing evidence cannot identify a physical item held by the user', async()=>{
+    const f=make();
+    for(const question of ['Which physical hardware revision is the fixture in my hand?', 'Can you identify the hardware revision I own?']){
+        assert.equal((await ask(f.adapters,{question,productSku:'SKU1'})).kind,'insufficient');
+    }
+    assert.equal(f.calls.includes('scope'),false);
+    assert.equal((await ask(f.adapters,{question:'Does the listing mention a hardware revision?',productSku:'SKU1'})).kind,'evidence');
+});
 test('ranked passages beyond eighth place backfill duplicate and oversized hits', async () => {
     const x = make({ ranking: { mode: 'lexical' }, lexical: async (_question, handles) => handles });
     const texts = ['a'.repeat(11000), 'b'.repeat(10000), ...Array(6).fill('duplicate'), 'Late USB evidence'];

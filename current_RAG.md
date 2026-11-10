@@ -1,5 +1,33 @@
 # Current RAG system: implementation and engineering handoff
 
+## Current completion and latency work, 10 November 2026
+
+The owner authorized completing the Control Room, the original 20-case runner, real-model testing, and a merge only after the complete web harness passes end to end. The latest retrieval limit is two seconds for the complete document-only HTTP response. The owner explicitly authorized removing repeated database authentication from this read path. A future vector database remains a future decision.
+
+The owner subsequently authorized committing and pushing the tested integration to main and a Vercel redeploy after the complete acceptance gate passes. This supersedes the historical deployment exclusions below for this integration. Preserve the existing development-commerce settings and private runtime boundaries.
+
+The original private source-visible pack is loaded through PANDA_AGENT_EVALUATION_PACK_FILE with its exact registered SHA-256. The new durable evaluator executes one exclusively claimed index per POST, saves history in InsForge, checks a current corpus fingerprint, uses server-signed writes, withholds stored model evidence after source changes, and never redispatches a completed or uncertain claim. Admins can inspect actual questions, answers, literal quotations and measured usage. The answer key stays private.
+
+Build A36nEpgpevaQxGP-RMC9v passed all 20 cases in a live signed-in model run. Twelve factual answers matched their literal listing evidence. Eight unsupported or ambiguous questions made no model call. Reload retained every result and a duplicate completed request preserved timings and cost. The run used 5,899 input and 591 output tokens. Provider trace-reported cost was USD 0.0008854, and conservative guard-accounted cost USD 0.000973940. The earlier run remains recorded with a corrected Bluetooth wording-score failure and a P12 admission failure. P12 had no budget reservation and later passed both a separate Playground model request and the final full run.
+
+OpenRouter native LangSmith Broadcast is configured for pandabyte-rag-evaluation, scoped to DatummAgent, with Privacy Mode and cost metadata enabled. Optional identity/request-context fields and workspace input/output logging are off. A workspace-scoped Tracing Only key expires after 30 days. Twelve real traces matched the final model run. Their input and generated output content were absent. The synthetic OpenRouter test trace is distinct from these real calls.
+
+The original fixes add MCU/microcontroller matching, backfill valid whole evidence fragments after duplicate/oversize candidates, omit standalone source-URL labels from answer ranking, and resolve five frozen-case product identification failures. Physical in-hand revision requests abstain. The original pack was unchanged. All 20 retrieval cases passed offline and through the normal live Playground.
+
+The optimized read path obtains one current Admin/source snapshot and performs lexical selection and proof checks on immutable request-local data. Each request fetches a new snapshot. Candidate-row locking prevents a withdrawal transaction from invalidating the release during capture. Role/source changes after capture take effect on the next document query. Model generation retains its live pre-dispatch and release checks. Private uploaded documents remain a separate Admin library.
+
+Build qBOsRoWsd8wujg9PKBDV2 passed all 20 original questions through the ordinary Playground. Twenty warm document-only HTTP requests had median 730.5 ms and maximum 1,521 ms. First-after-idle requests still took 3.29–3.48 seconds, so the hard limit was not yet achieved at that checkpoint. The next candidate removes the redundant backend Clerk session-status lookup from document-only reads, retaining the verified active Clerk request and current SQL Admin/source admission. Cold/idle verification is in progress.
+
+Build anC2AMAYnfena8v1MlQCc then measured twenty warm responses with median 739 ms and maximum 1,038 ms. Cold/idle responses remained 2,761–3,536 ms, with 2,257–2,748 ms in the snapshot RPC. A read-only SQL execution profile took 37.335 ms. An anonymous transport probe reproduced the delay without an authentication token. The next candidate therefore uses a dedicated bounded HTTPS keep-alive pool for the exact snapshot RPC, with per-request credentials, TLS verification, redirect refusal, decoded-body limits and no cross-request source cache. Its cold/idle browser acceptance remains pending.
+
+The final scoped regression command passed all 288 tests with zero skips. Independent focused review found no remaining blockers in the snapshot, transport or evaluation boundaries. The full application build and complete native web-harness acceptance remain separate gates.
+
+Disposable link rejection and private upload, permitted-rights review, preparation, inspection, search and typed withdrawal passed. Withdrawal removed passage actions, restored prepared counts, preserved audit and cleared the old preparation success notice. Signed-out retrieval returned 401 and invalid mode/index requests returned 400. Mobile light/dark checks showed no horizontal overflow.
+
+Primary implementation references are [LangChain retrieval](https://docs.langchain.com/oss/javascript/deepagents/retrieval), [LlamaIndex production RAG](https://developers.llamaindex.ai/python/framework/optimizing/production_rag/), [Claude streaming](https://platform.claude.com/docs/en/build-with-claude/streaming), and [OpenRouter LangSmith Broadcast](https://openrouter.ai/docs/guides/features/broadcast/langsmith). The current implementation keeps a bounded retrieve-then-generate path and measures full retrieval separately from model output. REA MCP tools were unavailable. REA CLI 6.8.0 successfully statically analyzed the installed LangGraph 1.6.1 graph/state and pregel files, with the remaining 632 inventoried files outside selected analysis. Doctor reported Node 24.18.0 below its declared supported runtime and stale MCP registration. This is selected-package static evidence, not evidence of Claude or ChatGPT server internals.
+
+Full native web-harness integration remains a separate open gate. The original main worktree also contains 502 pre-existing working-tree changes with 90 paths overlapping this feature branch. Main has not been merged. Earlier sections below are dated historical evidence.
+
 ## Retrieval repair and browser verification, 10 November 2026
 
 The owner resumed the separate RAG repair on `codex/panda-agent-fastapi-replacement` and requested one live model check. The merge milestone is the complete web harness after end-to-end acceptance. Sections 1–16 below describe the earlier handoff and pause.

@@ -2,12 +2,29 @@ import { createHash } from 'node:crypto';
 import { playgroundContextProof } from '../control-room/playground-context-proof.ts';
 import { prepareQuestionEvidence, parseQuestion } from './answers.ts';
 import { planMultiProductIdentity, type PlannedProduct } from './multi-product-identity.ts';
-import { readRuntimeCatalog } from './insforge-adapters.ts';
+import type { readRuntimeCatalog } from './insforge-adapters.ts';
 import type { Actor, Adapters, CanonicalChunk } from './contracts.ts';
 
 type Client=Parameters<typeof readRuntimeCatalog>[0];
 type Passage=Readonly<{rank:number;productSku:string;productTitle:string;title:string;sourceUrl:string;capturedAt:string;sectionPath:readonly string[];text:string}>;
-export async function prepareProductContextSet(input:{actor:Exclude<Actor,null>;question:string;client:Client;createAdapters:()=>Adapters;authorizeCurrent:()=>Promise<boolean>;signal?:AbortSignal}) {
+export type ContextVerification = 'before_use' | 'at_workflow_release';
+type ContextInput={actor:Exclude<Actor,null>;question:string;client:Client;createAdapters:()=>Adapters;authorizeCurrent:()=>Promise<boolean>;signal?:AbortSignal};
+type WorkflowPreparation=(question:string,signal:AbortSignal,verification:ContextVerification)=>ReturnType<typeof prepareProductContextSet>;
+// Only closures created here can vouch for the guard they call before catalog access.
+const preparationGuards=new WeakMap<object,ContextInput['authorizeCurrent']>();
+
+export function createWorkflowProductContextPreparer({actor,client,createAdapters,authorizeCurrent}:Omit<ContextInput,'question'|'signal'>):WorkflowPreparation {
+ const prepare:WorkflowPreparation=(question,signal,verification)=>
+  prepareProductContextSet({actor,question,client,createAdapters,authorizeCurrent,signal},verification);
+ preparationGuards.set(prepare,authorizeCurrent);
+ return prepare;
+}
+
+export function preparationChecksActor(prepare:object,authorize:ContextInput['authorizeCurrent']):boolean {
+ return typeof authorize==='function' && preparationGuards.get(prepare)===authorize;
+}
+
+export async function prepareProductContextSet(input:ContextInput, verification:ContextVerification='before_use') {
  const {actor,question,client,createAdapters,authorizeCurrent,signal}=input;
  const active=async()=>!signal?.aborted && await authorizeCurrent()===true && !signal?.aborted;
  try {
@@ -40,7 +57,8 @@ export async function prepareProductContextSet(input:{actor:Exclude<Actor,null>;
    if(current.status!=='fulfilled'||current.value.kind!=='planned'||JSON.stringify(current.value.products)!==JSON.stringify(products))return false;
    return scopes.status==='fulfilled'&&scopes.value.every(result=>result.status==='fulfilled'&&result.value===true);
   }catch{return false;}};
-  if(!await revalidate())return {kind:'unavailable' as const};
+  // Retrieval-only workflows keep these passages private until their final release revalidates them.
+  if(signal?.aborted || (verification!=='at_workflow_release' && !await revalidate()))return {kind:'unavailable' as const};
   const passages:Passage[]=[];let remaining=20000;
   for(let i=0;i<8&&passages.length<8;i++)for(const group of captured){if(passages.length===8)break;const item=group.fragments[i];if(!item||item.text.length>remaining)continue;remaining-=item.text.length;passages.push(Object.freeze({rank:passages.length+1,productSku:group.product.sku,productTitle:group.product.title,title:item.chunk.title,sourceUrl:item.chunk.sourceUrl,capturedAt:item.chunk.capturedAt,sectionPath:Object.freeze([...item.chunk.sectionPath]),text:item.text}));}
   if(!passages.length)return {kind:'insufficient' as const};

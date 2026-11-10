@@ -5,8 +5,8 @@ import styles from "./playground.module.css";
 import { PlaygroundToolFixture } from "./playground-tool-fixture";
 
 type Passage = { rank: number; title: string; sourceUrl: string; capturedAt: string; sectionPath: string[]; text: string; productSku?: string; productTitle?: string; lexicalOverlap: { matched: number; total: number } };
-type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; products?: { sku: string; title: string }[]; workflow?: { stage: "authorize" | "retrieve" | "augment" | "generate" | "validate" | "release"; status: "completed" | "skipped"; elapsedMs: number }[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null }; model: { status: "not_requested" | "guard_unavailable" } | { status: "not_run"; reason?: "multi_product_guard_unavailable" | "no_retrieved_context" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
-type Capability = { model: "openai/gpt-4o-mini" | "xingchen-agi/xing4.0-29b-a4b:free" | "openai/gpt-6-luna"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | "basic-rag-v1" | "luna-rag-test-v1" | null; approvedQuestions: string[] };
+type Result = { outcome: "retrieved" | "clarification" | "conflict" | "insufficient"; passages: Passage[]; products?: { sku: string; title: string }[]; workflow?: { stage: "authorize" | "retrieve" | "augment" | "generate" | "validate" | "release"; status: "completed" | "skipped"; elapsedMs: number }[]; retrieval: "lexical"; relevance: "unverified"; metrics?: { elapsedMs: number; contextPassages: number; contextCharacters: number; inputTokens: number | null; outputTokens: number | null; costUsd: number | null; admissionMs?: number | null; providerRoundTripMs?: number | null; contextRevalidationMs?: number | null; contextRevalidationCount?: number }; model: { status: "not_requested" | "guard_unavailable" } | { status: "not_run"; reason?: "multi_product_guard_unavailable" | "no_retrieved_context" } | { status: "evaluated"; answer: string; evidence: { rank: number; quote: string; reason: string }[] } };
+type Capability = { model: "openai/gpt-4o-mini" | "xingchen-agi/xing4.0-29b-a4b:free" | "openai/gpt-6-luna"; connection: "not_configured" | "configured_unverified"; transport: "unconfigured" | "hosted" | "local"; profile: "mini-two-case-v1" | "product-playground-v1" | "basic-rag-v1" | "luna-rag-test-v1" | "luna-rag-prototype-v1" | null; approvedQuestions: string[]; remainingNanoUsd?: number; expiresAt?: string };
 const outcomeKey = "panda-playground-unknown-outcome";
 
 export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
@@ -43,14 +43,17 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
       .then(async response => {
         if (!response.ok) throw Error();
         const value = await response.json();
-        if (!["openai/gpt-4o-mini", "xingchen-agi/xing4.0-29b-a4b:free", "openai/gpt-6-luna"].includes(value?.model) || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
-        if (!controller.signal.aborted) setCapability(value);
+        if (!["openai/gpt-4o-mini", "xingchen-agi/xing4.0-29b-a4b:free", "openai/gpt-6-luna"].includes(value?.model) || !["not_configured", "configured_unverified"].includes(value.connection) || !["unconfigured", "hosted", "local"].includes(value.transport) || ![null, "mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1", "luna-rag-prototype-v1"].includes(value.profile) || !Array.isArray(value.approvedQuestions) || value.approvedQuestions.length > 2 || value.approvedQuestions.some((question: unknown) => typeof question !== "string" || question.length > 2000)) throw Error();
+        if (value.remainingNanoUsd !== undefined && (!Number.isSafeInteger(value.remainingNanoUsd) || value.remainingNanoUsd < 0 || value.remainingNanoUsd > 1000000000)) throw Error();
+        if (value.expiresAt !== undefined && (typeof value.expiresAt !== "string" || !Number.isFinite(Date.parse(value.expiresAt)))) throw Error();
+        if (value.profile === "luna-rag-prototype-v1" && (value.remainingNanoUsd === undefined || value.expiresAt === undefined)) throw Error();
+        if (!controller.signal.aborted) { setCapability(value); setCapabilityError(false); if (value.connection !== "configured_unverified") setEvaluate(false); }
       })
       .catch(() => { if (!controller.signal.aborted) setCapabilityError(true); });
     return () => { controller.abort(); if (capabilityRequest.current === controller) capabilityRequest.current = null; };
   }, [capabilityAttempt]);
 
-  const modelAvailable = capability?.connection === "configured_unverified" && (["mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1"].includes(capability.profile ?? "")) && capability.transport !== "unconfigured";
+  const modelAvailable = capability?.connection === "configured_unverified" && (["mini-two-case-v1", "product-playground-v1", "basic-rag-v1", "luna-rag-test-v1", "luna-rag-prototype-v1"].includes(capability.profile ?? "")) && capability.transport !== "unconfigured";
   const canEvaluate = guardReady && !unknownOutcome && modelAvailable;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -98,7 +101,7 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
         if (evaluate) lock();
         setError(evaluate ? "The request could not be completed. The model call may have an unknown outcome; check its status before submitting again." : "The playground could not retrieve results. Check your access and try again.");
       }
-    } finally { if (!controller.signal.aborted) { request.current = null; setBusy(false); } }
+    } finally { if (!controller.signal.aborted) { request.current = null; setBusy(false); if (evaluate) setCapabilityAttempt(value => value + 1); } }
   }
 
   const metric = (value: number | null | undefined, suffix = "") => typeof value === "number" && Number.isFinite(value) && value >= 0 ? `${value.toLocaleString()}${suffix}` : "Unavailable";
@@ -119,7 +122,8 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
             ? "A previous evaluation may have an unknown outcome, or session storage is unavailable. Check the server-side status before evaluating again. Retrieval remains available."
             : capabilityError ? "Model status could not be checked. Retrieval remains available."
             : !capability ? "Checking model availability. You can inspect retrieval now."
-            : !modelAvailable ? "Model evaluation is off pending verification of zero cost and zero data retention. You can inspect retrieval now."
+            : !modelAvailable ? capability.model === "openai/gpt-6-luna" ? "Prototype admission is off: privacy verification or budget is unavailable. You can inspect retrieval now." : "Model evaluation is off pending verification of zero cost and zero data retention. You can inspect retrieval now."
+            : capability.profile === "luna-rag-prototype-v1" ? `GPT-6 Luna · strict ZDR · $1 total prototype cap. Conservative allowance remaining (USD): ${((capability.remainingNanoUsd ?? 0) / 1e9).toFixed(3)}. Privacy verification expires at ${new Date(capability.expiresAt!).toLocaleTimeString()}. No automatic retry.`
             : capability.profile === "luna-rag-test-v1" ? "GPT-6 Luna · strict ZDR · approved test budget only. No automatic retry."
             : capability.profile === "basic-rag-v1" ? "Xing 4.0 · zero cost · strict ZDR. Provider capacity is checked for each request."
             : capability.profile === "mini-two-case-v1" ? "Only the approved questions below can be evaluated within the profile allowance."
@@ -133,7 +137,9 @@ export function Playground({ toolFixture = false }: { toolFixture?: boolean }) {
         <div className={styles.outputHeading}><h3>Output &amp; evidence</h3>{completedAt && result && <span>Completed at {completedAt} (local time)</span>}</div>
         <dl className={styles.metrics}>
           <div><dt>Elapsed</dt><dd>{metric(metrics?.elapsedMs, " ms")}</dd></div><div><dt>Context passages</dt><dd>{metric(metrics?.contextPassages)}</dd></div><div><dt>Context characters</dt><dd>{metric(metrics?.contextCharacters)}</dd></div><div><dt>Input tokens</dt><dd>{metric(metrics?.inputTokens)}</dd></div><div><dt>Output tokens</dt><dd>{metric(metrics?.outputTokens)}</dd></div><div><dt>Guard-accounted cost (USD)</dt><dd>{typeof metrics?.costUsd === "number" && Number.isFinite(metrics.costUsd) && metrics.costUsd >= 0 ? `$${metrics.costUsd.toLocaleString(undefined, { maximumFractionDigits: 9 })}` : "Unavailable"}</dd></div>
+          <div><dt>Admission checks</dt><dd>{metric(metrics?.admissionMs, " ms")}</dd></div><div><dt>Model round trip</dt><dd>{metric(metrics?.providerRoundTripMs, " ms")}</dd></div><div><dt>Context revalidation</dt><dd>{metric(metrics?.contextRevalidationMs, " ms")}</dd></div>
         </dl>
+        {typeof metrics?.providerRoundTripMs === "number" && <p>Model round trip includes network and response transfer. Context checks can overlap admission time.</p>}
         {typeof metrics?.costUsd === "number" && Number.isFinite(metrics.costUsd) && metrics.costUsd >= 0 && <p>Guard-accounted cost is not a provider invoice.</p>}
         {busy ? <p role="status">{evaluate ? "Retrieving passages and evaluating…" : "Retrieving passages…"}</p> : error ? <p role="alert">{error}</p> : !result ? <div className={styles.empty}><h4>Ready for a query</h4><p>Results, source citations and measured usage appear here after a run.</p></div> : <div className={styles.results}>
           <p><strong>Outcome:</strong> {result.outcome.replaceAll("_", " ")} · <strong>Relevance:</strong> {result.relevance}</p>

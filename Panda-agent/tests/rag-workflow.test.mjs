@@ -14,6 +14,75 @@ function fixture(){
  return {deps,context,callCount:()=>calls,prepareCount:()=>prepared,revoke:()=>active=false,withdraw:()=>current=false};
 }
 const input=()=>({question,evaluate:false,signal:new AbortController().signal});
+
+test('only retrieval-only runs defer checking ranked passages until final release', async () => {
+  for (const evaluate of [false, true]) {
+    const f = fixture();
+    const prepare = f.deps.prepare;
+    f.deps.prepare = async (query, signal, verification) => {
+      assert.equal(verification, evaluate ? 'before_use' : 'at_workflow_release');
+      return prepare(query, signal);
+    };
+    const result = await runRagWorkflow({ ...input(), evaluate, requestId }, f.deps);
+    assert.equal(result.outcome, 'retrieved');
+    assert.equal(f.callCount(), evaluate ? 1 : 0);
+  }
+});
+
+test('a retrieval-only HTTP response withholds every passage if final release fails', async () => {
+  const f = fixture();
+  f.context.authorizedBy = f.deps.authorize;
+  f.context.revalidate = async () => false;
+  const handler = createPlaygroundWorkflowHandler(async () => ({kind:'admin',subject:'owner',dependencies:f.deps}));
+  const response = await handler(new Request('https://app.example/api', {
+    method: 'POST', headers: { origin:'https://app.example', 'content-type':'application/json' },
+    body: JSON.stringify({ question }),
+  }));
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { error: { code: 'unavailable' } });
+  assert.equal(f.callCount(), 0);
+});
+
+test('matching authorized context removes only the redundant outer Admin check',async()=>{
+ for(const identity of ['same','different','missing']){
+  const f=fixture();let checks=0,reads=0;const authorize=async()=>{checks++;return true;};f.deps.authorize=authorize;
+  if(identity!=='missing')f.context.authorizedBy=identity==='same'?authorize:async()=>true;
+  f.context.revalidate=async()=>{reads++;return await authorize()&&await authorize();};
+  const result=await runRagWorkflow({...input(),evaluate:true,requestId},f.deps);
+  assert.equal(result.model.status,'evaluated');assert.equal(reads,identity==='same'?2:3);assert.equal(checks,identity==='same'?6:10);
+ }
+});
+
+test('matching context checks Admin again after source reads and before dispatch',async()=>{
+ const f=fixture();let active=true;const authorize=async()=>active;f.deps.authorize=authorize;f.context.authorizedBy=authorize;
+ f.context.revalidate=async()=>{if(!await authorize())return false;active=false;return authorize();};
+ await assert.rejects(runRagWorkflow({...input(),evaluate:true,requestId},f.deps));assert.equal(f.callCount(),1);
+});
+
+test('matching context withholds the completed model result on revocation or abort during release',async()=>{
+ for(const failure of ['withdrawn','aborted']){
+  const f=fixture(),controller=new AbortController();let active=true,reads=0;
+  const authorize=async()=>active;f.deps.authorize=authorize;f.context.authorizedBy=authorize;
+  f.context.revalidate=async()=>{if(!await authorize())return false;if(++reads===2){if(failure==='withdrawn')active=false;else controller.abort();}return authorize();};
+  await assert.rejects(runRagWorkflow({...input(),evaluate:true,requestId,signal:controller.signal},f.deps));assert.equal(f.callCount(),1);
+ }
+});
+
+test('workflow exposes bounded numeric timings without affecting a valid answer',async()=>{
+ for(const [timing,expected] of [[{admissionMs:24,providerRoundTripMs:13},[24,13]],[undefined,[null,null]],[{admissionMs:-1,providerRoundTripMs:9},[null,null]],[{admissionMs:120001,providerRoundTripMs:9},[null,null]]]){
+  const f=fixture(),generate=f.deps.generate;f.deps.generate=async(...args)=>({...await generate(...args),timing});
+  const r=await runRagWorkflow({...input(),evaluate:true,requestId},f.deps);
+  assert.equal(r.model.status,'evaluated');assert.equal(r.metrics.contextRevalidationCount,3);assert.ok(Number.isSafeInteger(r.metrics.contextRevalidationMs));
+  assert.deepEqual([r.metrics.admissionMs,r.metrics.providerRoundTripMs],expected);assert.equal(f.callCount(),1);
+ }
+ const retrievalOnly=await runRagWorkflow(input(),fixture().deps);
+ assert.equal(retrievalOnly.metrics.contextRevalidationCount,1);assert.equal(retrievalOnly.metrics.admissionMs,null);assert.equal(retrievalOnly.metrics.providerRoundTripMs,null);
+});
+
+test('a failed timing observer is omitted without affecting the workflow result',async()=>{
+ const f=fixture(),generate=f.deps.generate;f.deps.generate=async(...args)=>{const value=await generate(...args);Object.defineProperty(value,'timing',{get(){throw Error('private observer error');}});return value;};
+ const r=await runRagWorkflow({...input(),evaluate:true,requestId},f.deps);assert.equal(r.model.status,'evaluated');assert.equal(r.metrics.admissionMs,null);assert.equal(r.metrics.providerRoundTripMs,null);assert.doesNotMatch(JSON.stringify(r),/private observer error/);
+});
 test('actual LangGraph SDK retrieves two tagged products without calling a model or exposing private proofs',async()=>{
  const f=fixture(),r=await runRagWorkflow(input(),f.deps);
  assert.equal(r.outcome,'retrieved');assert.deepEqual(r.products.map(p=>p.sku),['ESPXC3','ESPXS3']);assert.equal(r.model.status,'not_requested');assert.equal(f.callCount(),0);
@@ -79,4 +148,22 @@ test('oversized streamed JSON never reaches context preparation or generation',a
  const f=fixture(),handler=createPlaygroundWorkflowHandler(async()=>({kind:'admin',subject:'owner',dependencies:f.deps}));
  const request=new Request('https://app.example/api',{method:'POST',headers:{origin:'https://app.example','content-type':'application/json'},body:JSON.stringify({question:'x'.repeat(9000)})});
  assert.equal((await handler(request)).status,413);assert.equal(f.prepareCount(),0);assert.equal(f.callCount(),0);
+});
+test('document-only execution reuses request admission while model execution retains fresh database guards',async()=>{
+ for(const evaluate of [false,true]){
+  const f=fixture();let databaseChecks=0,admittedChecks=0,admittedPrepares=0;
+  f.deps.authorize=async()=>{databaseChecks++;return true};
+  const prepare=f.deps.prepare;
+  f.deps.retrieval={authorize:async()=>{admittedChecks++;return true},prepare:async(...args)=>{admittedPrepares++;return prepare(...args)}};
+  const result=await runRagWorkflow({...input(),evaluate,requestId},f.deps);
+  assert.equal(result.outcome,'retrieved');
+  if(evaluate){assert.ok(databaseChecks>0);assert.equal(admittedChecks,0);assert.equal(admittedPrepares,0);}
+  else{assert.equal(databaseChecks,0);assert.ok(admittedChecks>0);assert.equal(admittedPrepares,1);}
+ }
+});
+test('request admission reuse still denies changed sessions and withdrawn source passages',async()=>{
+ const denied=fixture();denied.deps.retrieval={authorize:async()=>false,prepare:denied.deps.prepare};
+ await assert.rejects(runRagWorkflow(input(),denied.deps));assert.equal(denied.prepareCount(),0);
+ const withdrawn=fixture();withdrawn.deps.retrieval={authorize:async()=>true,prepare:withdrawn.deps.prepare};withdrawn.withdraw();
+ await assert.rejects(runRagWorkflow(input(),withdrawn.deps));assert.equal(withdrawn.callCount(),0);
 });

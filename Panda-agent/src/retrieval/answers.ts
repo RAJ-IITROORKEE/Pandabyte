@@ -20,6 +20,7 @@ export function parseQuestion(value: unknown): Question | null {
 }
 // Conservative refusal for requests requiring absent physical, execution, or linked-source proof.
 function needsUnavailableProof(q: string): boolean {
+    if (/\bhardware[\s-]+revision\b/i.test(q) && /\b(?:my|mine|i (?:own|have|hold)|holding|in front of me)\b/i.test(q)) return true;
     return /\b(?:wir(?:e|ing)|pin\s*(?:map|out|assignment)|gpio|guaranteed|safe(?:ly|ty)?|physical\s*revision|board\s*revision|revision\s*(?:of|equivalen|match)|hardware\s*(?:tests?|test(?:ed|ing)|verified)|(?:verify|verified|verification|confirm|confirmed)\s*(?:the\s*)?(?:physical\s*)?board|board\s*(?:verification|verified|tested)|(?:tested|verified)\s*(?:on|with)\s*(?:hardware|board)|(?:proven|verified|guaranteed)\s*(?:to\s*)?compil(?:e|es|ed|ing)|(?:absolute.maximum|ratings?).{0,80}(?:datasheet|linked|pdf)|(?:datasheet|linked|pdf).{0,80}(?:absolute.maximum|ratings?))\b/i.test(q);
 }
 export function validChunk(c: CanonicalChunk, productId: string, revision?: string): boolean {

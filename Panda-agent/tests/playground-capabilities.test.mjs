@@ -9,6 +9,15 @@ test('basic RAG capability needs a verified local lease and does not name the hi
  assert.equal(off.connection,'not_configured');assert.equal(off.profile,null);assert.equal(off.transport,'unconfigured');
  assert.equal(on.model,'xingchen-agi/xing4.0-29b-a4b:free');assert.equal(on.profile,'basic-rag-v1');assert.deepEqual(on.approvedQuestions,[]);
 });
+
+test('prototype capability exposes only conservative allowance and verification expiry',()=>{
+ const allowance={remainingNanoUsd:990000000,expiresAt:'2026-11-10T02:00:00.000Z'};
+ const active=basicRagPlaygroundCapabilities(true,'prototype',allowance);
+ assert.equal(active.model,'openai/gpt-6-luna');assert.equal(active.profile,'luna-rag-prototype-v1');
+ assert.equal(active.remainingNanoUsd,990000000);assert.equal(active.expiresAt,allowance.expiresAt);
+ const off=basicRagPlaygroundCapabilities(false,'prototype',allowance);assert.equal(off.connection,'not_configured');assert.equal(off.profile,null);
+ assert.doesNotMatch(JSON.stringify(active),/budgetId|keySha256|workspaceSha256|owner/);
+});
 test('returns fresh copies of the two approved questions',()=>{
  const values=approvedPlaygroundQuestions();assert.equal(values.length,2);assert.equal(matchApprovedPlaygroundCase({question:values[0],productSku:'ESPX8266'}),'mini-01');values.push('forged');assert.equal(approvedPlaygroundQuestions().length,2);
 });

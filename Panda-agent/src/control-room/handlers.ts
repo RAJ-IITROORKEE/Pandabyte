@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { Admission, CaseSet, ControlRoomStore, Intake, Result } from './contracts.ts';
-import { decodeCursor, isRecord, linkInput, metadata, publicUrl, reviewInput, uploadFile, uuid, validText } from './validation.ts';
+import { decodeCursor, linkInput, metadata, publicUrl, reviewInput, uploadFile, uuid, validText } from './validation.ts';
 const hash = (v: string | Uint8Array) => createHash('sha256').update(v).digest('hex');
 const response = (status: number, data: unknown, allow?: string) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', ...(allow ? { Allow: allow } : {}) } });
 const error = (status: number, code: string, allow?: string) => response(status, { error: { code } }, allow);
@@ -166,9 +166,6 @@ export function createControlRoomHandlers(authenticate: () => Promise<Admission>
             throw Error(); if (!Array.isArray(r.value) || r.value.length > 100)
             throw Error(); return response(200, { items: r.value.map((c: CaseSet) => { if (!/^[a-zA-Z0-9_-]{1,100}$/.test(c.key) || !/^[0-9a-f]{64}$/.test(c.hash) || !Number.isSafeInteger(c.count) || c.count < 0 || c.classification !== 'source_visible_engineering' || c.heldOut !== false)
                 throw Error(); return { key: c.key, hash: c.hash, count: c.count, classification: c.classification, heldOut: false }; }) }); }); },
-        evaluate: async (req: Request) => { const denied = await gate(req, 'POST', true); if (denied)
-            return denied; const b = await json(req, 4096); if ('error' in b)
-            return inputError(b.error); if (!isRecord(b.value) || Object.keys(b.value).some(k => !['caseSetKey', 'corpusFingerprint'].includes(k)) || !validText(b.value.caseSetKey, 100) || !/^[a-zA-Z0-9_-]+$/.test(b.value.caseSetKey) || typeof b.value.corpusFingerprint !== 'string' || !/^[0-9a-f]{64}$/.test(b.value.corpusFingerprint))
-            return error(400, 'invalid_request'); return error(503, 'runtime_unavailable'); },
+
     };
 }

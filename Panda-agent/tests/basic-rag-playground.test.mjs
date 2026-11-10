@@ -46,3 +46,9 @@ test('last synchronous availability check denies dispatch after source validatio
  let valid=true,posts=0;const generate=createBasicRagPlayground({subject:claim.subject,requestOrigin:'http://localhost:3001',env:{OPENROUTER_API_KEY:'synthetic'},profile,availability:{enabled:async()=>true,current:async()=>true,dispatchCurrent:()=>valid,key:()=> 'synthetic',binding:()=>profile.binding},claim:async()=>true,completion:options=>async(_input,beforeSend)=>{if(!await options.policyCurrent()||!await options.claim()||!await beforeSend()||!options.dispatchCurrent())throw new (await import('../src/server/basic-rag-openrouter.ts')).BasicRagProviderError('not_admitted');posts++;return {evaluation:{},usage:{inputTokens:1,outputTokens:1,costNanoUsd:0}};}});
  await assert.rejects(generate(input,async()=>{valid=false;return true;},signal()),e=>e.code==='not_admitted');assert.equal(posts,0);
 });
+
+test('prototype Playground uses the shared database reservation without a private test marker',async()=>{
+ const reservations=[];let posts=0;const availability={enabled:async()=>true,current:async()=>true,dispatchCurrent:()=>true,key:()=> 'synthetic',binding:()=>profile.binding,claimBudget:async value=>{reservations.push(value);return true;}};
+ const generate=createBasicRagPlayground({subject:claim.subject,requestOrigin:'http://localhost:3001',env:{OPENROUTER_API_KEY:'synthetic'},profile,mode:'prototype',availability,claim:async()=>{throw Error('Old marker must not be touched');},completion:options=>async(_input,beforeSend)=>{assert.equal(await options.claim(),true);assert.equal(await beforeSend(),true);posts++;return {evaluation:{answer:'',evidence:[]},usage:{inputTokens:1,outputTokens:1,costNanoUsd:10}};}});
+ await generate(input,async()=>true,signal());assert.equal(posts,1);assert.deepEqual(reservations,[{request:requestId,surface:'playground',fingerprint:input.context.digest}]);
+});

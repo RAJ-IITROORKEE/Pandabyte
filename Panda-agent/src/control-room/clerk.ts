@@ -55,7 +55,7 @@ function denied(kind: Exclude<Admission["kind"], "admin">): Response {
         headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" },
     });
 }
-type Operation = "overview" | "listIntakes" | "getIntake" | "link" | "upload" | "review" | "caseSets" | "evaluate";
+type Operation = "overview" | "listIntakes" | "getIntake" | "link" | "upload" | "review" | "caseSets";
 async function dispatch(operation: Operation, request: Request, reference?: string): Promise<Response> {
     const context = await adminContext();
     if (!("client" in context))
@@ -74,7 +74,7 @@ export const intakesGET = (request: Request) => dispatch("listIntakes", request)
 export const intakesPOST = (request: Request) => dispatch("link", request);
 export const uploadPOST = (request: Request) => dispatch("upload", request);
 export const caseSetsGET = (request: Request) => dispatch("caseSets", request);
-export const evaluationsPOST = (request: Request) => dispatch("evaluate", request);
+export { evaluationsPOST } from "./evaluation-clerk";
 type RouteContext = {
     params: Promise<{
         reference: string;

@@ -44,8 +44,8 @@ export async function claimBasicRagPlayground(input: Claim): Promise<boolean> {
 
 type Generate = NonNullable<RagWorkflowDependencies['generate']>;
 type Options = {
-  subject: string; requestOrigin: string; env: NodeJS.ProcessEnv; profile: { binding: string }; mode?: 'free' | 'luna';
-  availability: { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; binding(): string; claimBudget?(): Promise<boolean> };
+  subject: string; requestOrigin: string; env: NodeJS.ProcessEnv; profile: { binding: string }; mode?: 'free' | 'luna' | 'prototype';
+  availability: { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; binding(): string; claimBudget?(input: {request:string;surface:'playground';fingerprint:string}):Promise<boolean> };
   claim?: typeof claimBasicRagPlayground;
   completion?: typeof createBasicRagCompletion;
 };
@@ -60,10 +60,13 @@ export function createBasicRagPlayground(options: Options): Generate {
   };
   return async (input, beforeSend, signal) => {
     if (!await options.availability.enabled() || options.availability.key() !== key || options.availability.binding() !== binding) throw Object.assign(Error('Model unavailable'), { code: 'not_admitted' });
-    const complete = (options.completion ?? (options.mode === 'luna' ? createLunaRagCompletion : createBasicRagCompletion))({ apiKey: key, policyCurrent, dispatchCurrent: () => options.availability.dispatchCurrent() && options.availability.key() === key && options.availability.binding() === binding,
+    const dispatchCurrent = () => options.availability.dispatchCurrent() && options.availability.key() === key && options.availability.binding() === binding;
+    const complete = (options.completion ?? (options.mode === 'luna' || options.mode === 'prototype' ? createLunaRagCompletion : createBasicRagCompletion))({ apiKey: key, policyCurrent, dispatchCurrent,
+      ...(options.mode === 'prototype' ? { preClaimCurrent: dispatchCurrent } : {}),
       claim: async () => {
+        if (options.mode === 'prototype') return !!options.availability.claimBudget && await options.availability.claimBudget({ request: input.requestId, surface: 'playground', fingerprint: input.context.digest });
         if (!await (options.claim ?? claimBasicRagPlayground)({ subject: options.subject, requestId: input.requestId, binding, question: input.question, sourceDigest: input.context.digest })) return false;
-        return options.mode !== 'luna' || !!options.availability.claimBudget && await options.availability.claimBudget();
+        return options.mode !== 'luna' || !!options.availability.claimBudget && await options.availability.claimBudget({request:input.requestId,surface:'playground',fingerprint:input.context.digest});
       } });
     try {
       return await complete({ question: input.question, passages: input.context.passages.map(({ rank, text }) => ({ rank, text })) },

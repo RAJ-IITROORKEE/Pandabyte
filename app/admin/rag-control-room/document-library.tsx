@@ -89,7 +89,7 @@ export function DocumentLibrary({ onInspect, onInspectExternal, onRecover, recov
     setWithdrawal(control.snapshot());
     await operation;
     const current = control.snapshot(); setWithdrawal(current); setWithdrawActivity(null); setWithdrawTarget(null); setConfirmation("");
-    if (current.phase === "confirmed") { setWithdrawNotice("Document withdrawal is confirmed. The original upload and retained records have not been deleted."); window.dispatchEvent(new Event("panda-documents-refresh")); }
+    if (current.phase === "confirmed") { setWithdrawNotice("Document withdrawal is confirmed. The original upload and retained records have not been deleted."); window.dispatchEvent(new Event("panda-documents-refresh")); window.dispatchEvent(new Event("panda-document-withdrawn")); }
     else if (current.phase === "storage") setWithdrawNotice("Withdrawal was not sent because the recovery record could not be saved.");
     else if (current.phase === "denied") setWithdrawNotice("Withdrawal was rejected because administrator access is unavailable.");
     else if (current.phase === "conflict") setWithdrawNotice("Withdrawal was rejected because the document version changed.");
@@ -103,7 +103,7 @@ export function DocumentLibrary({ onInspect, onInspectExternal, onRecover, recov
     setWithdrawActivity("check"); setWithdrawNotice("");
     const operation = control.check(); setWithdrawal(control.snapshot()); await operation;
     const current = control.snapshot(); setWithdrawal(current); setWithdrawActivity(null);
-    if (current.phase === "confirmed") { setWithdrawNotice(cleanupOnly ? "Document withdrawal remains confirmed. Local recovery cleanup was checked without sending another withdrawal." : "Current document state is withdrawn. This readback does not identify which request made the change."); if (!cleanupOnly) window.dispatchEvent(new Event("panda-documents-refresh")); }
+    if (current.phase === "confirmed") { setWithdrawNotice(cleanupOnly ? "Document withdrawal remains confirmed. Local recovery cleanup was checked without sending another withdrawal." : "Current document state is withdrawn. This readback does not identify which request made the change."); if (!cleanupOnly) window.dispatchEvent(new Event("panda-documents-refresh")); window.dispatchEvent(new Event("panda-document-withdrawn")); }
     else if (current.phase === "review") setWithdrawNotice("Fresh administrator metadata is available. Review the current document before requesting withdrawal again.");
     else setWithdrawNotice("Withdrawal remains blocked. The document state could not be confirmed as withdrawn within the bounded check; no withdrawal was sent.");
   }

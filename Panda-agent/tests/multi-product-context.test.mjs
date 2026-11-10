@@ -1,7 +1,26 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
 import { runtimeSnapshot as snapshot } from './fixtures/runtime-snapshot.mjs';
-import {resolveMultiProductIdentity} from '../src/retrieval/multi-product-identity.ts';import {prepareProductContextSet} from '../src/retrieval/product-context-set.ts';
+import {resolveMultiProductIdentity} from '../src/retrieval/multi-product-identity.ts';import {createWorkflowProductContextPreparer,prepareProductContextSet} from '../src/retrieval/product-context-set.ts';
 import {PRODUCT_MEMBERSHIP} from '../src/retrieval/engineering-proof.ts';
+test('descriptive identity requires corroborated title words and disambiguates an explicitly named accessory',()=>{
+ const catalog=[
+  {id:'one',sku:'RING',title:'Circular ABC12 WeMoS LED'},
+  {id:'two',sku:'STRIP',title:'Straight ABC12 LED'},
+  {id:'a',sku:'BOARD-A',title:'PandaByte xAlpha Board'},
+  {id:'b',sku:'xBeta',title:'PandaByte xBeta Board'},
+  {id:'s',sku:'ACCESSORY',title:'xAlpha xBeta Shield'},
+ ];
+ const skus=q=>resolveMultiProductIdentity(catalog,q).products?.map(row=>row.sku);
+ assert.deepEqual(skus('Which LEDs does the circular ABC12 use?'),['RING']);
+ assert.deepEqual(skus('What does ACCESSORY xAlpha/xBeta support?'),['ACCESSORY']);
+ assert.deepEqual(skus('Compare ACCESSORY xAlpha/xBeta with xBeta'),['xBeta','ACCESSORY']);
+ for(const q of ['ABC12','circular','Which straight circular ABC12?', 'Compare circular ABC12 with missing',
+  'What about imaginary ZZ99 circular ABC12?','What about straight or circular ABC12?']){
+  assert.equal(resolveMultiProductIdentity(catalog,q).kind,'clarification',q);
+ }
+ const ambiguous=[...catalog,{id:'other',sku:'RING-V2',title:'Circular ABC12 WeMoS LED V2'}];
+ assert.equal(resolveMultiProductIdentity(ambiguous,'What does the circular ABC12 use?').kind,'clarification');
+});
 const rows=[{id:'c3',sku:'ESPXC3',title:'PandaByte xC3 ESP32-C3 Board'},{id:'c3m',sku:'ESPXC3M',title:'PandaByte xC3m ESP32-C3 Board'},{id:'s3',sku:'ESPXS3',title:'PandaByte xS3 ESP32-S3 Board'},{id:'c6',sku:'ESPXC6',title:'PandaByte xC6 ESP32-C6 Board'},{id:'dht',sku:'PBDHT11',title:'DHT11 Sensor'}];
 test('full catalog aliases resolve distinct xC3 and xS3, shared models clarify, boundaries isolate xC3m',()=>{
  assert.deepEqual(resolveMultiProductIdentity(rows,'Does PandaByte xC3 or xS3 have 8MB PSRAM?').products.map(x=>x.sku),['ESPXC3','ESPXS3']);
@@ -18,6 +37,48 @@ function fixture(mode="default"){
  return {input:{actor:{subject:'admin'},question:'Does xC3 or xS3 have 8MB PSRAM?',client,createAdapters,authorizeCurrent:async()=>allowed},catalog,revoke:id=>revoked=id,deny:()=>allowed=false,change:()=>valid=false};
 }
 test('per-product source pipeline and fair merge with revalidation',{skip},async()=>{const f=fixture(),value=await prepareProductContextSet(f.input);assert.equal(value.kind,'ready');assert.equal(value.passages.length,8);assert.deepEqual(value.passages.map(x=>x.productSku),['ESPXC3','ESPXS3','ESPXC3','ESPXS3','ESPXC3','ESPXS3','ESPXC3','ESPXS3']);assert.ok(value.passages.every(p=>p.text.includes(p.productSku)));assert.equal(await value.revalidate(),true);f.revoke(f.catalog[1].id);assert.equal(await value.revalidate(),false);});
+test('a retrieval-only workflow reads each selected scope and the full catalog twice through release', { skip }, async () => {
+ const {runRagWorkflow}=await import('../src/control-room/rag-workflow.ts');
+ const f=fixture(), calls={catalog:0,scopes:0,actor:0};
+ const rpc=f.input.client.database.rpc;
+ f.input.client.database.rpc=(...args)=>{calls.catalog++;return rpc(...args);};
+ const factory=f.input.createAdapters;
+ f.input.createAdapters=()=>{
+  const adapters=factory(), read=adapters.currentScope;
+  return {...adapters,currentScope:(...args)=>{calls.scopes++;return read(...args);}};
+ };
+ f.input.authorizeCurrent=async()=>{calls.actor++;return true;};
+ const result=await runRagWorkflow({question:f.input.question,evaluate:false,signal:new AbortController().signal},{
+  authorize:f.input.authorizeCurrent,
+  prepare:createWorkflowProductContextPreparer(f.input),
+ });
+ assert.equal(result.outcome,'retrieved');
+ assert.deepEqual(calls,{catalog:2,scopes:4,actor:3});
+ assert.equal(result.metrics.contextRevalidationCount,1);
+});
+test('only the original preparation callback with the same actor guard handles workflow entry',async()=>{
+ const {runRagWorkflow}=await import('../src/control-room/rag-workflow.ts');
+ for(const scenario of ['matched','wrapped','different','denied','revoked-at-release']){
+  const events=[];
+  const authorize=async()=>{events.push('authorize');return scenario!=='denied' && !(scenario==='revoked-at-release'&&events.includes('catalog'));};
+  const prepare=createWorkflowProductContextPreparer({
+   actor:{subject:'admin'},authorizeCurrent:authorize,createAdapters:()=>{throw Error('unexpected scope read');},
+   client:{database:{rpc:async()=>{events.push('catalog');return {data:{items:[]},error:null};}}},
+  });
+  const run=runRagWorkflow({question:'Which board?',evaluate:false,signal:new AbortController().signal},{
+   authorize:scenario==='different'?async()=>{events.push('other guard');return false;}:authorize,
+   prepare:scenario==='wrapped'?Object.assign((...args)=>prepare(...args),{authorizedBy:authorize}):prepare,
+  });
+  if(scenario==='denied'||scenario==='different'||scenario==='revoked-at-release'){
+   await assert.rejects(run,/Workflow unavailable/);
+  }else{
+   assert.equal((await run).outcome,'clarification');
+  }
+  const expected=scenario==='different'?['other guard']:scenario==='denied'?['authorize']:['authorize','catalog','authorize'];
+  if(scenario==='wrapped')expected.unshift('authorize');
+  assert.deepEqual(events,expected,scenario);
+ }
+});
 test('cancellation and administrator revocation withhold the entire snapshot',{skip},async()=>{const f=fixture(),c=new AbortController();c.abort();assert.equal((await prepareProductContextSet({...f.input,signal:c.signal})).kind,'unavailable');f.deny();assert.equal((await prepareProductContextSet(f.input)).kind,'unavailable');});
 
 test('cross-product chunks are withheld and identical source bodies stay separate',{skip},async()=>{
@@ -78,6 +139,16 @@ test('synthetic context avoids selector and redundant reads while withholding st
   const ready=await prepareProductContextSet(input);
   assert.equal(ready.kind,'ready');assert.equal(ready.authorizedBy,input.authorizeCurrent);assert.equal(selectionCalls,0);assert.equal(scopeReads,2);assert.equal(catalogReads,2);
   assert.equal(await ready.revalidate(),true);assert.equal(scopeReads,3);
+  const beforeDeferred={scopeReads,catalogReads};
+  const pendingRelease=await prepareProductContextSet(input,'at_workflow_release');
+  assert.equal(pendingRelease.kind,'ready');
+  assert.equal(scopeReads-beforeDeferred.scopeReads,1,'only the initial scope is needed to rank passages');
+  assert.equal(catalogReads-beforeDeferred.catalogReads,1,'only the initial catalog is needed to plan products');
+  revoked=true;
+  assert.equal(await pendingRelease.revalidate(),false,'the final release must see a withdrawal after ranking');
+  revoked=false;
+  assert.equal(scopeReads-beforeDeferred.scopeReads,2);
+  assert.equal(catalogReads-beforeDeferred.catalogReads,2);
   duplicate=true;assert.equal((await prepareProductContextSet(input)).kind,'unavailable');duplicate=false;
   revoked=true;assert.equal(await ready.revalidate(),false);
   revoked=false;revokeOnRead=scopeReads+2;assert.equal((await prepareProductContextSet(input)).kind,'unavailable');
