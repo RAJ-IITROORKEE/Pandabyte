@@ -78,7 +78,7 @@ export function CaseEvaluation() {
   {results.length > 0 && <div style={{ overflowX: 'auto' }}><table><thead><tr><th scope="col">Case</th><th scope="col">Result</th><th scope="col">Retrieval workflow</th><th scope="col">Case execution</th><th scope="col">Model</th></tr></thead>
    <tbody>{results.map(r => <tr key={r.caseId}><th scope="row">{r.caseId}</th><td>{r.status}{r.failureReason && <span> · {r.failureReason}</span>}</td><td>{r.retrievalMs ?? '—'} ms</td><td>{r.elapsedMs ?? '—'} ms</td><td>{r.modelStatus}</td></tr>)}</tbody></table></div>}
   {results.map(r => <details key={r.caseId}><summary>{r.caseId} question and model evidence</summary><p>{r.caseQuestion}</p><p>{r.modelAnswer ?? 'No model answer was requested or released.'}</p>
-   {r.modelEvidence.map(e => <blockquote key={e.rank}><p>{e.quote}</p><p>Passage {e.rank} · {e.reason}</p></blockquote>)}{r.reviewTruncated && <p>This saved review excerpt was truncated.</p>}</details>)}
+   {r.modelEvidence.map((e, index) => <blockquote key={index}><p>{e.quote}</p><p>Passage {e.rank} · {e.reason}</p></blockquote>)}{r.reviewTruncated && <p>This saved review excerpt was truncated.</p>}</details>)}
   {results.some(r => r.manualReviewRequired) && <p>Automatic model checks verify expected values and literal source support. Full semantic answer review is still required.</p>}
  </section>;
 }

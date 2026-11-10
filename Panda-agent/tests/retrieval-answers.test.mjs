@@ -147,6 +147,13 @@ test('forged model quote, source, fields and private pointers cannot become cita
         assert.equal((await ask(x.adapters)).kind, 'insufficient');
     }
 });
+
+test('legacy selector still refuses distinct literal quotes that repeat one source handle without retry',async()=>{
+    let selections=0;
+    const x=make({select:async()=>{selections++;return {selections:[{handle:chunk().handle,quote:'4 pins'},{handle:chunk().handle,quote:'The listing'}]};}});
+    const result=await ask(x.adapters);
+    assert.equal(result.kind,'unavailable');assert.equal(selections,1);assert.equal('citations' in result,false);
+});
 test('revocation after model discards answer and engine errors do not retry', async () => {
     const x = make();
     let count = 0;

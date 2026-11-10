@@ -69,9 +69,22 @@ test('unknown keys, rank, answer and reason survive for the strict validator', (
   assert.deepEqual(result, { ...value, evidence: [{ ...value.evidence[0], quote: 'x\ny' }] });
   assert.equal(validate(result, 'x\ny'), null);
   const duplicate = { answer: 'x', evidence: [evaluation('x y').evidence[0], evaluation('x y').evidence[0]] };
-  assert.equal(validate(reconcileLiteralEvidence(duplicate, [{ rank: 1, text: 'x\ny' }]), 'x\ny'), null);
+  const duplicateReasons=[];
+  assert.equal(validatePlaygroundEvaluation(reconcileLiteralEvidence(duplicate, [{ rank: 1, text: 'x\ny' }]),[{handle:'1',text:'x\ny'}],r=>duplicateReasons.push(r)), null);
+  assert.deepEqual(duplicateReasons,['evidence-duplicate']);
   const malformedReason = { answer: 'x', evidence: [{ rank: 1, quote: 'x y', reason: null }] };
   assert.equal(validate(reconcileLiteralEvidence(malformedReason, [{ rank: 1, text: 'x\ny' }]), 'x\ny'), null);
+});
+
+test('distinct whitespace-recovered quotes from one passage pass while aliases of the same exact quote are duplicates',()=>{
+ const source='x\ny; z\u00a0w';
+ const value={answer:'x and z',evidence:[{rank:1,quote:'x y',reason:'First fact'},{rank:1,quote:'z w',reason:'Second fact'}]};
+ const result=reconcileLiteralEvidence(value,[{rank:1,text:source}]);
+ assert.deepEqual(result.evidence.map(e=>e.quote),['x\ny','z\u00a0w']);assert.ok(validate(result,source));
+ const alias={...value,evidence:[value.evidence[0],{rank:1,quote:'x\ny',reason:'Same fact'}]};
+ const reasons=[];
+ assert.equal(validatePlaygroundEvaluation(reconcileLiteralEvidence(alias,[{rank:1,text:source}]),[{handle:'1',text:source}],r=>reasons.push(r)),null);
+ assert.deepEqual(reasons,['evidence-duplicate']);
 });
 
 test('only the referenced valid rank is reconciled', () => {
