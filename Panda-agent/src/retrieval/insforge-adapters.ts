@@ -68,6 +68,9 @@ function validateScope(data: ScopeRow, product: Product): CanonicalChunk[] | nul
     return chunks;
 }
 const tokens = (s: string) => [...new Set((s.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(t => t.length > 2 && !new Set(['the', 'and', 'for', 'with', 'what', 'does', 'this', 'that', 'how', 'are', 'can', 'its', 'which', 'about', 'tell', 'does', 'have']).has(t)))];
+export function isCanonicalSourceLabel({ text, sourceUrl }: Pick<CanonicalChunk, 'text' | 'sourceUrl'>): boolean {
+    return text === `Source: ${sourceUrl}`;
+}
 export function createInsforgeAdapters(client: Client, select: Adapters['select']): Adapters {
     let current = new Map<string, CanonicalChunk>();
     return {
@@ -85,7 +88,8 @@ export function createInsforgeAdapters(client: Client, select: Adapters['select'
             const terms = [...new Set(tokens(question).map(normalizeLexicalTerm))];
             return eligible.map(handle => {
                 const chunk = current.get(handle);
-                const text = chunk?.text.toLowerCase() ?? '';
+                if (!chunk || isCanonicalSourceLabel(chunk)) return { handle, score: 0 };
+                const text = chunk.text.toLowerCase();
                 return { handle, score: terms.filter(t => matchesLexicalTerm(t, text)).length };
             }).filter(x => x.score > 0).sort((a, b) => b.score - a.score || a.handle.localeCompare(b.handle, 'en')).slice(0, 100).map(x => x.handle);
         },

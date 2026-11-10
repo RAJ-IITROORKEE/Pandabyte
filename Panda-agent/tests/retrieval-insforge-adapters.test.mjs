@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runtimeSnapshot as snapshot } from './fixtures/runtime-snapshot.mjs';
-import { createInsforgeAdapters, listRuntimeProducts, getRuntimeProductEvidence } from '../src/retrieval/insforge-adapters.ts';
+import { createInsforgeAdapters, listRuntimeProducts, getRuntimeProductEvidence, isCanonicalSourceLabel } from '../src/retrieval/insforge-adapters.ts';
 import { answerQuestion } from '../src/retrieval/answers.ts';
 import { prepareProductContextSet } from '../src/retrieval/product-context-set.ts';
 import { ENGINEERING_CONFIG, ENGINEERING_MANIFEST } from '../src/retrieval/engineering-proof.ts';
@@ -18,6 +18,15 @@ function fixture(productTitle) {
     return { rows, p, result, client };
 }
 const skip = !snapshot && 'private snapshot is unavailable';
+
+test('only the exact standalone canonical URL label is excluded from product ranking', () => {
+    const sourceUrl = 'https://pandabyte.in/product-page/fixture';
+    const label = `Source: ${sourceUrl}`;
+    assert.equal(isCanonicalSourceLabel({ sourceUrl, text: label }), true);
+    for (const text of [label + '\nUSB connector: Type-C', label + ' (captured)', label + '-other', sourceUrl]) {
+        assert.equal(isCanonicalSourceLabel({ sourceUrl, text }), false);
+    }
+});
 
 test('captured x8266 evidence supports MCU and USB questions while proof and ambiguous requests withhold passages', { skip }, async (t) => {
     const f = fixture('PandaByte NodeMCU x8266 WiFi Development Board');
@@ -36,6 +45,7 @@ test('captured x8266 evidence supports MCU and USB questions while proof and amb
         assert.equal(result.kind, kind, question);
         if (kind === 'ready') {
             assert.ok(result.passages.every(passage => passage.sourceUrl === f.p.sourceUrl), question);
+            assert.ok(result.passages.every(passage => passage.text !== `Source: ${passage.sourceUrl}`), 'a source URL by itself cannot support an answer');
             const rank = result.passages.findIndex(passage => claim.test(passage.text)) + 1;
             t.diagnostic(`Listing field rank ${rank || 'absent'} among ${result.passages.length} passages`);
             assert.ok(rank > 0, question);
@@ -98,4 +108,5 @@ test('admin evidence projection contains no canonical IDs or handles', { skip },
     assert.deepEqual(Object.keys(result.chunks[0]).sort(), ['capturedAt', 'physicalRevision', 'sectionPath', 'text']);
     assert.equal(JSON.stringify(result).includes(f.p.id), false);
     assert.equal(JSON.stringify(result).includes('panda:'), false);
+    assert.ok(result.chunks.some(chunk => chunk.text === `Source: ${result.sourceUrl}`), 'inspection retains the original metadata passage');
 });
