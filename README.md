@@ -1,6 +1,6 @@
-> Agent priority override, 10 November 2026: deliver grounded LLM output in the Control Room, then the [basic RAG chatbot milestone](docs/agent-experience-upgrade/basic-rag-milestone.md) in main chat. OpenCode is optional for this prototype. Zero cost remains the default; the owner separately approved up to USD0.01 total Luna testing with strict ZDR unchanged. Preserve the approved UI, owner/source guards, full requirements and historical evidence. No deployment.
+> Current Agent priority, 10 November 2026: RAG is handed off separately in [current_RAG.md](current_RAG.md). Plan the no-RAG OpenCode embedded-assistant MVP before further implementation: approved read-only MCP tools, skills, bounded children, multiple chats, long-session context and reviewed assistant-ui/AI Elements views. Strict ZDR and the owner-approved **USD1 cumulative prototype cap** remain. No deployment/push/merge.
 
-Basic-RAG live checkpoint, 10 November: Codex Browser verified grounded GPT-6 Luna output in the Control Room and main chat, with citations and saved history surviving reload. The bounded paid test is closed; ongoing inference remains off. The free Phala route still returns429, and Control Room latency41.3s needs improvement. See the current handoff.
+Read the [design proposal](docs/agent-experience-upgrade/no-rag-harness-design.md), [implementation plan](docs/superpowers/plans/2026-11-10-no-rag-opencode-harness.md) and [current handoff](docs/agent-experience-upgrade/handoff.md). Native/LLM drafts and offline tests are preserved, but live execution and the new UI are not accepted. RAG integration waits for owner notification. Full Phase1 remains partial; Phase2 gated.
 
 # PandaByte.in
 

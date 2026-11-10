@@ -472,5 +472,21 @@
     "refundedOrReset": false,
     "paidLeaseUnmounted": true,
     "providerAccountSettingsChanged": false
+  },
+  "prototypeAllowance20261110": {
+    "authorizedUsd": 1,
+    "scope": "Shared local prototype, RAG now paused; no-RAG harness plan awaiting review",
+    "strictZdrUnchanged": true,
+    "priorCentCarriedIn": true,
+    "provider": "azure/us",
+    "model": "openai/gpt-6-luna",
+    "lastReservedNanoUsd": 17988200,
+    "lastNewReservations": 5,
+    "reset": false,
+    "additionalModelPostsAfterRagPause": 0,
+    "accountSettingsChanged": false,
+    "currentLeaseMustBeReverified": true,
+    "nativeLiveExecutionVerified": false,
+    "record": "docs/agent-experience-upgrade/prototype-budget.md"
   }
 }

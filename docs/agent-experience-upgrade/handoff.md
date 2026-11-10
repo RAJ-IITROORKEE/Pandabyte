@@ -5,7 +5,52 @@ Use `git log -1` for the local checkpoint. Latest follow-up verifies Control Roo
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Latest checkpoint — live basic RAG, 10 November 2026
+## Current priority — plan-first native MVP, 10 November 2026
+
+The owner separated RAG improvement into [current_RAG.md](../../current_RAG.md).
+RAG changes and paid RAG tests are paused; do not reintegrate until the owner
+returns its handoff. Preserve the complete original specification and97 requirements.
+Full Phase1 remains partial; Phase2 is gated.
+
+Answered MVP: embedded help, project plans and structured BOMs; approved read-only
+tools; one main agent with optional bounded subagents; approval before external
+writes; **USD1 cumulative total across every OpenRouter call**, strict ZDR unchanged.
+See [design and observed gaps](no-rag-harness-design.md) and
+[implementation plan](../superpowers/plans/2026-11-10-no-rag-opencode-harness.md).
+The owner requested the plan before further implementation. All21 current shadcn AI Elements patterns are reviewed in [the component mapping](ai-elements-component-plan.md); assistant-ui remains the sole chat-state owner. No component/skill dependency was installed. No new UI draft is
+approved, no2.2.6 install/upgrade occurred, and no native live readiness is claimed.
+
+Read-only current research: npm latest V2 is2.2.6; pinned tested binary is2.2.2.
+Some SDK/server documentation redirects to V1. V2 prompt/schema, event recovery,
+child permissions and effective provider settings require version-specific proofs.
+Codex Browser inspected the existing3001 preview without submitting a new prompt.
+Disabled model/search/attachment controls and saved historical RAG outcomes remain.
+
+Uncommitted drafts preserved: direct plain-Luna transport, owner-bound chat service,
+route selection/copy changes and isolated single-question CLI/relay. Synthetic
+checks:42 shared transport/policy,8 service/store,21 routing; CLI7 offline tests
+include actual2.2.2 to mock provider. These are separate test runs, not a combined
+new full-suite count. New plain-chat migration20261110030000 has7 rolled-back
+compile checks and is NOT APPLIED. No final production build/browser acceptance
+of these drafts. Current preview build remains tkofjVcUMfIFq9Kl4xn-k.
+
+The earlier USD1 shared-budget migration20261109210000 IS applied in development;
+12 real authenticated Clerk/InsForge fixture checks passed and cleanup was verified,
+with0 provider calls in those checks. Full earlier cent carried in; last readback
+17,988,200nanoUSD reserved (5 new reservations), leaving0.9820118USD conservative
+allowance. Never reset/refund/reseed. Existing old4 markers remain. Privacy proof
+expires independently; verify again before later live execution.
+
+Last live RAG total21,430ms vs2,170ms provider roundtrip; further IO changes have
+synthetic coverage only. Main USB citation/saved reload and standalone/compound
+unsupported-voltage abstention were tested. Bulk Evaluation remains unavailable;
+LangSmith is disabled. No paid call occurred after the pause. No push/merge/deploy,
+provider-account change, commerce change or recovery operation.
+
+Historical sections below retain their original dates/results. Their cent-only
+activation and older operating status are superseded by this current checkpoint.
+
+## Historical checkpoint — cent-only live basic RAG, 10 November 2026
 
 The owner's current priority is Control Room LLM output first, then basic main
 chat; OpenCode is optional for this prototype. The original specification remains

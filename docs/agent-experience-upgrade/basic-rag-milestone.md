@@ -1,6 +1,16 @@
 # Basic RAG prototype implementation plan
 
-## Latest priority and bounded test exception — 10 November 2026
+## Current pause and allowance — 10 November 2026
+
+The owner assigned further RAG improvement separately; use [current_RAG.md](../../current_RAG.md).
+Do not make new paid RAG calls or reintegrate until the owner notifies this chat.
+The owner subsequently approved USD1 cumulative local prototype allowance, including
+the entire earlier cent. It is shared across future main/child/maintenance calls;
+strict ZDR and the30-minute privacy freshness gate remain. See [allowance](prototype-budget.md).
+The next work is the [plan-first no-RAG harness](no-rag-harness-design.md).
+The following cent-only text is historical, not current activation authority.
+
+## Historical bounded test exception — 10 November 2026
 
 The owner now prioritizes the Control Room's grounded LLM output, followed by
 the existing main chat using the same retrieval and completion contracts. OpenCode

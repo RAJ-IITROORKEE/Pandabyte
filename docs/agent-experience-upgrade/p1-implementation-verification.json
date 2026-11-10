@@ -2377,5 +2377,66 @@
         "providerAdmission": false
       }
     }
+  },
+  "noRagMvpPlan20261110": {
+    "status": "plan_ready_for_review_not_implemented",
+    "ownerDecisions": {
+      "date": "2026-11-10",
+      "status": "plan_ready_for_review",
+      "authority": "Owner explicitly requests plan first; answered MVP: embedded help, plans and structured BOMs; approved read-only tools; one main agent and optional bounded children; approval before external writes; same USD1 cumulative cap.",
+      "design": "docs/agent-experience-upgrade/no-rag-harness-design.md",
+      "plan": "docs/superpowers/plans/2026-11-10-no-rag-opencode-harness.md",
+      "ragHandoff": "current_RAG.md",
+      "ragIntegrationAllowed": false,
+      "uiDesignApproval": false,
+      "implementationApproved": false,
+      "fullPhase1Complete": false,
+      "phase2Gated": true,
+      "latestRegistryV2Observed": "2.2.6",
+      "testedBinary": "2.2.2",
+      "liveNativeInferenceVerified": false,
+      "constraints": [
+        "strict ZDR",
+        "shared USD1 across all model/child/maintenance calls",
+        "preserve original specification and97 requirements",
+        "no push/merge/deploy",
+        "review actual Superdesign draft before substantive UI replacement"
+      ]
+    },
+    "sourceDrafts": {
+      "plainTransport": "42 synthetic shared policy/transport/Playground tests passed",
+      "plainService": "8 synthetic service/store tests passed",
+      "routing": "21 basic/plain routing tests passed",
+      "cli": "7 offline tests including actual2.2.2 with mocked provider; no real provider/session/ledger validation",
+      "plainMigration": "20261110030000_plain-llm-chat.sql;7 intentional rollback compile units; NOT APPLIED",
+      "ui": "small plainLlm copy/flag changes in source, not built/browser-validated"
+    },
+    "browserInspection": {
+      "surface": "Codex in-app browser localhost3001/panda-agent",
+      "readOnly": true,
+      "modelSelectionDisabled": true,
+      "searchAndAttachmentsDisabled": true,
+      "savedHistoricalRagVisible": true,
+      "noNewPromptSubmitted": true,
+      "screenshot": "tmp/agent-plan-current-ui-20261110.png"
+    },
+    "implementationPausedOnOwnerPlanRequest": true,
+    "additionalPaidCallsAfterRagPause": 0,
+    "externalTracingEnabled": false,
+    "pushMergeDeployment": false
+  },
+  "prototypeAllowance20261110": {
+    "authorizedUsd": 1,
+    "strictZdr": true,
+    "migration": "20261109210000_rag-prototype-budget.sql",
+    "migrationAppliedDevelopment": true,
+    "realAuthenticatedBudgetTests": 12,
+    "fixtureCleanupVerified": true,
+    "budgetTestsProviderPosts": 0,
+    "lastReservedNanoUsd": 17988200,
+    "includesFullEarlierCent": true,
+    "latestLiveRagMs": 21430,
+    "latestProviderRoundTripMs": 2170,
+    "postPatchLiveBenchmark": false
   }
 }
