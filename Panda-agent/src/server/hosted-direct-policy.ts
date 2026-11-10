@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { strictJson } from '../lightweight/client.ts';
 import { uuid, type ChatActor } from './chat-contracts.ts';
 import { createPrototypeRagBudget, type PrototypeRagBudgetStatus } from './prototype-rag-budget.ts';
+import { createHostedRagPolicy } from './hosted-rag-policy.ts';
 
 const origin = 'https://pandabyte-iot.vercel.app';
 const hash = (value:string) => createHash('sha256').update(value).digest('hex');
@@ -15,10 +16,27 @@ type Refs = { budgetId:string; keySha256:string; workspaceSha256:string };
 /** The operator profile records an explicit review; it is not a live privacy-settings probe. */
 export function createHostedDirectPolicy(input:{ env:NodeJS.ProcessEnv; actor:ChatActor; requestOrigin:string; current():Promise<boolean>; fetcher?:typeof fetch; budget?:typeof createPrototypeRagBudget }) {
   const {env,actor} = input;
+  if(env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'){
+    let admitted=false;
+    const active=()=>env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED==='true';
+    const adminCurrent=async()=>{
+      if(!active()||!await input.current())return false;
+      const {data,error}=await actor.client.database.rpc('panda_agent_control_room_admission');
+      return !error&&object(data)&&data.subject===actor.subject&&data.admin===true&&active()&&await input.current();
+    };
+    const hosted=createHostedRagPolicy({env,actor,subject:actor.subject,requestOrigin:input.requestOrigin,current:adminCurrent,fetcher:input.fetcher});
+    const current=()=>admitted&&active()&&hosted.dispatchCurrent();
+    return {
+      async enabled(){admitted=false;admitted=active()&&await hosted.enabled();return current();},
+      async current(){if(!current()||!await hosted.current()){admitted=false;return false;}return current();},
+      dispatchCurrent:current,key:()=>current()?hosted.key():'',binding:()=>current()?hosted.binding():'',
+      isUnmetered:current,budgetRefs:():Refs|null=>null,allowance:():PrototypeRagBudgetStatus|null=>null,
+    };
+  }
   let snapshot:string|null=null, admittedKey='', refs:Refs|null=null, allowance:PrototypeRagBudgetStatus|null=null;
   const config = () => {
     const key=env.OPENROUTER_API_KEY, raw=env.PANDA_AGENT_HOSTED_DIRECT_PROFILE;
-    if (env.VERCEL !== '1' || env.VERCEL_ENV !== 'production' || env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED !== 'true' || input.requestOrigin !== origin
+    if (env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true' || env.VERCEL !== '1' || env.VERCEL_ENV !== 'production' || env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED !== 'true' || input.requestOrigin !== origin
       || typeof key !== 'string' || !/^sk-or-v1-[a-f0-9]{64}$/i.test(key) || typeof raw !== 'string' || raw.length>8192
       || typeof actor.subject !== 'string' || !actor.subject.trim() || actor.subject.length>512 || !actor.subject.isWellFormed()) return null;
     let p:unknown; try { p=strictJson(raw); } catch { return null; }
@@ -59,5 +77,6 @@ export function createHostedDirectPolicy(input:{ env:NodeJS.ProcessEnv; actor:Ch
     binding:()=>unchanged()?snapshot??'':'',
     budgetRefs:()=>unchanged()?refs:null,
     allowance:()=>unchanged()?allowance:null,
+    isUnmetered:()=>false,
   };
 }

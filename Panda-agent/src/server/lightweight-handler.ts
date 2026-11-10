@@ -62,13 +62,13 @@ async function body(request:Request) {
 }
 
 const wantsStream = (request:Request) => !!request.headers.get('accept')?.split(',').some(x=>x.trim().split(';')[0]==='text/event-stream');
-function streamWork(request:Request, execute:(progress:ActivityReporter,signal:AbortSignal)=>Promise<unknown>):Response {
+function streamWork(request:Request, execute:(progress:ActivityReporter,signal:AbortSignal)=>Promise<unknown>, requestStarted=performance.now()):Response {
   let closed=false; const encoder=new TextEncoder(); const seen=new Set<string>(); let contextSent=false;
   const workController=new AbortController();
   const abort=()=>workController.abort(); request.signal.addEventListener('abort',abort,{once:true}); if(request.signal.aborted)abort();
   const stream=new ReadableStream<Uint8Array>({start(controller){
     const send=(value:unknown)=>{if(!closed){try{controller.enqueue(encoder.encode(`data: ${JSON.stringify(value)}\n\n`));}catch{closed=true;workController.abort();}}};
-    const progress:ActivityReporter=(stage,context,tool)=>{if(tool){const checked=parseToolActivity(tool);if(!checked)throw new ChatStoreError('unavailable');send({type:'tool',tool:checked});}if(context && !contextSent){contextSent=true;send({type:'context',...context});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
+    const progress:ActivityReporter=(stage,context,tool)=>{if(tool){const checked=parseToolActivity(tool);if(!checked)throw new ChatStoreError('unavailable');send({type:'tool',tool:checked});}if(context && !contextSent){contextSent=true;send({type:'context',...context,...(context.retrievalMs===undefined?{}:{requestElapsedMs:Math.round(performance.now()-requestStarted)})});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
     void execute(progress,workController.signal).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
   },cancel(){closed=true;workController.abort();}});
   return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});
@@ -80,6 +80,7 @@ export function createLightweightHandler(deps:Dependencies) {
   const diagnosticDeadlineMs=deps.diagnosticDeadlineMs??30000;
   if(!Number.isInteger(diagnosticDeadlineMs)||diagnosticDeadlineMs<1||diagnosticDeadlineMs>30000)throw Error('Invalid diagnostic deadline');
   async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'cancel'|'cleanup',id?:string):Promise<Response> {
+    const requestStarted=performance.now();
     try {
       if (request.method!==method) return new Response(null,{status:405,headers:{allow:method,'cache-control':'private, no-store'}});
       const actor=await deps.authenticate(); if(!actor?.subject || !actor.sessionId)throw new ChatStoreError('unauthenticated');
@@ -294,11 +295,11 @@ export function createLightweightHandler(deps:Dependencies) {
         const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
         if(llm && deps.llmNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
-            const result=await llm.start({thread:id!,request:requestId,question},signal,stage=>progress(stage));
+            const result=await llm.start({thread:id!,request:requestId,question},signal,progress);
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             return releaseBasic(requestId,question);
           };
-          if(wantsStream(request))return streamWork(request,execute);
+          if(wantsStream(request))return streamWork(request,execute,requestStarted);
           return json(await execute(()=>{},request.signal));
         }
         if(llm && await llm.state(id!,requestId)) {
@@ -329,11 +330,11 @@ export function createLightweightHandler(deps:Dependencies) {
         if(basicRag && !deps.llmNewMessages?.() && deps.basicRagNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           if(request.signal.aborted || !await deps.current(actor))throw new ChatStoreError('unauthenticated');
           const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
-            const result=await basicRag.start({thread:id!,request:requestId,question},signal,stage=>progress(stage));
+            const result=await basicRag.start({thread:id!,request:requestId,question},signal,progress);
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             return releaseBasic(requestId,question);
           };
-          if(wantsStream(request))return streamWork(request,execute);
+          if(wantsStream(request))return streamWork(request,execute,requestStarted);
           return json(await execute(()=>{},request.signal));
         }
         if(native && deps.nativeNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {

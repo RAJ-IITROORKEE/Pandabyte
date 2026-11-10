@@ -30,7 +30,7 @@ export async function openLightweightConnection(options?: { parallelSession?: bo
 }
 
 export async function authenticateLightweight(options?: { admin?: boolean }) {
-  const connection = await openLightweightConnection({ parallelSession: options?.admin === true });
+  const connection = await openLightweightConnection({ parallelSession: options?.admin === true, snapshotTransport: true });
   if (!connection || !await connection.sessionCurrent) return null;
   const { subject, sessionId, client } = connection;
   const { data, error } = await client.database.rpc(options?.admin ? 'panda_agent_control_room_admission' : 'requesting_user_id');

@@ -16,9 +16,11 @@ export async function GET(request: Request) {
       const policy = directPolicyForActor(actor,request);
       const [admitted,installed] = await Promise.all([policy.enabled(),createDirectAssistantStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY ?? '').ready()]);
       const remaining = policy.allowance()?.remainingNanoUsd;
-      if (admitted && installed && Number.isSafeInteger(remaining) && remaining! >= 1597640 && remaining! <= 1000000000) {
+      const unmetered='isUnmetered' in policy && typeof policy.isUnmetered==='function' && policy.isUnmetered();
+      if (admitted && installed && (unmetered || Number.isSafeInteger(remaining) && remaining! >= 1597640 && remaining! <= 1000000000)) {
         value.status='ready'; value.reason=null; value.model='GPT-6 Luna'; value.models[0]={...value.models[0],enabled:true,reason:null};
-        value.budget={limitNanoUsd:1000000000,remainingNanoUsd:remaining!};
+        value.budget=unmetered?null:{limitNanoUsd:1000000000,remainingNanoUsd:remaining!};
+        value.rag=process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true';
       }
     } catch { value.reason='connection_unavailable'; }
   }

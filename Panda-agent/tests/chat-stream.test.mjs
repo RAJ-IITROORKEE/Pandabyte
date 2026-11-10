@@ -41,6 +41,12 @@ test('context is a single bounded count-only event before the saved final', asyn
 });
 
 const sse = value => `data: ${JSON.stringify(value)}\n\n`;
+
+test('retrieval-ready context preserves bounded timing and rejects private metadata',async()=>{
+ const summary={fragments:3,characters:2432,duplicatesRemoved:0,limitCharacters:20000,retrievalMs:190,requestElapsedMs:650};
+ const seen=[];await readChatStream(stream([sse({type:'context',...summary}),complete]),()=>{},v=>seen.push(v));assert.deepEqual(seen,[summary]);
+ for(const patch of [{requestElapsedMs:189},{retrievalMs:Infinity},{requestId:'private'}])await assert.rejects(readChatStream(stream([sse({type:'context',...summary,...patch}),complete]),()=>{}));
+});
 test('rejects provisional text and tool events even when followed by a saved final', async () => {
   for (const value of [{ type: 'text_delta', text: 'Hello é' }, { type: 'text_reset' }, { type: 'tool_activity', tool: 'rag_search', status: 'completed' }]) {
     await assert.rejects(readChatStream(stream([sse(value) + complete]), () => {}));

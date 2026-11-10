@@ -44,8 +44,14 @@ export function createDirectAssistantStore(actor: ChatActor, key: string) {
     async claim(thread:string,request:string,refs:DirectBudgetRefs,bodyHash:string) {
       return flag(await rpc('claim',thread,request,{budget:refs.budgetId,keySha256:refs.keySha256,workspaceSha256:refs.workspaceSha256,bodyHash}),'execute');
     },
+    async claimUnmetered(thread:string,request:string,bodyHash:string) {
+      return flag(await rpc('claim_unmetered',thread,request,{bodyHash}),'execute');
+    },
     async receipt(thread:string,request:string,bodyHash:string,answer:ChatAnswer,usage:DirectUsage) {
       return flag(await rpc('receipt',thread,request,{bodyHash,answer:cleanAnswer(answer),usage}),'recorded');
+    },
+    async receiptUnmetered(thread:string,request:string,bodyHash:string,answer:ChatAnswer,usage:DirectUsage) {
+      return flag(await rpc('receipt_unmetered',thread,request,{bodyHash,answer:cleanAnswer(answer),usage}),'recorded');
     },
     async finish(thread:string,request:string,answer:ChatAnswer) { return parseChatRead(await rpc('finish',thread,request,{answer:cleanAnswer(answer)})); },
     async cancel(thread:string,request:string) { return parseChatRead(await rpc('cancel',thread,request)); },

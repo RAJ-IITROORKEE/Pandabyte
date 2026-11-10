@@ -9,6 +9,7 @@ import {createDirectAssistantStore,type DirectBudgetRefs} from './direct-assista
 import {createPlainLlmChatService,createPlainLlmStore} from './plain-llm-chat.ts';
 import {currentLightweightSession} from './lightweight-connection';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
+import {mainRagChatForActor} from './main-rag-chat.ts';
 
 export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.ProcessEnv=process.env){
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
@@ -32,6 +33,7 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
   policy:{...policy,enabled:()=>requested!==null&&requested!=='openai/gpt-6-luna'?Promise.resolve(false):policy.enabled()},
   store:createDirectAssistantStore(actor,key)});
  const legacy=createPlainLlmChatService({store:createPlainLlmStore(actor,key),current,enabled:async()=>false,complete:()=>{throw Error('legacy_execution_disabled');}});
+ if(process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true')return mainRagChatForActor({actor,request,direct,legacy,current});
  const service=async(thread:string,id:string)=>await direct.state(thread,id)?direct:await legacy.state(thread,id)?legacy:null;
  return {
   state:async(thread,id)=>!!await service(thread,id),
