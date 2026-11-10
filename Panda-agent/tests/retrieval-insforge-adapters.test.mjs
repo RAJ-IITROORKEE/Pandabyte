@@ -1,23 +1,49 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { runtimeSnapshot as snapshot } from './fixtures/runtime-snapshot.mjs';
 import { createInsforgeAdapters, listRuntimeProducts, getRuntimeProductEvidence } from '../src/retrieval/insforge-adapters.ts';
 import { answerQuestion } from '../src/retrieval/answers.ts';
+import { prepareProductContextSet } from '../src/retrieval/product-context-set.ts';
 import { ENGINEERING_CONFIG, ENGINEERING_MANIFEST } from '../src/retrieval/engineering-proof.ts';
 
-// The private snapshot stays local; these checks never print or copy its content.
-const snapshot = await readFile(new URL('../artifacts/phase-4/native-snapshot.json', import.meta.url), 'utf8').then(JSON.parse).catch(() => null);
 const actor = { subject: 'test-subject' };
-function fixture() {
+function fixture(productTitle) {
     const grouped = new Map();
     for (const x of snapshot.chunks) { if (!grouped.has(x.product_id)) grouped.set(x.product_id, []); grouped.get(x.product_id).push(x); }
-    const rows = [...grouped].map(([id, chunks], i) => ({ id, sku: `TEST${i}X`, title: `Test Product ${i}`, sourceUrl: chunks[0].source_url, approvedChunksCount: chunks.length }));
-    const p = rows[0];
+    const rows = [...grouped].map(([id, chunks], i) => ({ id, sku: `TEST${i}X`, title: chunks[0].locator.section_path[0], sourceUrl: chunks[0].source_url, approvedChunksCount: chunks.length }));
+    const p = productTitle ? rows.find(row => row.title === productTitle) : rows[0];
+    assert.ok(p);
     const result = { candidate: { configHash: ENGINEERING_CONFIG, manifestHash: ENGINEERING_MANIFEST, membershipHash: ENGINEERING_MANIFEST, memberCount: 284, state: 'candidate', sealed: true }, product: p, chunks: grouped.get(p.id).map(x => ({ documentVersionId: x.version_id, logicalChunkId: x.logical_chunk_id, chunkVersionId: x.chunk_version_id, text: x.text, textHash: x.content_sha256, generation: x.generation, physicalRevision: null, capturedAt: '2026-10-31T00:00:00Z', sectionPath: x.locator.section_path })) };
     const client = { database: { rpc: async (name) => ({ data: name === 'panda_agent_runtime_products' ? { items: rows } : result, error: null }) } };
     return { rows, p, result, client };
 }
 const skip = !snapshot && 'private snapshot is unavailable';
+
+test('captured x8266 evidence supports MCU and USB questions while proof and ambiguous requests withhold passages', { skip }, async (t) => {
+    const f = fixture('PandaByte NodeMCU x8266 WiFi Development Board');
+    const cases = [
+        ['Which MCU does the x8266 use?', 'ready', /microcontroller:\s*ESP8266/i],
+        ['Which USB connector does the x8266 use?', 'ready', /USB Interface:\s*USB Type-C/i],
+        ['What is the safe GPIO voltage on x8266?', 'insufficient'],
+        ['Which USB connector does x8266 use and what GPIO voltage is safe?', 'insufficient'],
+        ['Which ESP32 board has a USB connector?', 'clarification'],
+    ];
+    for (const [question, kind, claim] of cases) await t.test(question, async (t) => {
+        const result = await prepareProductContextSet({
+            actor, question, client: f.client, authorizeCurrent: async () => true,
+            createAdapters: () => createInsforgeAdapters(f.client, () => assert.fail('retrieval must not call a model')),
+        });
+        assert.equal(result.kind, kind, question);
+        if (kind === 'ready') {
+            assert.ok(result.passages.every(passage => passage.sourceUrl === f.p.sourceUrl), question);
+            const rank = result.passages.findIndex(passage => claim.test(passage.text)) + 1;
+            t.diagnostic(`Listing field rank ${rank || 'absent'} among ${result.passages.length} passages`);
+            assert.ok(rank > 0, question);
+        } else {
+            assert.equal('passages' in result, false, question);
+        }
+    });
+});
 test('user-scoped RPC denial and unknown product fail closed', { skip }, async () => {
     const f = fixture();
     await assert.rejects(listRuntimeProducts({ database: { rpc: async () => ({ data: null, error: 'denied' }) } }));

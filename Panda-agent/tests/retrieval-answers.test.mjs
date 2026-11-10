@@ -19,6 +19,17 @@ const make = (overrides = {}) => {
     return { calls, scope, adapters };
 };
 const ask = (a, q = { question: 'How many pins?', productSku: 'SKU1' }) => answerQuestion(actor, q, a);
+test('ranked passages beyond eighth place backfill duplicate and oversized hits', async () => {
+    const x = make({ ranking: { mode: 'lexical' }, lexical: async (_question, handles) => handles });
+    const texts = ['a'.repeat(11000), 'b'.repeat(10000), ...Array(6).fill('duplicate'), 'Late USB evidence'];
+    x.scope.chunks = texts.map((text, i) => chunk(chunk().handle.replace('000000000001:', String(i + 1).padStart(12, '0') + ':'), { text, textHash: hash(text) }));
+    const result = await prepareQuestionEvidence(actor, { question: 'What USB connector?', productSku: 'SKU1' }, x.adapters);
+    assert.equal(result.kind, 'ready');
+    assert.deepEqual(result.fragments.map(f => f.text), [texts[0], 'duplicate', 'Late USB evidence']);
+    assert.equal(result.completeEligibleScope, false);
+    x.scope.chunks.pop();
+    assert.equal(await result.revalidate(), false);
+});
 test('retrieval-only preparation avoids selection and checks current source before release', async () => {
     const x = make({ ranking: { mode: 'lexical' }, select: async () => assert.fail('retrieval must not invoke a selector') });
     const prepared = await prepareQuestionEvidence(actor, { question: 'How many pins?', productSku: 'SKU1' }, x.adapters);
@@ -187,7 +198,7 @@ test('canonical citation paths and private provenance JSON are rejected before s
     }
 });
 
-test('deduplicates ranked whole bodies before applying the budget without refilling', async () => {
+test('deduplicates ranked whole bodies and reports the backfilled context size', async () => {
     const x = make(), handles = Array.from({length: 9}, (_, i) => chunk().handle.replace('000000000001:', `${String(i + 1).padStart(12, '0')}:`));
     const texts = ['x'.repeat(6000) + ' 4 pins', 'x'.repeat(6000) + ' 4 pins', ...Array.from({length: 7}, (_, i) => `unique ${i}` + 'z'.repeat(1900))];
     x.scope.chunks = handles.map((h, i) => chunk(h, {text: texts[i], textHash: hash(texts[i])}));
@@ -195,8 +206,8 @@ test('deduplicates ranked whole bodies before applying the budget without refill
     const activity = []; x.adapters.activity = (...args) => activity.push(args);
     let supplied; x.adapters.select = async (_q, fragments) => { supplied = fragments; return {selections: [{handle: handles[0], quote: '4 pins'}]}; };
     assert.equal((await ask(x.adapters)).kind, 'evidence');
-    assert.deepEqual(supplied.map(f => f.handle), [handles[0], ...handles.slice(2, 8)]);
-    assert.deepEqual(activity.find(row => row[1])?.[1], {fragments: 7, characters: texts[0].length + texts.slice(2, 8).reduce((n, s) => n + s.length, 0), duplicatesRemoved: 1, limitCharacters: 20000});
+    assert.deepEqual(supplied.map(f => f.handle), [handles[0], ...handles.slice(2)]);
+    assert.deepEqual(activity.find(row => row[1])?.[1], {fragments: 8, characters: texts[0].length + texts.slice(2).reduce((n, s) => n + s.length, 0), duplicatesRemoved: 1, limitCharacters: 20000});
 });
 test('empty selector result is insufficient only after a successful current scope recheck', async () => {
     const x = make({select: async () => ({selections: []})});

@@ -121,7 +121,7 @@ export async function prepareQuestionEvidence(actor: Actor, raw: unknown, adapte
         }))
             return { kind: 'unavailable' };
         // An engineering comparison is explicit; it is not a production quality claim.
-        const ranked = [...new Set(policy.mode === 'rrf' ? reciprocalRankFusion(lexical, dense.map(h => h.handle)) : policy.mode === 'dense' ? dense.map(h => h.handle) : lexical)].slice(0, 8);
+        const ranked = [...new Set(policy.mode === 'rrf' ? reciprocalRankFusion(lexical, dense.map(h => h.handle)) : policy.mode === 'dense' ? dense.map(h => h.handle) : lexical)];
         if (!ranked.length)
             return { kind: 'insufficient' };
         let remaining = 20000;
@@ -138,6 +138,7 @@ export async function prepareQuestionEvidence(actor: Actor, raw: unknown, adapte
             if (text.length <= remaining) {
                 fragments.push({ handle, text });
                 remaining -= text.length;
+                if (fragments.length === 8 || remaining === 0) break;
             }
         }
         if (!fragments.length)

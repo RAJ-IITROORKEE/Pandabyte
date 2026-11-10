@@ -44,6 +44,82 @@ function fixture() {
   return { context, deps, count: () => calls, revoke: () => { authorized = false; }, withdraw: () => { current = false; } };
 }
 
+test('an identical authorized context avoids redundant outer checks; other contexts keep them', async () => {
+  for (const identity of ['same', 'different', 'missing']) {
+    const f = fixture(); let checks = 0, reads = 0;
+    const authorize = async () => { checks++; return true; };
+    f.deps.authorize = authorize;
+    if (identity !== 'missing') f.context.authorizedBy = identity === 'same' ? authorize : async () => true;
+    f.context.revalidate = async () => { reads++; return await authorize() && await authorize(); };
+    const result = await runBasicRag(input(), f.deps);
+    assert.equal(result.status, 'answered'); assert.equal(reads, identity === 'same' ? 2 : 3);
+    assert.equal(checks, identity === 'same' ? 6 : 14);
+  }
+});
+
+test('revocation during preparation blocks model admission and scope-dependent outcomes', async () => {
+  for (const kind of ['ready', 'clarification', 'insufficient']) {
+    const f = fixture();
+    f.context.authorizedBy = f.deps.authorize;
+    f.deps.prepare = async () => {
+      f.revoke();
+      return kind === 'ready' ? f.context : { kind };
+    };
+    assert.equal((await runBasicRag(input(), f.deps)).status, 'unavailable', kind);
+    assert.equal(f.count(), 0);
+  }
+});
+
+test('matching context withholds a response when authorization changes during fresh source reads', async () => {
+  const f = fixture(); let active = true;
+  const authorize = async () => active;
+  f.deps.authorize = authorize; f.context.authorizedBy = authorize;
+  f.context.revalidate = async () => { if (!await authorize()) return false; active = false; return authorize(); };
+  assert.equal((await runBasicRag(input(), f.deps)).status, 'unavailable');
+  assert.equal(f.count(), 1);
+});
+
+test('matching context withholds late answers on source withdrawal or abort', async () => {
+  for (const failure of ['withdrawn', 'aborted']) {
+    const f = fixture(), controller = new AbortController(); let reads = 0, active = true;
+    const authorize = async () => active;
+    f.deps.authorize = authorize; f.context.authorizedBy = authorize;
+    f.context.revalidate = async () => {
+      if (!await authorize()) return false;
+      if (++reads === 2) { if (failure === 'withdrawn') active = false; else controller.abort(); }
+      return authorize();
+    };
+    const result = await runBasicRag({ question, signal: controller.signal }, f.deps);
+    assert.equal(result.status, 'unavailable'); assert.equal(f.count(), 1); assert.equal('answer' in result, false);
+  }
+});
+
+test('measures source validations and accepts only bounded integer provider timings', async () => {
+  for (const [timing, expected] of [
+    [{ admissionMs: 29, providerRoundTripMs: 11 }, [29, 11]], [{ admissionMs: 0, providerRoundTripMs: 120000 }, [0, 120000]],
+    [undefined, [null, null]], [{ admissionMs: -1, providerRoundTripMs: 1 }, [null, null]],
+    [{ admissionMs: 1, providerRoundTripMs: 120001 }, [null, null]],
+    [{ admissionMs: 0.5, providerRoundTripMs: 1 }, [null, null]],
+    [{ admissionMs: 1, providerRoundTripMs: Infinity }, [null, null]], [{ admissionMs: 1, providerRoundTripMs: 1, private: 'do-not-release' }, [null, null]],
+  ]) {
+    const f = fixture(), complete = f.deps.complete;
+    f.deps.complete = async (...args) => ({ ...await complete(...args), timing });
+    const result = await runBasicRag(input(), f.deps);
+    assert.equal(result.status, 'answered'); assert.equal(result.metrics.contextRevalidationCount, 3);
+    assert.ok(Number.isSafeInteger(result.metrics.contextRevalidationMs) && result.metrics.contextRevalidationMs >= 0);
+    assert.deepEqual([result.metrics.admissionMs, result.metrics.providerRoundTripMs], expected);
+    assert.equal(f.count(), 1);
+  }
+});
+
+test('a failing timing observer does not block a validated answer', async () => {
+  const f = fixture(), complete = f.deps.complete;
+  f.deps.complete = async (...args) => { const value = await complete(...args); Object.defineProperty(value, 'timing', { get() { throw Error('private observer error'); } }); return value; };
+  const result = await runBasicRag(input(), f.deps);
+  assert.equal(result.status, 'answered'); assert.equal(result.metrics.admissionMs, null); assert.equal(result.metrics.providerRoundTripMs, null);
+  assert.doesNotMatch(JSON.stringify(result), /private observer error/);
+});
+
 test('composed real transport contract classifies a definitive HTTP429 as unavailable without retry', async () => {
   const f = fixture(); let posts = 0;
   f.deps.complete = createBasicRagCompletion({ apiKey: 'synthetic-key', policyCurrent: async () => true, claim: async () => true,

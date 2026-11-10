@@ -94,10 +94,9 @@ export async function prepareEvidenceContext(options: {
             const ranked = await adapters.lexical(input.question, [...byHandle.keys()].sort());
             requireValue(Array.isArray(ranked) && ranked.length <= 100 && ranked.every(handle => byHandle.has(handle)));
             const bodies = new Set<string>();
-            for (const handle of [...new Set(ranked)].slice(0, 8)) {
+            for (const handle of new Set(ranked)) {
                 const chunk = byHandle.get(handle)!;
                 if (bodies.has(chunk.text)) continue;
-                bodies.add(chunk.text);
                 const { text, title, sourceUrl, capturedAt, sectionPath, physicalRevision } = chunk;
                 const alias = `E${context.fragments.length + 1}`;
                 const fragment = { handle: alias, text, title, sourceUrl, capturedAt, sectionPath: [...sectionPath], physicalRevision };
@@ -105,8 +104,10 @@ export async function prepareEvidenceContext(options: {
                 context.fragments.push(fragment);
                 // Bound the complete serialized context, including the question and citation metadata.
                 if (JSON.stringify(context).length > 20000) { context.fragments.pop(); continue; }
+                bodies.add(text);
                 sent.set(handle, chunk);
                 aliases.set(alias, handle);
+                if (context.fragments.length === 8) break;
             }
         }
         requireValue(scopes.length <= 4 && JSON.stringify(context).length <= 20000);

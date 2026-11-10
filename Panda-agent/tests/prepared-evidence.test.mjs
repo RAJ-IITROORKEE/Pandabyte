@@ -163,7 +163,19 @@ test('complete provider context stays within 20000 serialized characters with wh
     assert.equal(context.fragments.length <= 8, true);
     assert.equal(new Set(context.fragments.map(fragment => fragment.text)).size, context.fragments.length);
     assert.deepEqual(context.fragments.map(fragment => fragment.handle), context.fragments.map((_, index) => `E${index + 1}`));
-    for (const fragment of context.fragments) assert.equal(current.state.scope.chunks.slice(0, 8).some(candidate => candidate.text === fragment.text), true);
+    for (const fragment of context.fragments) assert.equal(current.state.scope.chunks.some(candidate => candidate.text === fragment.text), true);
+});
+
+test('native context fills eight distinct passages despite duplicate early hits', async () => {
+    const current = fixture();
+    const texts = ['first', 'first', ...Array.from({ length: 8 }, (_, i) => 'passage ' + i)];
+    current.state.scope.chunks = texts.map((text, i) => chunk(i + 1, { text, textHash: hash(text) }));
+    const prepared = await current.prepare();
+    const context = await prepared.context();
+    assert.deepEqual(context.fragments.map(f => f.text), ['first', ...texts.slice(2, 9)]);
+    assert.equal(context.fragments.at(-1).handle, 'E8');
+    current.state.scope.chunks.splice(8, 1);
+    assert.equal(await prepared.revalidate(), false);
 });
 
 test('blocked, forged, private, mismatched-revision and unrated chunks cannot enter context', async () => {

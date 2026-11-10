@@ -46,7 +46,8 @@ export async function prepareProductContextSet(input:{actor:Exclude<Actor,null>;
   if(!passages.length)return {kind:'insufficient' as const};
   Object.freeze(passages);const sourceProofs=Object.freeze(captured.map(g=>Object.freeze({productSku:g.product.sku,fingerprint:g.fingerprint})));const digest=createHash('sha256').update(JSON.stringify([1,question,products,passages,sourceProofs])).digest('hex');
   const group=captured[0];const legacyBinding=products.length===1?Object.freeze({textDigest:createHash('sha256').update(JSON.stringify(passages.map(({rank,text})=>({rank,text})))).digest('hex'),provenanceDigest:playgroundContextProof({id:group.product.id,sku:group.product.sku},group.fingerprint,group.fragments.map(({chunk,text})=>({handle:chunk.handle,text})),group.chunks)}):undefined;
-  return Object.freeze({kind:'ready' as const,products:Object.freeze([...products]),passages,sourceProofs,digest,...(legacyBinding?{legacyBinding}:{}),revalidate});
+  // revalidate brackets fresh catalog and scope reads with this exact authorization callback.
+  return Object.freeze({kind:'ready' as const,products:Object.freeze([...products]),passages,sourceProofs,digest,...(legacyBinding?{legacyBinding}:{}),authorizedBy:authorizeCurrent,revalidate});
  }catch{return {kind:'unavailable' as const};}
 }
 

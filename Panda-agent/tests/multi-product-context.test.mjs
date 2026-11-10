@@ -1,4 +1,5 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';import {readFile} from 'node:fs/promises';
+import test from 'node:test';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+import { runtimeSnapshot as snapshot } from './fixtures/runtime-snapshot.mjs';
 import {resolveMultiProductIdentity} from '../src/retrieval/multi-product-identity.ts';import {prepareProductContextSet} from '../src/retrieval/product-context-set.ts';
 import {PRODUCT_MEMBERSHIP} from '../src/retrieval/engineering-proof.ts';
 const rows=[{id:'c3',sku:'ESPXC3',title:'PandaByte xC3 ESP32-C3 Board'},{id:'c3m',sku:'ESPXC3M',title:'PandaByte xC3m ESP32-C3 Board'},{id:'s3',sku:'ESPXS3',title:'PandaByte xS3 ESP32-S3 Board'},{id:'c6',sku:'ESPXC6',title:'PandaByte xC6 ESP32-C6 Board'},{id:'dht',sku:'PBDHT11',title:'DHT11 Sensor'}];
@@ -7,7 +8,7 @@ test('full catalog aliases resolve distinct xC3 and xS3, shared models clarify, 
  assert.equal(resolveMultiProductIdentity(rows,'Which ESP32 has 8MB?').kind,'clarification');assert.equal(resolveMultiProductIdentity(rows,'Does xC3 or ESP32 have PSRAM?').kind,'clarification');
  assert.deepEqual(resolveMultiProductIdentity(rows,'What about xC3m?').products.map(x=>x.sku),['ESPXC3M']);assert.equal(resolveMultiProductIdentity(rows,'xC3 xC3m xS3 xC6').kind,'clarification');assert.equal(resolveMultiProductIdentity(rows,'ESP32-C3').kind,'clarification');
 });
-const snapshot=await readFile(new URL('../artifacts/phase-4/native-snapshot.json',import.meta.url),'utf8').then(JSON.parse).catch(()=>null),skip=!snapshot&&'private catalog fixture unavailable';
+const skip=!snapshot&&'private catalog fixture unavailable';
 const hash=s=>createHash('sha256').update(s).digest('hex');
 function fixture(mode="default"){
  const urls=['pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible','pandabyte-xs3-esp32-s3-microcontroller-board-arduino-compatible'];
@@ -75,7 +76,7 @@ test('synthetic context avoids selector and redundant reads while withholding st
    createAdapters:()=>({resolveIdentity:async()=>{throw Error('unused')},currentScope:async()=>{scopeReads++;return {fingerprint:revoked||scopeReads===revokeOnRead?'withdrawn':'current',candidate:true,sealed:true,engineeringVerified:true,manifestVerified:true,configVerified:true,generationCurrent:true,chunks:duplicate?[structuredClone(chunk),{...chunk,sourceUrl:'https://evil.test/private'}]:[structuredClone(chunk)]};},lexical:async(_q,handles)=>handles,dense:async()=>[],select:async()=>{selectionCalls++;throw Error('unused');}}),
    authorizeCurrent:async()=>allowed};
   const ready=await prepareProductContextSet(input);
-  assert.equal(ready.kind,'ready');assert.equal(selectionCalls,0);assert.equal(scopeReads,2);assert.equal(catalogReads,2);
+  assert.equal(ready.kind,'ready');assert.equal(ready.authorizedBy,input.authorizeCurrent);assert.equal(selectionCalls,0);assert.equal(scopeReads,2);assert.equal(catalogReads,2);
   assert.equal(await ready.revalidate(),true);assert.equal(scopeReads,3);
   duplicate=true;assert.equal((await prepareProductContextSet(input)).kind,'unavailable');duplicate=false;
   revoked=true;assert.equal(await ready.revalidate(),false);
