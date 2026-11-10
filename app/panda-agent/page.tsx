@@ -9,5 +9,6 @@ export default async function PandaAgentPage() {
     redirect("/sign-in?redirect_url=%2Fpanda-agent");
   }
   const admin=await guideAdminAccess();
-  return <PandaAgentWorkspace nativeAssistant={process.env.PANDA_AGENT_ASSISTANT_NEW_MESSAGES === "true"} previewReadOnly={process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED !== "true"} guidesEnabled={process.env.PANDA_AGENT_GUIDES_ENABLED === "true"} diagnosticsEnabled={process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED === "true"} agenticEnabled={process.env.PANDA_AGENT_AGENTIC_ENABLED === "true"} canManageSkills={admin.allowed} />;
+  const directAssistant = process.env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED === "true";
+  return <PandaAgentWorkspace directAssistant={directAssistant} nativeTools={!directAssistant && process.env.PANDA_AGENT_NATIVE_TOOLS === "true"} nativeAssistant={!directAssistant && process.env.PANDA_AGENT_ASSISTANT_NEW_MESSAGES === "true"} previewReadOnly={process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED !== "true"} guidesEnabled={!directAssistant && process.env.PANDA_AGENT_GUIDES_ENABLED === "true"} diagnosticsEnabled={!directAssistant && process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED === "true"} agenticEnabled={!directAssistant && process.env.PANDA_AGENT_AGENTIC_ENABLED === "true"} canManageSkills={admin.allowed} />;
 }

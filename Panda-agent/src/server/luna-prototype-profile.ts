@@ -27,6 +27,10 @@ export async function readLunaPrototypeProfile(input: { env: NodeJS.ProcessEnv; 
     || typeof env.PANDA_AGENT_LUNA_PROTOTYPE_PROFILE_FILE !== 'string' || !path.isAbsolute(env.PANDA_AGENT_LUNA_PROTOTYPE_PROFILE_FILE)) return null;
   const key = env.OPENROUTER_API_KEY, clerk = env.CLERK_SECRET_KEY, supplied = env.PANDA_AGENT_LUNA_PROTOTYPE_PROFILE_FILE;
   const observability = env.PANDA_AGENT_OPENROUTER_OBSERVABILITY;
+  const nativeObservability = env.PANDA_AGENT_NATIVE_OBSERVABILITY;
+  // Native metadata tracing requires its own explicit authorization, separate from RAG evaluation.
+  if (input.nativePreview === true && observability !== undefined
+    && !(observability === 'langsmith_metadata_only' && nativeObservability === observability)) return null;
   const metadataTraces = observability === 'langsmith_metadata_only';
   let profileFile: Awaited<ReturnType<typeof privateFile>> = null, receiptFile: Awaited<ReturnType<typeof privateFile>> = null;
   try {
@@ -72,6 +76,7 @@ export async function readLunaPrototypeProfile(input: { env: NodeJS.ProcessEnv; 
     };
     const unchanged = () => env.OPENROUTER_API_KEY === key && env.CLERK_SECRET_KEY === clerk
       && env.PANDA_AGENT_OPENROUTER_OBSERVABILITY === observability
+      && env.PANDA_AGENT_NATIVE_OBSERVABILITY === nativeObservability
       && env.PANDA_AGENT_LUNA_PROTOTYPE_PROFILE_FILE === supplied && env.VERCEL === undefined && env.VERCEL_ENV === undefined;
     if (!validTime() || (process.platform === 'win32' && !await privateWindowsPair(profilePath, receiptPath))) return null;
     const [profileCurrent, receiptCurrent] = await Promise.all([profileFile.current(), receiptFile.current()]);

@@ -2,8 +2,106 @@
 
 10 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
 Use `git log -1` for the local checkpoint. Latest native/UI follow-up is below; earlier Control Room and grounded RAG evidence is retained. Prior basic-history checkpoint is `72b2a20`.
-No push, merge, deployment, commerce configuration or provider policy change.
+The owner now authorizes commit, merge to main and push after the requested local
+experience works and is validated. Deployment, commerce and provider-policy
+changes are not included. Historical restrictions below describe earlier scope.
 Prior detailed evidence remains in the verification JSON and Git history.
+
+## Current release priority: direct LLM client demo (10 November 2026)
+
+The owner explicitly deferred new RAG and AWS/OpenCode harness integration. Ship the existing Panda Agent UI with a direct OpenRouter LLM and system prompt first. Commit, push to main, Vercel deployment, server-only required keys and Codex Browser validation are authorized for this checkpoint. Preserve separately owned Control Room source and deployment work. This supersedes older no-deploy statements below only for this release.
+
+The direct route uses Luna on the exact Azure US endpoint, strict ZDR/data-collection denial, no provider fallbacks, no reasoning/tools/plugins and no response cache. A server-only reviewed privacy profile binds the original owner, key, workspace and original cumulative USD1 budget. New direct turns have their own signed receipt journal; they do not fabricate OpenCode execution evidence. Only enabled Luna is offered in this first direct release. Existing native model work stays deferred.
+
+Applied development schema: 20261110130000_direct-assistant.sql; a valid-receipt test exposed PostgreSQL 42702 from a variable/alias collision, repaired by 20261110131000_direct-receipt-budget-alias.sql. Five real-database fixture checks pass: readiness, ownership/replay/one-quantum admission, exact receipt/answer/cost binding and saved history, mismatched receipt withholding, cancellation/archive. Independently confirmed fixture cleanup; zero provider posts in that pack.
+
+First actual direct Codex Browser question reached a single claim but had no receipt or terminal answer. It was reconciled and logically cancelled without replay or refund. Original reservation allowance after this claim: 87,333,400 nanoUSD (USD0.0873334). Latest after all five direct claims: 80,942,840 nanoUSD (USD0.08094284). This is conservative reserved allowance, not billed spend. Four subsequent actual direct questions passed: a short electronics answer, a practical ESP32 plan, fenced Arduino code, and an automatically dispatched queued follow-up. Each reached HTTP200, validated receipt and durable finish; saved answer survived browser reload. Warm localhost message requests took 18.0–19.7 seconds; this is not a sub-second acceptance claim. Do not replay the earlier uncertain request. Server diagnostics emit fixed stages and HTTP status only, without payloads or identifiers.
+
+Clean release candidate: codex/direct-llm-release in the separate direct-llm-release checkout, preserving Control Room source ab763c9. Dependency installation and TypeScript passed; production build passed (42 static pages), scoped lint passed and 27 focused tests passed. Local saved/reload and queue acceptance passed; hosted-domain validation remains pending. Production direct profile and enable flag are configured server-only; this chat has not deployed, merged or pushed this direct checkpoint.
+
+Tavily is deferred: no configured key was found and existing search code is production-disabled. Original historical/native evidence below remains historical. Phase2 remains gated.
+
+## Admission repair and verified remaining blocker, 10 November 2026
+
+See [requested model admission](requested-model-admission.md). Native privacy
+was freshly reviewed read-only, the matching native-only lease renewed, and
+Codex Browser verified Ready with the existing shared allowance. The model
+header now reaches the factory policy and budget; invalid IDs deny admission.
+Luna reservations retain compatibility with the installed journal by omitting
+its implicit default model field. Focused regressions and native TypeScript pass.
+
+Live browser diagnostics reached OpenRouter HTTP200. Receipt validation rejects
+actual prompt cache writes: the last diagnostic reported cached_tokens=0 and
+cache_write_tokens=1078. Model, provider, cost, reasoning and completion checks
+passed. The receipt contract currently demands zero cache reads/writes. Do not
+merely drop that check: review ZDR-compatible in-memory caching AND include
+cache-write prices in worst-case reservations before accepting it. OpenRouter
+documents in-memory prompt caching as ZDR-compatible separately from response
+caching; X-OpenRouter-Cache:false remains set. No answer publication is claimed.
+Uncertain diagnostics were logically cancelled without replay or refunds.
+Final ledger readback: 72,307,960 nanoUSD reserved, 927,692,040 remaining,
+five native call rows and zero accepted native receipts. These conservative
+reservations are not a claim that the full reserved amount was billed. Final
+focused run:22 tests passed; native TypeScript and scoped lint passed.
+
+Authenticated metadata confirms ZDR/safety-retention-off endpoints for the
+requested DeepSeek0324, Terra and Haiku models. Their selector labels now say
+Integration pending; runtime profiles, token/framing bounds, model-aware journal
+accounting and browser acceptance are still incomplete. NVIDIA's requested free
+route is absent from the ZDR endpoint list and explicitly logs session data, so
+it remains disabled with Requires data retention. No change to strict ZDR or
+the USD1 cap, no migration application, merge, push or Phase2 advancement.
+
+## Composer and service verification in progress, 10 November 2026
+
+The owner supplied four model IDs: `nvidia/nemotron-3-ultra-550b-a55b:free`,
+`deepseek/deepseek-chat-v3-0324`, `openai/gpt-6.1-terra`, and
+`anthropic/claude-haiku-5.5`. They are listed as disabled pending verified
+admission and runtime integration; listing them is not evidence of working
+inference or strict ZDR. The composer selector is aligned with voice and send
+on the right. Codex Browser confirmed the layout and all four labels. The
+current preview reports privacy or budget requirements unmet, disabling the
+composer and selector. Thirteen capability/queue tests passed and scoped UI
+lint passed. No new inference was sent.
+
+AWS CLI authorization was refreshed through the owner's Brave session. Read-only
+AWS checks found `panda-agent-phase1` running and its SSM agent online. The
+existing `panda-lightweight-replacement` container reports healthy; host-local
+port 8182 returned `ok` from `/health` and `ready` from `/ready`. This does not
+prove that native OpenCode chat calls that service. No AWS configuration changed.
+
+The composer now exposes a model selector with server-reviewed availability;
+queued prompts retain their selected model and cannot silently substitute another.
+The owner will provide the additional model identifiers. DeepSeek and NVIDIA
+options are not established as executable. Codex Browser showed the selector
+and Luna as selected; this is not proof of a successful model switch or live
+tool-enabled answer. Thirteen focused capability and queue tests and TypeScript
+passed. No inference was sent in this verification step.
+
+The standalone lightweight FastAPI service started locally with a disposable
+deterministic profile and reported health and readiness OK. Its 83 Python tests
+passed using an isolated Windows test environment; they use fixtures and do not
+prove a deployed container or OpenCode-to-FastAPI integration. The AWS CLI session
+was expired, and a fresh sign-in is awaiting the owner's completion in Codex
+Browser. Current AWS host health remains unverified.
+
+The last tool-enabled Luna request remains unresolved as described below. The
+native model choice is not fully connected end to end, and strict ZDR, the shared
+USD1 cumulative cap and fresh privacy admission still apply. Do not replay the
+uncertain request. The existing main checkout contains unrelated modifications
+and conflicting untracked files; preserve them. The requested merge and push are
+conditional on successful integration validation and a safe reconciliation of
+those changes. No merge, push or deployment has occurred in this checkpoint.
+
+## In-progress native tools and model selector, 10 November 2026
+
+The owner requested a dynamic no-RAG OpenCode agent, official-documentation tools, skills, and a model selector in the composer. The owner subsequently allowed metadata-only LangSmith tracing for native tests; prompt/completion exclusion was observed in OpenRouter. Strict ZDR and the existing shared USD1 cap remain required. RAG is separately owned.
+
+The native MCP tools, pinned skill profile, model selector and model-aware runtime are in the working tree. Isolated OpenCode 2.2.6 fixtures passed answer and tool-continuation cases; the real official ESP32 documentation fetch succeeded. Development migrations 20261110070000 and 20261110071000 were applied; 17 disposable journal checks passed and fixtures were cleaned. The 20261110072000 model-budget successor is NOT applied: its rollback-only schema compilation now passes, but accounting review, disposable tests, server routing and live model verification remain. DeepSeek is disabled; NVIDIA free entries lack verified ZDR endpoints.
+
+The first live Luna tool-enabled browser request returned a provider tool call but no durable model receipt or chat answer. It was not replayed; the user-facing request was cancelled and the native context retained. The shared reservation is retained. Sanitized provider diagnostics were added to source but are not yet in the running build. Investigate the returned tool-call shape with a new, separately admitted test; never replay the uncertain request. Model selection is not yet connected end to end and Phase 1 remains incomplete; do not advance to Phase 2.
+
+The last observed shared budget reservation was 65,917,400 nanoUSD after the live test (remaining 934,082,600), subject to concurrent RAG activity. Check the ledger again before any inference. The native metadata-only privacy lease expires after 30 minutes and requires fresh verification before renewal. Preserve concurrent RAG changes, unrelated files and test histories. See the newer conditional publication authorization above.
 
 ## Current priority — native plain-chat and UI checkpoint, 10 November 2026
 

@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-10",
+  "scope": "direct-assistant-disposable-rpc",
+  "passed": 5,
+  "providerPosts": 0,
+  "cleanup": true,
+  "checks": [
+    "authenticated direct readiness marker",
+    "owner, replay, shared one-quantum admission",
+    "receipt bounds and exact body and answer binding",
+    "history withholds a mismatched signed receipt",
+    "cancellation prevents later claim and archived access"
+  ],
+  "independentCleanupConfirmed": true
+}

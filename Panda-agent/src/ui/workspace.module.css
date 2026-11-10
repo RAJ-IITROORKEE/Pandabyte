@@ -295,3 +295,52 @@
 .queueEntry div { display: flex; gap: 8px; }
 .queueEntry input { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--divider); border-radius: 7px; color: var(--foreground); background: var(--surface); font: inherit; }
 @media (max-width: 760px) { .composerArea { width: calc(100% - 32px); } }
+
+/* Compact, keyboard-native model control within the composer. */
+.modelPicker { position: relative; display: inline-flex; align-items: center; min-width: 0; max-width: min(55vw, 260px); }
+.modelPicker select { width: 100%; min-height: 44px; padding: 8px 30px 8px 12px; border: 1px solid var(--divider); border-radius: 22px; appearance: none; background: var(--surface); color: var(--foreground); font: inherit; font-size: 13px; font-weight: 600; text-overflow: ellipsis; cursor: pointer; }
+.modelPicker > svg { position: absolute; right: 10px; pointer-events: none; color: var(--muted); }
+.modelPicker select:hover:not(:disabled) { background: var(--status-soft); }
+.modelPicker select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.modelPicker select:disabled { color: var(--muted); cursor: not-allowed; }
+
+/* Keep model selection and message actions together at the trailing edge. */
+.composerActions { justify-content: flex-end; }
+.composerActions .actionGroup { min-width: 0; }
+.composerActions .modelPicker { flex: 0 1 auto; }
+
+/* Conversation history uses the same Radix scroll-area primitives as shadcn. */
+.historyScroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.historyViewport { width: 100%; height: 100%; }
+.history { overflow: visible; }
+.historyScrollbar { display: flex; width: 8px; padding: 2px; touch-action: none; user-select: none; }
+.historyThumb { position: relative; flex: 1; border-radius: 4px; background: var(--divider); }
+.composerRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.composerRow textarea { flex: 1 1 100px; min-width: 0; min-height: 44px; padding: 12px 0; }
+.composerActions { flex: 0 1 auto; min-width: 0; margin-top: 0; }
+.composerActions .actionGroup { flex-wrap: nowrap; }
+@media (max-width: 600px) {
+  .composer { padding: 10px; }
+  .composerRow { gap: 2px; }
+  .composerActions .actionGroup { gap: 0; }
+  .modelPicker { max-width: min(30vw, 150px); }
+  .modelPicker select { padding-left: 8px; padding-right: 24px; font-size: 12px; }
+  .modelPicker > svg { right: 6px; }
+}
+
+/* Radix measures its viewport contents as a table by default; keep rows within the sidebar. */
+.historyViewport > div { display: block !important; width: 100%; min-width: 0; }
+.history { width: 100%; min-width: 0; box-sizing: border-box; }
+.historyRow { max-width: 100%; }
+.history .historySelect { flex: 1 1 0; width: 0; }
+.chatMenu { flex: none; }
+.composerRow textarea { min-height: 40px; border: 0; outline: 0; background: transparent; }
+.composerRow textarea:focus-visible { outline: 0; }
+.composer:has(.composerRow textarea:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+.recovery { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+.recovery summary { cursor: pointer; }
+.recovery span { display: block; margin: 6px 0; }
+.recovery button { margin: 0 8px 0 0; padding: 6px 8px; border: 1px solid var(--divider); border-radius: 7px; background: var(--surface); color: var(--foreground); font: inherit; cursor: pointer; }
+.recovery button:disabled { opacity: .6; cursor: not-allowed; }
+.recovery summary:focus-visible, .recovery button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

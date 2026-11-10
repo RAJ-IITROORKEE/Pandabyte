@@ -1,26 +1,26 @@
-import { createAssistantCapabilities } from '@/Panda-agent/src/server/assistant-capabilities';
-import { authenticateLightweight, currentLightweightSession } from '@/Panda-agent/src/server/lightweight-connection';
-import { createLunaPrototypePolicy } from '@/Panda-agent/src/server/basic-rag-runtime';
-import { nativeExecutionAvailable } from '@/Panda-agent/scripts/start-native-execution.mjs';
-import type { ChatActor } from '@/Panda-agent/src/server/chat-contracts';
-import { readLunaPrototypeProfile } from '@/Panda-agent/src/server/luna-prototype-profile';
-import { createPlainLlmStore } from '@/Panda-agent/src/server/plain-llm-chat';
+import { authenticateLightweight } from '@/Panda-agent/src/server/lightweight-connection';
+import { directPolicyForActor } from '@/Panda-agent/src/server/direct-assistant-runtime';
+import { createDirectAssistantStore } from '@/Panda-agent/src/server/direct-assistant-store';
+import { modelChoices, disabledModelReasons, type Capabilities } from '@/Panda-agent/src/ui/capabilities';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
-  return createAssistantCapabilities({
-    enabled: () => process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED === 'true' && process.env.PANDA_AGENT_ASSISTANT_NEW_MESSAGES === 'true',
-    authenticate: authenticateLightweight,
-    async inspect(value) {
-      const actor = value as ChatActor;
-      const current = () => actor.sessionId ? currentLightweightSession(actor.subject, actor.sessionId) : Promise.resolve(false);
-      const input = { env: process.env, subject: actor.subject, requestOrigin: new URL(request.url).origin, actor, current };
-      const policy = createLunaPrototypePolicy({ ...input, profile: () => readLunaPrototypeProfile({ ...input, nativePreview: true }) });
-      const journal = createPlainLlmStore(actor, process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY ?? '');
-      const schema = () => journal.admissionCurrent('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', {}).then(value => value === false).catch(() => false);
-      const [session, binary, installed, admitted] = await Promise.all([current(), nativeExecutionAvailable(process.cwd()), schema(), policy.enabled()]);
-      return { current: session, runtime: binary && installed, admitted, remainingNanoUsd: policy.allowance()?.remainingNanoUsd ?? null };
-    },
-  })();
+  const headers = { 'Cache-Control':'private, no-store', Vary:'Cookie' };
+  const actor = await authenticateLightweight();
+  if (!actor) return Response.json({ error:'unauthenticated' }, { status:401, headers });
+  const value:Capabilities = { mode:'direct_assistant', model:null, status:'unavailable', models:modelChoices.map((model,index)=>({...model,enabled:false,reason:disabledModelReasons[index]})), reason:'disabled', rag:false, tools:[], skills:[], budget:null };
+  if (process.env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED === 'true' && process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED === 'true') {
+    value.reason = 'privacy_or_budget_unavailable';
+    try {
+      const policy = directPolicyForActor(actor,request);
+      const [admitted,installed] = await Promise.all([policy.enabled(),createDirectAssistantStore(actor,process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY ?? '').ready()]);
+      const remaining = policy.allowance()?.remainingNanoUsd;
+      if (admitted && installed && Number.isSafeInteger(remaining) && remaining! >= 1597640 && remaining! <= 1000000000) {
+        value.status='ready'; value.reason=null; value.model='GPT-6 Luna'; value.models[0]={...value.models[0],enabled:true,reason:null};
+        value.budget={limitNanoUsd:1000000000,remainingNanoUsd:remaining!};
+      }
+    } catch { value.reason='connection_unavailable'; }
+  }
+  return Response.json(value,{headers});
 }

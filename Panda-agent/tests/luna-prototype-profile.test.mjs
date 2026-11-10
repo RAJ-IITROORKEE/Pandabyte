@@ -84,6 +84,10 @@ test('metadata-only OpenRouter LangSmith tracing requires an explicit matching l
  await put(receipt(),{privacy:{logging:false,traces:true,dataDiscount:false,publicPrompts:false}});
  assert.equal(await readLunaPrototypeProfile(input),null);
  env.PANDA_AGENT_OPENROUTER_OBSERVABILITY='langsmith_metadata_only';
+ assert.equal(await readLunaPrototypeProfile({...input,nativePreview:true,requestOrigin:'http://localhost:3000'}),null);
+ env.PANDA_AGENT_NATIVE_OBSERVABILITY='langsmith_metadata_only';
+ const native=await readLunaPrototypeProfile({...input,nativePreview:true,requestOrigin:'http://localhost:3000'});assert.ok(native);
+ env.PANDA_AGENT_NATIVE_OBSERVABILITY=undefined;assert.equal(native.dispatchCurrent(),false);
  const profile=await readLunaPrototypeProfile(input);assert.ok(profile);assert.equal(profile.dispatchCurrent(),true);
  env.PANDA_AGENT_OPENROUTER_OBSERVABILITY='other';assert.equal(profile.dispatchCurrent(),false);
  assert.equal(await readLunaPrototypeProfile(input),null);
