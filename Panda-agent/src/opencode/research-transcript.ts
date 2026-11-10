@@ -109,13 +109,14 @@ export function projectResearchTurn(expected: unknown, session: unknown, active:
  }
  if (active || session.outcome === undefined) return { state: 'pending' };
  const idle = suffix.at(-1), clock = session.time;
+ const created = clock.created, updated = clock.updated, busy = clock.busy, idleTime = clock.idle;
  if (!idle || idle.type !== 'idle' || idle.outcome !== session.outcome || suffix.slice(0, -1).some(m => m.type === 'idle')
-  || !time(clock.busy) || !time(clock.idle) || clock.busy < clock.created || clock.idle < clock.busy || clock.idle > clock.updated
-  || (idle.time as Record<string, unknown>).created as number > clock.idle || (user.time as Record<string, unknown>).created as number > clock.idle
-  || suffix.some(m => (m.time as Record<string, unknown>).created as number > clock.idle)
-  || assistants.some(a => (a.row.time as Record<string, unknown>).completed !== undefined && ((a.row.time as Record<string, unknown>).completed as number) > clock.idle)) return unknown();
+  || !time(created) || !time(updated) || !time(busy) || !time(idleTime) || busy < created || idleTime < busy || idleTime > updated
+  || (idle.time as Record<string, unknown>).created as number > idleTime || (user.time as Record<string, unknown>).created as number > idleTime
+  || suffix.some(m => (m.time as Record<string, unknown>).created as number > idleTime)
+  || assistants.some(a => (a.row.time as Record<string, unknown>).completed !== undefined && ((a.row.time as Record<string, unknown>).completed as number) > idleTime)) return unknown();
  const idleCreated = (idle.time as Record<string, unknown>).created as number;
- if (idleCreated < clock.busy || toolTimes.some(t => Object.values(t).some(value => value > idleCreated))
+ if (idleCreated < busy || toolTimes.some(t => Object.values(t).some(value => value > idleCreated))
   || assistants.some(a => (a.row.time as Record<string, unknown>).completed !== undefined && ((a.row.time as Record<string, unknown>).completed as number) > idleCreated)) return unknown();
  if (session.outcome === 'failed' || session.outcome === 'interrupted') return { state: 'terminal', outcome: session.outcome };
  const last = assistants.at(-1);

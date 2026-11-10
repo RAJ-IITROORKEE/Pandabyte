@@ -10,7 +10,7 @@
     "skippedReason": "Existing opt-in real local 2.2.6 execution fixtures; not evidence of 2.2.5 execution",
     "total": 137
   },
-  "typecheck": "passed",
+  "typecheck": "passed: app check plus direct strict tsc with esnext/dom over all four A modules",
   "scopedLint": "passed",
   "build": "passed: npm run build (Next.js 16.4.3 Turbopack), exit 0, physical locked node_modules",
   "earlierBuilds": [
@@ -33,9 +33,9 @@
   ],
   "sourceSha256": {
     "Panda-agent/src/opencode/session-client.ts": "879156a3cc8aa1c9573f1158039d63587f4574517569c089e121a68278e8a324",
-    "Panda-agent/src/opencode/research-transcript.ts": "45c14f27060e28426926170ac5c8d73ad2765c458d66e834e02a56830e01c85e",
+    "Panda-agent/src/opencode/research-transcript.ts": "9309fc7e3c7898ffe07e1c34a64c9d9b18075f7f2b563937ea6daf2da752f328",
     "Panda-agent/src/opencode/research-forms.ts": "7485e56a2c0cc622ef9d93de719cc88e495cc298ba19923a77a6e2e5ead0f218",
-    "Panda-agent/src/opencode/research-values.ts": "43edc745465b0ab5416930d9a7f624c72e53372fcb88e55ffb8bbef11fb1b308",
+    "Panda-agent/src/opencode/research-values.ts": "457a567a6cd571a259c9bea338ef0dc051dc83805687e9726bb6d630670051c6",
     "Panda-agent/tests/opencode-session.test.mjs": "b364eda21e05f7b23b5a9917a7632cf1fff28b1c5300b878e374fc61c655e08e",
     "Panda-agent/tests/research-transcript.test.mjs": "0ffadc6dea34a5df4c90625252c241f3c8466cc26e2114161ce591e1edbf6ecd",
     "Panda-agent/tests/research-forms.test.mjs": "2f68c9df7eaf069260dbf257a676a4f8436320cbb0ab46ac0fd9fa256883bcf1"

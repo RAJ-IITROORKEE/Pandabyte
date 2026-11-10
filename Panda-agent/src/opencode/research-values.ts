@@ -12,7 +12,8 @@ export function researchJSON(value: unknown, maxBytes: number, maxDepth = 20, ma
   if (item === null || typeof item === 'boolean') return true;
   if (typeof item === 'string') return item.isWellFormed() && item.length <= maxBytes;
   if (typeof item === 'number') return Number.isFinite(item);
-  if (Array.isArray(item) ? Object.getPrototypeOf(item) !== Array.prototype : !researchObject(item)) return false;
+  if (Array.isArray(item)) { if (Object.getPrototypeOf(item) !== Array.prototype) return false; }
+  else if (!researchObject(item)) return false;
   if (seen.has(item)) return false;
   seen.add(item);
   try {
