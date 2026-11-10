@@ -23,7 +23,7 @@ function fixture(options = {}) {
   const snapshot = async () => {
     calls.push('read');
     if (options.foreign) throw new ChatStoreError('not_found');
-    return { thread: { id: thread, title: 'Fixture', updatedAt: timestamp, status: present && !saved ? 'pending' : 'idle' },
+    return { thread: { id: thread, title: 'Fixture', updatedAt: timestamp, status: present && !saved ? (options.threadStatus ?? 'pending') : 'idle' },
       messages: saved ? [{ id: request, role: 'assistant', text: answer.text, citations: answer.citations, createdAt: timestamp }] : [],
       turns: present ? [{ requestId: request, question, status: saved ? 'complete' : 'pending', response: saved ? answer : null, createdAt: timestamp }] : [],
       privateField: 'PRIVATE_SERVER_STATE' };
@@ -245,4 +245,11 @@ test('plain LLM missing bridge fails closed, and old basic RAG recovery survives
  old.deps.llm=()=>({state:async()=>false,start:async()=>{throw Error('Wrong dispatch');}});
  assert.equal((await createLightweightHandler(old.deps).messagePOST(message(),thread)).status,200);
  assert.equal(old.calls.includes('basic_status'),true);assert.equal(old.calls.includes('basic_start'),false);
+});
+
+ test('a pending RAG turn displayed as blocked can be logically cancelled without redispatch',async()=>{
+ const f=fixture({kind:'basic',threadStatus:'blocked'});
+ const response=await f.handler.cancelPOST(cancel(),thread);
+ assert.equal(response.status,200);const value=JSON.parse(await privateWire(response));assert.equal(value.thread.status,'idle');
+ assert.equal(f.calls.filter(c=>c==='basic_cancel').length,1);assert.equal(f.calls.includes('basic_start'),false);
 });

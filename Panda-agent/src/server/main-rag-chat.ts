@@ -7,10 +7,11 @@ import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
 import { createSnapshotClient } from '../retrieval/snapshot-client.ts';
 import { createBasicRagChatService } from './basic-rag-chat-service.ts';
 import { createBasicRagStore } from './basic-rag-store.ts';
+import { createLightweightStore } from './lightweight-store.ts';
 import { createHostedRagPolicy } from './hosted-rag-policy.ts';
 import { createLunaRagCompletion } from './luna-rag-openrouter.ts';
 import { ChatStoreError } from './chat-store.ts';
-import type { ChatActor, ActivityReporter } from './chat-contracts.ts';
+import type { ChatActor, ActivityReporter, ChatRead } from './chat-contracts.ts';
 import type { BasicRagChatBridge } from './basic-rag-chat-contracts.ts';
 
 type Catalog = Awaited<ReturnType<typeof readRuntimeCatalog>>;
@@ -20,21 +21,44 @@ const contains = (text:string, value:string) => {
  while(at>=0){if((at===0||!/[a-z0-9]/.test(text[at-1]))&&(at+needle.length===text.length||!/[a-z0-9]/.test(text[at+needle.length])))return true;at=text.indexOf(needle,at+1);}
  return false;
 };
+const namedProduct = (question:string,catalog:Catalog) => {
+ const text=question.normalize('NFKC').toLowerCase();
+ return catalog.some(row=>contains(text,row.sku)||contains(text,row.title)
+  ||(row.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[]).some(alias=>contains(text,alias)))
+  ||/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text);
+};
+
+export function isImplicitProductFollowup(question:string,catalog:Catalog):boolean {
+ const text=question.normalize('NFKC').toLowerCase();
+ return text.length<=240&&text.split(/\s+/).length<=24&&!namedProduct(question,catalog)
+  &&/\b(?:it|its|this board|that board|this product|that product)\b/.test(text)
+  &&/^(?:what|which|whose|where|when|why|how|does|do|did|is|are|was|were|can|could|will|would|should|has|have)\b/.test(text);
+}
+
+/** Masked, owner-scoped SQL history can carry identity, never the previous answer as evidence. */
+export function resolveMainFollowupScope(history:ChatRead,catalog:Catalog,thread:string,ownRequest?:string):{sku:string;anchor:string}|null {
+ if(history.thread.id!==thread)return null;
+ const latest=history.turns.filter(turn=>turn.requestId!==ownRequest).at(-1);
+ if(!latest||latest.status!=='complete'||latest.response?.outcome!=='evidence'||!latest.response.citations.length)return null;
+ const owners=latest.response.citations.map(citation=>catalog.filter(row=>row.sourceUrl===citation.sourceUrl&&row.title===citation.title));
+ if(owners.some(rows=>rows.length!==1)||new Set(owners.map(rows=>rows[0].sku)).size!==1)return null;
+ const plan=resolveMultiProductIdentity(catalog,latest.question);
+ if(plan.kind==='planned'?(plan.products.length!==1||plan.products[0].sku!==owners[0][0].sku):!isImplicitProductFollowup(latest.question,catalog))return null;
+ return {sku:owners[0][0].sku,anchor:createHash('sha256').update(JSON.stringify([thread,latest])).digest('hex')};
+}
 
 /** Catalog aliases select the source path; unresolved product requests never become general model facts. */
 export function isMainProductQuestion(question:string,catalog:Catalog):boolean {
  if(isUnscopedConversation(question))return false;
  const text=question.normalize('NFKC').toLowerCase();
- if(catalog.some(row=>contains(text,row.sku)||contains(text,row.title)
-  ||(row.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[]).some(alias=>contains(text,alias))))return true;
- if(resolveMultiProductIdentity(catalog,question).kind==='planned')return true;
+ if(namedProduct(question,catalog)||resolveMultiProductIdentity(catalog,question).kind==='planned'||isImplicitProductFollowup(question,catalog))return true;
  if(/\b(?:its|this board|that board|this product|that product)\b/.test(text)&&/\b(?:usb|connector|mcu|cpu|pins?|pinout|voltage|current|flash|memory|psram|specifications?)\b/.test(text))return true;
  if(/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text))return true;
  return !['conversation','manufacturer'].includes(conversationRoute(question,catalog).kind);
 }
 
 type RouterOptions={direct:BasicRagChatBridge;rag:BasicRagChatBridge;legacy:BasicRagChatBridge;
- route(question:string,signal:AbortSignal,progress?:ActivityReporter):Promise<'rag'|'direct'>;modelAllowed?:()=>boolean};
+ route(question:string,signal:AbortSignal,progress?:ActivityReporter,thread?:string):Promise<'rag'|'direct'>;modelAllowed?:()=>boolean};
 
 /** The chosen journal survives changed flags, retries and cancellation; a claimed request is never rerouted. */
 export function createMainRagRouter(options:RouterOptions):BasicRagChatBridge {
@@ -57,7 +81,7 @@ export function createMainRagRouter(options:RouterOptions):BasicRagChatBridge {
    const existing=await service(turn.thread,turn.request);
    if(existing)return existing.start(turn,signal,progress);
    if(options.modelAllowed?.()===false)throw new ChatStoreError('unavailable');
-   const selected=await options.route(turn.question,signal,progress);
+   const selected=await options.route(turn.question,signal,progress,turn.thread);
    const bridge=selected==='rag'?options.rag:options.direct;
    matches.set(JSON.stringify([turn.thread,turn.request]),Promise.resolve(bridge));
    return bridge.start(turn,signal,progress);
@@ -67,16 +91,19 @@ export function createMainRagRouter(options:RouterOptions):BasicRagChatBridge {
 
 /** Ranking reads the immutable request snapshot; release checks always read the live client. */
 export async function prepareMainRagContext(options:{subject:string;question:string;signal:AbortSignal;
- snapshotClient:RetrievalClient;liveClient:RetrievalClient;authorizeCurrent:()=>Promise<boolean>;adminCurrent:()=>Promise<boolean>}) {
- const {subject,question,signal,snapshotClient,liveClient,authorizeCurrent,adminCurrent}=options;
+ snapshotClient:RetrievalClient;liveClient:RetrievalClient;authorizeCurrent:()=>Promise<boolean>;adminCurrent:()=>Promise<boolean>;
+ retrievalQuestion?:string;historyCurrent?:()=>Promise<boolean>}) {
+ const {subject,signal,snapshotClient,liveClient,authorizeCurrent,adminCurrent,historyCurrent}=options;
+ const question=options.retrievalQuestion??options.question;
  const prepared=await prepareProductContextSet({actor:{subject},question,client:snapshotClient,signal,
   createAdapters:()=>createInsforgeAdapters(snapshotClient,async()=>({selections:[]})),authorizeCurrent:async()=>!signal.aborted},'at_workflow_release');
  if(prepared.kind!=='ready')return prepared;
  return Object.freeze({...prepared,authorizedBy:authorizeCurrent,revalidate:async()=>{
-  if(signal.aborted||!await authorizeCurrent()||!await adminCurrent())return false;
+  if(signal.aborted||!await authorizeCurrent()||!await adminCurrent()||(historyCurrent&&!await historyCurrent()))return false;
   const fresh=await prepareProductContextSet({actor:{subject},question,client:liveClient,signal,authorizeCurrent,
    createAdapters:()=>createInsforgeAdapters(liveClient,async()=>({selections:[]}))},'at_workflow_release');
-  return !signal.aborted&&fresh.kind==='ready'&&fresh.digest===prepared.digest&&await authorizeCurrent()&&await adminCurrent();
+  return !signal.aborted&&fresh.kind==='ready'&&fresh.digest===prepared.digest&&await authorizeCurrent()&&await adminCurrent()
+   &&(!historyCurrent||await historyCurrent());
  }});
 }
 
@@ -99,6 +126,8 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
   return client;
  })();
  const store=createBasicRagStore(actor,env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'');
+ const historyStore=createLightweightStore(actor,env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'');
+ let ownRequest:string|undefined;
  const rag=createBasicRagChatService({store,current:options.current,enabled:policy.enabled,usagePolicy:'bounded_luna_test',
   prepareContext:async(question,signal,authorizeCurrent)=>{
    const prepared=preparedSnapshot??await prepareMainRagContext({subject:actor.subject,question,signal,snapshotClient:await observation(),liveClient:actor.client,authorizeCurrent,adminCurrent:current});
@@ -106,6 +135,7 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    return Object.freeze({...prepared,authorizedBy:authorizeCurrent});
   },
   completion:(claim,requestId)=>{
+   ownRequest=requestId;
    let claimed=false;
    return (input,beforeSend,signal)=>createLunaRagCompletion({apiKey:policy.key(),policyCurrent:policy.current,dispatchCurrent:policy.dispatchCurrent,
     preClaimCurrent:policy.dispatchCurrent,receiptPolicy:'hosted',claim:async()=>{
@@ -116,7 +146,7 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
  });
  return createMainRagRouter({direct:options.direct,legacy:options.legacy,rag,
   modelAllowed:()=>!options.request.headers.has('X-Panda-Model')||options.request.headers.get('X-Panda-Model')==='openai/gpt-6-luna',
-  route:async(question,signal,report)=>{
+  route:async(question,signal,report,thread)=>{
    if(signal.aborted)throw new ChatStoreError('unavailable');
    if(isUnscopedConversation(question))return 'direct';
    const retrievalStarted=performance.now();
@@ -126,7 +156,18 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    if(signal.aborted)throw new ChatStoreError('unavailable');
    if(!isMainProductQuestion(question,catalog))return 'direct';
    // Provider workspace/privacy admission follows retrieval, so document timing never includes a model service.
-   preparedSnapshot=await prepareMainRagContext({subject:actor.subject,question,signal,snapshotClient:client,liveClient:actor.client,
+   let retrievalQuestion=question,historyCurrent:(()=>Promise<boolean>)|undefined;
+   if(isImplicitProductFollowup(question,catalog)){
+    const scope=thread?resolveMainFollowupScope(await historyStore.read(thread),catalog,thread):null;
+    if(!scope){preparedSnapshot={kind:'clarification'};return 'rag';}
+    retrievalQuestion=`${question}\nProduct SKU: ${scope.sku}`;
+    historyCurrent=async()=>{try{
+     const [history,liveCatalog]=await Promise.all([historyStore.read(thread!),readRuntimeCatalog(actor.client)]);
+     const latest=resolveMainFollowupScope(history,liveCatalog,thread!,ownRequest);
+     return !!latest&&latest.sku===scope.sku&&latest.anchor===scope.anchor;
+    }catch{return false;}};
+   }
+   preparedSnapshot=await prepareMainRagContext({subject:actor.subject,question,retrievalQuestion,historyCurrent,signal,snapshotClient:client,liveClient:actor.client,
     authorizeCurrent:options.current,adminCurrent:current});
    const elapsed=Math.round(performance.now()-retrievalStarted);
    if(preparedSnapshot.kind==='ready'&&Number.isSafeInteger(elapsed)&&elapsed>=0&&elapsed<=120000)try{report?.('reading_sources',{

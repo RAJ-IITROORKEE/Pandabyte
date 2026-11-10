@@ -39,12 +39,24 @@ test('one claimed Azure US request pins strict ZDR and actual bounded usage', as
   assert.deepEqual(body.provider, { only: ['azure/us'], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: 0.11, completion: 0.55, request: 0, image: 0 } });
   assert.deepEqual(body.reasoning, { enabled: false }); assert.equal(body.include_reasoning, false);
   assert.equal(body.tool_choice, 'none'); assert.equal(body.tools, undefined); assert.deepEqual(body.plugins, []);
+  assert.match(body.messages[0].content,/Cite every claim only through the evidence array/);
+  assert.match(body.messages[0].content,/Never include citation markers/);
   assert.equal(posts(f)[0].init.headers['X-OpenRouter-Cache'], 'false');
   assert.deepEqual(result.usage, { inputTokens: 40, outputTokens: 25, costNanoUsd: 18150 });
   assert.equal(lunaRagReservationNanoUsd, 1597640);
   assert.equal(3 * 2697640 + lunaRagReservationNanoUsd, 9690560);
   assert.ok(3 * 2697640 + lunaRagReservationNanoUsd < 10000000);
   await assert.rejects(run(f), e => e.code === 'not_admitted'); assert.equal(posts(f).length, 1);
+});
+
+test('model-supplied citation markers or URLs are withheld without another provider request',async()=>{
+ for(const suffix of [' [S1]',' https://example.com',' www.example.com']){
+  const value=receipt(),parsed=JSON.parse(value.choices[0].message.content);parsed.answer+=suffix;value.choices[0].message.content=JSON.stringify(parsed);
+  const f=fixture({response:()=>Response.json(value)});
+  await assert.rejects(run(f),e=>e.code==='outcome_unknown');
+  await assert.rejects(run(f),e=>e.code==='not_admitted');
+  assert.equal(f.claims,1);assert.equal(posts(f).length,1);
+ }
 });
 
 test('reports bounded admission and provider round-trip timing on a validated response', async () => {

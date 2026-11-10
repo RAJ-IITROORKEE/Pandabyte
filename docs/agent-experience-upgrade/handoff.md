@@ -7,7 +7,13 @@ experience works and is validated. The latest direct-demo request authorizes its
 changes remain excluded. Historical restrictions below describe earlier scope.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Conversation-memory and latency follow-up, 10 November 2026
+## Current release priority: main-chat grounded answers, 10 November 2026
+
+The latest owner request connects working RAG to the main Panda Agent chat, with live-domain Admin testing, a document retrieval target below two seconds and no cumulative application testing cap. This supersedes the earlier direct-only/RAG deferral and hosted USD1 gate below. The original local/native ledger remains untouched; strict ZDR and receipt/source/access guards remain. General chat preserves verified conversation memory from 139fa22. Full native harness acceptance remains separate.
+
+The bridge selects cited RAG for product questions; unknown models and unsupported facts never fall through to general generation. Both frozen 20-case retrieval regressions and 211 affected tests pass without skips. Server-only PANDA_AGENT_MAIN_RAG_ENABLED and PANDA_AGENT_MAIN_CHAT_UNCAPPED use the existing owner/Admin hosted profile. Migration 20261110150000_direct-unmetered.sql passed rollback/ACL rehearsal and is applied. Combined live-build browser validation is pending. See [the current RAG handoff](../../current_RAG.md).
+
+## Historical conversation-memory and latency follow-up, 10 November 2026
 
 The owner authorized automatic same-chat follow-ups, response-speed work, subagents, Codex Browser tests, main publication and a live update. Code **139fa22** is pushed to main and deployed as **dpl_8wLq3Lr2ayRfyxx6RNewC2bHhqLa**, Ready and promoted at https://pandabyte-iot.vercel.app/panda-agent. Active release checkout: C:/Users/rajra/.codex/worktrees/direct-llm-release/Pandabyte, branch codex/conversation-memory-speed. Original native checkout and unfinished work remain preserved. Separate RAG source/documentation through ec5529a is retained; no main-chat retrieval or AWS/OpenCode execution was enabled.
 

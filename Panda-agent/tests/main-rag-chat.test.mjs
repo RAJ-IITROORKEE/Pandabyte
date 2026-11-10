@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {dirname,join} from 'node:path';
-import {isMainProductQuestion,createMainRagRouter,prepareMainRagContext} from '../src/server/main-rag-chat.ts';
+import {isMainProductQuestion,isImplicitProductFollowup,resolveMainFollowupScope,createMainRagRouter,prepareMainRagContext} from '../src/server/main-rag-chat.ts';
+import {runBasicRag} from '../src/retrieval/basic-rag.ts';
 import {createSnapshotClient} from '../src/retrieval/snapshot-client.ts';
 import {ENGINEERING_CONFIG,ENGINEERING_MANIFEST} from '../src/retrieval/engineering-proof.ts';
 import {loadEvaluationCases,evaluationCaseSet} from '../src/control-room/evaluation-cases.ts';
@@ -20,6 +21,45 @@ test('catalog identity, descriptive product questions, unknown models and mixed 
   'Compare BOARDGREEN with xUnknown90','What is its USB connector?','What MCU does that board use?'])assert.equal(isMainProductQuestion(question,catalog),true,question);
  for(const question of ['Hello!','Who are you?','Explain UART in one sentence.','How do I format a Markdown table?','What is 2 + 2?'])
   assert.equal(isMainProductQuestion(question,catalog),false,question);
+});
+
+test('short pronoun hardware follow-ups are grounded and explicit product identity overrides history',()=>{
+ for(const question of ['What is its USB connector?','Does it support Bluetooth?','Can it run from 5 V?',
+  'How much does it cost?','Is it in stock?','What is its operating temperature?','Does it have certification?']){
+  assert.equal(isImplicitProductFollowup(question,catalog),true,question);assert.equal(isMainProductQuestion(question,catalog),true,question);
+ }
+ for(const question of ['Does BOARDGREEN support Bluetooth?','What is its xGreen32 USB connector?','Can it run from 5 V, the xUnknown90?',
+  'Explain Bluetooth in one sentence.','Explain it more simply.','Explain it in JavaScript.','Explain UART.','Hello!'])assert.equal(isImplicitProductFollowup(question,catalog),false,question);
+});
+
+function historyFixture(){
+ const citation={id:'S1',title:catalog[0].title,sourceUrl:catalog[0].sourceUrl,capturedAt:'2026-10-31T00:00:00Z',sectionPath:['Specs'],quote:'Reviewed source'};
+ return {thread:{id:turn.thread,title:'Disposable',updatedAt:'2026-11-10T00:00:00Z',status:'idle'},messages:[],turns:[{
+  requestId:'40000000-0000-4000-8000-000000000001',question:'Which MCU does BOARDGREEN use?',status:'complete',createdAt:'2026-11-10T00:00:00Z',
+  response:{outcome:'evidence',text:'Prior answer must never enter model evidence.',citations:[citation]},
+ }]};
+}
+test('history carry-over requires latest verified evidence and one exact current product across all citations',()=>{
+ const history=historyFixture(),scope=resolveMainFollowupScope(history,catalog,turn.thread);
+ assert.equal(scope.sku,'BOARDGREEN');assert.match(scope.anchor,/^[a-f0-9]{64}$/);
+ const ownPending={requestId:turn.request,question:'What is its USB connector?',status:'pending',response:null,createdAt:'2026-11-10T00:01:00Z'};
+ history.turns.push(ownPending);assert.equal(resolveMainFollowupScope(history,catalog,turn.thread),null);
+ assert.deepEqual(resolveMainFollowupScope(history,catalog,turn.thread,turn.request),scope);
+ for(const change of [
+  h=>{h.turns=[];},h=>{h.thread.id=turn.request;},h=>{h.turns[0].response.citations=[];},
+  h=>{h.turns[0].response.outcome='insufficient';},h=>{h.turns[0].response.citations[0].title='Unverified title';},
+  h=>{h.turns[0].response.citations[0].sourceUrl='https://example.com/foreign';},
+  h=>{h.turns[0].question='Compare BOARDGREEN with CABLECHARGE';},h=>{h.turns[0].question='Which MCU does xUnknown90 use?';},
+  h=>{h.turns[0].response.citations.push({...h.turns[0].response.citations[0],title:catalog[1].title,sourceUrl:catalog[1].sourceUrl});},
+  h=>{h.turns.push({...ownPending,requestId:'50000000-0000-4000-8000-000000000001'});},
+  h=>{h.turns.push({...ownPending,status:'complete',response:{outcome:'conversation',text:'Hello',citations:[]}});},
+  h=>{h.turns.push({...ownPending,status:'complete',response:{outcome:'clarification',text:'Which unknown product?',citations:[]}});},
+ ]){const h=historyFixture();change(h);assert.equal(resolveMainFollowupScope(h,catalog,turn.thread),null);}
+ const edited=historyFixture();edited.turns[0].response.text='Changed';
+ assert.notEqual(resolveMainFollowupScope(edited,catalog,turn.thread).anchor,scope.anchor);
+ assert.equal(resolveMainFollowupScope(historyFixture(),[],turn.thread),null,'withdrawn current catalog product');
+ assert.equal(resolveMainFollowupScope(historyFixture(),[catalog[0],{...catalog[0],sku:'DUPLICATE'}],turn.thread),null,'ambiguous catalog match');
+ const followup=historyFixture();followup.turns[0].question='What is its USB connector?';assert.equal(resolveMainFollowupScope(followup,catalog,turn.thread).sku,'BOARDGREEN');
 });
 
 function fixture({owner=null,result={status:'saved'},modelAllowed=true}={}){
@@ -64,6 +104,12 @@ test('conflicting journal ownership fails closed before any execution',async()=>
  const f=fixture();const bridge={state:async()=>true,start:()=>assert.fail(),status:()=>assert.fail(),cancel:()=>assert.fail()};
  const router=createMainRagRouter({direct:bridge,rag:bridge,legacy:bridge,route:async()=>assert.fail()});
  await assert.rejects(router.start(turn,signal()),e=>e.code==='conflict');assert.deepEqual(f.calls,[]);
+});
+test('router provides only the current thread to follow-up selection and keeps the visible question intact',async()=>{
+ let seen;
+ const bridge={state:async()=>false,start:async value=>{assert.equal(value.question,'What is its USB connector?');return {status:'saved'};},status:async()=>({status:'unknown'}),cancel:async()=>({status:'saved'})};
+ const router=createMainRagRouter({rag:bridge,direct:bridge,legacy:bridge,route:async(question,_signal,_report,thread)=>{seen={question,thread};return 'rag';}});
+ await router.start({...turn,question:'What is its USB connector?'},signal());assert.deepEqual(seen,{question:'What is its USB connector?',thread:turn.thread});
 });
 
 const sourcePath=process.env.PANDA_TEST_RAG_SNAPSHOT;
@@ -111,4 +157,31 @@ test('snapshot-selected evidence is revalidated from live reads and fails after 
  assert.equal((await immutable.database.rpc('panda_agent_runtime_scope',{p_product:selected})).data.chunks[0].text.endsWith(' changed'),false);
  delete snapshot.scopes[selected];snapshot.catalog.items=snapshot.catalog.items.filter(p=>p.id!==selected);live=createSnapshotClient(snapshot);
  assert.equal(await context.revalidate(),false,'withdrawn source cannot release selected evidence');
+});
+
+test('implicit retrieval carries identity only, preserves provider question and fences changed history before send and release',
+ {skip:!sourcePath&&'private reviewed source snapshot unavailable'},async()=>{
+ const snapshot=await reviewedSnapshot(),snapshotClient=createSnapshotClient(snapshot),liveClient=createSnapshotClient(snapshot);
+ const product=snapshot.catalog.items.find(row=>row.sku==='ESPX8266');assert.ok(product);
+ const prior=historyFixture();prior.turns[0].question=`Which MCU does ${product.sku} use?`;prior.turns[0].response.citations[0].sourceUrl=product.sourceUrl;prior.turns[0].response.citations[0].title=product.title;
+ const anchor=resolveMainFollowupScope(prior,snapshot.catalog.items,turn.thread);assert.ok(anchor);
+ const question='What is its USB connector?',authorize=async()=>true;
+ const historyCurrent=async()=>resolveMainFollowupScope(prior,snapshot.catalog.items,turn.thread)?.anchor===anchor.anchor;
+ const prepare=()=>prepareMainRagContext({subject:snapshot.subject,question,retrievalQuestion:`${question}\nProduct SKU: ${anchor.sku}`,
+  signal:signal(),snapshotClient,liveClient,authorizeCurrent:authorize,adminCurrent:authorize,historyCurrent});
+ const context=await prepare();assert.equal(context.kind,'ready');assert.equal(context.products[0].sku,product.sku);
+ assert.ok(context.passages.every(p=>!p.text.includes('Prior answer must never enter model evidence.')));
+ const answer=async(input,beforeSend)=>{
+  assert.equal(input.question,question,'model and journal retain the user question');assert.ok(await beforeSend());
+  return {evaluation:{answer:'The captured listing identifies the connector.',evidence:[{rank:1,quote:input.passages[0].text.slice(0,40),reason:'Captured listing'}]},usage:{inputTokens:20,outputTokens:20,costNanoUsd:0}};
+ };
+ const success=await runBasicRag({question,signal:signal()},{authorize,prepare,complete:answer});assert.equal(success.status,'answered');
+ prior.turns[0].response.citations=[];assert.equal(await context.revalidate(),false,'masked or revoked prior evidence blocks dispatch');
+ const before=await runBasicRag({question,signal:signal()},{authorize,prepare,complete:async(_input,beforeSend)=>{
+  assert.equal(await beforeSend(),false);throw Object.assign(Error('denied'),{code:'not_admitted'});
+ }});assert.notEqual(before.status,'answered');
+ prior.turns[0].response.citations=[{id:'S1',sourceUrl:product.sourceUrl,title:product.title,capturedAt:'2026-10-31T00:00:00Z',sectionPath:['Specs'],quote:'Reviewed source'}];
+ const late=await runBasicRag({question,signal:signal()},{authorize,prepare,complete:async(input,beforeSend)=>{
+  const value=await answer(input,beforeSend);prior.turns[0].response.text='Changed during model response';return value;
+ }});assert.notEqual(late.status,'answered','changed history blocks release after model receipt');
 });
