@@ -1,13 +1,17 @@
 # Agent Experience Upgrade — current handoff
 
-10 November 2026. Current release branch: `codex/rag-main-chat`; native development remains in its original checkout.
+10 November 2026. Current incident branch: `codex/rag-input-latency`; native development remains in its original checkout.
 Use `git log -1` for the local checkpoint. Latest native/UI follow-up is below; earlier Control Room and grounded RAG evidence is retained. Prior basic-history checkpoint is `72b2a20`.
 The owner now authorizes commit, merge to main and push after the requested local
 experience works and is validated. The latest direct-demo request authorizes its Vercel update; commerce and provider-policy
 changes remain excluded. Historical restrictions below describe earlier scope.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Current release priority: main-chat grounded answers, 10 November 2026
+## Latest live incident repair, 10 November 2026
+
+Runtime `2580c56` is promoted as `dpl_6gfexKchKs4VYVWMBzwEaRkdSfX3`. Drafting is separate from send admission, same-chat recovery preserves it, and genuine chat changes clear it. Literal whitespace reconciliation and distinct same-passage evidence fix the observed xC3 failures; known rejected content terminates safely without retry/refund. 424 affected tests pass, including both frozen 20-case retrieval regressions. Actual main-domain answers/follow-ups, running input, saved history and abstention passed. Document HTTP responses took 687–853ms, but full answers varied 3.67–23.90seconds because provider latency remains variable. Uncapped hosted testing and existing guards remain. See [incident evidence](../../Panda-agent/docs/control-room/input-rag-incident-20261110.md). Hosted private-pack Evaluation configuration and full native/OpenCode acceptance remain separate.
+
+## Prior main-chat grounded release, 10 November 2026
 
 The latest owner request connects working RAG to the main Panda Agent chat, with live-domain Admin testing, a document retrieval target below two seconds and no cumulative application testing cap. This supersedes the earlier direct-only/RAG deferral and hosted USD1 gate below. The original local/native ledger remains untouched; strict ZDR and receipt/source/access guards remain. General chat preserves verified conversation memory from 139fa22. Full native harness acceptance remains separate.
 

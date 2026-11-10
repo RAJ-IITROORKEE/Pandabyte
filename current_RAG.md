@@ -1,5 +1,9 @@
 # Current RAG system: implementation and engineering handoff
 
+## Latest incident repair, 10 November 2026
+
+The disabled-input and rejected-grounding fixes are live from runtime `2580c56`, deployment `dpl_6gfexKchKs4VYVWMBzwEaRkdSfX3`. Drafting works during running/blocked requests while sending remains guarded. Whitespace-equivalent quotes become exact source literals; distinct same-passage quotations now validate; known rejected output finishes safely rather than trapping the chat. 424 affected tests pass without failures/skips, including both unchanged 20-case retrieval regressions. Signed-in candidate and main-domain tests passed for grounded answers, follow-ups, saved reload and abstention. Primary-domain document HTTP responses took 687/853ms; main first stream data 987/1055 ms. Full answers varied 3.67–23.90seconds, including a 19.86-second provider outlier; no complete-answer SLA is claimed. Hosted owner/Admin testing remains uncapped at application level. See [incident evidence](Panda-agent/docs/control-room/input-rag-incident-20261110.md). The private hosted Evaluation pack and full native/OpenCode acceptance remain separate; dated releases below are historical.
+
 ## Main Panda Agent integration, 10 November 2026
 
 The owner authorized connecting the working RAG to the main Panda Agent chat and removing its cumulative application testing cap. This supersedes the earlier main-chat RAG deferral and earlier separation of general-chat budgets below. The original local/native ledger is untouched. Product, unknown-model and unsupported specification questions use RAG, quoted sources and honest clarification/abstention. General conversation retains the verified same-chat memory from 139fa22. Short product follow-ups carry only the latest verified same-chat identity and retrieve fresh sources. Ambiguous or long references and multiple-product questions clarify rather than guessing.

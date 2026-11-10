@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "date": "2026-11-10",
+  "runtimeSource": "2580c56add4771fe481560687d93092e384ee671",
+  "deploymentId": "dpl_6gfexKchKs4VYVWMBzwEaRkdSfX3",
+  "domain": "https://pandabyte-iot.vercel.app",
+  "tests": {
+    "serverPassed": 415,
+    "composerPassed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "typecheck": "passed",
+    "scopedLint": "passed",
+    "vercelBuild": "passed",
+    "frozenRetrievalCases": 20,
+    "liveModelCasesInThisReceipt": 7
+  },
+  "observations": [
+    {
+      "surface": "candidate-control-room",
+      "case": "xc3-specifications",
+      "httpMs": 5902,
+      "metrics": {
+        "elapsedMs": 5372,
+        "contextPassages": 3,
+        "contextCharacters": 1703,
+        "inputTokens": 681,
+        "outputTokens": 371,
+        "costUsd": 0.00027896,
+        "admissionMs": 603,
+        "providerRoundTripMs": 3493,
+        "contextRevalidationMs": 448,
+        "contextRevalidationCount": 2
+      },
+      "status": "evaluated",
+      "literalMatches": true,
+      "evidenceCount": 4
+    },
+    {
+      "surface": "candidate-main-chat",
+      "case": "xc3-specifications",
+      "httpMs": 7744,
+      "context": {
+        "type": "context",
+        "fragments": 3,
+        "characters": 1703,
+        "duplicatesRemoved": 0,
+        "limitCharacters": 20000,
+        "retrievalMs": 227,
+        "requestElapsedMs": 987
+      },
+      "finalFrame": "complete",
+      "literalMatches": true,
+      "firstDataMs": 1409
+    },
+    {
+      "surface": "candidate-main-chat",
+      "case": "xc3-bluetooth-follow-up",
+      "httpMs": 6732,
+      "context": {
+        "type": "context",
+        "fragments": 4,
+        "characters": 2377,
+        "duplicatesRemoved": 0,
+        "limitCharacters": 20000,
+        "retrievalMs": 337,
+        "requestElapsedMs": 1082
+      },
+      "finalFrame": "complete",
+      "literalMatches": true,
+      "firstDataMs": 1577
+    },
+    {
+      "surface": "live-control-room",
+      "case": "xc3-documents-only",
+      "httpMs": 687,
+      "metrics": {
+        "elapsedMs": 350,
+        "contextPassages": 3,
+        "contextCharacters": 1703,
+        "inputTokens": null,
+        "outputTokens": null,
+        "costUsd": null,
+        "admissionMs": null,
+        "providerRoundTripMs": null,
+        "contextRevalidationMs": 4,
+        "contextRevalidationCount": 1,
+        "databaseSnapshotMs": 181
+      },
+      "status": "not_requested"
+    },
+    {
+      "surface": "live-main-chat",
+      "case": "original-geeky-board-xc3",
+      "httpMs": 23895,
+      "firstDataMs": 987,
+      "context": {
+        "type": "context",
+        "fragments": 2,
+        "characters": 794,
+        "duplicatesRemoved": 0,
+        "limitCharacters": 20000,
+        "retrievalMs": 178,
+        "requestElapsedMs": 724
+      },
+      "finalFrame": "complete",
+      "literalMatches": true,
+      "evidenceCount": 4
+    },
+    {
+      "surface": "live-main-chat",
+      "case": "xc3-bluetooth-follow-up",
+      "httpMs": 6122,
+      "firstDataMs": 1055,
+      "context": {
+        "type": "context",
+        "fragments": 4,
+        "characters": 2377,
+        "duplicatesRemoved": 0,
+        "limitCharacters": 20000,
+        "retrievalMs": 220,
+        "requestElapsedMs": 912
+      },
+      "finalFrame": "complete",
+      "literalMatches": true
+    },
+    {
+      "surface": "live-control-room",
+      "case": "xc3-specifications",
+      "httpMs": 6025,
+      "metrics": {
+        "elapsedMs": 5419,
+        "contextPassages": 3,
+        "contextCharacters": 1703,
+        "inputTokens": 681,
+        "outputTokens": 307,
+        "costUsd": 0.00024376,
+        "admissionMs": 609,
+        "providerRoundTripMs": 3479,
+        "contextRevalidationMs": 439,
+        "contextRevalidationCount": 2
+      },
+      "status": "evaluated",
+      "literalMatches": true,
+      "evidenceCount": 4
+    },
+    {
+      "surface": "live-control-room",
+      "case": "x8266-documents-only",
+      "httpMs": 853,
+      "metrics": {
+        "elapsedMs": 291,
+        "contextPassages": 4,
+        "contextCharacters": 2588,
+        "inputTokens": null,
+        "outputTokens": null,
+        "costUsd": null,
+        "admissionMs": null,
+        "providerRoundTripMs": null,
+        "contextRevalidationMs": 2,
+        "contextRevalidationCount": 1,
+        "databaseSnapshotMs": 183
+      },
+      "status": "not_requested"
+    },
+    {
+      "surface": "live-control-room",
+      "case": "x8266-mcu-usb",
+      "httpMs": 3670,
+      "metrics": {
+        "elapsedMs": 3274,
+        "contextPassages": 4,
+        "contextCharacters": 2588,
+        "inputTokens": 924,
+        "outputTokens": 76,
+        "costUsd": 0.00014344,
+        "admissionMs": 576,
+        "providerRoundTripMs": 1555,
+        "contextRevalidationMs": 381,
+        "contextRevalidationCount": 2
+      },
+      "status": "evaluated",
+      "literalMatches": true,
+      "evidenceCount": 2
+    }
+  ],
+  "additionalBrowserChecks": {
+    "draftWhileRunning": true,
+    "draftWhileBlocked": true,
+    "sendGuardRetained": true,
+    "statusPreservesDraft": true,
+    "newChatClearsDraft": true,
+    "savedAnswersAfterReload": true,
+    "unsupportedPhysicalRevisionAbstains": true,
+    "rejectedOutcomeSurvivesReload": true,
+    "explicitAcknowledgementGenerationPosts": 0,
+    "applicationBudgetCap": false
+  },
+  "limits": [
+    "Message HTTP timings exclude preceding new-chat creation.",
+    "Two original frozen 20-case retrieval regressions passed; these are not 20 new live model answers.",
+    "One live model round trip took 19862ms, making the saved message HTTP request 23895ms. Document retrieval met the observed sub-two-second target; complete LLM latency is not bounded to two seconds.",
+    "The private answer-key pack remains local; the hosted Evaluation runner is not configured by this incident repair.",
+    "Full native/OpenCode harness acceptance remains separate."
+  ]
+}
