@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-10",
+  "codeCommit": "a45fc294754b377fb996b795175ce7db2713da0f",
+  "deploymentId": "dpl_QyaEmLUPfCsHe2s4LCC9HsTHKcNb",
+  "deploymentUrl": "https://pandabyte-da9n42rkg-unfiltered-iit-ians.vercel.app",
+  "liveUrl": "https://pandabyte-iot.vercel.app/panda-agent",
+  "status": "READY",
+  "mode": "direct_assistant",
+  "model": "openai/gpt-6-luna",
+  "provider": "azure/us",
+  "browser": "Codex in-app browser",
+  "checks": [
+    "Signed-in owner admission reports Ready; Luna only",
+    "General question answered with Markdown bullets",
+    "Arduino question rendered fenced C++ code",
+    "Both live answers saved and survived reload",
+    "Same-button queue follow-up verified on localhost",
+    "27 focused offline tests passed",
+    "5 real database fixture checks passed; independent cleanup confirmed",
+    "Clean npm ci, TypeScript, scoped lint and production build passed"
+  ],
+  "runtimeLogSample": {
+    "rows": 50,
+    "messagePosts": [
+      200,
+      200
+    ],
+    "errorOrFatal": 0,
+    "http5xx": 0
+  },
+  "budget": {
+    "limitNanoUsd": 1000000000,
+    "reservedNanoUsd": 922252440,
+    "remainingNanoUsd": 77747560,
+    "refundOrReset": false
+  },
+  "privacy": {
+    "strictZdrPerRequest": true,
+    "safetyRetention": false,
+    "operatorReviewAt": "2026-11-10T07:06:22.259Z",
+    "promptLogging": false,
+    "traces": "langsmith_metadata_only",
+    "automaticAccountPrivacyProbe": false
+  },
+  "deferred": [
+    "RAG in main chat",
+    "AWS/OpenCode execution harness",
+    "Tavily web search: no configured key and current code production-disabled",
+    "Conversation history in model context and long-session memory",
+    "Sub-second response-time acceptance"
+  ],
+  "notes": [
+    "Each direct request supplies the current question plus the system prompt; saved history is preserved for display, not fed into the model.",
+    "One initial local request became uncertain, was logically cancelled and was never replayed/refunded. Four later local and two live requests saved successfully.",
+    "Remaining allowance is conservative reservation accounting, not a claim of actual billed spend.",
+    "The prototype remains owner-bound. Existing storefront and commerce settings were preserved."
+  ]
+}
