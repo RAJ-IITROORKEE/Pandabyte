@@ -23,7 +23,7 @@ function fixture(options = {}) {
     const native = { active: false, messages: [], interrupted: true, removed: false, children: [] };
     const defaultResponse = (url, init) => {
         const path = new URL(url).pathname;
-        if (path === '/api/info') return Response.json({ version: '2.2.2', pid: 321 });
+        if (path === '/api/info') return Response.json({ version: options.actualVersion ?? '2.2.2', pid: 321 });
         if (path === '/api/model') return Response.json({ data: [] });
         if (path === '/api/session' && init.method === 'POST') return Response.json({ data: state });
         if (path === '/api/session' && init.method === 'GET') return Response.json({ data: native.children, cursor: { previous: null, next: null } });
@@ -49,7 +49,7 @@ function fixture(options = {}) {
         }
         throw Error('Unexpected fixture request');
     };
-    const client = createNativeSessionClient({ baseUrl, password, directory, expectedPid: 321, timeoutMs: options.timeoutMs,
+    const client = createNativeSessionClient({ baseUrl, password, directory, expectedPid: 321, expectedVersion: options.expectedVersion, timeoutMs: options.timeoutMs,
         fetch: async (url, init) => {
             calls.push({ url, init });
             return options.fetch ? options.fetch(url, init, { state, native, calls, defaultResponse, receipt }) : defaultResponse(url, init);
@@ -422,4 +422,14 @@ test('removal acknowledgement without verified absence remains unknown', async (
     const current = fixture({ fetch: (url, init, f) => init.method === 'DELETE' ? new Response(null, { status: 204 }) : f.defaultResponse(url, init) });
     await assert.rejects(current.client.remove(current.receipt, allow), unknown);
     assert.equal(current.calls.filter(call => call.init.method === 'DELETE').length, 1);
+});
+
+
+test('selected native version is explicit and mismatches fail before mutation', async () => {
+    const ok = fixture({ expectedVersion: '2.2.6', actualVersion: '2.2.6' });
+    await ok.client.create(ok.receipt, allow);
+    const foreign = fixture({ expectedVersion: '2.2.6' });
+    await assert.rejects(foreign.client.create(foreign.receipt, allow), error => error.code === 'version_mismatch' && error.outcome === 'not_dispatched');
+    assert.equal(foreign.calls.some(call => call.init.method === 'POST'), false);
+    assert.throws(() => fixture({ expectedVersion: '2.2.7' }), unavailable);
 });

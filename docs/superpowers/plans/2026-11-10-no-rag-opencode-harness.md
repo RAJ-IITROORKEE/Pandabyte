@@ -8,7 +8,7 @@
 
 **Tech Stack:** Existing Next.js/React/TypeScript, Clerk, InsForge, OpenRouter Luna/Azure strict ZDR, pinned OpenCode V2, assistant-ui and selected AI Elements components. No second agent framework, RAG engine or memory processor.
 
-**Spec:** [Reviewed-scope design proposal](../../agent-experience-upgrade/no-rag-harness-design.md), [original specification](../../agent-experience-upgrade/specification.md), [single requirement authority](../../agent-experience-upgrade/requirements.json). The design and this plan are awaiting review; they are not implementation approval.
+**Spec:** [Reviewed-scope design proposal](../../agent-experience-upgrade/no-rag-harness-design.md), [original specification](../../agent-experience-upgrade/specification.md), [single requirement authority](../../agent-experience-upgrade/requirements.json). The owner approved implementation on 10 November, then explicitly waived Superdesign for changes in the current branch. This is implementation authorization, not a release claim.
 
 ## Global Constraints
 
@@ -18,7 +18,7 @@
 - RAG paused and separately owned; reintegration requires owner notification.
 - Preserve real owner access, signed histories, source withdrawal and unknown outcomes.
 - No deployment, push, merge, global installation, commerce change or new processor.
-- Review a concrete Superdesign draft before substantive UI implementation.
+- Apply the approved direction directly in the current branch; the owner's latest instruction skips Superdesign for this iteration.
 - Existing 97 requirements remain the coverage authority; task checkboxes below are execution steps, not a competing requirements register.
 
 ## Review Focus
@@ -57,12 +57,12 @@ it unnecessary. Do not apply an extra persistence path merely because a draft ex
 
 **Interfaces:** produce one selected `NativeExecutionDescriptor` containing version, PID, private URL, directory, config hash and generation. Reuse existing runtime identity semantics; no provider key in descriptor output.
 
-- [ ] Inventory uncommitted files, migration state, active ports/build and remaining allowance without exposing secrets.
+- [x] Inventory uncommitted files, migration state, active ports/build and remaining allowance without exposing secrets.
 - [ ] Reproduce 2.2.2 contract tests; separately verify pinned 2.2.6 schema/OpenAPI and binary origin/hash without modifying global installation.
 - [ ] Explicitly set `compaction.auto:false`, background compaction off and warming off before any prompt; prove context-overflow cannot create an unaccounted summary/retry.
-- [ ] Write and run failing fixtures for foreign PID, inherited global config, unsupported fields and V1/V2 request mismatch.
-- [ ] Implement the smallest selected-version adapter; rerun contract tests, types and scoped lint.
-- [ ] Record version decision, rollback, limitations and a local checkpoint.
+- [x] Write and run fixtures for foreign PID, inherited global config, unsupported fields and V1/V2 request mismatch.
+- [x] Implement the smallest selected-version adapter; rerun contract tests, types and scoped lint.
+- [x] Record version decision, rollback and limitations. Exact binary OpenAPI/overflow/LSP remain open; bounded one-call admission independently denies auxiliary calls.
 
 **Exit:** installed-version feature assumptions resolved; native live readiness remains false.
 
@@ -73,11 +73,11 @@ it unnecessary. Do not apply an extra persistence path merely because a draft ex
 **Interfaces:** `admitProviderCall({owner,rootRun,session,message,step,kind,bodyHash})` yields a single-use server-bound ticket; `kind` distinguishes main/child/maintenance. Native gateway preserves approved prompt/history rather than substituting a separate agent loop. Actual field names must match verified native hook/API contracts.
 
 - [ ] Add failing tests for real system-role prompt, history preservation, secret isolation, duplicate/unknown calls and auxiliary request rejection.
-- [ ] Reuse the same existing USD1 ledger; bind all calls to an owned root request and actual native execution identity.
-- [ ] Keep exact provider/model/ZDR/price/byte/token/usage checks and no ambiguous-outcome retry. Test 429, expired privacy and budget exhaustion.
-- [ ] Prove one real OpenRouter native answer with exact receipt, within the existing allowance; no RAG data.
-- [ ] Test a two-turn chat, owner-only saved/reloaded history and cancellation/status without redispatch.
-- [ ] Update the handoff and local checkpoint before adding tools.
+- [x] Reuse the same existing USD1 ledger; bind admitted calls to an owned root request and actual native execution identity.
+- [x] Keep exact provider/model/ZDR/price/byte/token/usage checks and no ambiguous-outcome retry. Test 429, expired privacy and budget exhaustion.
+- [x] Prove real OpenRouter native answers with exact receipts, within the existing allowance; no RAG data.
+- [x] Test a multi-turn application chat, owner-only saved/reloaded history and cancellation/status without redispatch. Each model turn still uses independent native context; shared history is not claimed.
+- [x] Update the handoff and local checkpoint before adding tools; see native-mvp-verification.json. The original history-preservation and auxiliary/long-session feature gates remain open.
 
 **Exit:** OpenCode, not the single-question rewrite relay, demonstrably owns the execution path.
 
@@ -131,7 +131,7 @@ it unnecessary. Do not apply an extra persistence path merely because a draft ex
 
 **Interfaces:** typed events include run lifecycle, text draft, tool state, approval, child state, artifact and terminal result. Keep owner IDs/internal payloads out of public UI; expose only approved capability metadata. assistant-ui remains the single runtime/state owner.
 
-- [ ] Use the reviewed design proposal to generate a real Superdesign draft: desktop/mobile, light/dark, loading/error/empty/approval/tool/child/artifact/memory states.
+- [x] Record the owner's explicit Superdesign waiver and implement the current branch UI directly. Preserve the earlier draft as historical evidence only.
 - [ ] Apply the [21-pattern mapping](../../agent-experience-upgrade/ai-elements-component-plan.md): current shadcn compositions, compatible Radix variant, one assistant-ui state/composer/scroll owner. No old-registry bulk install, hidden reasoning, fake execution widgets or V1/demo transport adoption.
 - [ ] Obtain approval of the actual draft before substantive TSX replacement; preserve the exact logo and existing customer/Admin theme boundaries.
 - [ ] Add failing reducer tests for duplicates/out-of-order events/disconnect/unknown state and invalid structured artifact.

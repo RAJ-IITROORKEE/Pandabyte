@@ -1,6 +1,8 @@
 # Panda Agent: no-RAG OpenCode MVP design
 
-10 November 2026. **Proposed design for review, not implementation approval or a release claim.**
+10 November 2026. **Implementation approved; no release claim.** The owner explicitly requested direct current-branch UI work without Superdesign for this iteration. Earlier design-gate proposals below are historical where they conflict with that instruction.
+
+Latest UI follow-up: move Memory & context, Account/settings and Appearance into the footer account menu; widen and align conversation/composer; show a themed working shimmer; provide Stop and a bounded page-local follow-up queue. The initial queue is serial, holds three items, pauses on stop/uncertainty/chat changes, and is lost on reload. It is not native persistent inbox/restart recovery. Native durable queue and shared long-session context remain later gates.
 
 ## Confirmed product scope
 

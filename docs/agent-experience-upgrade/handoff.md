@@ -1,11 +1,84 @@
 # Agent Experience Upgrade — current handoff
 
 10 November 2026. Branch: `codex/panda-agent-fastapi-replacement`.
-Use `git log -1` for the local checkpoint. Latest follow-up verifies Control Room and main-chat grounded Luna output. Prior basic-history checkpoint is `72b2a20`.
+Use `git log -1` for the local checkpoint. Latest native/UI follow-up is below; earlier Control Room and grounded RAG evidence is retained. Prior basic-history checkpoint is `72b2a20`.
 No push, merge, deployment, commerce configuration or provider policy change.
 Prior detailed evidence remains in the verification JSON and Git history.
 
-## Current priority — plan-first native MVP, 10 November 2026
+## Current priority — native plain-chat and UI checkpoint, 10 November 2026
+
+The owner approved the no-RAG plan and Terra6.1/high bounded implementation,
+then explicitly waived Superdesign for direct current-branch UI changes.
+RAG stays separately owned in [current_RAG.md](../../current_RAG.md). Preserve
+the concurrent RAG commits and remaining dirty files. No Phase2 advancement,
+push, merge, deployment, commerce or account-wide privacy change.
+
+**Working locally:** the mounted ordinary-message path now uses isolated pinned
+OpenCode2.2.6 execution through the server-owned provider gateway. It is not the
+direct single-question rewrite factory. Durable owner-bound attach/create/prompt/
+provider claims and immutable reservation-linked usage precede publication.
+Luna/Azure US strict-ZDR receipts were validated; two answers saved in main chat,
+including a FIFO queued follow-up, and reload retained the first answer.
+Saved-turn journal elapsed times were31,478ms and26,227ms, not fast-response
+acceptance. The upstream completion is buffered before SSE delivery.
+
+Requested UI is implemented: footer three-dot navigation contains Memory,
+Account/settings and Appearance; the standalone Workspace block and header theme
+toggle are removed. Conversation and composer are wider/aligned at960px. The
+existing reduced-motion-aware Shimmer marks actual running work. Stop and a
+three-entry removable page-local FIFO queue passed browser checks. Stop,
+uncertainty and chat changes pause the queue; resume requires an idle reconciled
+owning chat. Reload discards queued text. Each native request has independent
+context; saved history/project memory are not supplied. MCP/tools/children are off.
+
+The first live native turn completed internally but application observation was
+unconfirmed. It was never replayed. Redundant actor checks were removed and
+independent native reads parallelized; subsequent answers persisted. The precise
+historical swallowed failure is unproven. The first turn was logically cancelled
+and its private context retained. A queued Stop after a later provider receipt
+also blocked late publication. Neither reservation was refunded. Offline matching
+of retained native data does not establish restart provenance or safe auto-resume.
+
+Development migrations20261110030000 and20261110031500 are applied, with11
+rolled-back function compile checks and a full rollback-only successor check.
+Thirteen authenticated journal checks, seven retirement checks and two legacy
+route-fence checks passed; all
+disposable identities/chats/synthetic budgets were cleaned and absence verified.
+Successful verified runtime cleanup records retirement. Any attached unretired
+context blocks direct/cascade history deletion. Migration20261110033500 also
+blocks legacy retrieval preparation of a native-classified turn. Native journal
+registration is opt-in, so older projects do not require the new RPCs by default.
+Keep PANDA_AGENT_ASSISTANT_JOURNAL_ENABLED=true after activation even when
+PANDA_AGENT_ASSISTANT_NEW_MESSAGES is disabled, so status/cancel recovery remains.
+The final route fixture needed scoped follow-up cleanup after its normal RPC
+returned unavailable; absence was verified, but that transient cause is unproven.
+Uncertain contexts remain an
+explicit reconciliation/cleanup gate; do not erase their journal or replay them.
+
+The same USD1 cumulative allowance remains shared with RAG; no reset/reseed/refund.
+Last readback reserved25,976,400nanoUSD and remaining974,023,600nanoUSD, including
+the original full cent carry-in. Four native receipts total266,860nanoUSD actual
+reported usage; conservative reservations remain larger. Native preview has its
+own private30-minute privacy lease so renewal does not invalidate RAG's lease.
+Logging/traces/data discount/public prompts were checked read-only; no settings
+changed. Expiry or endpoint/budget/key/session mismatch denies admission.
+
+Verification and remaining scope: [native-mvp-verification.json](native-mvp-verification.json),
+[UI implementation](native-agent-ui-implementation.md), and
+[version compatibility](native-v2-compatibility.json). Current test run:
+780 server cases,754PASS/26existing fixture skips/0FAIL; two dictation cases pass
+separately without react-server conditions. Twelve focused runtime/runner cases
+pass, including actual2.2.6 one-request429/no retry and retained/retired context. Production
+build and trace review are recorded below after final integration. All97 tasks
+validate and original specification SHA256 is unchanged.
+
+Next remain in Phase1: exact binary contract/overflow/LSP proofs; approved native
+read-only MCP/skills with actual dispatch; bounded children and shared native
+session/context lifecycle; long-session memory/compaction accounting; persisted
+structured plan/BOM events and complete acceptance. Do not present this bounded
+one-call increment or UI queue as the complete harness or native durable inbox.
+
+## Historical plan-first native MVP, 10 November 2026
 
 The owner separated RAG improvement into [current_RAG.md](../../current_RAG.md).
 RAG changes and paid RAG tests are paused; do not reintegrate until the owner

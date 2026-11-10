@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-10",
+  "status": "bounded_live_plain_chat_verified_not_full_mvp",
+  "selected": {
+    "version": "2.2.6",
+    "package": "@opencode/cli-windows-x64@2.2.6",
+    "registry": "https://registry.npmjs.org/@opencode/cli-windows-x64/-/cli-windows-x64-2.2.6.tgz",
+    "archiveIntegrity": "sha512-Wcmduf9DaGQgJG3GMliHilaI+YvdckW7O6aLzRwz1r3iIkP82MSoUlSU+ovlOEDj8O+Gy5Ywy5LL6Iv77YuzFw==",
+    "executableSha256": "98cb0aa854c7c015cf6febafa7afb872c359bfe5a823a526f3b4fd347a9e9677",
+    "executableBytes": 265650568,
+    "source": "Official npm registry package; npm pack checked integrity; binary version reported 2.2.6. Isolated under ignored tmp; no global install."
+  },
+  "rollback": "Existing isolated 2.2.2 inspection is retained unchanged; its client defaults to 2.2.2. Rollback does not certify execution.",
+  "checks": {
+    "effectiveConfiguration": "Actual authenticated 2.2.6 config, model catalog, PID and retry plugin checked in isolated process; foreign config paths rejected. The config disables compaction.auto, background compaction, warming, snapshots, schedules, formatter, tools, MCP and skills. Bundled skills appear after activation unless the explicit skill.use deny is set; with it the live skills and MCP catalogs are empty.",
+    "nativeMock": "Owned native session create, prompt, terminal result, message read and remove passed against one local scripted SSE provider request. The wire contained the custom system and user input, no tools, and stream=true.",
+    "versionIsolation": "Session client pins 2.2.2 by default or accepts explicit 2.2.6; foreign version/PID fail before mutation.",
+    "documentation": "Official V2 API https://opencode.ai/docs/api and schema https://opencode.ai/docs/openapi.json were consulted; the selected binary session operations above were separately exercised. A binary-generated OpenAPI contract was not verified."
+  },
+  "limitations": [
+    "The native system prompt appends date, model, generic sandbox paths, host platform and worktree advice after the custom prompt. Actual mock wire excluded the current workspace and Windows username; provider admission and privacy policy remain independent gates.",
+    "A local mock success does not establish strict ZDR, financial admission, external provider correctness, hidden-call prevention, or multi-turn attribution.",
+    "Actual scripted HTTP 429 terminated as failed with one provider request and no retry observed after one second. Overflow and all other retry behaviors remain unproven.",
+    "OpenCode file watcher is disabled through the isolated environment. An explicit V2 LSP disable field and effective LSP behavior were not established.",
+    "This Windows isolated process and owner-only loopback token are not a cross-user operating-system sandbox. Runtime is connected only to the explicitly enabled local native preview; this is not AWS or production certification."
+  ],
+  "liveEvidence": "docs/agent-experience-upgrade/native-mvp-verification.json"
+}

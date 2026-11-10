@@ -1,0 +1,163 @@
+{
+  "date": "2026-11-10",
+  "mode": "no_rag_native",
+  "nativeVersion": "2.2.6",
+  "strictZdr": true,
+  "provider": "azure/us",
+  "model": "openai/gpt-6-luna",
+  "cases": [
+    {
+      "test": "first_unconfirmed",
+      "claimed": true,
+      "terminal": true,
+      "cancelled": true,
+      "context_retired": false,
+      "usage": {
+        "costNanoUsd": 80410,
+        "inputTokens": 401,
+        "outputTokens": 66
+      },
+      "saved_elapsed_ms": null
+    },
+    {
+      "test": "saved_answer",
+      "claimed": true,
+      "terminal": true,
+      "cancelled": false,
+      "context_retired": true,
+      "usage": {
+        "costNanoUsd": 65120,
+        "inputTokens": 402,
+        "outputTokens": 38
+      },
+      "saved_elapsed_ms": "31478.215000"
+    },
+    {
+      "test": "queued_saved_answer",
+      "claimed": true,
+      "terminal": true,
+      "cancelled": false,
+      "context_retired": true,
+      "usage": {
+        "costNanoUsd": 59180,
+        "inputTokens": 398,
+        "outputTokens": 28
+      },
+      "saved_elapsed_ms": "26226.995000"
+    },
+    {
+      "test": "stopped_queued_turn",
+      "claimed": true,
+      "terminal": true,
+      "cancelled": true,
+      "context_retired": false,
+      "usage": {
+        "costNanoUsd": 62150,
+        "inputTokens": 395,
+        "outputTokens": 34
+      },
+      "saved_elapsed_ms": null
+    }
+  ],
+  "budget": {
+    "limit_nano_usd": "1000000000",
+    "reserved_nano_usd": "25976400",
+    "remaining_nano_usd": "974023600"
+  },
+  "originalSpecificationUnchanged": true,
+  "fullPhase1Complete": false,
+  "phase2Gated": true,
+  "originalSpecificationSha256": "a502bffef09a7c0bbf89920a9f25499ddc88f4085526873501c1b35a4965b067",
+  "authenticatedJournalChecks": 13,
+  "authenticatedRetirementChecks": 7,
+  "authenticatedRouteFenceChecks": 2,
+  "routeFenceFixtureCleanup": "Verified scoped follow-up cleanup after normal RPC returned unavailable; transient cause remains unproven.",
+  "disposableIdentitiesCleaned": true,
+  "regression": {
+    "serverTests": 780,
+    "passed": 754,
+    "skipped": 26,
+    "failed": 0,
+    "dictationPassedSeparately": 2,
+    "assemblyPassedSeparately": 1,
+    "scope": "Working-tree regression snapshot; independent RAG evaluation work remains separately owned."
+  },
+  "nativeMock": {
+    "tests": 12,
+    "actualNativeCases": 8,
+    "passed": 12,
+    "provider": "local scripted mock only"
+  },
+  "browser": {
+    "surface": "Codex in-app browser",
+    "url": "http://localhost:3000/panda-agent",
+    "checked": [
+      "footer menu contains Memory, Account, settings and theme; header theme and Workspace nav absent",
+      "theme switching and Escape focus return",
+      "Memory navigation focuses heading; mobile sidebar closes",
+      "960px composer and approximately957px conversation at1280px viewport",
+      "320px viewport:288px composer and no document horizontal overflow",
+      "native answer saved and retained after reload",
+      "three-item queue cap, removal, Stop pause, explicit resume and FIFO advancement after a saved answer",
+      "Stop before initial chat creation returns an editable draft without a model dispatch",
+      "expired privacy blocks admission; queue does not replay unknown turn"
+    ],
+    "notVerified": [
+      "new screen-reader speech",
+      "runtime reduced-motion switching",
+      "browser crash or cross-tab queue persistence"
+    ],
+    "finalBuiltPageReadiness": true,
+    "finalBuiltSavedHistory": true,
+    "additionalInferenceOnFinalBuiltServer": false,
+    "proof": [
+      "tmp/native-mvp-answer-browser.png",
+      "tmp/native-mvp-working-browser.png",
+      "tmp/native-mvp-mobile-browser.png"
+    ]
+  },
+  "lifecycle": {
+    "newAdmissionsOnlyFlag": "PANDA_AGENT_ASSISTANT_NEW_MESSAGES",
+    "nativeProviderPostsWithValidatedReceipts": 4,
+    "successfulSavedAnswers": 2,
+    "cancelledWithReceipt": 2,
+    "automaticRetries": 0,
+    "knownSuccessContextRetired": true,
+    "uncertainContextsRetained": true,
+    "unretiredHistoryDeletionFenced": true,
+    "directRewriteFactoryMounted": false,
+    "tokenStreaming": false,
+    "queuePersistence": "page only",
+    "nativeSharedHistoryContext": false
+  },
+  "remaining": [
+    "exact binary-generated OpenAPI, overflow and LSP behavior",
+    "native read-only MCP and lazy skills with actual allow/deny dispatch",
+    "bounded subagents and shared owned native sessions",
+    "long-session context, memory and compaction accounting",
+    "validated persisted plan/BOM artifact projection and native event recovery",
+    "broader acceptance and latency optimization; full Phase1 remains partial"
+  ],
+  "build": {
+    "passed": true,
+    "id": "CEF1EUNPpc6lxVyD93glz",
+    "directory": ".next-native-mvp-build",
+    "warnings": 11,
+    "warningScope": "Dynamic filesystem tracing from the local CLI supervisor; forbidden operator paths explicitly excluded.",
+    "traceReview": {
+      "traceFiles": 159,
+      "tracedReferences": 32910,
+      "forbiddenReferences": 0
+    },
+    "applicationTypes": true,
+    "nativeTypes": true,
+    "scopedLint": true
+  },
+  "preview": {
+    "url": "http://localhost:3000/panda-agent",
+    "serverSession": 15504,
+    "scope": "owner-bound local prototype",
+    "ragPort3001Preserved": true,
+    "privacyLeaseExpiresAt": "2026-11-10T04:27:46.769Z"
+  }
+}

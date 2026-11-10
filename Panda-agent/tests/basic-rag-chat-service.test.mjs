@@ -85,6 +85,18 @@ function fixture() {
 }
 const signal = () => new AbortController().signal;
 
+test('passes the service authorization callback into request-scoped context preparation', async () => {
+  const f = fixture(); let received;
+  f.deps.prepareContext = async (_question, _signal, authorizeCurrent) => {
+    received = authorizeCurrent; const ready = context();
+    ready.authorizedBy = authorizeCurrent;
+    ready.revalidate = async () => await authorizeCurrent() && await authorizeCurrent();
+    return ready;
+  };
+  assert.deepEqual(await f.service().start(turn, signal()), { status: 'saved' });
+  assert.equal(typeof received, 'function'); assert.equal(f.counts().sends, 1);
+});
+
 test('fresh admission dispatches once, saves a validated citation and reports only safe activity', async () => {
   const f = fixture(), service = f.service();
   assert.deepEqual(await service.start(turn, signal(), stage => f.progress.push(stage)), { status: 'saved' });

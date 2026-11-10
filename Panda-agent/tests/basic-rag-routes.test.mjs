@@ -203,3 +203,36 @@ test('basic RAG SSE disconnect aborts the single in-flight bridge without a redi
  const first=await reader.read();assert.match(new TextDecoder().decode(first.value),/reading_sources/);await reader.cancel();await done;
  assert.equal(bridgeSignal.aborted,true);assert.equal(f.calls.filter(x=>x==='basic_start').length,1);assert.equal(f.calls.some(x=>x==='legacy_begin'||x==='native_start'),false);
 });
+
+test('explicit plain LLM new-message mode takes priority without basic/native/legacy dispatch',async()=>{
+ const f=fixture({basicNew:true,nativeNew:true});let starts=0;
+ f.deps.llmNewMessages=()=>true;
+ f.deps.llm=()=>({state:async()=>false,start:async(turn,signal,progress)=>{
+  starts++;assert.equal(turn.question,question);progress('routing_question');
+  f.concurrentAdmission();await f.basic.cancel();return {status:'saved'};
+ },status:async()=>{throw Error('Unexpected status');},cancel:async()=>{throw Error('Unexpected cancel');}});
+ const response=await createLightweightHandler(f.deps).messagePOST(message(undefined,{accept:'text/event-stream'}),thread);
+ assert.equal(response.status,200);const wire=await privateWire(response);assert.match(wire,/routing_question/);assert.match(wire,/complete/);
+ assert.equal(starts,1);assert.equal(f.calls.some(x=>['basic_start','native_start','legacy_begin','legacy_answer'].includes(x)),false);
+});
+
+test('persisted plain LLM status and cancellation are observed through their own bridge with admission off',async()=>{
+ const f=fixture({kind:'basic'});let starts=0,statuses=0,cancels=0;
+ f.deps.llmNewMessages=()=>false;
+ f.deps.llm=()=>({state:async()=>true,start:async()=>{starts++;throw Error();},status:async()=>{statuses++;return {status:'unknown'};},cancel:async()=>{cancels++;await f.basic.cancel();return {status:'saved'};}});
+ const handler=createLightweightHandler(f.deps);
+ assert.equal((await handler.readGET(read(),thread)).status,200);
+ assert.equal(statuses,1);assert.equal(starts,0);
+ assert.equal((await handler.cancelPOST(cancel(),thread)).status,200);
+ assert.equal(cancels,1);assert.equal(starts,0);
+ assert.equal(f.calls.includes('basic_status'),false);assert.equal(f.calls.includes('native_status'),false);
+});
+
+test('plain LLM missing bridge fails closed, and old basic RAG recovery survives the mode switch',async()=>{
+ const missing=fixture();missing.deps.llmNewMessages=()=>true;
+ assert.equal((await createLightweightHandler(missing.deps).messagePOST(message(),thread)).status,503);
+ const old=fixture({kind:'basic',saved:true});old.deps.llmNewMessages=()=>true;
+ old.deps.llm=()=>({state:async()=>false,start:async()=>{throw Error('Wrong dispatch');}});
+ assert.equal((await createLightweightHandler(old.deps).messagePOST(message(),thread)).status,200);
+ assert.equal(old.calls.includes('basic_status'),true);assert.equal(old.calls.includes('basic_start'),false);
+});

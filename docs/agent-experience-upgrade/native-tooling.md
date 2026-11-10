@@ -4,6 +4,16 @@ Verified 6 November 2026. The adopted master is preserved verbatim in
 `specification.md`; its instructions are adopted by the user's explicit request.
 Historical product evidence is not rewritten by this setup.
 
+10 November native-MVP follow-up: an isolated official2.2.6 Windows binary is
+now used by the enabled local native preview, with its origin/hash and effective
+configuration recorded in [native-v2-compatibility.json](native-v2-compatibility.json).
+The global installation and2.2.2 inspection path were not upgraded. Runtime,
+provider gateway, owner journal, budget and browser evidence are separately
+recorded in [native-mvp-verification.json](native-mvp-verification.json). This
+bounded one-call path has no RAG, tools, skills or children, no shared native
+history, and no automatic compaction/retry. Full Phase1 and hosted execution
+remain unverified; the later sections retain their original scope and dates.
+
 ## Configuration and routing
 
 Installed `codex-cli 0.167.0-alpha.3.2`; help and `debug models --bundled` were

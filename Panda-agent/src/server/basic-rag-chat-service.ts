@@ -7,7 +7,7 @@ import { ChatStoreError } from './chat-store.ts';
 type State = { question: string; status: 'pending' | 'complete'; prepared: boolean; cancelled: boolean };
 type Scope = { productId: string; sku: string; scopeHash: string };
 type Prepared = ReadyProductContext | { kind: 'clarification' | 'insufficient' | 'unavailable' };
-type Completion = (input: { question: string; passages: Array<{ rank: number; text: string }> }, beforeSend: () => Promise<boolean>, signal: AbortSignal) => Promise<{ evaluation: unknown; usage?: unknown }>;
+type Completion = (input: { question: string; passages: Array<{ rank: number; text: string }> }, beforeSend: () => Promise<boolean>, signal: AbortSignal) => Promise<{ evaluation: unknown; usage?: unknown; timing?: unknown }>;
 type Dependencies = {
   usagePolicy?: BasicRagUsagePolicy;
   store: {
@@ -20,8 +20,8 @@ type Dependencies = {
   };
   current(): Promise<boolean>;
   enabled(): Promise<boolean>;
-  prepareContext(question: string, signal: AbortSignal): Promise<Prepared>;
-  completion(claim: () => Promise<boolean>): Completion;
+  prepareContext(question: string, signal: AbortSignal, authorizeCurrent: () => Promise<boolean>): Promise<Prepared>;
+  completion(claim: () => Promise<boolean>, requestId: string): Completion;
 };
 
 const unavailable = (): ChatStoreError => new ChatStoreError('unavailable');
@@ -123,13 +123,13 @@ export function createBasicRagChatService(deps: Dependencies): BasicRagChatBridg
           if (claimed === true) claimIndeterminate = false;
           return claimed === true;
         };
-        const complete = deps.completion(claim);
+        const complete = deps.completion(claim, turn.request);
         const result = await runBasicRag({ question: turn.question, signal }, {
           usagePolicy: deps.usagePolicy,
           authorize: current,
           prepare: async (question, requestSignal) => {
             report(progress, 'reading_sources');
-            const value = await deps.prepareContext(question, requestSignal);
+            const value = await deps.prepareContext(question, requestSignal, current);
             if (value.kind === 'ready') context = value;
             return value;
           },

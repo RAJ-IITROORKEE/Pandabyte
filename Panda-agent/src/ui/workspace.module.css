@@ -267,3 +267,31 @@
 @media (max-width: 760px) { .memoryView { width: calc(100% - 32px); } }
 
 .model button { padding: 0; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; text-align: left; opacity: 1; }
+
+.modeNotice { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.voiceDisclosure { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.voiceDisclosure summary { cursor: pointer; width: fit-content; }
+.voiceDisclosure p { margin: 6px 0 0; }
+
+.accountLinks button { display: flex; width: 100%; align-items: center; gap: 7px; min-height: 44px; padding: 8px; border: 0; border-radius: 6px; background: transparent; color: var(--foreground); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.accountLinks button:hover, .accountLinks button[aria-current] { background: var(--status-soft); }
+.themeMenu { display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: 8px; padding: 0 8px; color: var(--foreground); font-size: 13px; }
+.themeMenu :global(.pb-theme-toggle) { flex-shrink: 0; }
+
+/* Keep the composer and conversation edges aligned at every viewport. */
+.messageList { max-width: 960px; }
+.composerArea { width: min(100% - 48px, 960px); }
+.working { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.queue { border: 1px solid var(--divider); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; color: var(--foreground); font-size: 12px; }
+.queueHeader { display: flex; justify-content: space-between; gap: 8px; }
+.queue ol { display: grid; gap: 6px; margin: 8px 0; padding-left: 20px; }
+.queue li { overflow-wrap: anywhere; }
+.queue li span { margin-right: 10px; }
+.queue button, .queueEntry button { min-height: 36px; padding: 6px 10px; border: 1px solid var(--divider); border-radius: 7px; color: var(--foreground); background: var(--surface); cursor: pointer; }
+.queue button:disabled, .queueEntry button:disabled { opacity: .6; cursor: not-allowed; }
+.queue p { color: var(--muted); margin: 8px 0 0; }
+.queueEntry { margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+.queueEntry label { display: block; margin-bottom: 4px; }
+.queueEntry div { display: flex; gap: 8px; }
+.queueEntry input { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--divider); border-radius: 7px; color: var(--foreground); background: var(--surface); font: inherit; }
+@media (max-width: 760px) { .composerArea { width: calc(100% - 32px); } }

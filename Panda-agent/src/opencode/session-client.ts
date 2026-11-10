@@ -19,8 +19,10 @@ function receiptSnapshot(value: NativeSessionReceipt): NativeSessionReceipt {
 }
 
 // Server boundary only: configuration and durable receipts must never come from browser JSON.
-export function createNativeSessionClient(config: { baseUrl: string; password: string; directory: string; expectedPid: number; fetch?: typeof fetch; timeoutMs?: number }) {
+export function createNativeSessionClient(config: { baseUrl: string; password: string; directory: string; expectedPid: number; expectedVersion?: '2.2.2' | '2.2.6'; fetch?: typeof fetch; timeoutMs?: number }) {
     const timeoutMs = config.timeoutMs ?? 5000;
+    const expectedVersion = config.expectedVersion ?? '2.2.2';
+    requireValue(expectedVersion === '2.2.2' || expectedVersion === '2.2.6');
     const match = typeof config.baseUrl === 'string' && /^http:\/\/127\.0\.0\.1:([1-9][0-9]{0,4})$/.exec(config.baseUrl);
     requireValue(match && Number(match[1]) <= 65535 && typeof config.password === 'string' && Buffer.byteLength(config.password, 'utf8') >= 32 && Buffer.byteLength(config.password, 'utf8') <= 4096
         && boundedText(config.directory, 4096) && isAbsolute(config.directory) && !/[\u0000-\u001f\u007f]/.test(config.directory)
@@ -115,7 +117,7 @@ export function createNativeSessionClient(config: { baseUrl: string; password: s
         const verifyProcess = async () => {
             const info = await request('/api/info');
             requireValue(typeof info.version === 'string');
-            if (info.version !== '2.2.2') throw new NativeSessionError('version_mismatch');
+            if (info.version !== expectedVersion) throw new NativeSessionError('version_mismatch');
             requireValue(info.pid === config.expectedPid);
         };
         const run = async () => {
