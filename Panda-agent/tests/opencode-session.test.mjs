@@ -433,3 +433,17 @@ test('selected native version is explicit and mismatches fail before mutation', 
     assert.equal(foreign.calls.some(call => call.init.method === 'POST'), false);
     assert.throws(() => fixture({ expectedVersion: '2.2.7' }), unavailable);
 });
+
+test('existing AWS 2.2.5 is explicit, owned and still denies tools at session creation', async () => {
+    let current;
+    assert.doesNotThrow(() => { current = fixture({ expectedVersion: '2.2.5', actualVersion: '2.2.5' }); });
+    await current.client.create(current.receipt, allow);
+    assert.equal((await current.client.get(current.receipt, allow)).time.created, 100);
+    const body = JSON.parse(current.calls.find(call => call.init.method === 'POST').init.body);
+    assert.deepEqual(body.permissions, [{ action: '*', resource: '*', effect: 'deny' }]);
+    const wrong = fixture({ expectedVersion: '2.2.5', actualVersion: '2.2.6' });
+    await assert.rejects(wrong.client.create(wrong.receipt, allow), error => error.code === 'version_mismatch' && error.outcome === 'not_dispatched');
+    assert.equal(wrong.calls.some(call => call.init.method === 'POST'), false);
+    const defaultVersion = fixture({ actualVersion: '2.2.5' });
+    await assert.rejects(defaultVersion.client.get(defaultVersion.receipt, allow), error => error.code === 'version_mismatch');
+});

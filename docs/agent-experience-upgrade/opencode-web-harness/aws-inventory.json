@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-10",
+  "scope": "bounded read-only host and image metadata",
+  "awsCliVersion": "2.38.5",
+  "instanceState": "running",
+  "instanceType": "t4g.small",
+  "ssmStatus": "Online",
+  "ssmAgentVersion": "3.3.5390.0",
+  "managementCommands": [
+    {
+      "id": "133ccd92-d460-421b-85cd-36e8a673dc23",
+      "purpose": "container and service state",
+      "status": "Success",
+      "responseCode": 0
+    },
+    {
+      "id": "628151b9-a778-4067-ba4a-b0b4cb54def9",
+      "purpose": "cached images and gateway public process metadata",
+      "status": "Success",
+      "responseCode": 0
+    },
+    {
+      "id": "def40c3d-8ed5-4608-853d-5f6ef9ba7bc2",
+      "purpose": "configured image identity and exact Docker image metadata",
+      "status": "Success",
+      "responseCode": 0
+    }
+  ],
+  "observedContainers": [
+    {
+      "name": "panda-lightweight-replacement",
+      "image": "panda-lightweight:phase6-recovery-d7f2ffcdafa0a52d",
+      "healthy": true
+    }
+  ],
+  "runningOpenCodeContainerObserved": false,
+  "gatewayService": {
+    "activeState": "active",
+    "subState": "running"
+  },
+  "historicalFailedRelayServices": 6,
+  "configuredImageId": "sha256:bbcbbcf6fd524caefa0063d6334e31889153e2c492713cf7f87e6eeb1cce33df",
+  "configurationHash": "bf3bcf964a8f84cf293ed4c88d9ea1459411d4c02182be8b2b981befd079fa57",
+  "configuredImageInspection": {
+    "idMatches": true,
+    "architecture": "arm64",
+    "versionLabel": null,
+    "repoDigests": []
+  },
+  "cachedUpstreamDigests": [
+    "sha256:0d6f04f619d0e31cb9b02b4512975b89561a9c65317d437be15729b29158a3a4",
+    "sha256:7c8cd91b6055e39306fa9040b9abf4e7d2808b1fccfe2d0389e3f0cdc654a048"
+  ],
+  "exactNativeBinaryVersionVerified": true,
+  "nativeExecutionReadinessVerified": false,
+  "containersStarted": 5,
+  "serviceRestarts": 0,
+  "configurationChanges": 0,
+  "providerCalls": 0,
+  "searchCalls": 0,
+  "accountingChanges": 0,
+  "credentialsPrinted": false,
+  "limitations": [
+    "A missing running container does not prove an unavailable per-turn native provisioner.",
+    "Host and gateway health do not establish an authorized native session or settled answer.",
+    "SSM management records were created; their commands performed read-only remote operations.",
+    "Version-only disposable containers do not establish native API, tool, persistence or model readiness."
+  ],
+  "versionProbeCommands": [
+    {
+      "id": "e4dc8bca-6210-44b7-a0b9-7c7a9c480e1a",
+      "status": "Success",
+      "configuredExit": 1,
+      "version": null,
+      "reason": "temporary directory unavailable on read-only root",
+      "ownedProbeRemoved": true
+    },
+    {
+      "id": "5e9f1c19-3b89-4a45-aa79-60b7fd56195c",
+      "status": "Success",
+      "configuredExit": 1,
+      "upstreamExit": 0,
+      "version": null,
+      "reason": "configured image temporary directory error; version formatter not yet accepted"
+    },
+    {
+      "id": "335ff7e5-08c1-49ca-935c-ac687f96845c",
+      "status": "Success",
+      "configuredExit": 0,
+      "upstreamExit": 0,
+      "configuredVersion": "2.2.5",
+      "upstreamVersion": "2.2.5",
+      "network": "none",
+      "persistentMounts": 0,
+      "readonlyRoot": true,
+      "temporaryDirectories": true
+    }
+  ],
+  "verifiedNativeBinaryVersion": "2.2.5",
+  "versionOnlyContainers": 5
+}
