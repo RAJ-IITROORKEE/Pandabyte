@@ -111,10 +111,11 @@ export function projectResearchTurn(expected: unknown, session: unknown, active:
  const idle = suffix.at(-1), clock = session.time;
  const created = clock.created, updated = clock.updated, busy = clock.busy, idleTime = clock.idle;
  if (!idle || idle.type !== 'idle' || idle.outcome !== session.outcome || suffix.slice(0, -1).some(m => m.type === 'idle')
-  || !time(created) || !time(updated) || !time(busy) || !time(idleTime) || busy < created || idleTime < busy || idleTime > updated
-  || (idle.time as Record<string, unknown>).created as number > idleTime || (user.time as Record<string, unknown>).created as number > idleTime
-  || suffix.some(m => (m.time as Record<string, unknown>).created as number > idleTime)
-  || assistants.some(a => (a.row.time as Record<string, unknown>).completed !== undefined && ((a.row.time as Record<string, unknown>).completed as number) > idleTime)) return unknown();
+  || !time(created) || !time(updated) || !time(busy) || !time(idleTime) || busy < created || idleTime < busy
+  || (idle.time as Record<string, unknown>).created as number > idleTime || (user.time as Record<string, unknown>).created as number > Math.min(idleTime,updated)
+  // Native idle advances its own clock after the last work update.
+  || suffix.some(m => (m.time as Record<string, unknown>).created as number > (m.type==='idle'?idleTime:Math.min(idleTime,updated)))
+  || assistants.some(a => (a.row.time as Record<string, unknown>).completed !== undefined && ((a.row.time as Record<string, unknown>).completed as number) > Math.min(idleTime,updated))) return unknown();
  const idleCreated = (idle.time as Record<string, unknown>).created as number;
  if (idleCreated < busy || toolTimes.some(t => Object.values(t).some(value => value > idleCreated))
   || assistants.some(a => (a.row.time as Record<string, unknown>).completed !== undefined && ((a.row.time as Record<string, unknown>).completed as number) > idleCreated)) return unknown();

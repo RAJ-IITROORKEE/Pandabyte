@@ -31,6 +31,18 @@ function fixture() {
 }
 const read = (m, f, allow = tools) => m.projectResearchTurn(expected, f.session, f.active, f.messages, allow);
 
+test('native idle can follow last work update, while stale work timestamps remain rejected',async()=>{
+ const m=await module(),f=fixture();f.session.time.updated=60;
+ assert.equal(read(m,f).outcome,'succeeded');
+ f.session.time.updated=59;assert.equal(read(m,f).state,'unknown');
+ const failed=fixture();failed.session={outcome:'failed',time:{created:1,busy:9,updated:12,idle:13}};
+ failed.messages=[{id:expected.messageID,type:'user',text:question,time:{created:10}},
+  {...assistant(11,[],12),finish:'error',error:{type:'provider.auth',message:'synthetic error',status:403,response:{body:''}}},
+  {id:id(13),type:'idle',outcome:'failed',time:{created:13}}];
+ assert.deepEqual(read(m,failed),{state:'terminal',outcome:'failed'});
+ failed.session.time.updated=10;assert.equal(read(m,failed).state,'unknown');
+});
+
 test('native multi-step current turn releases only the final answer and correlated private tools', async () => {
  const m = await module(), f = fixture(), r = read(m, f);
  assert.equal(r.state, 'terminal'); assert.equal(r.outcome, 'succeeded');

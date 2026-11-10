@@ -4,11 +4,11 @@
   "base": "2ef90b9bf116b69a06bfc82f0e3ee49b6ca86a43",
   "scope": "A: native 2.2.5 protocol fidelity only",
   "tests": {
-    "passed": 133,
+    "passed": 134,
     "skipped": 4,
     "failed": 0,
     "skippedReason": "Existing opt-in real local 2.2.6 execution fixtures; not evidence of 2.2.5 execution",
-    "total": 137
+    "total": 138
   },
   "typecheck": "passed: app check plus direct strict tsc with esnext/dom over all four A modules",
   "scopedLint": "passed",
@@ -33,11 +33,17 @@
   ],
   "sourceSha256": {
     "Panda-agent/src/opencode/session-client.ts": "879156a3cc8aa1c9573f1158039d63587f4574517569c089e121a68278e8a324",
-    "Panda-agent/src/opencode/research-transcript.ts": "9309fc7e3c7898ffe07e1c34a64c9d9b18075f7f2b563937ea6daf2da752f328",
+    "Panda-agent/src/opencode/research-transcript.ts": "ff0aa0f089e7e06f7fac501942027b85ddb23b71849afe9f6a14e430d6561858",
     "Panda-agent/src/opencode/research-forms.ts": "7485e56a2c0cc622ef9d93de719cc88e495cc298ba19923a77a6e2e5ead0f218",
     "Panda-agent/src/opencode/research-values.ts": "457a567a6cd571a259c9bea338ef0dc051dc83805687e9726bb6d630670051c6",
     "Panda-agent/tests/opencode-session.test.mjs": "b364eda21e05f7b23b5a9917a7632cf1fff28b1c5300b878e374fc61c655e08e",
-    "Panda-agent/tests/research-transcript.test.mjs": "0ffadc6dea34a5df4c90625252c241f3c8466cc26e2114161ce591e1edbf6ecd",
+    "Panda-agent/tests/research-transcript.test.mjs": "c0252c3148b22c4f64c080fbfc10dfec963f9808c6cb1c04b70317c06f0d1b33",
     "Panda-agent/tests/research-forms.test.mjs": "2f68c9df7eaf069260dbf257a676a4f8436320cbb0ab46ac0fd9fa256883bcf1"
+  },
+  "nativeClockCorrection": {
+    "date": "2026-11-11",
+    "review": "Fresh Goldfish source/document review closed with no Blocker/Major",
+    "tests": "New regression red before repair, full A138total134passed4existingSkipped; direct strict TypeScript passed",
+    "evidence": "Exact2.2.5 synthetic runtime: idle advances after last work update; tagged projector explicitly preserves time_updated"
   }
 }
