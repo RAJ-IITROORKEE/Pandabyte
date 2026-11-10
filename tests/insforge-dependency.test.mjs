@@ -5,6 +5,12 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { createClient } from "@insforge/sdk";
 
+test("the Vercel CLI config parser accepts the patched Zod version", async () => {
+  const { authConfigSchema } = await import("@vercel/cli-config");
+  assert.equal(authConfigSchema.safeParse({ token: "fixture-token" }).success, true);
+  assert.equal(authConfigSchema.safeParse({ token: 42 }).success, false);
+});
+
 // Remove the scoped override when InsForge ships patched compatible schemas.
 // Only the SDK's constants/enum contract is supported, not direct schema parsing.
 test("patched Zod retains the InsForge SDK runtime contract", async () => {
