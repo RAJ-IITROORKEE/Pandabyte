@@ -1,0 +1,123 @@
+{
+  "date": "2026-11-10",
+  "sourceCommit": "94cf4ec56ddc665dd92971bdf377a5a1a26d9355",
+  "deploymentId": "dpl_GxKywCmkQb1EPE3VJ2ettwAwb5G3",
+  "deploymentUrl": "https://pandabyte-6ypzokbiy-unfiltered-iit-ians.vercel.app",
+  "primaryUrl": "https://pandabyte-iot.vercel.app/panda-agent",
+  "validation": {
+    "affectedTests": 234,
+    "failures": 0,
+    "skips": 0,
+    "typecheck": true,
+    "focusedLint": true,
+    "vercelProductionBuild": true,
+    "frozenRetrievalCases": 20,
+    "bothSnapshotAndMainChatRegressions": true
+  },
+  "mainChat": {
+    "groundedModel": "GPT-6 Luna",
+    "singleProductGeneration": true,
+    "sourceQuotations": true,
+    "freshSourceAndAdminChecks": true,
+    "generalConversationMemoryPreserved": true,
+    "applicationCumulativeBudgetCap": null,
+    "localNativeLedgerReset": false
+  },
+  "database": {
+    "migration": "20261110150000_direct-unmetered.sql",
+    "rollbackAclRehearsal": true,
+    "anonymousDenied": true,
+    "privateLegacyHelperDenied": true,
+    "v2MemoryRpcInstalled": true,
+    "sampleUncappedSavedTurns": 3,
+    "sampleUncappedBudgetLinks": 0
+  },
+  "liveBrowserCases": [
+    "x8266 MCU with citation",
+    "x8266 USB Type-C with literal source quotation",
+    "Grove cable length 20 cm",
+    "fresh xC3 MCU with citation",
+    "unsupported GPIO voltage abstention",
+    "repeated questions",
+    "saved citations after reload",
+    "general conversation and codename recall after reload",
+    "new-chat product-scope isolation",
+    "implicit USB follow-up after explicit x8266",
+    "logical cancellation of retained uncertain xC3 request"
+  ],
+  "finalLiveSample": {
+    "domain": "https://pandabyte-iot.vercel.app",
+    "deployment": "dpl_GxKywCmkQb1EPE3VJ2ettwAwb5G3",
+    "source": "94cf4ec56ddc665dd92971bdf377a5a1a26d9355",
+    "question": "What is its USB connector?",
+    "context": {
+      "type": "context",
+      "fragments": 4,
+      "characters": 2471,
+      "duplicatesRemoved": 0,
+      "limitCharacters": 20000,
+      "retrievalMs": 370,
+      "requestElapsedMs": 1161
+    },
+    "clientContextMs": 1860,
+    "captureByteMatch": true,
+    "totalMs": 10355,
+    "complete": true,
+    "lostFinalFrameRecovery": {
+      "modelPosts": 1,
+      "historyGets": 1,
+      "passed": true
+    },
+    "capability401Recovery": {
+      "observedStatuses": [
+        401,
+        200
+      ],
+      "passed": true
+    },
+    "capability": {
+      "status": "ready",
+      "rag": true,
+      "budget": null
+    }
+  },
+  "earlierPrimarySamplesMs": [
+    {
+      "question": "x8266 MCU",
+      "retrieval": 99,
+      "serverContextReady": 691,
+      "browserContextReady": 1230,
+      "savedAnswer": 6684
+    },
+    {
+      "question": "x8266 USB",
+      "retrieval": 93,
+      "serverContextReady": 853,
+      "browserContextReady": 1182,
+      "savedAnswer": 6857
+    },
+    {
+      "question": "repeat x8266 MCU",
+      "retrieval": 101,
+      "serverContextReady": 718,
+      "browserContextReady": 1217,
+      "savedAnswer": 6209
+    },
+    {
+      "question": "Grove cable length",
+      "retrieval": 110,
+      "serverContextReady": 1449,
+      "browserContextReady": 1776,
+      "savedAnswer": 7008
+    }
+  ],
+  "measurement": "Browser context readiness is POST start to the Network.dataReceived chunk containing the complete context frame; decoded byte totals matched the response. Full response includes provider work and durable save. Fault-injected response timing is excluded.",
+  "limits": [
+    "Observed samples do not guarantee a maximum latency under every network condition.",
+    "Implicit identity carry-over requires a short factual reference (at most 240 characters and 24 words) and the latest verified same-thread evidence turn.",
+    "Long or ambiguous references and multiple-product generation clarify; no generic-model fallback.",
+    "General conversation memory is separate from retrieved evidence; previous answer text is never source evidence.",
+    "An earlier uncertain xC3 request was cancelled without retry or refund. Its exact rejected-output cause was not retained; the prompt was clarified without weakening output guards.",
+    "Full native/AWS/OpenCode harness acceptance remains separate."
+  ]
+}

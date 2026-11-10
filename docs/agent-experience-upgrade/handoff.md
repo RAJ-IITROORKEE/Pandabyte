@@ -1,6 +1,6 @@
 # Agent Experience Upgrade — current handoff
 
-10 November 2026. Current release branch: `codex/conversation-memory-speed`; native development remains in its original checkout.
+10 November 2026. Current release branch: `codex/rag-main-chat`; native development remains in its original checkout.
 Use `git log -1` for the local checkpoint. Latest native/UI follow-up is below; earlier Control Room and grounded RAG evidence is retained. Prior basic-history checkpoint is `72b2a20`.
 The owner now authorizes commit, merge to main and push after the requested local
 experience works and is validated. The latest direct-demo request authorizes its Vercel update; commerce and provider-policy
@@ -11,7 +11,7 @@ Prior detailed evidence remains in the verification JSON and Git history.
 
 The latest owner request connects working RAG to the main Panda Agent chat, with live-domain Admin testing, a document retrieval target below two seconds and no cumulative application testing cap. This supersedes the earlier direct-only/RAG deferral and hosted USD1 gate below. The original local/native ledger remains untouched; strict ZDR and receipt/source/access guards remain. General chat preserves verified conversation memory from 139fa22. Full native harness acceptance remains separate.
 
-The bridge selects cited RAG for product questions; unknown models and unsupported facts never fall through to general generation. Both frozen 20-case retrieval regressions and 211 affected tests pass without skips. Server-only PANDA_AGENT_MAIN_RAG_ENABLED and PANDA_AGENT_MAIN_CHAT_UNCAPPED use the existing owner/Admin hosted profile. Migration 20261110150000_direct-unmetered.sql passed rollback/ACL rehearsal and is applied. Combined live-build browser validation is pending. See [the current RAG handoff](../../current_RAG.md).
+The bridge selects cited RAG for product questions; unknown models and unsupported facts never fall through to general generation. Both frozen 20-case retrieval regressions and 234 affected tests pass without skips. Server-only PANDA_AGENT_MAIN_RAG_ENABLED and PANDA_AGENT_MAIN_CHAT_UNCAPPED use the existing owner/Admin hosted profile. Migration 20261110150000_direct-unmetered.sql passed rollback/ACL rehearsal and is applied. Runtime `94cf4ec` is live at https://pandabyte-iot.vercel.app/panda-agent as `dpl_GxKywCmkQb1EPE3VJ2ettwAwb5G3`. Browser checks verified cited answers, source quotations, short product follow-ups, saved reload, abstention and logical cancellation. A deliberately lost final frame recovered with one POST/one exact-request GET; a forced capabilities401 recovered through a fresh-token200. Final browser context delivery was 1.86 seconds; full saved model output took 10.36 seconds. These are measured samples, not a hard SLA. [Release evidence](../../Panda-agent/docs/control-room/main-chat-rag-20261110.md). See [the current RAG handoff](../../current_RAG.md).
 
 ## Historical conversation-memory and latency follow-up, 10 November 2026
 
