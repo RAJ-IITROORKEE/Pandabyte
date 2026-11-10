@@ -434,6 +434,12 @@
         "directConversationFollowup": {
           "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
           "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
+        },
+        "coordinatedMainRagRelease": {
+          "record": "Panda-agent/docs/verification/main-chat-rag-20261110.json",
+          "sourceCommit": "94cf4ec",
+          "scope": "Owner/Admin main-chat RAG, current-source citations, bounded identity follow-ups, retained direct memory and one-read saved-answer recovery. Independent Codex Browser named/follow-up/reload checks passed; implementing chat recorded 234 tests and live controlled recovery. Strict ZDR retained; historical local/native ledger untouched.",
+          "limitations": "Single-product generation; bounded implicit identity selection. Does not complete broader native harness, Mem0, every-model or Phase 2 acceptance."
         }
       }
     },
@@ -484,6 +490,12 @@
           "record": "docs/agent-experience-upgrade/p1-implementation-verification.json.basicRagHistoryIntegration",
           "verified": "10 Nov: signed classification/one-use claim, read-only recovery, basic-specific logical cancel and late-save fence;26real backend assertions, mounted off-gate APIs and Codex Browser.647regressions pass/16skip plus2dictation.",
           "limitations": "No new inference call; live application admission hardOFF. Original P1 row status unchanged; no Phase2 advancement."
+        },
+        "coordinatedMainRagRelease": {
+          "record": "Panda-agent/docs/verification/main-chat-rag-20261110.json",
+          "sourceCommit": "94cf4ec",
+          "scope": "Owner/Admin main-chat RAG, current-source citations, bounded identity follow-ups, retained direct memory and one-read saved-answer recovery. Independent Codex Browser named/follow-up/reload checks passed; implementing chat recorded 234 tests and live controlled recovery. Strict ZDR retained; historical local/native ledger untouched.",
+          "limitations": "Single-product generation; bounded implicit identity selection. Does not complete broader native harness, Mem0, every-model or Phase 2 acceptance."
         }
       },
       "providerDecision": {
@@ -605,6 +617,12 @@
         "directConversationFollowup": {
           "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
           "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
+        },
+        "coordinatedMainRagRelease": {
+          "record": "Panda-agent/docs/verification/main-chat-rag-20261110.json",
+          "sourceCommit": "94cf4ec",
+          "scope": "Owner/Admin main-chat RAG, current-source citations, bounded identity follow-ups, retained direct memory and one-read saved-answer recovery. Independent Codex Browser named/follow-up/reload checks passed; implementing chat recorded 234 tests and live controlled recovery. Strict ZDR retained; historical local/native ledger untouched.",
+          "limitations": "Single-product generation; bounded implicit identity selection. Does not complete broader native harness, Mem0, every-model or Phase 2 acceptance."
         }
       }
     },
@@ -2392,6 +2410,12 @@
         "directConversationFollowup": {
           "record": "docs/agent-experience-upgrade/conversation-memory-release-verification.json",
           "scope": "Latest owner-approved direct demo only: bounded verified same-chat context and latency overlaps; real local/live recall, corrections, isolation and reload passed. Does not complete Mem0, RAG, Admin or native harness acceptance."
+        },
+        "coordinatedMainRagRelease": {
+          "record": "Panda-agent/docs/verification/main-chat-rag-20261110.json",
+          "sourceCommit": "94cf4ec",
+          "scope": "Owner/Admin main-chat RAG, current-source citations, bounded identity follow-ups, retained direct memory and one-read saved-answer recovery. Independent Codex Browser named/follow-up/reload checks passed; implementing chat recorded 234 tests and live controlled recovery. Strict ZDR retained; historical local/native ledger untouched.",
+          "limitations": "Single-product generation; bounded implicit identity selection. Does not complete broader native harness, Mem0, every-model or Phase 2 acceptance."
         }
       }
     },
