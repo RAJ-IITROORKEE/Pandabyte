@@ -40,6 +40,8 @@ export type RunnerOptions = {
   fetcher?: typeof fetch; searchFetch?: typeof fetch; searchLookup?: (host: string) => Promise<{ address: string; family: number }[]>;
   docker?: (args: string[], env?: Record<string, string>) => Promise<string>; host?: Partial<HostProbes>; now?: () => number; sleep?: (ms: number) => Promise<void>;
   // Test seams; production uses the real Docker transport and verifiers.
+  // Opt-in host-gate diagnostics: receives only a short internal error code, never content. Production does not pass it.
+  diagnostic?: (code: string) => void;
   transportFactory?: typeof createResearchDockerTransport; verifyContainer?: (inspect: unknown, expected: any) => boolean; verifyConfig?: (loaded: unknown, expected: any) => boolean;
 };
 
@@ -341,7 +343,9 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       ctx.creds = await options.keys(); attNow = validateResearchAttestation(await options.attestation(), sha(ctx.creds.openrouterKey), now());
       const image = JSON.parse(await docker(['image', 'inspect', researchImageId])); need(image.length === 1 && image[0].Id === researchImageId && image[0].Architecture === 'arm64', 'image_mismatch'); ctx.image = image[0];
       await privateDir(root, true);
-      if (await host.memAvailableKiB() < 1048576 || await host.diskAvailableKiB(root) < 2097152) throw new ResearchRunFailure('busy');
+      // Memory dips briefly after the previous turn's container is removed on this small host; wait (bounded, before any provider call) for it to recover.
+      for (let waited = 0; await host.memAvailableKiB() < 1048576; waited += 500) { if (waited >= 15000) throw new ResearchRunFailure('busy'); check(); await sleep(500); }
+      if (await host.diskAvailableKiB(root) < 2097152) throw new ResearchRunFailure('busy');
       const source = await readSource(); ctx.profileHash = researchProfileHash(source, profile); ctx.codeDirectory = await ensureCode(ctx.profileHash, profile, source);
       // 3. per-chat layout and epoch
       const chatDir = path.join(root, 'chats', input.subjectHash, input.chatId);
@@ -381,6 +385,7 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       if (signal?.aborted) { cancelled = true; throw new Cancelled(); } // a cancel that raced the finish is never reported as evidence
       result = { state: verified.answer.state as 'evidence' | 'insufficient', answer: mapResearchAnswer(verified.answer as any, contextReset), usage: aggregateResearchUsage(verified.attempts.map(a => ({ state: 'settled', result: a.result }))) };
     } catch (error) {
+      try { options.diagnostic?.((error instanceof Error ? error.message : 'error').replace(/[^a-z_0-9:.-]/gi, '_').slice(0, 80)); } catch { /* diagnostics never affect the result */ }
       // Cancel: fence the run, interrupt native work, then fall through to removal. Never an evidence result.
       if (cancelled && ctx.run && store!) { try { await store.cancelRun(ctx.run, 'cancelled'); } catch { /* the container removal below still fences it */ } try { await ctx.transport?.request('POST', `/api/session/${ctx.binding.sessionID}/interrupt?resume=false`, {}); } catch { /* removal follows */ } }
       usage = await settledUsage();

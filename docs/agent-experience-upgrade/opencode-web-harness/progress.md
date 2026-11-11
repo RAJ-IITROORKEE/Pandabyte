@@ -138,3 +138,12 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
   - Rollback-only fixture `scripts/check-research-turns-database.py` passed 31/31 on a disposable schema-only InsForge branch (`d1-research-test`, now deleted). It covers the cited-answer path, receipt negatives, ledger and daily cap, fail/cancel, the cross-journal fence both ways, generic finish blocked, MAC/exp/non-admin/other-owner/anon denial, and non-research reads identical to before.
   - Then applied to live `feh4966v` via the CLI. Verified: migration recorded; RPC and read granted to `authenticated` only; helpers and the pre-research read not executable; both tables RLS on with no grants; 0 research rows.
   - Live owner-session read smoke test, run by the peer session after the apply: an existing owner chat returned 200 with the same 4 assistant messages, its 2 citations intact, and no new masking.
+- **D2 host research service, 12 Nov 2026.**
+  - Built: `research-envelopes.ts`, `research-turn-runner.ts`, `research-service-handler.ts`, `scripts/research-service.mjs`, and `releaseStaleDockerHostSlot`.
+  - Process: readiness review (2 Blockers, 6 Majors) folded in; implementation by a subagent; independent review (3 Majors plus Minors) fixed; one real handler race (concurrent identical turn) found and fixed. Research and quota tests 280/280; typecheck clean.
+  - MCP readiness verified on host: OpenCode 2.2.5 auto-connects `panda_research` about 2.9 s after config. `/api/mcp` is now allowed in the transport and proxy.
+  - Host gate `scripts/test-research-service.mjs --aws-service-injected` (real handler, runner and native runtime; synthetic OpenRouter/Tavily):
+    - Fixture `d66400f5…`: 3/5. The follow-up turn returned `failed`, most likely a transient MemAvailable dip below 1 GiB after the first container was removed. That was not proven: the runner had no diagnostics then.
+    - Fix: a bounded (15 s, cancellable) memory-recovery wait before any provider call, plus an opt-in diagnostic-code hook used only by the gate.
+    - Fixtures `75a3d427…` and `dfa1e5ea…`: 5/5 each. Checks: signed evidence through the real native runtime; same-request replay with no new provider call; status returns the stored result; the follow-up reuses the epoch and native session; restart reconcile clean with no held slot. 0 real calls.
+  - Deferred to D3/D4 end-to-end: a real per-model turn through the service (the same verified modules already passed real C2 on all three models), the HTTPS entrypoint, and systemd install.
