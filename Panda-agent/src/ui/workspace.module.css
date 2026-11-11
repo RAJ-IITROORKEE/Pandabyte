@@ -421,7 +421,7 @@
 .historyTabs button { min-height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; }
 .historyTabs button[aria-pressed="true"] { background: var(--status-soft); color: var(--foreground); }
 .historyTabs button:disabled { cursor: not-allowed; }
-.historyGroup { display: grid; gap: 1px; margin-top: 10px; }
+.historyGroup { display: grid; gap: 1px; width: 100%; min-width: 0; margin-top: 10px; }
 .groupLabel { margin: 0 0 4px; padding: 0 8px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
 .historyRow .menuTrigger { opacity: 0; transition: opacity .12s; }
 .historyRow:hover .menuTrigger, .historyRow:focus-within .menuTrigger, .historyRow details[open] .menuTrigger, .historySelect[aria-current="page"] + details .menuTrigger { opacity: 1; }
