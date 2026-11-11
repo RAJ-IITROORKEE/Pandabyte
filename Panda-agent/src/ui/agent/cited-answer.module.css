@@ -28,3 +28,12 @@
 
 /* Scrolling rows must not report their full width to parents, or a phone layout grows to fit them. */
 .strip, .tabs { contain: inline-size; min-width: 0; }
+
+/* Source-card labels (12 Nov 2026). */
+.sharedTitle { margin: 0 0 8px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.sharedTitle strong { color: var(--foreground); font-weight: 600; }
+.cardTitle { font-size: 13px; font-weight: 600; }
+.cardSub { grid-column: 1 / -1; display: -webkit-box; overflow: hidden; color: var(--muted); font-size: 12px; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.card { flex: 1 1 0; width: auto; min-width: 150px; max-width: 240px; }
+.more { flex: 0 0 auto; min-width: 0; padding-inline: 14px; }
+.strip, .tabs { scrollbar-width: thin; }

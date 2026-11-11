@@ -2,7 +2,7 @@
 
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { createContext, useContext, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { excerpt, shortTitle, visibleCards, type CitationView } from "./citation-view";
+import { excerpt, sharedTitle, shortTitle, sourceLabels, visibleCards, type CitationView } from "./citation-view";
 import styles from "./cited-answer.module.css";
 
 type Ctx = { citations: CitationView[]; selected: string; select: (id: string, scroll?: boolean) => void; setPanel: (el: HTMLDivElement | null) => void };
@@ -22,13 +22,13 @@ export function CitationProvider({ messageId, citations, children }: { messageId
 export function SourceStrip() {
   const ctx = useContext(CitationContext);
   if (!ctx?.citations.length) return null;
-  const { shown, more } = visibleCards(ctx.citations);
-  return <div className={styles.strip} role="group" aria-label="Sources">
+  const { shown, more } = visibleCards(ctx.citations), labels = sourceLabels(ctx.citations), shared = sharedTitle(ctx.citations);
+  return <>{shared && <p className={styles.sharedTitle}>{ctx.citations.length} excerpts from <strong>{shortTitle(shared, 90)}</strong></p>}<div className={styles.strip} role="group" aria-label="Sources">
     {shown.map(c => <button type="button" key={c.id} className={styles.card} aria-pressed={ctx.selected === c.id} onClick={() => ctx.select(c.id, true)}>
-      <span className={styles.badge}>{c.n}</span><span className={styles.domain}>{c.domain}</span><span className={styles.cardTitle}>{shortTitle(c.title, 90)}</span>
+      <span className={styles.badge}>{c.n}</span><span className={styles.domain}>{c.domain}</span><span className={styles.cardTitle}>{shortTitle(labels.get(c.id)!.primary, 90)}</span>{labels.get(c.id)!.secondary && <span className={styles.cardSub}>{labels.get(c.id)!.secondary}</span>}
     </button>)}
     {more > 0 && <button type="button" className={`${styles.card} ${styles.more}`} aria-label={`${more} more sources`} onClick={() => ctx.select(ctx.citations[shown.length].id, true)}>+{more} more</button>}
-  </div>;
+  </div></>;
 }
 
 export function SourcePanel() {
@@ -36,7 +36,7 @@ export function SourcePanel() {
   const [feedback, setFeedback] = useState<{ id: string; text: string } | null>(null);
   const uid = useId();
   if (!ctx?.citations.length) return null;
-  const { citations, selected, select } = ctx;
+  const { citations, selected, select } = ctx, labels = sourceLabels(citations);
   const current = citations.find(c => c.id === selected) ?? citations[0];
   const tabId = (id: string) => `${uid}-tab-${id}`;
   function onKey(e: KeyboardEvent) {
@@ -54,11 +54,11 @@ export function SourcePanel() {
   return <div className={styles.panelWrap} ref={el => ctx.setPanel(el)}>
     <div className={styles.tabs} role="tablist" aria-label="Sources" onKeyDown={onKey}>
       {citations.map(c => <button type="button" role="tab" key={c.id} id={tabId(c.id)} className={styles.tab} aria-selected={c.id === selected} aria-controls={`${uid}-panel`} tabIndex={c.id === selected ? 0 : -1} onClick={() => select(c.id)}>
-        <span className={styles.badge}>{c.n}</span><span>{shortTitle(c.title, 28)}</span>
+        <span className={styles.badge}>{c.n}</span><span>{shortTitle(labels.get(c.id)!.primary, 28)}</span>
       </button>)}
     </div>
     <div className={styles.panel} role="tabpanel" id={`${uid}-panel`} aria-labelledby={tabId(current.id)}>
-      <span className={styles.meta}>{current.domain}{current.date ? ` · ${current.date}` : ""}{current.kind ? ` · ${current.kind}` : ""}</span>
+      <span className={styles.meta}>{current.domain}{current.date ? ` · ${current.date}` : ""}{current.kind ? ` · ${current.kind}` : ""}{current.section ? ` · ${current.section}` : ""}</span>
       <h3 className={styles.title}>{current.title}</h3>
       {current.quote && <blockquote className={styles.quote}>{current.quote}</blockquote>}
       <div className={styles.actions}>

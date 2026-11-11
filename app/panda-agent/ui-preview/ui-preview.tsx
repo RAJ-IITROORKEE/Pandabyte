@@ -13,6 +13,12 @@ const citations = [
   { id: "S3", n: 3, title: "Getting started with Arduino on ESP8266", domain: "arduino-esp8266.readthedocs.io", href: "https://arduino-esp8266.readthedocs.io/", date: "20 Sep 2026", quote: "Select the board, set the flash size and upload over the serial port.", kind: "Web search excerpt" },
   { id: "S4", n: 4, title: "Power budget notes", domain: "PandaByte listing", quote: "Deep sleep current is listed at about 20 µA.", kind: "Product listing" },
 ];
+const listing = "PandaByte NodeMCU x8266 WiFi Development Board";
+const sameListing = [
+  { id: "S1", n: 1, title: listing, domain: "www.pandabyte.in", date: "30 Oct 2026", section: "Product info", quote: "Pandabyte x8266 is a compact ESP8266-based microcontroller board designed for modern IoT projects." },
+  { id: "S2", n: 2, title: listing, domain: "www.pandabyte.in", date: "30 Oct 2026", section: "Features", quote: "USB Type-C interface for programming and power, with a built-in user programmable switch." },
+  { id: "S3", n: 3, title: listing, domain: "www.pandabyte.in", date: "30 Oct 2026", quote: "Includes an on-board RGB LED for status indication." },
+];
 const steps = ["Understanding your question", "Reading sources", "Selecting evidence", "Checking citations"];
 
 export function UiPreview() {
@@ -26,5 +32,6 @@ export function UiPreview() {
     <section><h2 style={{ fontSize: 14 }}>Tool calls: live</h2><ToolCallGroup live calls={[{ id: "1", name: "catalog_search", label: "Approved sources", state: "complete", durationMs: 820 }, { id: "2", name: "read_public_docs", label: "Official documentation", state: "running" }]} /></section>
     <section><h2 style={{ fontSize: 14 }}>Tool calls: finished</h2><ToolCallGroup live={false} calls={[{ id: "1", name: "catalog_search", label: "Approved sources", state: "complete", durationMs: 820 }, { id: "2", name: "read_public_docs", label: "Official documentation", state: "failed" }, { id: "3", name: "format_bom", label: "Component outline", state: "unknown" }]} /></section>
     <section><h2 style={{ fontSize: 14 }}>Cited answer</h2><CitationProvider messageId="preview" citations={citations}><SourceStrip /><p style={{ lineHeight: 1.65 }}>The x8266 uses the ESP8266 microcontroller <CitationChip id="S1">[S1]</CitationChip> with 4 MB of SPI flash <CitationChip id="S2">[S2]</CitationChip>. To program it from Arduino, select the board and flash size first <CitationChip id="S3">[S3]</CitationChip>.</p><SourcePanel /></CitationProvider></section>
+    <section><h2 style={{ fontSize: 14 }}>Cited answer: one listing, three sections</h2><CitationProvider messageId="preview-same" citations={sameListing}><SourceStrip /><p style={{ lineHeight: 1.65 }}>The x8266 is a compact ESP8266 board <CitationChip id="S1">[S1]</CitationChip> with USB Type-C <CitationChip id="S2">[S2]</CitationChip> and an on-board RGB LED <CitationChip id="S3">[S3]</CitationChip>.</p><SourcePanel /></CitationProvider></section>
   </main>;
 }

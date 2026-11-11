@@ -24,7 +24,7 @@ import { createGuardedDictation } from "./guarded-dictation";
 import { ThinkingPanel } from "./agent/thinking-panel";
 import { ToolCallGroup, type ToolCall } from "./agent/tool-calls";
 import { CitationProvider, SourcePanel, SourceStrip } from "./agent/cited-answer";
-import type { CitationView } from "./agent/citation-view";
+import { sectionLabel, type CitationView } from "./agent/citation-view";
 import { createReadAloud } from "./read-aloud";
 import { clearActiveChat, readActiveChat, writeActiveChat } from "./active-chat";
 import { completedAttempt, createAttemptGuard } from "./cancel-attempt";
@@ -479,7 +479,7 @@ function citationView(citation: Citation, index: number): CitationView {
   const sourceUrl = citation.sourceUrl ?? (citation as { url?: string }).url ?? ""; // hosted harness citations carry `url`
   const href = ("kind" in citation ? !!vendor : publicSearchCitationUrl(sourceUrl)) ? sourceUrl : undefined;
   return { id: citation.id, n: index + 1, title: citation.title, domain: href ? new URL(href).hostname : "PandaByte listing", href, date: citation.capturedAt ? shortDate(citation.capturedAt) : undefined, quote: citation.quote,
-    kind: webExcerpt ? "Web search excerpt" : vendor ? `Espressif · ${vendor.chip.toUpperCase()} · ESP-IDF ${vendor.frameworkVersion}` : citation.sectionPath.join(" / ") || undefined };
+    kind: webExcerpt ? "Web search excerpt" : vendor ? `Espressif · ${vendor.chip.toUpperCase()} · ESP-IDF ${vendor.frameworkVersion}` : undefined, section: webExcerpt || vendor ? undefined : sectionLabel(citation.sectionPath, citation.title) };
 }
 function lastSources(messages: ChatMessage[]) {
   const last = messages[messages.length - 1];

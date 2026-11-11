@@ -1,6 +1,26 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { shortTitle, excerpt, visibleCards } from '../src/ui/agent/citation-view.ts';
+import { shortTitle, excerpt, visibleCards, sectionLabel, sharedTitle, sourceLabels } from '../src/ui/agent/citation-view.ts';
+
+const view = (n, title, section, quote = 'A quote about the board.') => ({ id: 'S' + n, n, title, domain: 'example.com', quote, section });
+
+test('sectionLabel uses the last heading, softens all caps, and skips a repeat of the title', () => {
+  assert.equal(sectionLabel(['Board X', 'PRODUCT INFO'], 'Board X'), 'Product info');
+  assert.equal(sectionLabel(['Board X', 'Pinout and power'], 'Board X'), 'Pinout and power');
+  assert.equal(sectionLabel(['Board X'], 'Board X'), undefined);
+  assert.equal(sectionLabel([], 'Board X'), undefined);
+});
+
+test('repeated titles are told apart by section, then by excerpt number', () => {
+  const views = [view(1, 'Board X', 'Product info'), view(2, 'Board X', undefined), view(3, 'Other page', 'Specs')];
+  const labels = sourceLabels(views);
+  assert.deepEqual(labels.get('S1'), { primary: 'Product info', secondary: 'A quote about the board.' });
+  assert.equal(labels.get('S2').primary, 'Excerpt 2');
+  assert.deepEqual(labels.get('S3'), { primary: 'Other page', secondary: 'Specs' });
+  assert.equal(sharedTitle(views), undefined);
+  assert.equal(sharedTitle([view(1, 'Board X'), view(2, 'Board X')]), 'Board X');
+  assert.equal(sharedTitle([view(1, 'Board X')]), undefined);
+});
 
 test('shortTitle trims and cuts with ellipsis', () => {
   assert.equal(shortTitle('  Hello   world  '), 'Hello world');
