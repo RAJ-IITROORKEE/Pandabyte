@@ -7,13 +7,14 @@ import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforg
 import { resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
 import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
 import { createSnapshotClient } from '../retrieval/snapshot-client.ts';
+import { catalogIntent, catalogTableText, clarificationText } from '../retrieval/catalog-listing.ts';
 import { createBasicRagChatService } from './basic-rag-chat-service.ts';
 import { createBasicRagStore } from './basic-rag-store.ts';
 import { createLightweightStore } from './lightweight-store.ts';
 import { createHostedRagPolicy } from './hosted-rag-policy.ts';
 import { createLunaRagCompletion } from './luna-rag-openrouter.ts';
 import { ChatStoreError } from './chat-store.ts';
-import type { ChatActor, ActivityReporter, ChatRead } from './chat-contracts.ts';
+import type { ChatActor, ActivityReporter, ChatAnswer, ChatRead } from './chat-contracts.ts';
 import type { BasicRagChatBridge } from './basic-rag-chat-contracts.ts';
 
 type Catalog = Awaited<ReturnType<typeof readRuntimeCatalog>>;
@@ -48,6 +49,12 @@ export function resolveMainFollowupScope(history:ChatRead,catalog:Catalog,thread
  const plan=resolveMultiProductIdentity(catalog,latest.question);
  if(plan.kind==='planned'?(plan.products.length!==1||plan.products[0].sku!==owners[0][0].sku):!isImplicitProductFollowup(latest.question,catalog))return null;
  return {sku:owners[0][0].sku,anchor:createHash('sha256').update(JSON.stringify([thread,latest])).digest('hex')};
+}
+
+/** Catalog-wide questions get a saved, zero-model answer (clarifying options or a catalog table); named products and every other question return null. */
+export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer|null {
+ const intent=catalogIntent(question,resolveMultiProductIdentity(catalog,question).kind==='planned');
+ return intent?{outcome:'clarification',text:intent.kind==='clarify'?clarificationText(catalog):catalogTableText(catalog,intent.scope),citations:[]}:null;
 }
 
 /** Catalog aliases select the source path; unresolved product requests never become general model facts. */
@@ -138,13 +145,14 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
  })();
  const store=createBasicRagStore(actor,env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'');
  const historyStore=createLightweightStore(actor,env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'');
- let ownRequest:string|undefined;
+ let ownRequest:string|undefined,presetAnswer:ChatAnswer|null=null;
  const rag=createBasicRagChatService({store,current:options.current,enabled:policy.enabled,usagePolicy:'bounded_luna_test',
   prepareContext:async(question,signal,authorizeCurrent)=>{
    const prepared=preparedSnapshot??await prepareMainRagContext({subject:actor.subject,question,signal,snapshotClient:await observation(),liveClient:actor.client,authorizeCurrent,adminCurrent:current});
    if(prepared.kind!=='ready')return prepared;
    return Object.freeze({...prepared,authorizedBy:authorizeCurrent});
   },
+  preset:()=>presetAnswer,
   completion:(claim,requestId)=>{
    ownRequest=requestId;
    let claimed=false;
@@ -165,6 +173,9 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    const client=await observation();
    const catalog=await readRuntimeCatalog(client);
    if(signal.aborted)throw new ChatStoreError('unavailable');
+   // Catalog-wide questions get a catalog-only clarification or table (no model call); named products stay on RAG.
+   const listing=catalogListingAnswer(question,catalog);
+   if(listing){presetAnswer=listing;return 'rag';}
    if(!isMainProductQuestion(question,catalog))return 'direct';
    // Provider workspace/privacy admission follows retrieval, so document timing never includes a model service.
    let retrievalQuestion=question,historyCurrent:(()=>Promise<boolean>)|undefined;

@@ -226,3 +226,22 @@ test('revocation during status or store errors are private and do not call a com
   await assert.rejects(g.service().state(turn.thread, turn.request), e => e instanceof ChatStoreError && !e.message.includes('private'));
   assert.equal(g.counts().sends, 0);
 });
+
+test('a router preset (catalog clarification or table) is saved once with no claim, no context and no model call', async () => {
+  const f = fixture(); let contextCalls = 0;
+  f.deps.prepareContext = async () => { contextCalls++; return context(); };
+  const preset = { outcome: 'clarification', text: 'Which PandaByte products would you like to see?', citations: [] };
+  f.deps.preset = () => preset;
+  assert.deepEqual(await f.service().start(turn, signal()), { status: 'saved' });
+  assert.deepEqual(f.row().response, preset); assert.equal(contextCalls, 0);
+  assert.deepEqual(f.counts(), { sends: 0, begins: 1, preparations: 0, completes: 1, cancels: 0 });
+  assert.deepEqual(await f.service().start(turn, signal()), { status: 'saved' }, 'a replay reads the saved turn');
+  assert.equal(f.counts().completes, 1);
+
+  for (const bad of [{ ...preset, outcome: 'evidence' }, { ...preset, citations: [{ id: 'S1' }] }]) {
+    const g = fixture(); g.deps.preset = () => bad;
+    await assert.rejects(g.service().start(turn, signal()), ChatStoreError); assert.equal(g.counts().completes, 0);
+  }
+  const off = fixture(); off.deps.preset = () => preset; off.deny();
+  await assert.rejects(off.service().start(turn, signal())); assert.equal(off.counts().begins, 0, 'the RAG enablement gate still applies');
+});

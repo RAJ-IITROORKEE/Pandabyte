@@ -23,6 +23,8 @@ type Dependencies = {
   enabled(): Promise<boolean>;
   prepareContext(question: string, signal: AbortSignal, authorizeCurrent: () => Promise<boolean>): Promise<Prepared>;
   completion(claim: () => Promise<boolean>, requestId: string): Completion;
+  /** A deterministic, zero-model answer chosen by the router (catalog listing or clarification). It is saved without a claim, so it can never carry citations. */
+  preset?(): ChatAnswer | null;
 };
 
 const unavailable = (): ChatStoreError => new ChatStoreError('unavailable');
@@ -104,6 +106,15 @@ export function createBasicRagChatService(deps: Dependencies): BasicRagChatBridg
         if (!admitted || admitted.question !== turn.question || typeof started.admitted !== 'boolean') throw unavailable();
         if (admitted.status === 'complete') return { status: 'saved' };
         if (!started.admitted) return status(ref, signal);
+        const preset = deps.preset?.() ?? null;
+        if (preset) {
+          if (preset.citations.length || preset.outcome === 'evidence') throw unavailable();
+          report(progress, 'saving_answer');
+          try { await deps.store.complete(turn.thread, turn.request, preset); }
+          catch { const after = await readState(ref, signal); return after?.status === 'complete' ? { status: 'saved' } : { status: 'unknown' }; }
+          const after = await readState(ref, signal);
+          return after ? resultFor(after) : { status: 'unknown' };
+        }
 
         let context: ReadyProductContext | undefined, claimUsed = false, claimIndeterminate = false;
         const claim = async () => {
