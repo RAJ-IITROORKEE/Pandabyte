@@ -3,6 +3,7 @@ import type { ReadyProductContext } from '../retrieval/product-context-set.ts';
 import { uuid, type ActivityReporter, type ChatAnswer, type ChatRead } from './chat-contracts.ts';
 import type { BasicRagChatBridge, BasicRagReference, BasicRagTurn } from './basic-rag-chat-contracts.ts';
 import { ChatStoreError } from './chat-store.ts';
+import { needsProductText, noEvidenceText } from '../retrieval/abstain-text.ts';
 
 type State = { question: string; status: 'pending' | 'complete'; prepared: boolean; cancelled: boolean };
 type Scope = { productId: string; sku: string; scopeHash: string };
@@ -32,8 +33,8 @@ const resultFor = (state: State): { status: 'saved' | 'pending' | 'unknown' } =>
 });
 const fixedAnswer = (status: 'clarification' | 'insufficient' | 'unavailable'): ChatAnswer => ({
   outcome: status === 'clarification' ? 'clarification' : 'insufficient',
-  text: status === 'clarification' ? 'Please include one exact PandaByte product name or model.'
-    : status === 'insufficient' ? 'The available approved sources do not establish an answer to this question.'
+  text: status === 'clarification' ? needsProductText
+    : status === 'insufficient' ? noEvidenceText
       : 'A grounded response is unavailable right now. No automatic retry was made.',
   citations: [],
 });
