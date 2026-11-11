@@ -1,0 +1,7 @@
+.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 4px 10px; border: 1px solid var(--divider); border-bottom: 0; border-radius: 9px 9px 0 0; background: var(--surface); color: var(--muted); font-size: 12px; }
+.header + pre { margin-top: 0; border-radius: 0 0 9px 9px; }
+.copyWrap { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.copy { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 6px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
+.copy:hover { background: var(--status-soft); color: var(--foreground); }
+.copy:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.feedback { color: var(--foreground); font-size: 12px; }

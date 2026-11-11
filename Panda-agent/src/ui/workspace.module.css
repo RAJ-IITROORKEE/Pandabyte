@@ -105,6 +105,14 @@
 .copy { display: flex; align-items: center; gap: 5px; margin-top: 14px; padding: 6px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
 .messageActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .copy:disabled { cursor: not-allowed; opacity: .6; }
+.notice { display: grid; gap: 6px; padding: 14px 16px; border: 1px solid var(--divider); border-radius: 10px; background: var(--surface); font-size: 14px; }
+.notice p { margin: 0; color: var(--muted); }
+.noticeActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.noticeActions button { min-height: 36px; padding: 6px 12px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--foreground); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.noticeActions button:hover { background: var(--status-soft); }
+.noticeActions button:disabled { opacity: .55; cursor: not-allowed; }
+.choiceHint { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.noticeActions button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .pending { color: var(--muted); font-size: 14px; }
 .composerArea { flex: none; }
 .composer textarea { color: var(--foreground); max-height: 200px; resize: vertical; }
@@ -344,3 +352,56 @@
 .recovery button { margin: 0 8px 0 0; padding: 6px 8px; border: 1px solid var(--divider); border-radius: 7px; background: var(--surface); color: var(--foreground); font: inherit; cursor: pointer; }
 .recovery button:disabled { opacity: .6; cursor: not-allowed; }
 .recovery summary:focus-visible, .recovery button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* Minimal chat presentation: compact composer, single status line, chips, sources, charts. */
+.composer { padding: 8px 10px; border-radius: 24px; }
+.composer textarea { resize: none; max-height: 9.5rem; overflow-y: auto; line-height: 1.5; }
+.composerRow { align-items: flex-end; }
+.composerRow textarea { min-height: 40px; padding: 8px 4px; }
+.composerActions { align-self: flex-end; padding-bottom: 2px; }
+.activity { margin: 12px 0 20px; }
+.activity .activityStatus { margin: 0; }
+.activityDetails { margin-top: 4px; }
+.sources { gap: 8px; margin-top: 16px; }
+.sources > summary { display: flex; width: fit-content; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; cursor: pointer; list-style: none; }
+.sources > summary::-webkit-details-marker { display: none; }
+.sources > summary > svg { transition: transform .18s ease; }
+.sources[open] > summary > svg { transform: rotate(180deg); }
+.sources > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.sources[open] > summary { margin-bottom: 8px; }
+.markdown a.citeChip { display: inline-flex; min-width: 1.4em; justify-content: center; margin: 0 1px; padding: 0 5px; border: 1px solid var(--divider); border-radius: 999px; background: var(--status-soft); font-size: .72em; font-weight: 700; line-height: 1.6; text-decoration: none; vertical-align: super; }
+.markdown a.citeChip:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.scoreBadge { flex: none; margin-left: auto; padding: 1px 7px; border: 1px solid var(--divider); border-radius: 999px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart { margin: 12px 0; padding: 12px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); }
+.chart figcaption { margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chartGrid { stroke: var(--divider); stroke-width: 1; }
+.chartTick { fill: var(--muted); font-size: 10px; }
+.chartS0 { color: var(--accent-ink); fill: var(--accent-ink); }
+.chartS1 { color: #3b82f6; fill: #3b82f6; }
+.chartS2 { color: #f59e0b; fill: #f59e0b; }
+.chartS3 { color: #a855f7; fill: #a855f7; }
+.chartLegend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.chartLegend li { display: flex; align-items: center; gap: 6px; }
+.chartLegend span { width: 10px; height: 10px; border-radius: 2px; background: currentColor; }
+@media (prefers-reduced-motion: reduce) { .sources > summary > svg, .sourceCard summary > svg, .activityDetails summary > svg { transition: none; } }
+.sourceExcerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sourceCard[open] .sourceExcerpt { display: none; }
+
+/* Composer card (12 Nov 2026): text on top, controls on one row below; model pill left, send right. */
+.composer { padding: 10px 12px 8px; border-radius: 20px; box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 6%, transparent), 0 8px 24px -12px color-mix(in srgb, var(--foreground) 18%, transparent); }
+.composerRow { flex-direction: column; align-items: stretch; gap: 4px; }
+.composerRow textarea { min-height: 44px; padding: 6px 4px; }
+.composerActions { align-self: stretch; justify-content: space-between; padding-bottom: 0; }
+.composerActions .modelPicker { max-width: min(60vw, 240px); }
+.modelPicker select { min-height: 36px; padding: 6px 28px 6px 10px; border-color: transparent; background: transparent; color: var(--muted); font-weight: 500; }
+.modelPicker select:hover:not(:disabled), .modelPicker select:focus-visible { color: var(--foreground); }
+
+/* Start screen (12 Nov 2026): one greeting line, composer, then quiet icon shortcuts shown only while the thread is empty. */
+.thread:has(.intro) .intro h1 { font-size: clamp(1.5rem, 2.6vw, 1.9rem); }
+.quickActions { display: none; }
+.thread:has(.intro) .quickActions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 6px; max-width: 640px; margin: 14px auto 0; }
+.quickActions button { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 6px 12px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
+.quickActions button:hover:not(:disabled) { background: var(--status-soft); color: var(--foreground); }
+.quickActions button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.quickActions button:disabled { opacity: .5; cursor: not-allowed; }

@@ -3,6 +3,7 @@ import type { ReadyProductContext } from '../retrieval/product-context-set.ts';
 import { uuid, type ActivityReporter, type ChatAnswer, type ChatRead } from './chat-contracts.ts';
 import type { BasicRagChatBridge, BasicRagReference, BasicRagTurn } from './basic-rag-chat-contracts.ts';
 import { ChatStoreError } from './chat-store.ts';
+import { needsProductText, noEvidenceText } from '../retrieval/abstain-text.ts';
 
 type State = { question: string; status: 'pending' | 'complete'; prepared: boolean; cancelled: boolean };
 type Scope = { productId: string; sku: string; scopeHash: string };
@@ -22,6 +23,8 @@ type Dependencies = {
   enabled(): Promise<boolean>;
   prepareContext(question: string, signal: AbortSignal, authorizeCurrent: () => Promise<boolean>): Promise<Prepared>;
   completion(claim: () => Promise<boolean>, requestId: string): Completion;
+  /** A deterministic, zero-model answer chosen by the router (catalog listing or clarification). It is saved without a claim, so it can never carry citations. */
+  preset?(): ChatAnswer | null;
 };
 
 const unavailable = (): ChatStoreError => new ChatStoreError('unavailable');
@@ -32,8 +35,8 @@ const resultFor = (state: State): { status: 'saved' | 'pending' | 'unknown' } =>
 });
 const fixedAnswer = (status: 'clarification' | 'insufficient' | 'unavailable'): ChatAnswer => ({
   outcome: status === 'clarification' ? 'clarification' : 'insufficient',
-  text: status === 'clarification' ? 'Please include one exact PandaByte product name or model.'
-    : status === 'insufficient' ? 'The available approved sources do not establish an answer to this question.'
+  text: status === 'clarification' ? needsProductText
+    : status === 'insufficient' ? noEvidenceText
       : 'A grounded response is unavailable right now. No automatic retry was made.',
   citations: [],
 });
@@ -103,6 +106,15 @@ export function createBasicRagChatService(deps: Dependencies): BasicRagChatBridg
         if (!admitted || admitted.question !== turn.question || typeof started.admitted !== 'boolean') throw unavailable();
         if (admitted.status === 'complete') return { status: 'saved' };
         if (!started.admitted) return status(ref, signal);
+        const preset = deps.preset?.() ?? null;
+        if (preset) {
+          if (preset.citations.length || preset.outcome === 'evidence') throw unavailable();
+          report(progress, 'saving_answer');
+          try { await deps.store.complete(turn.thread, turn.request, preset); }
+          catch { const after = await readState(ref, signal); return after?.status === 'complete' ? { status: 'saved' } : { status: 'unknown' }; }
+          const after = await readState(ref, signal);
+          return after ? resultFor(after) : { status: 'unknown' };
+        }
 
         let context: ReadyProductContext | undefined, claimUsed = false, claimIndeterminate = false;
         const claim = async () => {

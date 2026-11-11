@@ -47,7 +47,7 @@ test('direct assistant exposes Luna only with no native tools or skills',()=>{
 });
 
 test('hosted direct capabilities name and enable only the exact fast model', () => {
- const hosted = { ...valid, mode:'direct_assistant', model:'GPT-OSS 20B', budget:null, rag:true, models:hostedModelChoices.map((m,i)=>({...m,enabled:i===6,reason:i===6?null:hostedDisabledModelReasons[i]})) };
+ const hosted = { ...valid, mode:'direct_assistant', model:'GPT-OSS 20B', budget:null, rag:true, models:hostedModelChoices.map((m,i)=>({...m,enabled:i===5||i===6,reason:i===5||i===6?null:hostedDisabledModelReasons[i]})) };
  assert.deepEqual(parseCapabilities(hosted),hosted);
  assert.equal(activeModelLabel(hosted.models,'openai/gpt-oss-20b',null),'GPT-OSS 20B');
  const off={...hosted,model:null,status:'unavailable',reason:'connection_unavailable',rag:false,models:hostedModelChoices.map((m,i)=>({...m,enabled:false,reason:hostedDisabledModelReasons[i]}))};

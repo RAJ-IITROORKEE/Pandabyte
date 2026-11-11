@@ -1,5 +1,5 @@
 import { nativeModelProfiles, isNativeModelId, profileForNativeModelId, reservationQuantumNanoUsd, type NativeModelId } from '../opencode/native-model-profiles.ts';
-import { fastHostedModel, type HostedModelId } from '../hosted-model.ts';
+import { fastHostedModel, hostedDirectModelIds, type HostedModelId } from '../hosted-model.ts';
 export type ChatModelId = NativeModelId | HostedModelId;
 export const isChatModelId = (id: unknown): id is ChatModelId => isNativeModelId(id) || id === fastHostedModel.id;
 export const nativeToolIds = ['convert_units', 'format_bom', 'read_public_docs'] as const;
@@ -28,7 +28,7 @@ export function parseCapabilities(value: unknown): Capabilities | null {
   const hosted = Array.isArray(c.models) && c.models.length === hostedModelChoices.length;
   if (hosted) {
     if (c.mode !== 'direct_assistant' || c.budget !== null || (c.status === 'ready' ? c.model !== fastHostedModel.label || c.reason !== null : c.model !== null || c.reason === null || c.rag)) return null;
-    if ((c.models as ModelChoice[]).some((m, i) => !m || typeof m !== 'object' || Array.isArray(m) || Object.keys(m).sort().join(',') !== 'enabled,id,label,reason' || m.id !== hostedModelChoices[i].id || m.label !== hostedModelChoices[i].label || m.enabled !== (c.status === 'ready' && m.id === fastHostedModel.id) || m.reason !== (m.enabled ? null : hostedDisabledModelReasons[i]))) return null;
+    if ((c.models as ModelChoice[]).some((m, i) => !m || typeof m !== 'object' || Array.isArray(m) || Object.keys(m).sort().join(',') !== 'enabled,id,label,reason' || m.id !== hostedModelChoices[i].id || m.label !== hostedModelChoices[i].label || m.enabled !== (c.status === 'ready' && hostedDirectModelIds.includes(m.id)) || m.reason !== (m.enabled ? null : hostedDisabledModelReasons[i]))) return null;
   } else {
     if (c.model === fastHostedModel.label) return null;
     if (!Array.isArray(c.models) || c.models.length!==modelChoices.length || c.models.some((m,i)=>!m||typeof m!=='object'||Array.isArray(m)||Object.keys(m).sort().join(',')!=='enabled,id,label,reason'||m.id!==modelChoices[i].id||m.label!==modelChoices[i].label||typeof m.enabled!=='boolean'||(m.enabled?(m.reason!==null||(c.mode==='direct_assistant' && m.id!=='openai/gpt-6-luna')||!isNativeModelId(m.id)||!profileForNativeModelId(m.id).dispatchEnabled||c.status!=='ready'):!(m.reason===disabledModelReasons[i]||(m.reason==='budget_unavailable' && c.status==='ready' && isNativeModelId(m.id) && profileForNativeModelId(m.id).dispatchEnabled && !!c.budget && typeof c.budget==='object' && !Array.isArray(c.budget) && Number.isSafeInteger((c.budget as Record<string,unknown>).remainingNanoUsd) && ((c.budget as Record<string,unknown>).remainingNanoUsd as number) < profileForNativeModelId(m.id).reservationQuanta*reservationQuantumNanoUsd)))))return null;
