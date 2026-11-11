@@ -163,7 +163,7 @@ async function readStream(m:Profile,response:Response,signal:AbortSignal,started
  try{
   for(;;){
    signal.throwIfAborted();const part=await reader.read();signal.throwIfAborted();
-   if(part.done)break;bytes+=part.value.byteLength;if(bytes>64000)return fail();
+   if(part.done)break;bytes+=part.value.byteLength;if(bytes>1000000)return fail(); // shortcut: 1 MB bound; per-token frames with provider metadata reach ~125 KB for 1.6k chars
    buffer+=decoder.decode(part.value,{stream:true});let at;
    while((at=buffer.indexOf('\n'))>=0){line(buffer.slice(0,at));buffer=buffer.slice(at+1);}
   }

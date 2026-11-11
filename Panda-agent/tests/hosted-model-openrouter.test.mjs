@@ -123,7 +123,7 @@ test('malformed, truncated, mixed, tool/reasoning or mispriced streams remain un
   {stream:text=>text+'data: {}\r\n\r\n'},
   {stream:text=>text.replace('data: [DONE]','data: malformed')},
   {stream:text=>text+': trailing invalid frame\r\n\r\n'},
-  {stream:text=>':'+'.'.repeat(64000)+'\r\n\r\n'+text},
+  {stream:text=>':'+'.'.repeat(1000000)+'\r\n\r\n'+text},
   {bytes:bytes=>Uint8Array.from([...bytes.slice(0,10),0xff,...bytes.slice(10)])},
   {frames:f=>{f[3].choices[0].finish_reason='length';}},
   {frames:f=>{f[1].id='gen-OTHER';}},
