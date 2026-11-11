@@ -118,7 +118,7 @@ function Workspace({ user, nativeAssistant, directAssistant, previewReadOnly, gu
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [capabilityLoading, setCapabilityLoading] = useState(true);
   const [capabilityAttempt, setCapabilityAttempt] = useState(0);
-  const [selectedModel, setSelectedModel] = useState<ChatModelId>('openai/gpt-6-luna');
+  const [selectedModel, setSelectedModel] = useState<ChatModelId>(preferredModelId);
   const [activeModel, setActiveModel] = useState<ChatModelId | null>(null);
   useEffect(() => {
     const controller = new AbortController();

@@ -26,9 +26,11 @@ const contains = (text:string, value:string) => {
 };
 const namedProduct = (question:string,catalog:Catalog) => {
  const text=question.normalize('NFKC').toLowerCase();
+ // PandaByte codes (x8266, xC3) name a product on their own; plain chip names that appear in titles (ESP32, WS2812B) only do with a shopping word.
+ const shopping=/\b(?:pandabyte|listing|listed|board|module|kit|ring|shield|product|buy|price|stock|sell|order)\b/.test(text);
  return catalog.some(row=>contains(text,row.sku)||contains(text,row.title)
-  ||(row.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[]).some(alias=>contains(text,alias)))
-  ||/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text);
+  ||(row.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[]).some(alias=>contains(text,alias)&&(/^x/i.test(alias)||shopping)))
+  ||/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b/i.test(text);
 };
 
 const factualReference = (text:string) => /\b(?:it|its|this board|that board|this product|that product)\b/.test(text)
@@ -66,7 +68,7 @@ export function isMainProductQuestion(question:string,catalog:Catalog):boolean {
  if(isImplicitProductFollowup(question,catalog))return true;
  if(factualReference(text))return true;
  if(/\b(?:its|this board|that board|this product|that product)\b/.test(text)&&/\b(?:usb|connector|mcu|cpu|pins?|pinout|voltage|current|flash|memory|psram|specifications?)\b/.test(text))return true;
- if(/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b|\b[a-z]{2,}\d{2,}[a-z0-9-]*\b/i.test(text))return true;
+ if(/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b/i.test(text))return true;
  return !['conversation','manufacturer'].includes(conversationRoute(question,catalog).kind);
 }
 
