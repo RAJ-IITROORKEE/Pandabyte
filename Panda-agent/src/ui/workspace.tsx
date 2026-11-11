@@ -29,6 +29,8 @@ import { ProjectMemoryPanel } from "./project-memory-panel";
 import { guideDisabled, diagnosticDisabled, messagePayload, messageQuestion, type MessageInput } from "./guide-input";
 
 type Citation = { id: string; title: string; sourceUrl: string; quote: string; sectionPath: string[]; capturedAt: string } | VendorCitation;
+// Shows a stored ISO timestamp as a short date; leaves unparseable values as-is.
+const shortDate = (value: string) => { const d = new Date(value); return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }); };
 type ChatMessage = { id: string; role: "user" | "assistant"; text: string; createdAt: string; citations: Citation[]; toolCards?: {toolId:ToolActivity['toolId'];state:'complete'|'unknown'}[] };
 type Chat = { id: string; title: string; updatedAt: string; status: "idle" | "pending" | "blocked" };
 type Detail = { thread: Chat; messages: ChatMessage[]; projectMemory?: ProjectMemory | null };
@@ -456,11 +458,11 @@ function SourceCitation({ citation, messageId }: { citation: Citation; messageId
   const domain = href ? new URL(href).hostname : "Link unavailable";
   const rawScore = (citation as { score?: unknown }).score; const score = typeof rawScore === "number" && Number.isFinite(rawScore) ? rawScore : undefined;
   return <details className={styles.sourceCard} id={`source-${messageId}-${citation.id}`}>
-    <summary><span className={styles.sourceSummary}><span className={styles.sourceId}>{citation.id}</span><span><strong>{citation.title}</strong><small>{domain}{citation.capturedAt ? ` · ${citation.capturedAt}` : ""}</small>{!!citation.quote && <small className={styles.sourceExcerpt}>{citation.quote.length > 180 ? `${citation.quote.slice(0, 179)}…` : citation.quote}</small>}</span>{score !== undefined && <span className={styles.scoreBadge} title="Relevance score">{score.toFixed(2)}</span>}</span><ChevronDown size={16} aria-hidden="true" /></summary>
+    <summary><span className={styles.sourceSummary}><span className={styles.sourceId}>{citation.id}</span><span><strong>{citation.title}</strong><small>{domain}{citation.capturedAt ? ` · ${shortDate(citation.capturedAt)}` : ""}</small>{!!citation.quote && <small className={styles.sourceExcerpt}>{citation.quote.length > 180 ? `${citation.quote.slice(0, 179)}…` : citation.quote}</small>}</span>{score !== undefined && <span className={styles.scoreBadge} title="Relevance score">{score.toFixed(2)}</span>}</span><ChevronDown size={16} aria-hidden="true" /></summary>
     <div className={styles.sourceContent}>
       {webExcerpt && <strong className={styles.sourceKind}>Web search excerpt</strong>}{vendor&&<strong className={styles.sourceKind}>Espressif · {vendor.chip.toUpperCase()} · ESP-IDF {vendor.frameworkVersion} · reviewed API reference</strong>}
       <blockquote>{citation.quote}</blockquote>
-      <small>{webExcerpt ? "Tavily search excerpt; full page and manufacturer claims not verified" : citation.sectionPath.join(" / ")} · {webExcerpt ? "retrieved" : "captured"} {citation.capturedAt}</small>
+      <small>{webExcerpt ? "Tavily search excerpt; full page and manufacturer claims not verified" : citation.sectionPath.join(" / ")} · {webExcerpt ? "retrieved" : "captured"} {shortDate(citation.capturedAt)}</small>
       {href && <a href={href} target="_blank" rel="noopener noreferrer">Open source <ExternalLink size={13} aria-hidden="true" /></a>}
     </div>
   </details>;
