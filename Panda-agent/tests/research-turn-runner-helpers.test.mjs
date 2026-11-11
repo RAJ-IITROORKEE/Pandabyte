@@ -28,6 +28,10 @@ test('research query scope: shape plus every word from the prompt or the generic
   assert.equal(researchQueryInScope('one two three four five six seven eight nine ten eleven twelve', 'one two three four five six seven eight nine ten eleven twelve'), true, '12 words');
   assert.equal(researchQueryInScope('one two three four five six seven eight nine ten eleven twelve thirteen', 'one two three four five six seven eight nine ten eleven twelve thirteen'), false, '13 words');
   assert.equal(researchQueryInScope('my private wifi password', 'What is the RP2040 PIO?'), false, 'private-looking words not in the prompt are refused');
+  // PandaByte site queries stay on the host (they only choose pandabyte.in pages), so their words are free; shape still applies.
+  assert.equal(researchQueryInScope('PandaByte xS3 specifications price', 'Tell me about the xS3'), true);
+  assert.equal(researchQueryInScope('pandabyte; DROP TABLE', 'x'), false);
+  assert.equal(researchQueryInScope('rp2040 pio price list', 'Which interfaces does the RP2040 PIO support?'), false, 'web queries keep the prompt-word rule');
   assert.ok(prefacedPrompt('Q?').startsWith(researchPromptPreface) && prefacedPrompt('Q?').endsWith('Q?'));
 });
 

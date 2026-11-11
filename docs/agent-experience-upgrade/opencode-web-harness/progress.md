@@ -212,3 +212,23 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
   - **Live gate `--real haiku`:** 15/15. The follow-up searched again and returned an honest `insufficient` (3 calls, $0.0014).
   - **Spend:** about $0.025 in total today for D3 real turns.
   - **Service:** redeployed three times by source hash (current `7112cad1…`); restart reconcile was clean each time.
+- **D4 and PandaByte site search, 12 Nov 2026.**
+  - **D4 (771e290):** web-search chat turns route to the research harness. It is Admin-only, uses one unit of the daily web-search allowance per turn, claims within the $1/day cap, dispatches once, and polls status by the same request id. The independent review's two Majors are fixed. Main (`83402f8`) is merged in.
+  - **PixelRAG study (subagent):**
+    - The repo, StarTrail-org/PixelRAG, is Apache-2.0. It renders pages to image tiles with Chromium, embeds them with Qwen3-VL-Embedding-2B, and stores them in FAISS/Qdrant.
+    - That stack does not fit the t4g.small, and its images cannot be quoted as exact text.
+    - We took the text-first slice of the same idea: retrieve the live page, not a stale copy. No code was copied, so no attribution is needed.
+  - **`src/search/pandabyte-site.ts`:** PandaByte queries (the brand or a product code) read live pandabyte.in pages.
+    - Product pages are found through `store-products-sitemap.xml`, cached for 10 min. A query reads at most 2 product pages, or the matching category page for broad queries.
+    - It fetches only `https://www.pandabyte.in`, with no redirects, a 3 MB cap, a 20 s limit, and the dispatch grant requested before any fetch.
+    - Results use the same signed receipt shape (provider `pandabyte_site`), so citation binding is unchanged.
+    - Category listings become one "Name: price." line per product.
+    - Site queries skip the prompt-word limit, because they never leave the host; web queries keep it.
+  - **Live checks against pandabyte.in:** the xS3 page in 646 ms, the dev-board category in 84 ms; the service host fetches them too.
+  - **Real turns through the AWS path (Haiku):**
+    - The first two returned `insufficient`: the scope guard refused queries such as "price". Fixed.
+    - xS3: `evidence` in 26.6 s, $0.00061, with 16 MB flash, 8 MB PSRAM, ₹1,000 and 2 citations from the product page.
+    - All boards: `evidence` in 33.6 s, $0.00065, with every PandaByte board price correct after the one-line-per-product fix.
+    - Known gap: one listing line was split across two 180-character passages (the xLoRa price).
+  - **Service:** redeployed three times by hash (current `4af6b874…`), reconcile clean. Research/site tests 305/305; full suite 1342 with 2 pre-existing failures (also on main).
+  - **Blocked on owner approval:** the CloudFormation update that lets the production Vercel login assume the research caller role (permission check: IAM trust grant), the production Vercel research env vars, and the production deploy.

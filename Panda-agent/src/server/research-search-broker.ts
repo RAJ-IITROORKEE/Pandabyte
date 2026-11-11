@@ -25,7 +25,7 @@ const response=(status:number,mcp?:MCP):Response=>({status,contentType:'applicat
 
 function verifiedReceipt(value:unknown,expectedRequestHash?:string):TavilySearchReceipt|null{
  if(!researchJSON(value,1048576)||!exact(value,['version','provider','operation','requestHash','requestId','startedAt','completedAt','durationMs','usage','sources'])
-  ||value.version!==1||value.provider!=='tavily'||value.operation!=='search'||!hex(value.requestHash)||expectedRequestHash!==undefined&&value.requestHash!==expectedRequestHash
+  ||value.version!==1||!(value.provider==='tavily'||value.provider==='pandabyte_site')||value.operation!=='search'||!hex(value.requestHash)||expectedRequestHash!==undefined&&value.requestHash!==expectedRequestHash
   ||value.requestId!==null&&!(typeof value.requestId==='string'&&/^[\x20-\x7e]{1,200}$/.test(value.requestId)&&value.requestId.trim())
   ||!iso(value.startedAt)||!iso(value.completedAt)||value.completedAt<value.startedAt
   ||typeof value.durationMs!=='number'||!Number.isFinite(value.durationMs)||value.durationMs<0||value.durationMs>60000

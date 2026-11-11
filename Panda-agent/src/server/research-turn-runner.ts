@@ -15,6 +15,7 @@ import { createResearchDockerTransport } from './research-docker-transport.ts';
 import { reserveDockerHostSlot, releaseStaleDockerHostSlot } from './native-docker-host-quota.ts';
 import { createResearchSearchBroker, verifyResearchAnswer } from './research-search-broker.ts';
 import { searchHostedPublicWeb } from '../search/tavily.ts';
+import { isPandabyteQuery, searchPandabyteSite } from '../search/pandabyte-site.ts';
 import { createResearchOpenRouter } from './research-openrouter.ts';
 import { researchChatProfiles, type ResearchChatProfile, type ResearchFailure, type ResearchUsage } from './research-envelopes.ts';
 import { buildResearchPromptBody } from '../opencode/research-image-binding.ts';
@@ -23,7 +24,7 @@ import { researchProfileSelection } from '../../runtime/opencode/research-profil
 export const researchTurnDeadlineMs = 300000, researchReadinessMs = 20000, researchAttestationMaxMs = 24 * 3600 * 1000;
 export const researchInsufficientText = 'The available public sources did not provide enough verified evidence to answer this question.';
 export const researchContextResetNote = '\n\nNote: earlier conversation context for this chat was reset.';
-const genericDocWords = 'datasheet documentation docs official reference manual guide pinout example examples tutorial specification specs'.split(' ');
+const genericDocWords = 'datasheet documentation docs official reference manual guide pinout example examples tutorial specification specs pandabyte'.split(' ');
 const exec = promisify(execFile), sha = (v: string | Buffer) => createHash('sha256').update(v).digest('hex'), hex = () => randomBytes(32).toString('hex');
 const pause = (ms: number) => new Promise<void>(done => setTimeout(done, ms));
 
@@ -37,7 +38,7 @@ export type HostProbes = { memAvailableKiB(): Promise<number>; diskAvailableKiB(
 export type RunnerOptions = {
   root?: string; codeSource: string; slotDir?: string;
   keys(): Promise<{ openrouterKey: string; tavilyKey: string }>; attestation(): Promise<unknown>;
-  fetcher?: typeof fetch; searchFetch?: typeof fetch; searchLookup?: (host: string) => Promise<{ address: string; family: number }[]>;
+  fetcher?: typeof fetch; searchFetch?: typeof fetch; siteFetch?: (url: string, init: any) => Promise<Response>; searchLookup?: (host: string) => Promise<{ address: string; family: number }[]>;
   docker?: (args: string[], env?: Record<string, string>) => Promise<string>; host?: Partial<HostProbes>; now?: () => number; sleep?: (ms: number) => Promise<void>;
   // Test seams; production uses the real Docker transport and verifiers.
   // Opt-in host-gate diagnostics: receives only a short internal error code, never content. Production does not pass it.
@@ -60,12 +61,15 @@ export function researchQueryInScope(query: unknown, promptText: string): boolea
   if (typeof query !== 'string' || query.length > 400 || !/^[A-Za-z0-9]+(?:[ -][A-Za-z0-9]+)*$/.test(query)) return false;
   const words = query.toLowerCase().split(/[ -]/);
   if (words.length > 12) return false;
+  // A PandaByte site query never leaves the host (it only picks which pandabyte.in pages to read), so its words are not
+  // limited to the prompt; web queries still are, so private text cannot reach the third-party search provider.
+  if (isPandabyteQuery(query)) return true;
   const allowed = new Set([...promptText.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean), ...genericDocWords]);
   return words.every(word => allowed.has(word));
 }
 /** Host MemAvailable needed before a turn: the container hard cap (memory = memory-swap) plus a 256 MiB margin for the host. */
 export const researchHostFloorKiB = researchMemoryBytes / 1024 + 262144;
-export const researchPromptPreface = 'Host rules: you may search only public documentation. Every search query must be 1 to 12 words using letters, digits, spaces or hyphens, and each word must come from the question below or be a generic documentation word (datasheet, documentation, docs, official, reference, manual, guide, pinout, example, tutorial, specification). Never put private data in a query. Search again for every question, even a follow-up: cite only sources returned by searches made for this question, never sources from earlier turns. Answer only from returned excerpts and cite exact passages.\n\nQuestion:\n';
+export const researchPromptPreface = 'Host rules: you may search only public documentation. Every search query must be 1 to 12 words using letters, digits, spaces or hyphens, and each word must come from the question below or be a generic documentation word (datasheet, documentation, docs, official, reference, manual, guide, pinout, example, tutorial, specification, pandabyte). For PandaByte products, put pandabyte or the product code (for example xS3, x8266) in the query: the search then reads the live pandabyte.in product or category pages. Never put private data in a query. Search again for every question, even a follow-up: cite only sources returned by searches made for this question, never sources from earlier turns. Answer only from returned excerpts and cite exact passages.\n\nQuestion:\n';
 export const prefacedPrompt = (prompt: string) => researchPromptPreface + prompt;
 
 /** Throws on any invalid field; returns the parsed attestation. keyHash is sha256 of the OpenRouter key. */
@@ -276,8 +280,11 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       const broker = createResearchSearchBroker({ store, binding: ctx.binding, generation, currentReceipt: () => ctx.run ?? null,
         readNative: async () => { const [session, activity, rows] = await Promise.all([owned(), json('GET', '/api/session/active'), messages()]); return { session, active: Object.hasOwn(activity.data, ctx.binding.sessionID), messages: rows }; },
         allowPublicQuery: q => researchQueryInScope(q, input.prompt),
-        search: (query, beforeSend, sig) => searchHostedPublicWeb(query, { apiKey: creds.tavilyKey, signal: sig, beforeSend: async () => { const allowed = await beforeSend(); if (allowed) onProgress?.('searching_web'); return allowed; },
-          ...(options.searchFetch ? { fetchImpl: options.searchFetch } : {}), ...(options.searchLookup ? { lookupImpl: options.searchLookup as any } : {}) }) });
+        // PandaByte catalog queries read the live pandabyte.in pages; every other query is a Tavily web search.
+        search: (query, beforeSend, sig) => { const granted = async () => { const allowed = await beforeSend(); if (allowed) onProgress?.('searching_web'); return allowed; };
+          return isPandabyteQuery(query) ? searchPandabyteSite(query, { signal: sig, beforeSend: granted, ...(options.siteFetch ? { fetchImpl: options.siteFetch } : {}) })
+            : searchHostedPublicWeb(query, { apiKey: creds.tavilyKey, signal: sig, beforeSend: granted,
+              ...(options.searchFetch ? { fetchImpl: options.searchFetch } : {}), ...(options.searchLookup ? { lookupImpl: options.searchLookup as any } : {}) }); } });
       await ctx.transport.broker((request: any) => broker.handle(request));
       const end = now() + 60000; for (;;) { check(); try { const info = await json('GET', '/api/info'); need(info.version === '2.2.5', 'native_version'); ctx.pid = info.pid; break; } catch { if (now() > end) throw Error('native_readiness_timeout'); await sleep(100); } }
       need((options.verifyConfig ?? verifiedResearchConfig)(await json('GET', '/api/config'), researchConfig(generation, ctx.environment.PANDA_RESEARCH_CHANNEL_TOKEN, profile as any)), 'config_unverified');

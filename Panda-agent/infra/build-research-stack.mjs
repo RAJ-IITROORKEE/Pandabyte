@@ -28,7 +28,9 @@ const template = {
     ServiceToken: { Type: 'String', NoEcho: true, AllowedPattern: '^[A-Za-z0-9+/]{43}=$' }, // base64 of 32 bytes; the host expects this exact bearer
     OidcProviderArn: { Type: 'String', AllowedPattern: '^arn:aws:iam::[0-9]{12}:oidc-provider/oidc\\.vercel\\.com/[a-z0-9-]+$' },
     OidcAudience: { Type: 'String', AllowedPattern: '^https://vercel\\.com/[a-z0-9-]+$' },
-    OidcSubject: { Type: 'String', AllowedPattern: '^owner:[a-z0-9-]+:project:[a-z0-9-]+:environment:(development|preview|production)$' },
+    OidcSubject: { Type: 'String', AllowedPattern: '^owner:[a-z0-9-]+:project:[a-z0-9-]+:environment:development$' },
+    // Phase G: the production site may call the research API too (owner-approved 12 Nov 2026). Exact subject, never a wildcard.
+    OidcProductionSubject: { Type: 'String', AllowedPattern: '^owner:[a-z0-9-]+:project:[a-z0-9-]+:environment:production$' },
   },
   Resources: {
     RelayGroup: { Type: 'AWS::EC2::SecurityGroup', Properties: { GroupDescription: 'Panda research relay', VpcId: { Ref: 'VpcId' },
@@ -51,7 +53,7 @@ const template = {
         PANDA_RESEARCH_CALLER_ARN: { 'Fn::GetAtt': ['CallerRole', 'Arn'] }, PANDA_RESEARCH_RELAY_TIMEOUT_MS: '130000' } }, Tags: tags } },
     CallerRole: { Type: 'AWS::IAM::Role', Properties: { RoleName: sub('${AWS::StackName}-caller'), MaxSessionDuration: 3600,
       AssumeRolePolicyDocument: { Version: '2012-10-17', Statement: [{ Effect: 'Allow', Principal: { Federated: { Ref: 'OidcProviderArn' } }, Action: 'sts:AssumeRoleWithWebIdentity',
-        Condition: { StringEquals: { 'oidc.vercel.com/unfiltered-iit-ians:aud': { Ref: 'OidcAudience' }, 'oidc.vercel.com/unfiltered-iit-ians:sub': { Ref: 'OidcSubject' } } } }] },
+        Condition: { StringEquals: { 'oidc.vercel.com/unfiltered-iit-ians:aud': { Ref: 'OidcAudience' }, 'oidc.vercel.com/unfiltered-iit-ians:sub': [{ Ref: 'OidcSubject' }, { Ref: 'OidcProductionSubject' }] } } }] },
       Tags: tags } },
     CallerPolicy: { Type: 'AWS::IAM::RolePolicy', Properties: { RoleName: { Ref: 'CallerRole' }, PolicyName: 'research-invoke-only', PolicyDocument: { Version: '2012-10-17', Statement: [
         { Sid: 'OnlyResearchRoutes', Effect: 'Allow', Action: 'execute-api:Invoke', Resource: routes.map(route) },

@@ -21,7 +21,7 @@ export type HostedTavilyOptions = Pick<Options, 'apiKey' | 'fetchImpl' | 'lookup
   signal?: AbortSignal;
 };
 export type TavilySearchReceipt = {
-  version: 1; provider: 'tavily'; operation: 'search'; requestHash: string; requestId: string | null;
+  version: 1; provider: 'tavily' | 'pandabyte_site'; operation: 'search'; requestHash: string; requestId: string | null;
   startedAt: string; completedAt: string; durationMs: number;
   usage: { credits: number | null; costNanoUsd: null }; sources: WebSource[];
 };
