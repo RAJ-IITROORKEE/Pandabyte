@@ -3,7 +3,8 @@ export const fastHostedModel = Object.freeze({ id: 'openai/gpt-oss-20b', label: 
 /** Selectable beside the fast model on the hosted chat; pinned to a zero-retention endpoint with strict JSON support. */
 export const haikuHostedModel = Object.freeze({ id: 'anthropic/claude-haiku-5.5', label: 'Claude Haiku 5.5', provider: 'google-vertex/global' } as const);
 export const lunaHostedModel = Object.freeze({ id: 'openai/gpt-6-luna', label: 'GPT-6 Luna', provider: 'azure/us' } as const);
-export const flashHostedModel = Object.freeze({ id: 'google/gemini-3.5-flash', label: 'Gemini 3.5 Flash', provider: 'google-vertex/global' } as const);
+// Gemini Flash is not offered: every Gemini endpoint on OpenRouter keeps prompts for safety review, which the zero-retention rule refuses.
+export const flashHostedModel = Object.freeze({ id: 'deepseek/deepseek-v4-flash', label: 'DeepSeek V4 Flash', provider: 'wafer/mxfp4' } as const);
 export const qwenHostedModel = Object.freeze({ id: 'qwen/qwen3.8-27b', label: 'Qwen 3.8 27B', provider: 'deepinfra/bf16' } as const);
 /** Every model the hosted chat may run, each pinned to a reviewed zero-retention endpoint. */
 export const hostedDirectModels = Object.freeze([haikuHostedModel, lunaHostedModel, flashHostedModel, qwenHostedModel, fastHostedModel]);

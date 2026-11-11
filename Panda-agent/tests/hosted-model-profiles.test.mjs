@@ -9,9 +9,8 @@ const fixtures={
  luna:{model:lunaHostedModel,tokenizer:'GPT',endpoint:{...base,tag:'azure/us',name:'Azure | openai/gpt-6-luna-20260922',provider_name:'Azure',supports_implicit_caching:false,
   supported_parameters:base.supported_parameters.filter(p=>p!=='max_tokens'),pricing:{prompt:'0.00000011',completion:'0.00000055',web_search:'0.01',input_cache_read:'0.000000011',input_cache_write:'0.0000001375',discount:0,overrides:[{min_prompt_tokens:272000}]}},
   provider:'Azure',reported:'openai/gpt-6-luna-20260922'},
- flash:{model:flashHostedModel,tokenizer:'Gemini',endpoint:{...base,tag:'google-vertex/global',name:'Google | google/gemini-3.5-flash-20260519',provider_name:'Google',supports_implicit_caching:false,
-  pricing:{prompt:'0.0000015',completion:'0.000009',image:'0.0000015',audio:'0.000003',input_audio_cache:'0.0000003',web_search:'0.014',internal_reasoning:'0.000009',input_cache_read:'0.00000015',input_cache_write:'0.00000008',discount:0}},
-  provider:'Google',reported:'google/gemini-3.5-flash-20260519',extraTags:['google-vertex/global/flex','google-vertex/global/priority']},
+ flash:{model:flashHostedModel,tokenizer:'DeepSeek',endpoint:{...base,tag:'wafer/mxfp4',name:'Wafer | deepseek/deepseek-v4-flash-20260423',provider_name:'Wafer',supports_implicit_caching:true,
+  pricing:{prompt:'0.00000012',completion:'0.00000017',input_cache_read:'0.000000024',discount:0}},provider:'Wafer',reported:'deepseek/deepseek-v4-flash-20260423'},
  qwen:{model:qwenHostedModel,tokenizer:'Qwen',endpoint:{...base,tag:'deepinfra/bf16',name:'DeepInfra | qwen/qwen3.8-27b-20260814',provider_name:'DeepInfra',supports_implicit_caching:true,
   pricing:{prompt:'0.00000015',completion:'0.000001875',input_cache_read:'0.0000000375',discount:0.25}},provider:'DeepInfra',reported:'qwen/qwen3.8-27b-20260814'},
 };
@@ -43,11 +42,11 @@ test('Luna uses max_completion_tokens, pins azure/us and accepts discarded encry
  await assert.rejects(visible.result);
 });
 
-test('Gemini Flash pins the exact standard Vertex tier even though flex and priority tiers exist', async()=>{
+test('DeepSeek V4 Flash pins the Wafer endpoint with its exact price cap and no reasoning', async()=>{
  const call=run('flash');
  assert.equal((await call.result).answer,'## Steps\n1. Wire it.');
- assert.deepEqual(call.wire.provider.only,['google-vertex/global']);
- assert.deepEqual(call.wire.provider.max_price,{prompt:1.5,completion:9,request:0,image:0});
+ assert.deepEqual(call.wire.provider.only,['wafer/mxfp4']);assert.deepEqual(call.wire.reasoning,{enabled:false});
+ assert.deepEqual(call.wire.provider.max_price,{prompt:0.12,completion:0.17,request:0,image:0});
 });
 
 test('Qwen requires its reviewed discount and disables reasoning', async()=>{
