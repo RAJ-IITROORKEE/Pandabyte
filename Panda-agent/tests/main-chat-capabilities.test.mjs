@@ -36,7 +36,7 @@ test('hosted fast selection is advertised only for its exact hosted flag and ver
  try{
   const f=globalThis.mainCapability={actor:{subject:'fixture'},admitted:true,installed:true,unmetered:true,allowance:null};
   const read=async()=>{const response=await GET(new Request('https://fixture.example/api/panda-agent/capabilities'));assert.equal(response.headers.get('cache-control'),'private, no-store');return response.json();};
-  let value=await read();assert.equal(value.model,'GPT-OSS 20B');assert.deepEqual(value.models.filter(m=>m.enabled).map(m=>m.id),['anthropic/claude-haiku-5.5','openai/gpt-oss-20b']);assert.ok(parseCapabilities(value));
+  let value=await read();assert.equal(value.model,'GPT-OSS 20B');assert.deepEqual(value.models.filter(m=>m.enabled).map(m=>m.id),['openai/gpt-6-luna','anthropic/claude-haiku-5.5','openai/gpt-oss-20b','deepseek/deepseek-v4-flash','qwen/qwen3.8-27b']);assert.ok(parseCapabilities(value));
   f.admitted=false;value=await read();assert.equal(value.status,'unavailable');assert.equal(value.model,null);assert.ok(parseCapabilities(value));
   f.admitted=true;process.env.PANDA_AGENT_HOSTED_MODEL='unknown';value=await read();assert.equal(value.status,'unavailable');assert.ok(parseCapabilities(value));
   process.env.PANDA_AGENT_HOSTED_MODEL='openai/gpt-oss-20b';delete process.env.VERCEL;value=await read();assert.equal(value.model,'GPT-6 Luna');assert.equal(value.models.length,6);assert.ok(parseCapabilities(value));

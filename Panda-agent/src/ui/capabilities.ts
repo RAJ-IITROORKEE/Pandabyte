@@ -1,7 +1,9 @@
 import { nativeModelProfiles, isNativeModelId, profileForNativeModelId, reservationQuantumNanoUsd, type NativeModelId } from '../opencode/native-model-profiles.ts';
-import { fastHostedModel, hostedDirectModelIds, type HostedModelId } from '../hosted-model.ts';
-export type ChatModelId = NativeModelId | HostedModelId;
-export const isChatModelId = (id: unknown): id is ChatModelId => isNativeModelId(id) || id === fastHostedModel.id;
+import { fastHostedModel, flashHostedModel, haikuHostedModel, hostedDirectModelIds, qwenHostedModel, type HostedDirectModelId } from '../hosted-model.ts';
+export type ChatModelId = NativeModelId | HostedDirectModelId;
+export const isChatModelId = (id: unknown): id is ChatModelId => isNativeModelId(id) || hostedDirectModelIds.includes(id as string);
+/** Hosted chats start on Haiku when it is available; otherwise the first enabled model. */
+export const preferredModelId = haikuHostedModel.id;
 export const nativeToolIds = ['convert_units', 'format_bom', 'read_public_docs'] as const;
 export const nativeSkillIds = ['embedded-explainer', 'project-planner', 'bom-assistant', 'engineering-reviewer'] as const;
 export type ModelChoice = {id: string; label:string; enabled:boolean; reason:'unavailable'|'retention_required'|'integration_pending'|'budget_unavailable'|null};
@@ -14,8 +16,8 @@ export const modelChoices = [
  {id:'anthropic/claude-haiku-5.5',label:'Claude Haiku 5.5'},
 ] as const;
 export const disabledModelReasons = ['unavailable','unavailable','retention_required','integration_pending','integration_pending','integration_pending'] as const;
-export const hostedModelChoices = [...modelChoices, { id: fastHostedModel.id, label: fastHostedModel.label }] as const;
-export const hostedDisabledModelReasons = [...disabledModelReasons, 'unavailable'] as const;
+export const hostedModelChoices = [...modelChoices, { id: fastHostedModel.id, label: fastHostedModel.label }, { id: flashHostedModel.id, label: flashHostedModel.label }, { id: qwenHostedModel.id, label: qwenHostedModel.label }] as const;
+export const hostedDisabledModelReasons = [...disabledModelReasons, 'unavailable', 'unavailable', 'unavailable'] as const;
 export type {NativeModelId};
 export type Capabilities = { mode: 'native_assistant' | 'direct_assistant' | 'basic_rag' | 'legacy'; model: 'GPT-6 Luna' | typeof fastHostedModel.label | null; status: 'ready' | 'unavailable'; models:ModelChoice[]; reason: string | null; rag: boolean; tools: string[]; skills: string[]; budget: { limitNanoUsd: number; remainingNanoUsd: number } | null };
 export function parseCapabilities(value: unknown): Capabilities | null {

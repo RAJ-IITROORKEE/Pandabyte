@@ -24,6 +24,6 @@ export function CopyText({ text, label = "Copy" }: { text: string; label?: strin
 }
 
 export function CodeHeader({ language, code }: CodeHeaderProps) {
-  if (language === "chart") return null; // chart blocks render as a chart, not as code
+  if (language && ["chart", "mermaid", "wiring", "steps", "callout"].includes(language)) return null; // designed blocks render themselves, not as code
   return <div className={styles.header}><span>{language && language !== "unknown" ? language : "Code"}</span><CopyText text={code} label="Copy code" /></div>;
 }
