@@ -397,3 +397,28 @@ Survey facts (read-only, 12 Nov):
      4. A service restart, then a check that reconcile left no held slot.
 
      About $0.01 total.
+
+## D4 as built (12 Nov 2026)
+
+- **Trigger:** the chat's web-search toggle, not a model header. A message with `webSearch:true` is accepted only when `PANDA_AGENT_RESEARCH_ENABLED=true` and the gateway configuration is complete (`researchWebSearchEnabled`). Otherwise it is 400, as before.
+  - The toggle is shown only to Admins.
+  - The `X-Panda-Model` picker maps to the research profile: Haiku→Haiku, Luna→Luna, Terra→Terra, GPT-OSS or no header→Haiku. This avoids colliding with the direct Haiku id.
+- **Router:** `directAssistantForActor` wraps the unchanged base bridge. `webSearch` turns go to `research-chat.ts`, and research-owned request ids keep status and cancel there.
+  - Research `state` returns null for non-Admins (`forbidden`), so their chat is unaffected.
+- **Bridge order:**
+  1. `state` → `begin` → per-user `panda_agent_web_search_consume` (one unit per turn, default 20 per day; `PANDA_AGENT_WEB_SEARCH_DAILY_LIMIT`).
+  2. `claim`, which reserves against the $1 per user per day cap.
+  3. One gateway `turn`.
+  4. A terminal result is saved by `receipt`+`finish` or by `fail`. Otherwise status is polled every 3 s by the same request id for up to 330 s, then the turn is left `unknown`. It is never re-dispatched.
+- **Pre-dispatch outcomes:** a refused search allowance or claim budget saves `fail:budget` with zero usage. An error before dispatch closes an unclaimed turn as `fail:invalid`.
+- **Env:**
+  - `PANDA_AGENT_RESEARCH_ENABLED`
+  - `PANDA_RESEARCH_ENDPOINT`
+  - `PANDA_RESEARCH_CALLER_ROLE_ARN`
+  - `PANDA_RESEARCH_DISPATCH_KEY` and `PANDA_RESEARCH_RESULT_KEY` (base64 32 B)
+  - Vercel OIDC: locally `VERCEL_OIDC_TOKEN` from `vercel env pull --environment development`, valid 12 h.
+- **Production (G) still needs:**
+  - the caller role trusting the production OIDC subject;
+  - the five env values in Vercel (sensitive);
+  - a current attestation;
+  - owner approval to deploy.

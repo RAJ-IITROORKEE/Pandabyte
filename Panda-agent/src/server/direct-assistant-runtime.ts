@@ -9,9 +9,13 @@ import {createDirectAssistantStore,type DirectBudgetRefs} from './direct-assista
 import {createPlainLlmChatService,createPlainLlmStore} from './plain-llm-chat.ts';
 import {currentLightweightSession} from './lightweight-connection';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
+import {ChatStoreError} from './chat-store.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
 import {fastHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
+import {createResearchChat,researchProfileFor,withResearch,researchWebSearchEnabled,researchKey32 as key32} from './research-chat.ts';
+export {researchWebSearchEnabled};
+import {createResearchGatewayClient} from './research-gateway-client.ts';
 
 export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.ProcessEnv=process.env){
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
@@ -27,7 +31,7 @@ export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.
 }
 
 /** New turns are direct; historical native turns retain status/cancel support without spawning OpenCode. */
-export function directAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBridge {
+function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBridge {
  const key=process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'';
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
@@ -48,4 +52,17 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
   cancel:async(ref,signal)=>(await service(ref.thread,ref.request)??direct).cancel(ref,signal),
   start:(turn,signal,progress)=>direct.start(turn,signal,progress),
  };
+}
+
+/** Chat turns with web search go to the research journal; its turns keep status/cancel there. Everything else is unchanged. */
+export function directAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBridge {
+ const base=baseAssistantForActor(actor,request);
+ if(!researchWebSearchEnabled())return {...base,start:(turn,signal,progress)=>turn.webSearch?Promise.reject(new ChatStoreError('unavailable')):base.start(turn,signal,progress)};
+ const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
+ const limit=Number(process.env.PANDA_AGENT_WEB_SEARCH_DAILY_LIMIT??'20');
+ const research=createResearchChat({actor,key:process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'',current,profile:researchProfileFor(request.headers.get('X-Panda-Model')),
+  searchLimit:Number.isSafeInteger(limit)&&limit>=1&&limit<=100?limit:20,
+  gateway:()=>createResearchGatewayClient({endpoint:process.env.PANDA_RESEARCH_ENDPOINT!,roleArn:process.env.PANDA_RESEARCH_CALLER_ROLE_ARN!,
+   dispatchKey:key32(process.env.PANDA_RESEARCH_DISPATCH_KEY)!,resultKey:key32(process.env.PANDA_RESEARCH_RESULT_KEY)!})});
+ return withResearch(base,research);
 }

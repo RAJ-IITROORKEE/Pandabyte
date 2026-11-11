@@ -253,3 +253,18 @@ test('plain LLM missing bridge fails closed, and old basic RAG recovery survives
  assert.equal(response.status,200);const value=JSON.parse(await privateWire(response));assert.equal(value.thread.status,'idle');
  assert.equal(f.calls.filter(c=>c==='basic_cancel').length,1);assert.equal(f.calls.includes('basic_start'),false);
 });
+
+test('webSearch:true is refused unless research web search is enabled, then passed to the llm bridge once',async()=>{
+ const turns=[];
+ const setup=enabled=>{const f=fixture();f.deps.llmNewMessages=()=>true;if(enabled!==undefined)f.deps.webSearch=()=>enabled;
+  f.deps.llm=()=>({state:async()=>false,start:async turn=>{turns.push(turn);f.concurrentAdmission();await f.basic.cancel();return {status:'saved'};},status:async()=>({status:'saved'}),cancel:async()=>({status:'saved'})});return f;};
+ for(const enabled of [undefined,false]){const r=await createLightweightHandler(setup(enabled).deps).messagePOST(message({requestId:request,question,webSearch:true}),thread);assert.equal(r.status,400);}
+ assert.equal(turns.length,0);
+ const on=setup(true);
+ assert.equal((await createLightweightHandler(on.deps).messagePOST(message({requestId:request,question,webSearch:true}),thread)).status,200);
+ assert.deepEqual(turns.at(-1),{thread,request,question,webSearch:true});
+ const off=setup(true);
+ assert.equal((await createLightweightHandler(off.deps).messagePOST(message({requestId:request,question,webSearch:false}),thread)).status,200);
+ assert.deepEqual(turns.at(-1),{thread,request,question},'search off keeps the existing turn shape');
+ assert.equal((await createLightweightHandler(setup(true).deps).messagePOST(message({requestId:request,question,webSearch:'yes'}),thread)).status,400);
+});

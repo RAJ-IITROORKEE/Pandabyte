@@ -43,6 +43,8 @@ type Dependencies = {
   native?(actor:ChatActor):NativeChatBridge;
   nativeNewMessages?():boolean;
   basicRag?(actor:ChatActor,request:Request):BasicRagChatBridge;
+  /** Whether a message may set webSearch:true (routed to the research harness by the llm bridge). */
+  webSearch?():boolean;
   basicRagNewMessages?():boolean;
   llm?(actor:ChatActor,request:Request):BasicRagChatBridge;
   llmNewMessages?():boolean;
@@ -107,7 +109,7 @@ export function createLightweightHandler(deps:Dependencies) {
         ? !diagnosticInput || Object.keys(input).some(k=>!['requestId','diagnostic'].includes(k)) || !uuid(input.requestId)
         : guideInput!==undefined
         ? !guideInput || Object.keys(input).some(k=>!['requestId','guide'].includes(k)) || !uuid(input.requestId)
-        : Object.keys(input).some(k=>!['requestId','question','webSearch'].includes(k)) || !uuid(input.requestId) || !text(input.question,2000) || (input.webSearch!==undefined && input.webSearch!==false)))throw 400;
+        : Object.keys(input).some(k=>!['requestId','question','webSearch'].includes(k)) || !uuid(input.requestId) || !text(input.question,2000) || (input.webSearch!==undefined && input.webSearch!==false && !(input.webSearch===true && deps.webSearch?.()===true))))throw 400;
       if(method==='DELETE' && request.body) {const reader=request.body.getReader();try{while(true){const p=await reader.read();if(p.done)break;if(p.value.byteLength){await reader.cancel();throw 400;}}}finally{reader.releaseLock();}}
       const store=deps.store(actor);
       const native=deps.native?.(actor);
@@ -296,7 +298,7 @@ export function createLightweightHandler(deps:Dependencies) {
         const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
         if(llm && deps.llmNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
           const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
-            const result=await llm.start({thread:id!,request:requestId,question},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined));
+            const result=await llm.start({thread:id!,request:requestId,question,...(input.webSearch===true?{webSearch:true}:{})},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined));
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             return releaseBasic(requestId,question);
           };

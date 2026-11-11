@@ -4,7 +4,7 @@ import { authenticateLightweight, currentLightweightSession } from './lightweigh
 import { createLightweightHandler } from './lightweight-handler';
 import { createLightweightStore } from './lightweight-store';
 import { basicRagForActor } from './basic-rag-runtime';
-import { directAssistantForActor } from './direct-assistant-runtime';
+import { directAssistantForActor, researchWebSearchEnabled } from './direct-assistant-runtime';
 import { ChatStoreError } from './chat-store';
 
 // Existing saved basic-RAG turns retain status and cancellation; no new legacy execution is admitted.
@@ -15,6 +15,7 @@ const handlers = createLightweightHandler({
   basicRag: basicRagForActor,
   basicRagNewMessages: () => false,
   ...(process.env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED === 'true' ? { llm: directAssistantForActor } : {}),
+  webSearch: () => process.env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED === 'true' && researchWebSearchEnabled(),
   llmNewMessages: () => process.env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED === 'true',
   nativeNewMessages: () => false,
   guideEnabled: () => false,
