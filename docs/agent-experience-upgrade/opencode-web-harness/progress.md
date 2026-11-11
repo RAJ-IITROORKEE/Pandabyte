@@ -129,3 +129,12 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
   - 1 real Tavily search, 7.4 s through release.
   - Turn times: first 21.6 s, second 11.7 s. Peak memory 392 MB, OOM 0.
 - **All three vision models now pass the real C2 gate** (Haiku run 7, Luna run 2, Terra run 1). Real spend across all runs and diagnostics today ≈ $0.012.
+- **Phase D started (owner approved, 11 Nov 2026).**
+  - Owner decisions: new separate REST API; 24-hour privacy attestation; owner/Admin only; $1 per user per day.
+  - Plan [phase-d-plan.md](phase-d-plan.md) went through three readiness reviews (R1/R2, then "D1 ready").
+- **D1 applied to live, 11 Nov 2026.**
+  - Migration `20261112090000_panda-agent-research-turns.sql`: SHA-256 `297767ea…` before the overlay test was added to the fixture; the migration itself is unchanged since the reviewed fixes.
+  - An independent SQL review found 1 Blocker (fail after receipt double-released the budget) and 4 Majors. All are fixed.
+  - Rollback-only fixture `scripts/check-research-turns-database.py` passed 31/31 on a disposable schema-only InsForge branch (`d1-research-test`, now deleted). It covers the cited-answer path, receipt negatives, ledger and daily cap, fail/cancel, the cross-journal fence both ways, generic finish blocked, MAC/exp/non-admin/other-owner/anon denial, and non-research reads identical to before.
+  - Then applied to live `feh4966v` via the CLI. Verified: migration recorded; RPC and read granted to `authenticated` only; helpers and the pre-research read not executable; both tables RLS on with no grants; 0 research rows.
+  - Not yet run: a live owner-session read smoke test.
