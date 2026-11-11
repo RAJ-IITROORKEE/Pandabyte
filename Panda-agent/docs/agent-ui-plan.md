@@ -35,3 +35,31 @@ Deferred until the hosted agent sends the data: Agent Plan / Progress Tracker (n
 - Typecheck and lint.
 - Preview page at 375, 768, 1024 and 1440 px in light and dark; keyboard through chips, tabs and tool rows; reduced motion stops the shimmer and spinner.
 - Live test on pandabyte-iot.vercel.app with Haiku and GPT-OSS after deploy.
+
+## Live test run, 12 Nov 2026 (pandabyte-iot.vercel.app, owner account)
+
+| # | Prompt | Model | Result |
+| --- | --- | --- | --- |
+| 1 | Tell me about the Panda world | GPT-6 Luna | Pass, asked which meaning (5s) |
+| 2 | ESP32 Wi-Fi + MQTT flowchart | DeepSeek V4 Flash | Pass, mermaid flowchart + 3 points (6s) |
+| 3 | DHT22 to ESP32 wiring diagram | Haiku | Pass after receipt-limit migration: wiring diagram, steps, code, safety callout (8s) |
+| 4 | Arduino IDE setup for ESP32 | Qwen 3.8 27B | Pass after 1 MB stream fix (19s) |
+| 5/11 | ESP32 current bar chart | GPT-6 Luna | Pass after chart series-name limit 40→80 (8s) |
+| 6 | 3 beginner IoT projects with parts and tools | GPT-OSS 20B | Pass (4s); no PandaByte kit links yet |
+| 7 | What is the PandaByte xC3? | Haiku | Pass, cited, compact "3 sources" accordion (6s) |
+| 8–9 | Which PandaByte boards do you sell? → recommended option | Haiku | Pass, 6 options then a 9-board table (2s each) |
+| 10 | Latest stable ESP-IDF release | Haiku | Pass after pronoun follow-up fix: honest "cannot check live sources" (8s) |
+| 12 | I2C register read sequence diagram + mistakes | DeepSeek V4 Flash | Pass (9s) |
+| 13 | Try again on #12 | DeepSeek V4 Flash | Pass |
+
+Fixed during the run: router dead-ends on chip names and bare "it"; Gemini Flash replaced by DeepSeek V4 Flash (Gemini keeps prompts for safety review); answer-size receipt limits (migration 20261112110000); 64 KB stream cap; chart series names; Haiku default.
+
+## Remaining for the agent UI
+
+1. Chats with a failed turn stay "blocked" in the sidebar until the pending request is checked or cancelled; offer a one-click recovery.
+2. Chart polish: wrap long x labels, optional log scale for values spanning several orders of magnitude.
+3. Voice input in Brave: record audio and transcribe on the server with a zero-retention speech model (Brave ships without the browser speech service).
+4. Sidebar, settings and Admin evaluation screens in the affectUI style (own code for Pro designs).
+5. Web search toggle and research answers: control room branch `codex/opencode-web-harness` (D4, 771e290), not yet on main.
+6. PandaByte kit suggestions in general answers need catalog tools (launch plan phase 2).
+7. Multi-agent lanes, plan view and approvals need data from the hosted harness.
