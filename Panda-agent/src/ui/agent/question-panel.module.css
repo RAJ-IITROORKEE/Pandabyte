@@ -1,0 +1,52 @@
+.panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 13px;
+  line-height: 1.45;
+  animation: enter 0.18s ease-out;
+}
+.leaving { animation: leave 0.16s ease-in forwards; pointer-events: none; }
+.pulse { animation: enter 0.18s ease-out, pulse 0.9s ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes leave { from { opacity: 1; } to { opacity: 0; transform: translateY(6px); } }
+@keyframes pulse { 0%, 100% { border-color: var(--divider); } 30% { border-color: #8a8a8a; box-shadow: 0 0 0 3px color-mix(in srgb, #8a8a8a 25%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .panel, .leaving, .pulse { animation: none; } .leaving { opacity: 0; } }
+
+.header { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.needs { display: inline-flex; align-items: center; gap: 4px; flex: none; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, #d97706 14%, transparent); color: #92400e; font-size: 12px; font-weight: 600; }
+:global(:root[data-theme='dark']) .needs { color: #fbbf24; }
+@media (prefers-color-scheme: dark) { :global(:root:not([data-theme])) .needs { color: #fbbf24; } }
+.context { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
+.header .later { margin-left: auto; }
+.later { padding: 2px 6px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
+.later:hover { background: var(--status-soft); color: var(--foreground); }
+.question { margin: 10px 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+
+.options { display: grid; gap: 4px; }
+.option { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 8px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--foreground); font: inherit; text-align: left; cursor: pointer; }
+.option:hover:not(:disabled), .option:focus-visible { background: var(--status-soft); }
+.option:disabled, .send:disabled { opacity: 0.55; cursor: not-allowed; }
+.badge { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: var(--status-soft); color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.text { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.title { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.summary { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill { flex: none; margin-left: auto; padding: 1px 8px; border-radius: 999px; background: var(--status-soft); color: var(--accent-ink); font-size: 12px; font-weight: 600; }
+.other .title { flex: 1; color: var(--muted); font-style: italic; font-weight: 400; }
+.custom { display: flex; gap: 6px; }
+.input { flex: 1; min-width: 0; min-height: 40px; padding: 8px 10px; border: 1px solid var(--divider); border-radius: 10px; background: var(--background); color: var(--foreground); font: inherit; }
+.input::placeholder { color: var(--muted); }
+.send { flex: none; display: grid; place-items: center; width: 40px; border: 1px solid var(--divider); border-radius: 10px; background: var(--status-soft); color: var(--accent-ink); cursor: pointer; }
+.option:focus-visible, .later:focus-visible, .input:focus-visible, .send:focus-visible, .asked:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+.answered { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--accent-ink); font-weight: 600; overflow-wrap: anywhere; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.folded { box-sizing: border-box; display: flex; align-items: center; gap: 6px; width: 100%; padding: 6px 12px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); color: var(--muted); font-size: 13px; }
+.asked { max-width: 100%; padding: 2px 0; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; text-align: left; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; overflow-wrap: anywhere; }
+.asked:hover { color: var(--foreground); }

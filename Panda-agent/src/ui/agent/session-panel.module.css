@@ -1,0 +1,27 @@
+.panel { flex: none; display: grid; align-content: start; gap: 18px; width: 290px; height: 100%; box-sizing: border-box; overflow-y: auto; padding: 14px 16px 24px; border-left: 1px solid var(--divider); background: var(--surface); color: var(--foreground); font-size: 12.5px; }
+.top { display: flex; align-items: center; justify-content: space-between; }
+.top strong { font-size: 13px; font-weight: 600; }
+.close { display: grid; width: 28px; height: 28px; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; }
+.close:hover { background: var(--status-soft); color: var(--foreground); }
+.panel h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.steps { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.steps li { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.steps li[data-state="done"] svg { color: var(--accent-ink); }
+.steps li[data-state="current"] { color: var(--foreground); font-weight: 500; }
+.steps li[data-state="current"] svg { color: var(--accent-ink); }
+.sources { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sources li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tile { display: grid; flex: none; width: 22px; height: 22px; place-items: center; border-radius: 6px; background: var(--status-soft); color: var(--accent-ink); font-size: 11px; font-weight: 700; }
+.sourceText { display: grid; flex: 1; min-width: 0; }
+.sourceText span, .sourceText small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sourceText small { color: var(--muted); font-size: 11px; }
+.sources a { display: grid; flex: none; width: 26px; height: 26px; place-items: center; border-radius: 6px; color: var(--muted); }
+.sources a:hover { background: var(--status-soft); color: var(--foreground); }
+.more { color: var(--muted); padding-left: 30px; }
+.empty { margin: 0; color: var(--muted); line-height: 1.5; }
+.used { display: grid; gap: 8px; margin: 0; }
+.used div { display: flex; justify-content: space-between; gap: 8px; }
+.used dt { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.used dd { margin: 0; text-align: right; }
+.panel :is(button, a):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+@media (max-width: 1100px) { .panel { position: fixed; inset: 0 0 0 auto; z-index: 40; width: min(320px, 92vw); box-shadow: -8px 0 24px -16px color-mix(in srgb, var(--foreground) 40%, transparent); } }

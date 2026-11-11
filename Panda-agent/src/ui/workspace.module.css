@@ -442,3 +442,11 @@
 /* Agent settings view (12 Nov 2026). */
 .settingsWrap { flex: 1; min-width: 0; overflow-y: auto; }
 .settingsWrap[hidden] { display: none; }
+
+/* Chat details panel, home overview (12 Nov 2026). */
+.header { display: flex; align-items: center; justify-content: space-between; }
+.detailsToggle { display: grid; width: 34px; height: 34px; place-items: center; margin-right: 8px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.detailsToggle:hover, .detailsToggle[aria-expanded="true"] { background: var(--status-soft); color: var(--foreground); }
+.detailsSlot { flex: none; height: 100dvh; }
+.homeOverview { display: none; }
+.thread:has(.intro) .homeOverview { display: block; padding: 0 4px; }

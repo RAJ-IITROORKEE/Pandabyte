@@ -8,6 +8,7 @@ import { WorkingPill } from "@/Panda-agent/src/ui/agent/working-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MermaidBlock } from "@/Panda-agent/src/ui/blocks/mermaid-block";
 import { WiringBlock } from "@/Panda-agent/src/ui/blocks/wiring-block";
+import { FlowBlock } from "@/Panda-agent/src/ui/blocks/flow-block";
 import { StepsBlock } from "@/Panda-agent/src/ui/blocks/steps-block";
 import { CalloutBlock } from "@/Panda-agent/src/ui/blocks/callout-block";
 
@@ -28,6 +29,16 @@ const mermaidSample = "flowchart LR\n  A[USB power] --> B[3.3V regulator]\n  B -
 const wiringSample = JSON.stringify({ title: "ESP32 to DHT22", parts: [{ id: "esp", label: "ESP32", pins: ["3V3", "GND", "GPIO4"] }, { id: "dht", label: "DHT22", pins: ["VCC", "DATA", "GND"] }, { id: "r", label: "10k resistor", pins: ["A", "B"] }], wires: [{ from: "esp.3V3", to: "dht.VCC", color: "red" }, { from: "esp.GND", to: "dht.GND", color: "black" }, { from: "esp.GPIO4", to: "dht.DATA", color: "yellow", label: "data" }, { from: "dht.DATA", to: "r.A", color: "green", label: "pull-up" }, { from: "esp.3V3", to: "r.B", color: "orange" }] });
 const stepsSample = JSON.stringify({ title: "Flash the board", steps: [{ title: "Install the driver", detail: "Plug in the board over USB Type-C and install the USB serial driver." }, { title: "Upload the sketch", code: "arduino-cli upload -p COM3 --fqbn esp32:esp32:esp32", lang: "bash" }, { title: "Open the serial monitor", detail: "Set the baud rate to 115200." }] });
 const calloutSample = JSON.stringify({ tone: "warning", title: "Check the voltage", text: "ESP32 GPIO pins are 3.3V only. Do not connect a 5V signal directly." });
+const flowSample = JSON.stringify({ title: "ESP32 relay circuit", nodes: [
+  { id: "usb", label: "USB 5V", kind: "power", detail: "USB supplies 5V from a phone charger or PC. Keep the cable short to limit voltage drop when the relay switches." },
+  { id: "reg", label: "3.3V regulator", kind: "process", detail: "Steps 5V down to 3.3V for the ESP32 logic. Most dev boards already include one." },
+  { id: "esp", label: "ESP32", kind: "mcu", detail: "Reads the sensor and drives the relay from a GPIO. GPIO output is 3.3V and only a few mA." },
+  { id: "dht", label: "DHT22 sensor", kind: "sensor", detail: "Temperature and humidity on a single data pin, with a 10k pull-up to 3.3V." },
+  { id: "q1", label: "NPN transistor", kind: "signal", detail: "Switches the relay coil. A base resistor (about 1k) limits GPIO current; add a flyback diode across the coil." },
+  { id: "rly", label: "Relay", kind: "actuator", detail: "Isolates the motor circuit from logic. The coil draws about 70 mA at 5V." },
+  { id: "mot", label: "Motor", kind: "actuator", detail: "Runs from its own supply through the relay contacts, never from ESP32 pins." }],
+  edges: [{ from: "usb", to: "reg", label: "5V", type: "power" }, { from: "reg", to: "esp", label: "3.3V", type: "power" }, { from: "dht", to: "esp", label: "1-wire", type: "data" }, { from: "esp", to: "q1", label: "GPIO" }, { from: "usb", to: "rly", label: "coil 5V", type: "power" }, { from: "q1", to: "rly" }, { from: "rly", to: "mot", label: "switch", type: "power" }] });
+
 const wiringBad = JSON.stringify({ parts: [{ id: "esp", label: "ESP32", pins: ["3V3"] }, { id: "dht", label: "DHT22", pins: ["VCC"] }], wires: [{ from: "esp.GPIO9", to: "dht.VCC" }] });
 
 export function UiPreview() {
@@ -43,6 +54,7 @@ export function UiPreview() {
     <section><h2 style={{ fontSize: 14 }}>Cited answer</h2><CitationProvider messageId="preview" citations={citations}><SourceStrip /><p style={{ lineHeight: 1.65 }}>The x8266 uses the ESP8266 microcontroller <CitationChip id="S1">[S1]</CitationChip> with 4 MB of SPI flash <CitationChip id="S2">[S2]</CitationChip>. To program it from Arduino, select the board and flash size first <CitationChip id="S3">[S3]</CitationChip>.</p><SourcePanel /></CitationProvider></section>
     <section><h2 style={{ fontSize: 14 }}>Cited answer: one listing, three sections</h2><CitationProvider messageId="preview-same" citations={sameListing}><SourceStrip /><p style={{ lineHeight: 1.65 }}>The x8266 is a compact ESP8266 board <CitationChip id="S1">[S1]</CitationChip> with USB Type-C <CitationChip id="S2">[S2]</CitationChip> and an on-board RGB LED <CitationChip id="S3">[S3]</CitationChip>.</p><SourcePanel /></CitationProvider></section>
     <section><h2 style={{ fontSize: 14 }}>Answer blocks</h2><div style={{ display: "grid", gap: 4 }}><MermaidBlock code={mermaidSample} /><WiringBlock code={wiringSample} /><StepsBlock code={stepsSample} /><CalloutBlock code={calloutSample} /><WiringBlock code={wiringBad} /></div></section>
+    <section><h2 style={{ fontSize: 14 }}>Flow guide</h2><div style={{ display: "grid", gap: 4 }}><FlowBlock code={flowSample} /><FlowBlock code="{broken" /></div></section>
     <section><h2 style={{ fontSize: 14 }}>Source accordion</h2><CitationProvider messageId="preview-acc" citations={citations}><p style={{ lineHeight: 1.65 }}>The x8266 uses the ESP8266 <CitationChip id="S1">[S1]</CitationChip> with 4 MB of flash <CitationChip id="S2">[S2]</CitationChip>.</p><SourceAccordion /></CitationProvider><CitationProvider messageId="preview-acc-same" citations={sameListing}><p style={{ lineHeight: 1.65 }}>Compact board <CitationChip id="S1">[S1]</CitationChip> with USB Type-C <CitationChip id="S2">[S2]</CitationChip>.</p><SourceAccordion /></CitationProvider></section>
   </main>;
 }

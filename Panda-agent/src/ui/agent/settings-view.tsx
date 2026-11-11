@@ -43,7 +43,7 @@ export function SettingsView({ titleRef, models, defaultModel, onDefaultModel, w
       <nav className={styles.nav} aria-label="Settings sections">{sections.map(({ id, label, icon: Icon }) => <a key={id} href={`#${id}`}><Icon size={15} aria-hidden="true" />{label}</a>)}</nav>
       <div className={styles.content}>
         <section id="settings-models" className={styles.card} aria-labelledby="settings-models-title">
-          <h2 id="settings-models-title">Default model</h2>
+          <h2 id="settings-models-title"><Sparkles size={15} aria-hidden="true" /> Default model</h2>
           <p className={styles.help}>Every new chat starts with this model. You can still switch per message in the composer.</p>
           <div className={styles.models} role="radiogroup" aria-label="Default model">{models.map(model => {
             const facts = modelFacts[model.id], checked = model.id === defaultModel;
@@ -55,19 +55,19 @@ export function SettingsView({ titleRef, models, defaultModel, onDefaultModel, w
           <p className={styles.note}><Lock size={13} aria-hidden="true" /> Every model runs on a provider endpoint that keeps no copy of your prompts and does not train on them. Models that cannot meet this, including all Gemini and free models, are not offered.</p>
         </section>
         <section id="settings-preferences" className={styles.card} aria-labelledby="settings-preferences-title">
-          <h2 id="settings-preferences-title">Preferences</h2>
+          <h2 id="settings-preferences-title"><Palette size={15} aria-hidden="true" /> Preferences</h2>
           <div className={styles.row}><span><strong>Appearance</strong><span>Light or dark theme for the whole site.</span></span><ThemeToggle /></div>
           {webSearchAvailable && <div className={styles.row}><span><strong><Globe size={14} aria-hidden="true" /> Start new chats with web search on</strong><span>Answers search the web and cite their sources. They take about 30 seconds.</span></span>
             <button type="button" role="switch" aria-checked={webSearchDefault} className={styles.switch} onClick={() => onWebSearchDefault(!webSearchDefault)}><span className={styles.srOnly}>Start new chats with web search on</span></button></div>}
         </section>
         <section id="settings-data" className={styles.card} aria-labelledby="settings-data-title">
-          <h2 id="settings-data-title">Data &amp; privacy</h2>
+          <h2 id="settings-data-title"><Lock size={15} aria-hidden="true" /> Data &amp; privacy</h2>
           <p className={styles.help}>Your chats are stored in your PandaByte account and only you can read them. Product answers quote approved PandaByte listings; web answers cite the pages they used.</p>
           <div className={styles.row}><span><strong>Delete all chats</strong><span>Removes every saved chat, including archived chats. This cannot be undone.</span></span>
             <button type="button" className={styles.danger} disabled={deleteDisabled} onClick={onDeleteAll}><Trash2 size={14} aria-hidden="true" /> Delete all</button></div>
         </section>
         <section id="settings-account" className={styles.card} aria-labelledby="settings-account-title">
-          <h2 id="settings-account-title">Account</h2>
+          <h2 id="settings-account-title"><UserRound size={15} aria-hidden="true" /> Account</h2>
           <div className={styles.links}><Link href="/account">Account overview</Link><Link href="/account/settings">Profile, sign-in and security</Link></div>
         </section>
       </div>
