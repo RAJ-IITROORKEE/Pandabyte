@@ -76,6 +76,17 @@ Plan only. Nothing here is implemented or approved yet. Judged as a product for 
 | 5 | Admin control | Settings (default model, search on/off, limits); editable skills with 3 to 4 defaults loaded on demand; MCP connectors (table, encrypted secret, tool allowlist, address safety checks) with one free test server | This session | Admin adds a skill and a connector, agent uses both |
 | 6 | Launch | Eval gate across all question types; spend caps and alerts; OpenRouter privacy settings; open to all signed-in users; remove preview labels | Both | Eval pass rate agreed with owner; 100-visitor browse plan unaffected |
 
+## Progress log
+
+- 12 Nov 2026, phase 3 first slice (commits 7365546, c1ae62c, 0b09b7f), live on pandabyte-iot.vercel.app:
+  - code blocks have a language header and Copy code (I1 partly: no syntax colours yet);
+  - dead-end replies render as a notice with example questions (U2); the newest answer has Try again (U4 partly: no edit-and-resend);
+  - chat-limit 429 says so (I7 partly);
+  - Claude Haiku 5.5 is selectable beside GPT-OSS 20B (default in the picker), pinned to OpenRouter google-vertex/global, zero retention, $0.10/$0.50 per M tokens;
+  - chat models are asked for Markdown (U9).
+- Verified live: Haiku product answer with 2 sources; Haiku and GPT-OSS code answers with Copy code; notice and Try again; 375 px light theme, no page side-scroll.
+- New findings: "DHT22" (any model-code-like word) wrongly routes general questions to product lookup (B5); the model picker label is cut off at 375 px; the in-app test browser denies clipboard, so Copy was only verified to show its failure message there.
+
 ## Not checked
 
 - Which env flags are set in production (values are hidden).
