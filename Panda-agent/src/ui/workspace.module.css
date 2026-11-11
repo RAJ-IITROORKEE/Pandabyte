@@ -450,3 +450,6 @@
 .detailsSlot { flex: none; height: 100dvh; }
 .homeOverview { display: none; }
 .thread:has(.intro) .homeOverview { display: block; padding: 0 4px; }
+
+/* Start screen can be taller than the viewport once the overview shows; centre only when it fits. */
+.thread:has(.intro) { justify-content: safe center; overflow-y: auto; }

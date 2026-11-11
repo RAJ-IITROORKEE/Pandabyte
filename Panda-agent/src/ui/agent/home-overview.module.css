@@ -4,8 +4,8 @@
 .head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .head h2 { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; font-weight: 600; }
 .head span { color: var(--muted); font-size: 11.5px; }
-.heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 3px; contain: inline-size; overflow-x: auto; }
-.heat span { width: 100%; min-width: 7px; aspect-ratio: 1; border-radius: 2px; background: var(--status-soft); }
+.heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); grid-auto-columns: 11px; gap: 3px; contain: inline-size; overflow-x: auto; }
+.heat span { width: 11px; height: 11px; border-radius: 2px; background: var(--status-soft); }
 .heat span[data-level="1"] { background: color-mix(in srgb, var(--accent-ink) 30%, var(--status-soft)); }
 .heat span[data-level="2"] { background: color-mix(in srgb, var(--accent-ink) 50%, var(--status-soft)); }
 .heat span[data-level="3"] { background: color-mix(in srgb, var(--accent-ink) 72%, var(--status-soft)); }
