@@ -190,3 +190,102 @@ D0 (contracts above + key generation plan) → D1 (migration + RPC + tests) → 
 - `fail` works before or after claim; `busy`/`attestation_expired` may be decided before claim. A reservation is released only for a claimed turn with calls=0 and cost=0. The usage CHECK becomes `CHECK(usage IS NULL OR failed OR answer_hash IS NOT NULL)`, plus `CHECK(answer_hash IS NULL OR usage IS NOT NULL)`.
 - Fence trigger tables, all keyed `(thread_id,request_id)`: `panda_agent_direct_turns`, `panda_agent_llm_turns`, `panda_agent_native_runs` (the last is not an FK child of `lightweight_turns`, so it gets its own test).
 - `state` and the read overlay use one shared SQL helper for derived `unknown`.
+
+## D2 file-level contract (draft for readiness review)
+
+No change to the test driver `scripts/test-native-research.mjs` (it stays the regression harness). New files only, plus tests. Host run only; no relay or app changes in D2.
+
+1. **`src/server/research-envelopes.ts`** (pure, shared by app and host). The canonical form is `canonicalResearchJSON`.
+   - `signDispatch(key,fields)` / `verifyDispatch(key,raw,mac,now)`: domain `panda-research-dispatch-v1\n`; exact fields `{v:1,action:'turn'|'status'|'cancel',subjectHash,chatId,requestId,profile,modelId,promptHash,exp}`. `exp` must be in `(now, now+65s]`. `chatId`/`requestId` are UUIDs, hashes 64-hex, and the profile must be one of the three, with `modelId` matching its descriptor.
+   - `signResult` / `verifyResult`: domain `panda-research-result-v1\n`; fields `{v:1,subjectHash,chatId,requestId,runId,profile,modelId,promptHash,state:'evidence'|'insufficient'|'unknown'|'failed',reason?,answerHash?,usage:{calls,inputTokens,outputTokens,costNanoUsd},exp}`. `exp` is at most now + 120 s. `answerHash` is present exactly for `evidence`/`insufficient`, and `reason ∈ busy|attestation_expired|tool_not_ready|invalid` exactly for `failed`.
+   - `subjectHash(clerkSubject)` and `researchRunId(subjectHash,chatId,requestId)` (sha256 with domain prefixes).
+   - Keys are 32 random bytes and are never logged.
+   - Tests: round trip, every field tamper, wrong key, expiry, domain separation (a dispatch MAC never verifies as a result).
+2. **`src/server/research-turn-runner.ts`**: `createResearchTurnRunner(options)` with `run(input, {onProgress, signal}) → RunnerResult`. It reuses exactly the driver's verified module calls:
+   - binding/store
+   - container launch and inspection (`verifyResearchContainer`)
+   - attach (gateway `authorize/claim/beforeSend/settle/authorizeRelease/complete` with `createResearchOpenRouter`; broker with `searchHostedPublicWeb`)
+   - prompt: `admitRun`/`claimPrompt`/POST/`markPromptAccepted`
+   - `waitTerminal` → recover attempts → `matchResearchStopResult` → `verifyResearchAnswer` → `finishRun` → remove.
+
+   It drops the test-only paths: scenarios, synthetic frames, captures, assertions, probes. Inputs and options:
+   - Input `{subjectHash, chatId, runId, profile, prompt}`.
+   - Options `{root:'/opt/panda-research', codeSource, keys(), attestation(), slotDir:'/opt/panda-n45-admission', leasePrefix:'panda-research-', fetcher?, searchFetch?, searchLookup?}`. The last three are injection seams, used only by the injected host test.
+   - **Binding**: `/opt/panda-research/<subjectHash>/<chatId>/binding.json` holds `{epoch,bindingHash,owner,sessionID,created}`. `bindingHash = sha256('panda-research-binding-v1\n'+subjectHash+chatId+epoch)`. The store root is per chat. When the current binding has an active (unfinished) run, the epoch increments; the old binding is never reused or replayed.
+   - **Session**: created once per epoch (store `claimCreate`/`markCreated`). Later turns relaunch a fresh container on the same native dir, and `startGeneration(prev,next)` is called first.
+   - **MCP readiness**: after config verification, poll native `GET /api/mcp` (or the equivalent status route from upstream 2.2.5) until `panda_research_search` is connected. The timeout is 20 s, giving `failed:tool_not_ready` with calls=0.
+   - **Attestation** `/etc/panda-research/attestation.json` `{version:1,reviewedAt,expiresAt,keySha256,workspaceSha256,privacy:{paidTraining:false,publicPrompts:false,dataDiscount:false,logging:false,traces:'langsmith_metadata_only'}}`, with `expiresAt-reviewedAt ≤ 24h`. It is checked before launch and as the `policyCurrent` of every provider call. Expired → `failed:attestation_expired`.
+   - **Search scope**: real hosted turns use a public-query guard (`isPublicResearchQuery` with no fixed vocabulary is not possible). D2 keeps the existing broker contract and passes `allowPublicQuery = query => publicQueryShape(query)` (≤400 chars, letters/digits/space/hyphen only, 1–12 words). That is a new, explicitly tested helper; the test vocabulary stays only in the driver.
+   - **Usage**: the sum over settled primary attempts (calls = count, tokens, cost). For `evidence`/`insufficient` the answer is the `ChatAnswer` mapped from `verifyResearchAnswer`: citations `{id:'S1'|'S2',title,sourceUrl:url,capturedAt,quote,sectionPath:[]}`.
+   - **Turn deadline**: 300 s → remove the container and return `unknown` with the usage so far.
+3. **`src/server/research-service-handler.ts`** (testable with a fake runner and an in-memory or temp-dir request store): `handle(request) → {status, ndjson stream | json}`.
+   - It verifies the service token (constant-time, from `/etc/panda-research/service-token`) and the dispatch MAC before anything else.
+   - The seen-request store `/opt/panda-research/requests/<sha256(subjectHash,chatId,requestId)>.json` holds `{promptHash,runId,state,result?}`.
+   - `turn`:
+     - same prompt → stored result or `{state:'running'}`;
+     - different prompt → `409`;
+     - slot busy → a signed `failed:busy` result;
+     - otherwise run, streaming progress lines `{type:'progress',stage}` and then one `{type:'result',payload,mac}`.
+   - `status` returns the stored state/result. `cancel` signals the runner (`unknown` if a provider call was sent).
+   - Restart reconciliation on startup: `running` entries become `unknown`.
+4. **`scripts/research-service.mjs`**: the entrypoint. It is a Node HTTPS server bound to the host private IP and a new port (8444) with its own self-signed certificate under `/etc/panda-research/tls/`. It wires the handler and runner, with a request body ≤16,384 B. It refuses to start unless running as root with the expected file modes.
+5. **Tests**:
+   - `tests/research-envelopes.test.mjs`
+   - `tests/research-service-handler.test.mjs` (fake runner: same-prompt replay, different prompt 409, busy, bad token, bad MAC, expired, restart reconciliation, cancel, stream shape, result MAC verifies with the app's verifier)
+   - `tests/research-turn-runner-helpers.test.mjs` (binding derivation/epoch rule, usage aggregation, citation mapping, `publicQueryShape`, attestation validation).
+6. **Host gate**:
+   - an injected run through the service handler via SSM (loopback client, synthetic model/search injected through the runner seams);
+   - then one real owner-attested turn per model;
+   - then a restart-reconciliation check.
+   - No relay/API until D3.
+
+**Open question for review:** the exact OpenCode 2.2.5 route for MCP connection status. If none exists, readiness becomes "tool listed in the native tool list route".
+
+### D2 revision R1 (readiness review: 2 Blockers, 6 Majors). Authoritative over the D2 draft.
+
+- **Lease**: keep `panda-n45-`+32 hex (`reserveDockerHostSlot` and `verifyResearchContainer` require it). There is no lease-prefix option. The slot dir is the shared one-slot `/opt/panda-n45-admission`; the research service contends with any other native user of that slot, and the existing gateway does not use it.
+- **Layout**:
+  - `/opt/panda-research/chats/<subjectHash>/<chatId>/meta.json` is the sidecar, holding the full `ResearchBinding` per epoch: `{epoch, binding:{binding,owner:subjectHash,sessionID,profileHash,imageId,created}}`. It is written (tmp+fsync+rename) before `createBinding`, and retries rebuild from it.
+  - `.../<chatId>/store` is the store root (`bindings`/`code` only).
+  - The code mount is shared read-only at `/opt/panda-research/code/<profileHash>/mount`, prepared once per profile hash (0444/0555 + manifest).
+- **Per-turn binding sequence**:
+  1. `store.reconcile(binding)` gives the current generation.
+  2. Start a new epoch when any of these holds:
+     - there is an unfinished `activeRun` that `reconcileTerminal` cannot settle;
+     - create is `claimed` (crash mid-create);
+     - `createBinding` returns `conflict`;
+     - the profile hash differs from the stored binding (model switch).
+  3. `startGeneration(b,cur,next)`.
+  4. Skip `claimCreate` and session POST when create is `created`.
+  5. `owned()` checks: version 2.2.5, stable pid, session metadata.
+- **MCP readiness**: add exactly `GET /api/mcp` to the research transport allowlist. Poll it at 200 ms steps for up to 20 s until `name==='panda_research' && status.status==='connected'`, projecting only name and status. **Before relying on it**, verify with one injected host run whether 2.2.5 auto-connects config-declared servers. If it does not, the fallback is the explicit connect route, reviewed separately.
+- **Search scope**: a new helper `researchQueryInScope(query, promptText)`:
+  - letters/digits/space/hyphen, ≤12 words, ≤400 chars;
+  - every lower-cased word must appear in the user's prompt text, or in a fixed generic-doc list (`datasheet documentation docs official reference manual guide pinout example examples tutorial specification specs`).
+  - It is applied by a per-run closure. A short host preface in the prompt states these rules.
+  - The envelope `promptHash` is the user's text hash; the store `run.promptHash` is the digest of the prefaced text, and both are recorded.
+  - Gate: never widen to non-Admin users without trusted scope derivation (C1 plan line 54).
+- **Credentials**: `/etc/panda-research/credentials.json` `{OPENROUTER_API_KEY,TAVILY_API_KEY}`, root 0600, nlink 1, shape-checked. The attestation `keySha256` must equal the key hash. The keys file holds `{dispatchKey,resultKey,serviceToken}` (base64 32 bytes each). The attestation is ≤24 h (a deliberate owner-approved loosening of the ≤30 min test lease).
+- **Attestation currency in three places**: `store.isCurrent`, `policyCurrent`/`dispatchCurrent` (plus `generation===gen && containerId`), and the final terminal check before `finishRun`.
+- **Handler**:
+  - Request files `/opt/panda-research/requests/<sha256(subjectHash,chatId,requestId)>.json`, root 0700 dir and 0600 files, created with `O_EXCL`. They hold `{promptHash,runId,lease?,state,result?}` with an **unsigned** stored result, signed fresh (exp 120 s) on every response.
+  - The result is persisted (tmp+fsync+rename) before it is streamed.
+  - The MAC `action` must equal the route, and `promptHash` must match on status and cancel.
+  - The runner is detached from the HTTP response (stream write errors are swallowed).
+  - All runner errors map to `unknown` (provider call possibly sent) or `failed:tool_not_ready|attestation_expired|busy|invalid` (none sent), with cleanup in `finally`.
+  - Body ≤16,384 B and prompt ≤8,000 UTF-8 bytes.
+- **Cancel**: `store.cancelRun(run,'cancelled')`, then native interrupt (`resume=false`), abort the gateway, remove the container. The result is `unknown` with the settled usage (never `evidence`). No store calls inside a `finishRun` verify callback.
+- **Restart/slot recovery**: the lease name is recorded in the request file before reserving. On service start, every `running` entry → `unknown`; remove its container by lease name, prove removal (`ps` empty), then unlink the stale slot file through a new helper `releaseStaleDockerHostSlot(dir, lease)` in `native-docker-host-quota.ts`.
+- **Kept driver checks**:
+  - image inspect (arm64, exact id), MemAvailable ≥1 GiB, disk ≥2 GiB, root dir mode/uid;
+  - `remove()` with the uncertain-create-by-name path, the `ps` proof and slot retention on failure;
+  - `recheckModelRelease` + `authorizeRelease` on the final op and each used source, then `finishRun`;
+  - `claimPrompt`/`markPromptAccepted` non-dispatch paths → `unknown`;
+  - OOM/cgroup proof failure → `unknown`, not a crash.
+- **Retention**: request files older than 7 days are deleted on startup (results are already saved in InsForge by the app).
+
+### MCP readiness, verified (11 Nov 2026)
+
+- Injected host run `1e0d3b49…`, SSM `f6dea663`: 9 checks, 0 real calls.
+- `GET /api/mcp` (newly allowed in both the host transport and the in-container proxy) returned `[]` right after config verification, then `[{name:'panda_research',status:'connected'}]` after 2,876 ms. OpenCode 2.2.5 auto-connects config-declared servers; no connect route is needed.
+- This confirms the Haiku run-2 startup race. Readiness = poll until `panda_research` is `connected` (200 ms steps, 20 s cap) before the first `claimPrompt`.

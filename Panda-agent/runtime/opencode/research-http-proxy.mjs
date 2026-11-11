@@ -14,7 +14,7 @@ if(!q||Object.keys(q).some(k=>!['sessionID','generation','profile','directory','
  ||!q.ownership||Object.keys(q.ownership).sort().join(',')!=='binding,owner,profileHash'||!Object.values(q.ownership).every(hex)||!['GET','POST'].includes(q.method)||typeof q.path!=='string')fail();
 const base='/api/session/'+q.sessionID;
 if(q.method==='GET'){
- if(q.body!==undefined||!(['/api/info','/api/config','/api/model','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(q.path)||new RegExp('^'+base+'/message\\?limit=100&cursor=[A-Za-z0-9_-]{1,2048}(?:%3D){0,2}$').test(q.path)))fail();
+ if(q.body!==undefined||!(['/api/info','/api/config','/api/model','/api/mcp','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(q.path)||new RegExp('^'+base+'/message\\?limit=100&cursor=[A-Za-z0-9_-]{1,2048}(?:%3D){0,2}$').test(q.path)))fail();
 }else{
  if(typeof q.body!=='string'||Buffer.byteLength(q.body)>98304)fail();const body=JSON.parse(q.body);
  if(q.path==='/api/session'){

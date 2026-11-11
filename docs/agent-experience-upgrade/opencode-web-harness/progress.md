@@ -137,4 +137,4 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
   - An independent SQL review found 1 Blocker (fail after receipt double-released the budget) and 4 Majors. All are fixed.
   - Rollback-only fixture `scripts/check-research-turns-database.py` passed 31/31 on a disposable schema-only InsForge branch (`d1-research-test`, now deleted). It covers the cited-answer path, receipt negatives, ledger and daily cap, fail/cancel, the cross-journal fence both ways, generic finish blocked, MAC/exp/non-admin/other-owner/anon denial, and non-research reads identical to before.
   - Then applied to live `feh4966v` via the CLI. Verified: migration recorded; RPC and read granted to `authenticated` only; helpers and the pre-research read not executable; both tables RLS on with no grants; 0 research rows.
-  - Not yet run: a live owner-session read smoke test.
+  - Live owner-session read smoke test, run by the peer session after the apply: an existing owner chat returned 200 with the same 4 assistant messages, its 2 citations intact, and no new masking.

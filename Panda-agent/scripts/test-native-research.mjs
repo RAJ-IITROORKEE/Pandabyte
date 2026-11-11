@@ -34,7 +34,7 @@ const imageMode=process.env.PANDA_RESEARCH_IMAGE_FIXTURE==='1';
 const parallelMode=process.env.PANDA_RESEARCH_PARALLEL_FIXTURE==='1';if(parallelMode&&modelMode!=='injected')throw Error('Parallel fixture requires injected model mode');if(imageMode&&(modelMode!=='injected'||!isVisionResearchProfile(profile)))throw Error('Image fixture requires an injected vision profile');
 if(!['--aws-synthetic','--aws-search-injected','--aws-search-real','--aws-model-injected','--aws-model-real'].includes(mode)||process.argv.length!==4||process.env.PANDA_RESEARCH_AWS_FIXTURE!=='i-05bcf2573a0b77f7a'||process.platform!=='linux'||process.getuid?.()!==0||!/^\/opt\/panda-research-tests\/[a-f0-9]{32}\/runtime$/.test(root??''))throw Error('Explicit selected-host fixture invocation required');
 const command=async(args,env)=> (await exec('docker',args,{timeout:65000,maxBuffer:2097152,env:env?{PATH:process.env.PATH,...env}:undefined})).stdout.trim();
-let configDiagnostic=null,stage='preflight',runtimeStep='preflight',active,store,codeDirectory,profileHash,retainedUnknown=false;
+let mcpStatus=null,configDiagnostic=null,stage='preflight',runtimeStep='preflight',active,store,codeDirectory,profileHash,retainedUnknown=false;
 const counts={providerDispatches:0,toolDispatches:0,deniedAuxiliary:0,unknownReplayDenials:0},checks=[],started=performance.now();
 const publicQuery='RP2040 PIO official documentation',publicScope={words:['rp2040','pio','raspberry','pi','official','documentation','docs','programmable','input','output','state','machine','machines','microcontroller','datasheet','reference','manual','programming','guide','example','examples','interface','interfaces','uart','spi','i2c'],required:['rp2040','pio']};
 let realSearchCalls=0,realProviderCalls=0,searchReceipt,searchKey,modelKey,privacyLease;
@@ -239,6 +239,8 @@ async function attach(ctx){
  const loaded=await json(ctx.transport,'GET','/api/config'),expectedConfig=researchConfig(ctx.generation,ctx.environment.PANDA_RESEARCH_CHANNEL_TOKEN,profile);
  if(!verifiedResearchConfig(loaded,expectedConfig)){const info=Array.isArray(loaded)?loaded[0]?.info:null,model=cfg=>Object.values(cfg?.providers??{})[0]?.models;configDiagnostic={shape:Array.isArray(loaded)?loaded.map(entry=>entry?.type):typeof loaded,topKeysMissing:Object.keys(expectedConfig).filter(key=>!info||!Object.hasOwn(info,key)),topKeysExtra:info?Object.keys(info).filter(key=>!Object.hasOwn(expectedConfig,key)):null,mediaLoaded:info?.media??null,modelLoaded:model(info)??null};}
  assert.equal(verifiedResearchConfig(loaded,expectedConfig),true);
+ // D2 readiness probe: record only MCP server names and statuses (never error text) at attach and after a short wait.
+ if(!mcpStatus){const project=r=>Array.isArray(r?.data)?r.data.map(s=>({name:s?.name,status:s?.status?.status})):typeof r;const t0=performance.now(),first=project(await json(ctx.transport,'GET','/api/mcp'));let after=first,waitedMs=0;for(let i=0;i<50&&!(Array.isArray(after)&&after.some(s=>s.status==='connected'));i++){await pause(200);after=project(await json(ctx.transport,'GET','/api/mcp'));waitedMs=Math.round(performance.now()-t0);}mcpStatus={first,after,waitedMs};}
 }
 async function launch(ctx){
  runtimeStep='create_container';
@@ -378,7 +380,7 @@ try{
    assert.ok(['absent','array:0'].includes(imageEvidence.textOnlyUserRowFiles),'text_only_row_files_shape');checks.push('native_text_only_row_has_no_files');
    assert.equal(counts.deniedAuxiliary,0);
   }
-  output={state:'native_model_passed',fullPhaseC2Gate:false,mode:modelMode,...(parallelEvidence?{parallelEvidence}:{}),...(imageEvidence?{imageEvidence}:{}),version:'2.2.5',profileHash,checks,counts,modelReceipts,searchTimings,firstTurnMs,secondTurnMs,realProviderCalls,realSearchCalls,durationMs:Math.round(performance.now()-started)};
+  output={state:'native_model_passed',fullPhaseC2Gate:false,mode:modelMode,...(mcpStatus?{mcpStatus}:{}),...(parallelEvidence?{parallelEvidence}:{}),...(imageEvidence?{imageEvidence}:{}),version:'2.2.5',profileHash,checks,counts,modelReceipts,searchTimings,firstTurnMs,secondTurnMs,realProviderCalls,realSearchCalls,durationMs:Math.round(performance.now()-started)};
  }else if(searchMode){
   stage='native_search_tool_loop';const ctx=await newOwner();ctx.probeMcp=true;await prompt(ctx,'Find public RP2040 PIO official documentation.','search');const observed=await waitTerminal(ctx,60000);
   assert.equal(observed.result.outcome,'succeeded');assert.equal(observed.result.tools.length,1);assert.equal(observed.result.tools[0].name,toolName);assert.equal(observed.result.tools[0].status,'completed');assert.equal(counts.providerDispatches,2);assert.equal(counts.toolDispatches,1);
@@ -417,7 +419,7 @@ try{
  await Promise.race([Promise.allSettled(modelCaptures),pause(2000)]);
  const continuationTools=active?.continuationTools??null;
  let cleanup='not_needed';if(active)try{await remove(active);active=null;cleanup='exact_container_removed';}catch{cleanup='needs_review';}
- output={state:'failed',stage,failureAt:runtimeStep,...(continuationTools?{continuationTools}:{}),version:'2.2.5',profileHash,checks,counts,retainedUnknown,cleanup,...(nativeDiagnostic?{nativeDiagnostic}:{}),...(runtimeStep==='inspect_container'?{inspection}:{}),...(configDiagnostic?{configDiagnostic}:{}),modelObservations,realProviderCalls,realSearchCalls,errorClass:error instanceof assert.AssertionError?'assertion':'unavailable',durationMs:Math.round(performance.now()-started)};process.exitCode=1;
+ output={state:'failed',stage,failureAt:runtimeStep,...(mcpStatus?{mcpStatus}:{}),...(continuationTools?{continuationTools}:{}),version:'2.2.5',profileHash,checks,counts,retainedUnknown,cleanup,...(nativeDiagnostic?{nativeDiagnostic}:{}),...(runtimeStep==='inspect_container'?{inspection}:{}),...(configDiagnostic?{configDiagnostic}:{}),modelObservations,realProviderCalls,realSearchCalls,errorClass:error instanceof assert.AssertionError?'assertion':'unavailable',durationMs:Math.round(performance.now()-started)};process.exitCode=1;
 }
 output.memoryEvidence=memoryEvidence;
 await fs.writeFile(path.join(path.dirname(root),'evidence.json'),JSON.stringify(output,null,2),{mode:0o600,flag:'wx'});console.log(JSON.stringify(output));

@@ -31,7 +31,7 @@ export function createResearchDockerTransport(config:{containerId:string;session
  const createBody={id:sessionID,title:'panda-research-'+ownership.binding,agent:'panda-research',model:{providerID:selected.providerID,id:selected.modelID},location:{directory},metadata:{pandaResearch:ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:selected.toolName,resource:'*',effect:'allow'}]};
  function valid(method:string,path:string,body:unknown){
   if(closed||typeof path!=='string'||!['GET','POST'].includes(method))return false;
-  if(method==='GET')return body===undefined&&(['/api/info','/api/config','/api/model','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(path)
+  if(method==='GET')return body===undefined&&(['/api/info','/api/config','/api/model','/api/mcp','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(path)
    ||new RegExp('^'+base+'/message\\?limit=100&cursor=[A-Za-z0-9_-]{1,2048}(?:%3D){0,2}$').test(path));
   if(!researchJSON(body,98304)||!researchObject(body))return false;
   if(path===base+'/interrupt?resume=false')return Object.keys(body).length===0;

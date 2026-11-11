@@ -36,3 +36,22 @@ export async function reserveDockerHostSlot(directory: string, leaseName: string
   if (busyIsNull) return null;
   throw Error('Native host capacity unavailable');
 }
+
+/** Frees `lease`'s slot file after a restart. Only call once the caller proved the lease's container is removed. Returns false when the lease holds no slot. */
+export async function releaseStaleDockerHostSlot(directory: string, leaseName: string): Promise<boolean> {
+  if (!path.isAbsolute(directory) || !/^panda-n45-[a-f0-9]{32}$/.test(leaseName)) throw Error('Invalid host admission');
+  const dir = await realpath(directory);
+  for (let n = 0; n < limit; n++) {
+    const file = path.join(dir, `slot-${n}`);
+    let reader;
+    try { reader = await open(file, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0)); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue; throw error; }
+    try {
+      const before = await reader.stat(), value = await reader.readFile('utf8');
+      if (value !== leaseName + '\n') continue;
+      const current = await lstat(file);
+      if (!before.isFile() || current.isSymbolicLink() || before.dev !== current.dev || before.ino !== current.ino) throw Error('Host slot ownership unverified');
+      await unlink(file); await syncDirectory(dir); return true;
+    } finally { await reader.close(); }
+  }
+  return false;
+}
