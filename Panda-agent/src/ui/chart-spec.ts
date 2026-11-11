@@ -16,7 +16,7 @@ export function parseChartSpec(source: string): ChartSpec | null {
   if (!Array.isArray(x) || x.length < 1 || x.length > 50 || !x.every(label => text(label, 40))) return null;
   if (!Array.isArray(series) || series.length < 1 || series.length > 4) return null;
   for (const item of series) {
-    if (!isRecord(item) || !onlyKeys(item, ['name', 'values']) || !text(item.name, 40)) return null;
+    if (!isRecord(item) || !onlyKeys(item, ['name', 'values']) || !text(item.name, 80)) return null;
     if (!Array.isArray(item.values) || item.values.length !== x.length || !item.values.every(n => typeof n === 'number' && Number.isFinite(n))) return null;
   }
   return { type: raw.type, ...(raw.title !== undefined ? { title: raw.title as string } : {}), x: x as string[], series: series as ChartSpec['series'] };
