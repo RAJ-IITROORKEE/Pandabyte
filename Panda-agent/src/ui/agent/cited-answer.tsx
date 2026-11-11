@@ -1,22 +1,24 @@
 "use client";
 
-import { Check, Copy, ExternalLink } from "lucide-react";
-import { createContext, useContext, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Check, ChevronDown, Copy, ExternalLink } from "lucide-react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { excerpt, sharedTitle, shortTitle, sourceLabels, visibleCards, type CitationView } from "./citation-view";
 import styles from "./cited-answer.module.css";
 
-type Ctx = { citations: CitationView[]; selected: string; select: (id: string, scroll?: boolean) => void; setPanel: (el: HTMLDivElement | null) => void };
+type Ctx = { citations: CitationView[]; selected: string; seq: number; select: (id: string, scroll?: boolean) => void; setPanel: (el: HTMLDivElement | null) => void };
 const CitationContext = createContext<Ctx | null>(null);
 
 export function CitationProvider({ messageId, citations, children }: { messageId: string; citations: CitationView[]; children: ReactNode }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [panel, setPanel] = useState<HTMLDivElement | null>(null);
+  const [seq, setSeq] = useState(0);
   const selected = citations.some(c => c.id === picked) ? picked! : citations[0]?.id ?? "";
   const select = (id: string, scroll = false) => {
     setPicked(id);
+    if (scroll) setSeq(n => n + 1); // lets SourceAccordion react even when the id is unchanged
     if (scroll) requestAnimationFrame(() => panel?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
   };
-  return <CitationContext.Provider key={messageId} value={{ citations, selected, select, setPanel }}>{children}</CitationContext.Provider>;
+  return <CitationContext.Provider key={messageId} value={{ citations, selected, seq, select, setPanel }}>{children}</CitationContext.Provider>;
 }
 
 export function SourceStrip() {
@@ -67,6 +69,55 @@ export function SourcePanel() {
         <span className={styles.feedback} role="status">{fb}</span>
       </div>
     </div>
+  </div>;
+}
+
+export function SourceAccordion() {
+  const ctx = useContext(CitationContext);
+  const [open, setOpen] = useState(false);
+  const [row, setRow] = useState<string | null>(null);
+  const [seenSeq, setSeenSeq] = useState(0);
+  const [feedback, setFeedback] = useState<{ id: string; text: string } | null>(null);
+  const uid = useId();
+  const listId = `${uid}-list`, rowId = (id: string) => `${uid}-row-${id}`;
+  const seq = ctx?.seq ?? 0, selected = ctx?.selected;
+  // A chip click bumps seq: open the list and the chosen row (adjusted during render, no effect round-trip).
+  if (seq !== seenSeq) { setSeenSeq(seq); if (selected) { setOpen(true); setRow(selected); } }
+  useEffect(() => {
+    if (seq) document.getElementById(`${uid}-row-${selected}`)?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, [seq]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!ctx?.citations.length) return null;
+  const { citations } = ctx, labels = sourceLabels(citations), shared = sharedTitle(citations);
+  const domains = [...new Set(citations.map(c => c.domain))].slice(0, 3);
+  async function copy(c: CitationView) {
+    try { await navigator.clipboard.writeText(c.quote); setFeedback({ id: c.id, text: "Copied" }); } catch { setFeedback({ id: c.id, text: "Could not copy" }); }
+  }
+  return <div className={styles.acc}>
+    <button type="button" className={styles.accHead} aria-expanded={open} aria-controls={listId} onClick={() => setOpen(o => !o)}>
+      <span className={styles.stack} aria-hidden="true">{domains.map(d => <span key={d} className={styles.fav}>{d.replace(/^www\./, "").charAt(0).toUpperCase()}</span>)}</span>
+      <span className={styles.accLabel}>{citations.length} {citations.length === 1 ? "source" : "sources"}</span>
+      <ChevronDown size={14} aria-hidden="true" className={styles.chev} />
+    </button>
+    {open && <div id={listId} role="group" aria-label="Sources" className={styles.accList}>
+      {shared && <p className={styles.accShared}>From {shortTitle(shared, 90)}</p>}
+      {citations.map(c => {
+        const l = labels.get(c.id)!, expanded = row === c.id, fb = feedback?.id === c.id ? feedback.text : "";
+        return <div key={c.id} id={rowId(c.id)} className={styles.accRow}>
+          <div className={styles.accLine}>
+            <button type="button" className={styles.accMain} aria-expanded={expanded} aria-controls={`${rowId(c.id)}-q`} onClick={() => setRow(expanded ? null : c.id)}>
+              <span className={styles.badge}>{c.n}</span>
+              <span className={styles.accTitle}>{shortTitle(l.primary, 90)}</span>
+              <span className={styles.accMeta}>{c.domain}{c.date ? ` · ${c.date}` : ""}</span>
+            </button>
+            {c.href && <a className={styles.accOpen} href={c.href} target="_blank" rel="noopener noreferrer" aria-label={`Open source ${c.n}: ${c.domain}`}><ExternalLink size={13} aria-hidden="true" /></a>}
+          </div>
+          {expanded && <div id={`${rowId(c.id)}-q`} className={styles.accBody}>
+            {c.quote && <p className={styles.accQuote}>{c.quote}</p>}
+            {c.quote && <div className={styles.accActions}><button type="button" className={styles.accCopy} onClick={() => copy(c)}>Copy quote</button><span className={styles.feedback} role="status">{fb}</span></div>}
+          </div>}
+        </div>;
+      })}
+    </div>}
   </div>;
 }
 

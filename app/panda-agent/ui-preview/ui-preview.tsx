@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { ThinkingPanel } from "@/Panda-agent/src/ui/agent/thinking-panel";
 import { ToolCallGroup } from "@/Panda-agent/src/ui/agent/tool-calls";
-import { CitationChip, CitationProvider, SourcePanel, SourceStrip } from "@/Panda-agent/src/ui/agent/cited-answer";
+import { CitationChip, CitationProvider, SourceAccordion, SourcePanel, SourceStrip } from "@/Panda-agent/src/ui/agent/cited-answer";
 import { WorkingPill } from "@/Panda-agent/src/ui/agent/working-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MermaidBlock } from "@/Panda-agent/src/ui/blocks/mermaid-block";
+import { WiringBlock } from "@/Panda-agent/src/ui/blocks/wiring-block";
+import { StepsBlock } from "@/Panda-agent/src/ui/blocks/steps-block";
+import { CalloutBlock } from "@/Panda-agent/src/ui/blocks/callout-block";
 
 const citations = [
   { id: "S1", n: 1, title: "PandaByte x8266 Wi-Fi development board", domain: "pandabyte-iot.vercel.app", href: "https://pandabyte-iot.vercel.app/products", date: "11 Nov 2026", quote: "The x8266 board is built around the ESP8266 microcontroller with 4 MB of SPI flash and a CH340 USB-to-serial bridge.", kind: "Product listing" },
@@ -20,6 +24,11 @@ const sameListing = [
   { id: "S3", n: 3, title: listing, domain: "www.pandabyte.in", date: "30 Oct 2026", quote: "Includes an on-board RGB LED for status indication." },
 ];
 const steps = ["Understanding your question", "Reading sources", "Selecting evidence", "Checking citations"];
+const mermaidSample = "flowchart LR\n  A[USB power] --> B[3.3V regulator]\n  B --> C[ESP32]\n  C -->|GPIO4| D[DHT22]";
+const wiringSample = JSON.stringify({ title: "ESP32 to DHT22", parts: [{ id: "esp", label: "ESP32", pins: ["3V3", "GND", "GPIO4"] }, { id: "dht", label: "DHT22", pins: ["VCC", "DATA", "GND"] }, { id: "r", label: "10k resistor", pins: ["A", "B"] }], wires: [{ from: "esp.3V3", to: "dht.VCC", color: "red" }, { from: "esp.GND", to: "dht.GND", color: "black" }, { from: "esp.GPIO4", to: "dht.DATA", color: "yellow", label: "data" }, { from: "dht.DATA", to: "r.A", color: "green", label: "pull-up" }, { from: "esp.3V3", to: "r.B", color: "orange" }] });
+const stepsSample = JSON.stringify({ title: "Flash the board", steps: [{ title: "Install the driver", detail: "Plug in the board over USB Type-C and install the USB serial driver." }, { title: "Upload the sketch", code: "arduino-cli upload -p COM3 --fqbn esp32:esp32:esp32", lang: "bash" }, { title: "Open the serial monitor", detail: "Set the baud rate to 115200." }] });
+const calloutSample = JSON.stringify({ tone: "warning", title: "Check the voltage", text: "ESP32 GPIO pins are 3.3V only. Do not connect a 5V signal directly." });
+const wiringBad = JSON.stringify({ parts: [{ id: "esp", label: "ESP32", pins: ["3V3"] }, { id: "dht", label: "DHT22", pins: ["VCC"] }], wires: [{ from: "esp.GPIO9", to: "dht.VCC" }] });
 
 export function UiPreview() {
   const [started] = useState(() => Date.now());
@@ -33,5 +42,7 @@ export function UiPreview() {
     <section><h2 style={{ fontSize: 14 }}>Tool calls: finished</h2><ToolCallGroup live={false} calls={[{ id: "1", name: "catalog_search", label: "Approved sources", state: "complete", durationMs: 820 }, { id: "2", name: "read_public_docs", label: "Official documentation", state: "failed" }, { id: "3", name: "format_bom", label: "Component outline", state: "unknown" }]} /></section>
     <section><h2 style={{ fontSize: 14 }}>Cited answer</h2><CitationProvider messageId="preview" citations={citations}><SourceStrip /><p style={{ lineHeight: 1.65 }}>The x8266 uses the ESP8266 microcontroller <CitationChip id="S1">[S1]</CitationChip> with 4 MB of SPI flash <CitationChip id="S2">[S2]</CitationChip>. To program it from Arduino, select the board and flash size first <CitationChip id="S3">[S3]</CitationChip>.</p><SourcePanel /></CitationProvider></section>
     <section><h2 style={{ fontSize: 14 }}>Cited answer: one listing, three sections</h2><CitationProvider messageId="preview-same" citations={sameListing}><SourceStrip /><p style={{ lineHeight: 1.65 }}>The x8266 is a compact ESP8266 board <CitationChip id="S1">[S1]</CitationChip> with USB Type-C <CitationChip id="S2">[S2]</CitationChip> and an on-board RGB LED <CitationChip id="S3">[S3]</CitationChip>.</p><SourcePanel /></CitationProvider></section>
+    <section><h2 style={{ fontSize: 14 }}>Answer blocks</h2><div style={{ display: "grid", gap: 4 }}><MermaidBlock code={mermaidSample} /><WiringBlock code={wiringSample} /><StepsBlock code={stepsSample} /><CalloutBlock code={calloutSample} /><WiringBlock code={wiringBad} /></div></section>
+    <section><h2 style={{ fontSize: 14 }}>Source accordion</h2><CitationProvider messageId="preview-acc" citations={citations}><p style={{ lineHeight: 1.65 }}>The x8266 uses the ESP8266 <CitationChip id="S1">[S1]</CitationChip> with 4 MB of flash <CitationChip id="S2">[S2]</CitationChip>.</p><SourceAccordion /></CitationProvider><CitationProvider messageId="preview-acc-same" citations={sameListing}><p style={{ lineHeight: 1.65 }}>Compact board <CitationChip id="S1">[S1]</CitationChip> with USB Type-C <CitationChip id="S2">[S2]</CitationChip>.</p><SourceAccordion /></CitationProvider></section>
   </main>;
 }

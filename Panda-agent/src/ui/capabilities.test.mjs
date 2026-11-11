@@ -46,13 +46,13 @@ test('direct assistant exposes Luna only with no native tools or skills',()=>{
  assert.equal(parseCapabilities({...direct,models:models.map((m,i)=>i===3?{...m,enabled:true,reason:null}:m)}),null);
 });
 
-test('hosted direct capabilities name and enable only the exact fast model', () => {
- const hosted = { ...valid, mode:'direct_assistant', model:'GPT-OSS 20B', budget:null, rag:true, models:hostedModelChoices.map((m,i)=>({...m,enabled:i===5||i===6,reason:i===5||i===6?null:hostedDisabledModelReasons[i]})) };
+test('hosted direct capabilities enable only the reviewed zero-retention models', () => {
+ const hosted = { ...valid, mode:'direct_assistant', model:'GPT-OSS 20B', budget:null, rag:true, models:hostedModelChoices.map((m,i)=>({...m,enabled:[0,5,6,7,8].includes(i),reason:[0,5,6,7,8].includes(i)?null:hostedDisabledModelReasons[i]})) };
  assert.deepEqual(parseCapabilities(hosted),hosted);
  assert.equal(activeModelLabel(hosted.models,'openai/gpt-oss-20b',null),'GPT-OSS 20B');
  const off={...hosted,model:null,status:'unavailable',reason:'connection_unavailable',rag:false,models:hostedModelChoices.map((m,i)=>({...m,enabled:false,reason:hostedDisabledModelReasons[i]}))};
  assert.deepEqual(parseCapabilities(off),off);
- for(const change of [{mode:'native_assistant'},{mode:'basic_rag'},{model:'GPT-6 Luna'},{status:'unavailable'},{reason:'disabled'},{budget:valid.budget},{tools:['convert_units']},{models:hosted.models.map((m,i)=>i===0?{...m,enabled:true,reason:null}:m)},{models:hosted.models.map((m,i)=>i===6?{...m,label:'Invented',extra:true}:m)}]) assert.equal(parseCapabilities({...hosted,...change}),null);
+ for(const change of [{mode:'native_assistant'},{mode:'basic_rag'},{model:'GPT-6 Luna'},{status:'unavailable'},{reason:'disabled'},{budget:valid.budget},{tools:['convert_units']},{models:hosted.models.map((m,i)=>i===2?{...m,enabled:true,reason:null}:m)},{models:hosted.models.map((m,i)=>i===6?{...m,label:'Invented',extra:true}:m)}]) assert.equal(parseCapabilities({...hosted,...change}),null);
  assert.equal(parseCapabilities({...off,model:'GPT-OSS 20B'}),null);
  assert.equal(parseCapabilities({...off,rag:true}),null);
  assert.equal(parseCapabilities({...valid,model:'GPT-OSS 20B'}),null);
