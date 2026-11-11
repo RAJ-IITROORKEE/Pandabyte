@@ -1,4 +1,4 @@
-.dialog { width: min(440px, calc(100vw - 32px)); box-sizing: border-box; padding: 18px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); color: var(--foreground); font-size: 14px; line-height: 1.55; }
+.dialog { position: fixed; inset: 0; margin: auto; height: fit-content; max-height: calc(100dvh - 32px); overflow: auto; width: min(440px, calc(100vw - 32px)); box-sizing: border-box; padding: 18px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); color: var(--foreground); font-size: 14px; line-height: 1.55; }
 .dialog::backdrop { background: color-mix(in srgb, var(--background) 55%, transparent); backdrop-filter: blur(2px); }
 .dialog p { margin: 10px 0 0; color: var(--muted); }
 .head { display: flex; align-items: center; gap: 10px; }
