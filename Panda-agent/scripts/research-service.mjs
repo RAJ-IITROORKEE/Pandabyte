@@ -38,7 +38,7 @@ try {
   if (Object.keys(k).sort().join(',') !== 'dispatchKey,resultKey,serviceToken') throw bad('keys.json invalid');
   keys = { dispatchKey: key32(k.dispatchKey, 'dispatchKey'), resultKey: key32(k.resultKey, 'resultKey'), serviceToken: key32(k.serviceToken, 'serviceToken') };
   if (new Set([k.dispatchKey, k.resultKey, k.serviceToken]).size !== 3) throw bad('keys must be distinct');
-  await credentials(); await jsonFile(path.join(etc, 'attestation.json'), 0o600);
+  await credentials(); // attestation.json is optional at startup: until the owner installs one, turns fail attestation_expired
   const keyStat = await fs.lstat(path.join(etc, 'tls', 'key.pem')).catch(() => null);
   if (!keyStat || !keyStat.isFile() || keyStat.isSymbolicLink() || keyStat.uid !== 0 || (keyStat.mode & 0o777) !== 0o600) throw bad('tls key denied');
   [cert, tlsKey] = await Promise.all([fs.readFile(path.join(etc, 'tls', 'cert.pem')), fs.readFile(path.join(etc, 'tls', 'key.pem'))]);
@@ -46,7 +46,8 @@ try {
 
 const runner = createResearchTurnRunner({
   codeSource: fileURLToPath(new URL('../runtime/opencode/', import.meta.url)),
-  keys: credentials, attestation: () => jsonFile(path.join(etc, 'attestation.json'), 0o600),
+  keys: credentials,
+  attestation: async () => { try { await fs.lstat(path.join(etc, 'attestation.json')); } catch (e) { if (e?.code === 'ENOENT') return null; throw e; } return jsonFile(path.join(etc, 'attestation.json'), 0o600); },
 });
 const handler = createResearchServiceHandler({ keys, runner });
 const startup = await handler.reconcile().catch(() => fail(bad('request store reconcile failed')));

@@ -54,6 +54,8 @@ test('attestation validation: shape, privacy profile, key hash, 24 h window and 
   assert.equal(validateResearchAttestation(att(), sha(key), now).version, 1);
   const reason = fn => { try { fn(); } catch (e) { assert.ok(e instanceof ResearchRunFailure); return e.reason; } assert.fail('expected failure'); };
   assert.equal(reason(() => validateResearchAttestation(att({ expiresAt: '2026-11-11T11:59:59Z' }), sha(key), now)), 'attestation_expired');
+  assert.equal(reason(() => validateResearchAttestation(null, sha(key), now)), 'attestation_expired', 'none installed');
+  assert.equal(reason(() => validateResearchAttestation(undefined, sha(key), now)), 'invalid');
   assert.equal(reason(() => validateResearchAttestation(att({ expiresAt: '2026-11-12T10:00:01Z' }), sha(key), now)), 'invalid', 'more than 24 h');
   assert.equal(validateResearchAttestation(att({ expiresAt: '2026-11-12T10:00:00Z' }), sha(key), now).version, 1, 'exactly 24 h');
   assert.equal(reason(() => validateResearchAttestation(att(), sha(key + 'x'), now)), 'invalid', 'key hash mismatch');
@@ -61,7 +63,6 @@ test('attestation validation: shape, privacy profile, key hash, 24 h window and 
   assert.equal(reason(() => validateResearchAttestation(att({ privacy: { paidTraining: true, publicPrompts: false, dataDiscount: false, logging: false, traces: 'langsmith_metadata_only' } }), sha(key), now)), 'invalid');
   assert.equal(reason(() => validateResearchAttestation({ ...att(), extra: 1 }, sha(key), now)), 'invalid');
   assert.equal(reason(() => validateResearchAttestation(att({ workspaceSha256: 'nope' }), sha(key), now)), 'invalid');
-  assert.equal(reason(() => validateResearchAttestation(null, sha(key), now)), 'invalid');
 });
 
 test('MCP readiness requires panda_research connected; memory proof parser fails closed', () => {

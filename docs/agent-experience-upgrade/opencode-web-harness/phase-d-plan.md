@@ -289,3 +289,111 @@ No change to the test driver `scripts/test-native-research.mjs` (it stays the re
 - Injected host run `1e0d3b49…`, SSM `f6dea663`: 9 checks, 0 real calls.
 - `GET /api/mcp` (newly allowed in both the host transport and the in-container proxy) returned `[]` right after config verification, then `[{name:'panda_research',status:'connected'}]` after 2,876 ms. OpenCode 2.2.5 auto-connects config-declared servers; no connect route is needed.
 - This confirms the Haiku run-2 startup race. Readiness = poll until `panda_research` is `connected` (200 ms steps, 20 s cap) before the first `claimPrompt`.
+
+## D3 file-level contract (draft for readiness review, 12 Nov 2026)
+
+Survey facts (read-only, 12 Nov):
+- The existing stack `panda-agent-hosted-45fa9949` (CloudFormation) has the pattern to copy:
+  - a relay security group whose egress goes to host/32 only, plus an ingress rule on the host security group from that group;
+  - a 1-day log group;
+  - a Lambda role with the VPC deny-from-code fence;
+  - a Node 24 arm64 streaming relay (256 MB, 150 s);
+  - a REST API (`AWS_IAM`, `AWS_PROXY`, `ResponseTransferMode: STREAM`, resource policy fixed to one caller role, throttle 1/1).
+- The caller role `PandaAgentHostedVercel` trusts Vercel OIDC for **production only**, and its inline policies allow only the existing API. It is not reused or changed.
+- The Vercel CLI is logged in and the worktree is linked to `pandabyte-iot`. `vercel env pull --environment development` provides a 12 h `VERCEL_OIDC_TOKEN` for local dev.
+- Host Node is `/opt/panda-agent/hosted-runtime/bin/node`. The D2 sources run without `node_modules`.
+
+1. **New stack `panda-research-<8hex>`** (template `Panda-agent/infra/research-stack.json`; no existing stack changes):
+   - **Parameters:**
+     - VpcId, SubnetId, HostSecurityGroup, HostPrivateIp;
+     - HostTlsName `panda-research.internal`, HostCaPem;
+     - ServiceToken (NoEcho, base64 of 32 bytes);
+     - OidcProviderArn (the existing Vercel provider);
+     - OidcSubject (`owner:unfiltered-iit-ians:project:pandabyte-iot:environment:development`).
+   - **Network:** RelayGroup egress tcp 8444 to host/32; HostIngress tcp 8444 from RelayGroup only.
+   - **CallerRole `<stack>-caller`:**
+     - trust `sts:AssumeRoleWithWebIdentity` from the Vercel provider, with `aud` and `sub` StringEquals (development only in D; production is added in G);
+     - MaxSession 3600;
+     - inline policy: allow `execute-api:Invoke` on exactly the three routes, deny other Invoke resources, deny NotAction.
+   - **Function `<stack>-relay`** (code below): env as the existing relay, but port 8444, caller ARN = CallerRole ARN, timeout 130000.
+   - **Api `<stack>-research`:**
+     - REGIONAL; stage `research`; throttle rate 2 / burst 4; logging off;
+     - resource policy: allow CallerRole on the three routes; deny any other principal; deny any other resource.
+   - **Routes** (all POST, `AWS_IAM`, streaming proxy, 150 s), with one Lambda permission each:
+     - `/v1/research/turns`
+     - `/v1/research/turns/{id}/status`
+     - `/v1/research/turns/{id}/cancel`
+2. **Relay `Panda-agent/runtime/research-relay/index.js`** (CommonJS, no dependencies; `createRelay` exported for tests; Lambda handler only when `awslambda` exists). Adapted from the existing relay; it authorizes nothing about the user.
+   - **Accepted requests:**
+     - stage `research`;
+     - resource and path exactly one of the three routes, `{id}` a lowercase UUID equal to the path segment;
+     - POST only, no query strings;
+     - body a non-base64 string ≤16,384 B that parses as a JSON object;
+     - multi-value headers consistent;
+     - caller ARN equals the role or its assumed-role session.
+   - **Headers:** `content-type: application/json`; `accept: application/x-ndjson` for turns and `application/json` for status/cancel.
+   - **Forwarding:** to `https://<ip>:8444/v1/research/turns[/<id>/(status|cancel)]` with `rejectUnauthorized`, the pinned CA and TLS name, and `authorization: Bearer <serviceToken>`.
+   - **Responses:**
+     - 200 with a matching content type is streamed (ndjson ≤262,144 B, json ≤16,384 B);
+     - host statuses 202/400/403/404/409/413 with JSON ≤2,048 B pass through;
+     - anything else, or an error before streaming, gives `503 {"error":"unavailable"}`;
+     - an error after streaming starts ends the stream; the app treats it as unknown and polls status.
+3. **Host install** (private SSM helper outside Git, reusing the D2 upload/handoff pattern):
+   - **Source** at `/opt/panda-research-app/<archive sha256>/` (root 0700): the D2 runtime list plus `scripts/research-service.mjs`, without test scripts.
+   - **`/etc/panda-research`** (root 0700):
+     - `service.json {address:'172.31.18.90',port:8444}`;
+     - `keys.json` and `credentials.json`, through the encrypted RSA-OAEP/AES-GCM handoff (keys generated locally, never in SSM parameters or output);
+     - `tls/key.pem` (0600, generated on the host, never leaves);
+     - `tls/cert.pem` (SAN `panda-research.internal`, 90 days; the public cert is read back as the relay CA).
+   - **Attestation:** `attestation.json` is written only after a fresh OpenRouter privacy re-read in Brave. Code change: the service now starts without it, and a missing or invalid attestation gives a signed `failed:attestation_expired` with no provider call.
+   - **Unit** `/etc/systemd/system/panda-research.service`:
+     - root, `ExecStart=<node> --disable-warning=MODULE_TYPELESS_PACKAGE_JSON <src>/Panda-agent/scripts/research-service.mjs`;
+     - `Restart=on-failure`, `RestartSec=5`, `TimeoutStopSec=320`, `PrivateTmp=yes`, `ProtectHome=yes`;
+     - enabled and started once, then its status read back.
+   - **App-side secrets** (dispatch key, result key, endpoint, caller role ARN) go only in the gitignored worktree `.env.local`.
+4. **App client `Panda-agent/src/server/research-gateway-client.ts`** (`server-only`; new signer; the existing signer and allowlists are unchanged):
+   - `createResearchGatewayClient({endpoint, roleArn, dispatchKey, resultKey, credentials?, fetch?, now?})` validates the endpoint host `^[a-z0-9]{10}\.execute-api\.ap-south-1\.amazonaws\.com$` and the path prefix `/research`.
+   - SigV4 (`execute-api`, ap-south-1) uses Vercel OIDC credentials. The signer accepts only the three paths, POST, the two exact headers and a body ≤16,384 B.
+   - **`turn({subject, chatId, requestId, profile, prompt}, {onProgress, signal})`:**
+     - signs a dispatch (exp now+50 s);
+     - streams NDJSON (line ≤65,536 B, total ≤262,144 B) and maps progress stages through an allowlist;
+     - accepts exactly one `result` line;
+     - verifies the MAC and that every field equals the dispatch (`runId = researchRunId(...)`);
+     - for answers, verifies `sha256(canonical(answer)) === answerHash` and that the answer passes the D1 answer shape.
+   - **`status(...)` / `cancel(...)`** do the same with a JSON body.
+   - **Outcomes:**
+     - `{state:'evidence'|'insufficient', answer, answerHash, usage}`
+     - `{state:'failed', reason, usage}`
+     - `{state:'running'}`, `{state:'conflict'}`, `{state:'not_found'}`
+     - `{state:'unknown'}`: any transport, parse or verification failure. Nothing is auto-retried.
+5. **Tests:**
+   - `tests/research-relay.test.mjs` (fake connector): allowlist, caller, headers, body bounds, pass-through statuses, stream cap, 503 mapping.
+   - `tests/research-gateway-client.test.mjs` (fake signer/fetch):
+     - the happy path;
+     - a tampered result, or one for another chat, prompt or model;
+     - a wrong answer hash;
+     - an oversize line or total;
+     - two result lines;
+     - status/cancel shapes;
+     - unknown on a transport error.
+   - The startup change for a missing attestation.
+6. **Live gate** (opt-in local script `Panda-agent/scripts/check-research-gateway.mjs`, using the dev OIDC token):
+   - **Reachability:**
+     - a signed status for a new id is answered by the host with `404` through the API;
+     - a signed turn with no attestation returns a verified `failed:attestation_expired` (no provider call).
+   - **Deny matrix:**
+     - unsigned → 403;
+     - signed by account root → 403;
+     - wrong method or path → 403/404 and not forwarded;
+     - bad dispatch MAC → host 403;
+     - wrong service token → host 401 (offline relay test);
+     - oversize body → rejected;
+     - the host security group allows 8444 only from the relay group.
+   - **Unchanged:** before/after snapshots match for the existing API resources and stage deployment, the relay function configuration hash, the caller role trust and policies, and the existing service unit.
+   - **Real turns:**
+     1. A fresh Brave privacy re-read, then a 24 h attestation.
+     2. One real turn per model (Haiku, Luna, Terra) through the API, each a verified `evidence` or `insufficient` result.
+     3. One follow-up on one chat.
+     4. A service restart, then a check that reconcile left no held slot.
+
+     About $0.01 total.

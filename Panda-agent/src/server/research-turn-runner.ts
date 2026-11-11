@@ -67,6 +67,7 @@ export const prefacedPrompt = (prompt: string) => researchPromptPreface + prompt
 /** Throws on any invalid field; returns the parsed attestation. keyHash is sha256 of the OpenRouter key. */
 export function validateResearchAttestation(value: unknown, keyHash: string, now: number): Attestation {
   const a = value as Attestation, bad = () => new ResearchRunFailure('attestation_expired');
+  if (value === null) throw bad(); // no attestation installed: not current, never a provider call
   if (!a || typeof a !== 'object' || Object.keys(a).sort().join(',') !== 'expiresAt,keySha256,privacy,reviewedAt,version,workspaceSha256' || a.version !== 1) throw new ResearchRunFailure('invalid');
   const p = a.privacy;
   if (!p || typeof p !== 'object' || JSON.stringify(p) !== JSON.stringify({ paidTraining: false, publicPrompts: false, dataDiscount: false, logging: false, traces: 'langsmith_metadata_only' }) || !/^[a-f0-9]{64}$/.test(a.workspaceSha256) || a.keySha256 !== keyHash) throw new ResearchRunFailure('invalid');

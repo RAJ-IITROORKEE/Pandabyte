@@ -147,3 +147,45 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
     - Fix: a bounded (15 s, cancellable) memory-recovery wait before any provider call, plus an opt-in diagnostic-code hook used only by the gate.
     - Fixtures `75a3d427…` and `dfa1e5ea…`: 5/5 each. Checks: signed evidence through the real native runtime; same-request replay with no new provider call; status returns the stored result; the follow-up reuses the epoch and native session; restart reconcile clean with no held slot. 0 real calls.
   - Deferred to D3/D4 end-to-end: a real per-model turn through the service (the same verified modules already passed real C2 on all three models), the HTTPS entrypoint, and systemd install.
+- **D3 transport live (no model calls yet), 12 Nov 2026.**
+  - **Contract:** D3 section in [phase-d-plan.md](phase-d-plan.md).
+  - **Readiness review:** 2 Blockers, 10 Majors. The Blockers were a missing attestation mapping to `invalid` and the relay path shape. Both are fixed, along with the size caps, body bound, status semantics and unit hardening.
+  - **New code:**
+    - relay `runtime/research-relay/index.js`;
+    - stack builder `infra/build-research-stack.mjs`;
+    - app client `src/server/research-gateway-client.ts`;
+    - gate script `scripts/check-research-gateway.mjs`.
+  - **Service change:** the service now starts without an attestation, and a missing attestation gives `failed:attestation_expired` with no provider call.
+  - **Host install:**
+    - Through private SSM steps: source `/opt/panda-research-app/7d9fbbd0…` (26 files).
+    - `/etc/panda-research` (0700): `service.json`; `keys.json` and `credentials.json` via a one-time RSA-OAEP/AES-GCM handoff; an EC P-256 TLS key that never leaves the host, with a 1-year certificate whose SAN is `panda-research.internal`.
+    - `panda-research.service` (root, `MemoryMax=384M`, `StartLimitBurst=5`) is active on 172.31.18.90:8444. Reconcile: 0 interrupted.
+  - **New stack `panda-research-17d69604`:**
+    - REST API `a2lwjl2ri4`, stage `research`, three POST routes;
+    - a streaming relay Lambda;
+    - caller role `panda-research-17d69604-caller`, which trusts only the Vercel OIDC `environment:development` subject. The token's `sub` was checked locally; the token itself was not printed.
+  - **Bug found live and fixed:**
+    - The relay's pass-through path called `end(chunk)`, which skips the Lambda stream's metadata prelude, so API Gateway returned 502.
+    - Fix: `write()` then `end()`. The test sink now refuses `end(chunk)`.
+  - **Live gate: 13/13, 0 provider calls.**
+    - A signed status for an unknown id reaches the host (404).
+    - A signed turn returns a verified `failed:attestation_expired` in 215–271 ms.
+    - The same request replays its stored result; status returns the same signed result.
+    - Another subject cannot read the request; a different prompt on the same request gives conflict.
+    - Unsigned requests are denied.
+    - Unlisted paths are denied.
+    - A bad dispatch MAC is rejected by the host.
+    - An expired dispatch is rejected.
+    - An oversize body is rejected.
+    - A wrong `accept` header is not forwarded.
+  - **Finding: the account root gets past the API principal deny.**
+    - A signed account-root session is not stopped by the API resource policy's principal deny.
+    - The existing API behaves identically (root GET status → existing relay 503).
+    - On both APIs the relay's caller-ARN check refuses it before forwarding, and the host also requires the app-signed MAC.
+  - **Unchanged (before/after):**
+    - Existing relay configuration hash, API resources and stage deployment.
+    - The existing caller role, by content (last CloudTrail change 5 Nov). A first hash mismatch came from output encoding, not a change.
+    - The existing stack (last updated 2 Nov) and `panda-agent-hosted` (active since 5 Nov).
+    - The host security group gained exactly one rule: 8444 from the new relay group.
+  - **Tests:** research/quota/relay/client 293/293; native typecheck passes.
+  - **Not done yet:** real turns through the API (they need a fresh Brave privacy re-read, then a 24 h attestation), and D4 localhost routing.
