@@ -1,0 +1,161 @@
+/* Colors come only from the PandaByte tokens: --surface --foreground --muted --divider --accent-ink --status-soft --focus-ring */
+
+.group {
+  display: grid;
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 4px 8px 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.head:hover {
+  background: var(--status-soft);
+  color: var(--foreground);
+}
+
+.head:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.stack {
+  display: flex;
+  flex: none;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.tile + .tile {
+  margin-left: -4px;
+}
+
+.summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.chevron {
+  flex: none;
+  transition: transform 220ms ease;
+}
+
+.group[data-open] .chevron {
+  transform: rotate(180deg);
+}
+
+.list {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list[hidden] {
+  display: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.icon {
+  color: var(--muted);
+}
+
+.name {
+  overflow: hidden;
+  color: var(--foreground);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 14ch;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.spinner {
+  color: var(--accent-ink);
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Narrow screens: the label gives way first, the name keeps its place */
+@media (max-width: 360px) {
+  .row {
+    grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr);
+  }
+
+  .status {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .head,
+  .chevron {
+    animation: none;
+    transition: none;
+  }
+}

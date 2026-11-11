@@ -1,0 +1,29 @@
+.panel { box-sizing: border-box; max-width: 100%; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); color: var(--muted); font-size: 13px; line-height: 20px; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; padding: 6px 12px; }
+.timer { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); }
+.toggle { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 6px 12px; border: 0; border-radius: 12px; background: transparent; color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
+.toggle:hover { color: var(--foreground); }
+.done { color: var(--foreground); }
+.check { flex: none; color: var(--accent-ink); }
+.chev { margin-left: auto; flex: none; transition: transform 160ms ease; }
+.toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.body { display: grid; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--divider); }
+.steps { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.step { display: flex; align-items: baseline; gap: 8px; min-width: 0; overflow-wrap: anywhere; animation: fade 220ms ease both; }
+.dot { flex: none; width: 5px; height: 5px; margin-top: 7px; border-radius: 999px; background: var(--muted); opacity: 0.6; }
+.past { color: var(--muted); }
+.current { background: linear-gradient(90deg, var(--muted) 38%, var(--foreground) 50%, var(--muted) 62%) 100% 0 / 300% 100% no-repeat; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.6s linear infinite; }
+.note { margin: 0; color: var(--muted); }
+.sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.srcLabel { color: var(--muted); }
+.chip { display: inline-flex; max-width: 100%; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--divider); border-radius: 999px; background: var(--status-soft); color: var(--foreground); font-size: 12px; line-height: 18px; }
+.chipTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+.chipDomain { color: var(--muted); }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .current { animation: none; background: none; color: var(--foreground); -webkit-background-clip: border-box; background-clip: border-box; }
+  .step { animation: none; }
+  .chev { transition: none; }
+}

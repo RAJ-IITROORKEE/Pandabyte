@@ -385,3 +385,21 @@
 @media (prefers-reduced-motion: reduce) { .sources > summary > svg, .sourceCard summary > svg, .activityDetails summary > svg { transition: none; } }
 .sourceExcerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sourceCard[open] .sourceExcerpt { display: none; }
+
+/* Composer card (12 Nov 2026): text on top, controls on one row below; model pill left, send right. */
+.composer { padding: 10px 12px 8px; border-radius: 20px; box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 6%, transparent), 0 8px 24px -12px color-mix(in srgb, var(--foreground) 18%, transparent); }
+.composerRow { flex-direction: column; align-items: stretch; gap: 4px; }
+.composerRow textarea { min-height: 44px; padding: 6px 4px; }
+.composerActions { align-self: stretch; justify-content: space-between; padding-bottom: 0; }
+.composerActions .modelPicker { max-width: min(60vw, 240px); }
+.modelPicker select { min-height: 36px; padding: 6px 28px 6px 10px; border-color: transparent; background: transparent; color: var(--muted); font-weight: 500; }
+.modelPicker select:hover:not(:disabled), .modelPicker select:focus-visible { color: var(--foreground); }
+
+/* Start screen (12 Nov 2026): one greeting line, composer, then quiet icon shortcuts shown only while the thread is empty. */
+.thread:has(.intro) .intro h1 { font-size: clamp(1.5rem, 2.6vw, 1.9rem); }
+.quickActions { display: none; }
+.thread:has(.intro) .quickActions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 6px; max-width: 640px; margin: 14px auto 0; }
+.quickActions button { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 6px 12px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
+.quickActions button:hover:not(:disabled) { background: var(--status-soft); color: var(--foreground); }
+.quickActions button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.quickActions button:disabled { opacity: .5; cursor: not-allowed; }

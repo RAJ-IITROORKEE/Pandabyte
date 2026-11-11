@@ -1,0 +1,30 @@
+.strip { display: flex; gap: 8px; margin: 0 0 12px; overflow-x: auto; padding-bottom: 2px; }
+.card { flex: 0 0 auto; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: start; width: min(200px, 70vw); padding: 8px 10px; border: 1px solid var(--divider); border-radius: 10px; background: var(--surface); color: var(--foreground); font: inherit; font-size: 13px; text-align: left; cursor: pointer; transition: background-color .15s; }
+.card:hover, .card[aria-pressed="true"] { background: var(--status-soft); }
+.card:focus-visible, .tab:focus-visible, .action:focus-visible, .chip:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.badge { display: inline-flex; min-width: 1.5em; justify-content: center; padding: 0 5px; border: 1px solid var(--divider); border-radius: 999px; background: var(--status-soft); color: var(--accent-ink); font-size: 11px; font-weight: 700; line-height: 1.6; font-variant-numeric: tabular-nums; }
+.domain { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; align-self: center; }
+.cardTitle { grid-column: 1 / -1; display: -webkit-box; overflow: hidden; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.more { align-content: center; justify-items: center; color: var(--muted); }
+.panelWrap { margin-top: 12px; border: 1px solid var(--divider); border-radius: 10px; background: var(--surface); font-size: 13px; scroll-margin-top: 12px; }
+.tabs { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid var(--divider); overflow-x: auto; }
+.tab { flex: 0 0 auto; display: inline-flex; gap: 6px; align-items: center; max-width: 220px; padding: 4px 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; transition: background-color .15s; }
+.tab span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab[aria-selected="true"] { border-color: var(--divider); background: var(--status-soft); color: var(--foreground); }
+.panel { display: grid; gap: 8px; padding: 12px; }
+.meta { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.title { margin: 0; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.quote { margin: 0; padding: 8px 10px; border-left: 2px solid var(--divider); color: var(--muted); overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.action { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border: 1px solid var(--divider); border-radius: 8px; background: transparent; color: var(--foreground); font: inherit; font-size: 13px; text-decoration: none; cursor: pointer; }
+.action:hover { background: var(--status-soft); }
+.feedback { color: var(--muted); font-size: 12px; }
+.chipWrap { display: inline; }
+.chip { display: inline-flex; min-width: 1.4em; justify-content: center; margin: 0 1px; padding: 0 5px; border: 1px solid var(--divider); border-radius: 999px; background: var(--status-soft); color: var(--accent-ink); font: inherit; font-size: .72em; font-weight: 700; line-height: 1.6; vertical-align: super; cursor: pointer; }
+.preview { position: fixed; z-index: 30; display: grid; gap: 3px; width: min(320px, 90vw); box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--divider); border-radius: 10px; background: var(--background); color: var(--foreground); font-size: 13px; font-weight: 400; line-height: 1.4; text-align: left; pointer-events: none; }
+.preview small { color: var(--muted); font-size: 11px; }
+.preview em { color: var(--muted); font-style: normal; }
+@media (prefers-reduced-motion: reduce) { .card, .tab { transition: none; } }
+
+/* Scrolling rows must not report their full width to parents, or a phone layout grows to fit them. */
+.strip, .tabs { contain: inline-size; min-width: 0; }
