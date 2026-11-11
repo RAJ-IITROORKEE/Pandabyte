@@ -232,3 +232,20 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
     - Known gap: one listing line was split across two 180-character passages (the xLoRa price).
   - **Service:** redeployed three times by hash (current `4af6b874…`), reconcile clean. Research/site tests 305/305; full suite 1342 with 2 pre-existing failures (also on main).
   - **Blocked on owner approval:** the CloudFormation update that lets the production Vercel login assume the research caller role (permission check: IAM trust grant), the production Vercel research env vars, and the production deploy.
+- **Web search live on production, 12 Nov 2026 (owner: "Yes, go live").**
+  - **AWS:** the stack update makes caller role `panda-research-17d69604-caller` trust exactly the development and production Vercel OIDC subjects.
+  - **Vercel production env (encrypted):**
+    - `PANDA_AGENT_RESEARCH_ENABLED`
+    - `PANDA_RESEARCH_ENDPOINT`
+    - `PANDA_RESEARCH_CALLER_ROLE_ARN`
+    - `PANDA_RESEARCH_DISPATCH_KEY`
+    - `PANDA_RESEARCH_RESULT_KEY`
+  - **Code:** main moved to `435e506` (the research branch merged with the UI session's latest commits; the only conflict was the lucide import line), deployed with the Vercel CLI from a clean worktree, and aliased to pandabyte-iot.vercel.app.
+  - **Live check, owner Admin session in Brave:**
+    - The Globe toggle is shown.
+    - With web search on, "How much flash and PSRAM does the PandaByte xS3 board have, and what does it cost?" returned 16 MB flash, 8 MB PSRAM and ₹1,000.00 from the pandabyte.in product page, with 2 sources, in 28 s.
+    - After a page reload the chat restored the saved answer and its 2 sources.
+  - **Still open:**
+    - The attestation needs owner renewal every 24 h; it currently expires 12 Nov 20:14 UTC.
+    - A category listing line can split across two passages (the xLoRa price).
+    - Phases E/F (research UI, native clarification questions, longer memory) and the phase-2 catalog tools.
