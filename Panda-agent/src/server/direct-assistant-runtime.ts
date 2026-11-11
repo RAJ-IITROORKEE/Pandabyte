@@ -11,7 +11,7 @@ import {currentLightweightSession} from './lightweight-connection';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
-import {fastHostedModel,hostedModelSelection} from '../hosted-model.ts';
+import {fastHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
 
 export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.ProcessEnv=process.env){
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
@@ -33,9 +33,9 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
  const selected=hostedModelSelection(process.env),fast=process.env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
  const direct=createDirectAssistantChat({actor,key,current,budgetRefs:policy.budgetRefs,
-  ...(fast?{completion:createHostedDirectCompletion}:{}),
+  ...(fast?{completion:(o:Parameters<typeof createHostedDirectCompletion>[0])=>createHostedDirectCompletion({...o,model:requestedHostedModel(requested)})}:{}),
   policy:{...policy,enabled:async()=>{
-   if(!selected||requested!==null&&requested!==(fast?selected.id:'openai/gpt-6-luna')||!await policy.enabled())return false;
+   if(!selected||requested!==null&&(fast?!hostedDirectModelIds.includes(requested):requested!=='openai/gpt-6-luna')||!await policy.enabled())return false;
    return !fast||('isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true);
   }},
   store:createDirectAssistantStore(actor,key)});

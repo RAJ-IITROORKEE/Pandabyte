@@ -2,7 +2,7 @@ import { authenticateLightweight } from '@/Panda-agent/src/server/lightweight-co
 import { directPolicyForActor } from '@/Panda-agent/src/server/direct-assistant-runtime';
 import { createDirectAssistantStore } from '@/Panda-agent/src/server/direct-assistant-store';
 import { modelChoices, disabledModelReasons, hostedModelChoices, hostedDisabledModelReasons, type Capabilities } from '@/Panda-agent/src/ui/capabilities';
-import { fastHostedModel, hostedModelSelection } from '@/Panda-agent/src/hosted-model';
+import { fastHostedModel, hostedDirectModelIds, hostedModelSelection } from '@/Panda-agent/src/hosted-model';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,8 +22,8 @@ export async function GET(request: Request) {
       const remaining = policy.allowance()?.remainingNanoUsd;
       const unmetered='isUnmetered' in policy && typeof policy.isUnmetered==='function' && policy.isUnmetered();
       if (selected && admitted && installed && (!hosted || unmetered) && (unmetered || Number.isSafeInteger(remaining) && remaining! >= 1597640 && remaining! <= 1000000000)) {
-        const index = value.models.findIndex(model => model.id === selected.id);
-        value.status='ready'; value.reason=null; value.model=selected.label; value.models[index]={...value.models[index],enabled:true,reason:null};
+        value.status='ready'; value.reason=null; value.model=selected.label;
+        value.models=value.models.map(model => model.id === selected.id || (hosted && hostedDirectModelIds.includes(model.id)) ? {...model,enabled:true,reason:null} : model);
         value.budget=unmetered?null:{limitNanoUsd:1000000000,remainingNanoUsd:remaining!};
         value.rag=process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true';
       }

@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHostedRagCompletion } from './hosted-model-openrouter.ts';
-import { fastHostedModel, hostedModelSelection } from '../hosted-model.ts';
+import { fastHostedModel, hostedDirectModelIds, hostedModelSelection, requestedHostedModel } from '../hosted-model.ts';
 import { createHash } from 'node:crypto';
 import { conversationRoute, isUnscopedConversation, isProjectMemoryQuestion } from '../retrieval/conversation-route.ts';
 import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforge-adapters.ts';
@@ -149,14 +149,14 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    ownRequest=requestId;
    let claimed=false;
    return (input,beforeSend,signal)=>(fast?createHostedRagCompletion:createLunaRagCompletion)({apiKey:policy.key(),policyCurrent:policy.current,dispatchCurrent:policy.dispatchCurrent,
-    preClaimCurrent:policy.dispatchCurrent,receiptPolicy:'hosted',claim:async()=>{
+    preClaimCurrent:policy.dispatchCurrent,receiptPolicy:'hosted',...(fast?{model:requestedHostedModel(options.request.headers.get('X-Panda-Model'))}:{}),claim:async()=>{
      if(claimed||!await claim())return false;claimed=true;
      return policy.claimRequest({request:requestId,surface:'chat',fingerprint:createHash('sha256').update(JSON.stringify(input)).digest('hex')});
     }})(input,beforeSend,signal);
   },
  });
  return createMainRagRouter({direct:options.direct,legacy:options.legacy,rag,
-  modelAllowed:()=>!!selected&&(!options.request.headers.has('X-Panda-Model')||options.request.headers.get('X-Panda-Model')===(fast?selected.id:'openai/gpt-6-luna')),
+  modelAllowed:()=>!!selected&&(!options.request.headers.has('X-Panda-Model')||(fast?hostedDirectModelIds.includes(options.request.headers.get('X-Panda-Model')!):options.request.headers.get('X-Panda-Model')==='openai/gpt-6-luna')),
   route:async(question,signal,report,thread)=>{
    if(signal.aborted)throw new ChatStoreError('unavailable');
    if(isUnscopedConversation(question))return 'direct';
