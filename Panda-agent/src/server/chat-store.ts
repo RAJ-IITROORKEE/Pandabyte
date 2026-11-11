@@ -21,7 +21,9 @@ function citations(value: unknown): ChatCitation[] {
       const u = new URL(c.sourceUrl);
       const product = ['pandabyte.in', 'www.pandabyte.in'].includes(u.hostname) && /^\/product-page\/[a-zA-Z0-9_-]+\/?$/.test(u.pathname);
       const manufacturer = u.hostname === 'docs.espressif.com' && /^\/projects\/(?:esp8266-rtos-sdk\/en\/latest\/get-started\/index\.html|esp-idf\/en\/stable\/(?:esp32|esp32c3|esp32c6|esp32s3)\/get-started\/index\.html)$/.test(u.pathname);
-      const web = c.sectionPath.length === 1 && c.sectionPath[0] === webSearchSection && publicSearchCitationUrl(c.sourceUrl);
+      // Web sources: the older Tavily path labels them with webSearchSection; research-harness answers (D1 journal, verified
+      // by the host and the DB before saving) carry an empty sectionPath. Both must be a public https page.
+      const web = (c.sectionPath.length === 0 || (c.sectionPath.length === 1 && c.sectionPath[0] === webSearchSection)) && publicSearchCitationUrl(c.sourceUrl);
       if (u.protocol !== 'https:' || u.port || u.username || u.password || u.search || u.hash || !(product || manufacturer || web)) return bad();
     } catch { return bad(); }
     return { id: c.id, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: c.quote, sectionPath: c.sectionPath as string[] };

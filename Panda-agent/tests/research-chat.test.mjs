@@ -127,3 +127,13 @@ test('researchWebSearchEnabled requires the flag, endpoint, role and two exact 3
   for (const [name, value] of [['PANDA_AGENT_RESEARCH_ENABLED', 'false'], ['PANDA_RESEARCH_ENDPOINT', ''], ['PANDA_RESEARCH_CALLER_ROLE_ARN', undefined], ['PANDA_RESEARCH_DISPATCH_KEY', randomBytes(16).toString('base64')], ['PANDA_RESEARCH_RESULT_KEY', 'not base64!']])
     assert.equal(researchWebSearchEnabled({ ...env, [name]: value }), false, name);
 });
+
+test('saved research answers with web or category citations (empty sectionPath) read back; unsafe URLs still fail', async () => {
+  const { cleanAnswer } = await import('../src/server/chat-store.ts');
+  const cite = (sourceUrl, sectionPath = []) => ({ id: 'S1', title: 'm5-docs', sourceUrl, capturedAt: '2026-11-11T22:44:05.365Z', quote: 'ESP32-S3-PICO-1-N8R8', sectionPath });
+  for (const url of ['https://docs.m5stack.com/en/core/AtomS3R', 'https://www.pandabyte.in/category/microcontroller', 'https://www.pandabyte.in/product-page/x'])
+    assert.equal(cleanAnswer({ outcome: 'evidence', text: 'An answer.', citations: [cite(url)] }).citations[0].sourceUrl, url);
+  for (const url of ['http://docs.m5stack.com/x', 'https://localhost/x', 'https://docs.m5stack.com/x?q=1', 'https://user:pw@docs.m5stack.com/x'])
+    assert.throws(() => cleanAnswer({ outcome: 'evidence', text: 'An answer.', citations: [cite(url)] }), String(url));
+  assert.throws(() => cleanAnswer({ outcome: 'evidence', text: 'x', citations: [cite('https://docs.m5stack.com/en/core/AtomS3R', ['Some section'])] }), 'a non-web section path is not treated as web');
+});
