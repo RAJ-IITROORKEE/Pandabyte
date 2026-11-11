@@ -488,7 +488,9 @@ function AssistantMessage({ messages, speech, speaking, nativeAssistant, suggest
 
 /** Maps a saved citation to the view model; a link is offered only when the existing safety checks pass. */
 function citationView(citation: Citation, index: number): CitationView {
-  const webExcerpt = citation.sectionPath.length === 1 && citation.sectionPath[0] === webSearchSection;
+  // Research answers save web citations without a section label; PandaByte product pages are not web sources.
+  const webExcerpt = (citation.sectionPath.length === 1 && citation.sectionPath[0] === webSearchSection)
+    || (citation.sectionPath.length === 0 && !/pandabyte.in/product-page/.test(citation.sourceUrl ?? ""));
   const vendor = "kind" in citation ? (parseVendorCitation(citation) ?? parseCompositeVendorCitation(citation)) : null;
   const sourceUrl = citation.sourceUrl ?? (citation as { url?: string }).url ?? ""; // hosted harness citations carry `url`
   const href = ("kind" in citation ? !!vendor : publicSearchCitationUrl(sourceUrl)) ? sourceUrl : undefined;
