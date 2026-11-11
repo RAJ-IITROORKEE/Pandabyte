@@ -438,3 +438,7 @@
 .searchWebAction { display: inline-flex; align-items: center; gap: 5px; margin-left: 4px; min-height: 28px; padding: 3px 10px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--foreground); font: inherit; font-size: 12px; cursor: pointer; }
 .searchWebAction:hover { background: var(--status-soft); }
 .searchWebAction:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* Agent settings view (12 Nov 2026). */
+.settingsWrap { flex: 1; min-width: 0; overflow-y: auto; }
+.settingsWrap[hidden] { display: none; }
