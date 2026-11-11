@@ -70,6 +70,8 @@ test('pre-claim failures map to failed:<reason> with zero usage and never reach 
   const expired = rig({ attestation: { version: 1, reviewedAt: '2026-11-10T00:00:00.000Z', expiresAt: '2026-11-10T20:00:00.000Z', keySha256: sha(key), workspaceSha256: 'c'.repeat(64), privacy: { paidTraining: false, publicPrompts: false, dataDiscount: false, logging: false, traces: 'langsmith_metadata_only' } } }); try {
     assert.deepEqual(await expired.runner.run(input), { state: 'failed', reason: 'attestation_expired', usage: zero }); assert.equal(expired.calls.docker.length, 0); assert.equal(fs.existsSync(expired.slotFile), false, 'slot released');
   } finally { expired.cleanup(); }
+  const floor = rig(); try { floor.state.mem = 786432; assert.notEqual((await floor.runner.run(input)).reason, 'busy', 'exactly the 768 MiB floor is enough'); } finally { floor.cleanup(); }
+  const below = rig(); try { below.state.mem = 786431; assert.equal((await below.runner.run(input)).reason, 'busy'); } finally { below.cleanup(); }
   const lowMem = rig(); try { lowMem.state.mem = 1000; assert.equal((await lowMem.runner.run(input)).reason, 'busy'); assert.equal(fs.existsSync(lowMem.slotFile), false); } finally { lowMem.cleanup(); }
   const notReady = rig(); try {
     notReady.state.mcp = false;

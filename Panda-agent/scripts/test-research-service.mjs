@@ -32,7 +32,8 @@ async function fetcher(url, init) {
   const tool = wire.messages.slice(lastUser + 1).findLast(x => x.role === 'tool'), chunk = (delta, finish = null) => ({ ...identity(n), choices: [{ index: 0, delta, finish_reason: finish }] }), frames = [chunk({ role: 'assistant' })];
   if (!tool) frames.push(chunk({ tool_calls: [{ index: 0, id: 'toolu_bdrk_synthetic' + n, type: 'function', function: { name: 'panda_research_search', arguments: JSON.stringify({ query: 'rp2040 pio examples' }) } }] }, 'tool_calls'));
   else { const source = JSON.parse(typeof tool.content === 'string' ? tool.content : tool.content.map(p => p.text).join('')).sources[0];
-    frames.push(chunk({ content: JSON.stringify({ answer: 'PIO provides programmable input/output state machines.', evidence: [{ handle: source.handle, passage: source.passages[0].id }] }) }, 'stop')); }
+    const text = JSON.stringify(wire.messages[lastUser].content), bogus = text.includes('unverifiable'); // check 6: cite a source this turn never returned
+    frames.push(chunk({ content: JSON.stringify({ answer: 'PIO provides programmable input/output state machines.', evidence: [{ handle: bogus ? 'zz-not-returned' : source.handle, passage: source.passages[0].id }] }) }, 'stop')); }
   frames.push({ ...identity(n), choices: [], usage: { prompt_tokens: 1000, completion_tokens: 60, total_tokens: 1060, cost: 0.00013, prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 }, completion_tokens_details: { reasoning_tokens: 0 } } });
   return new Response(frames.map(f => 'data: ' + JSON.stringify(f) + '\n\n').join('') + 'data: [DONE]\n\n', { headers: { 'content-type': 'text/event-stream' } });
 }
@@ -75,6 +76,10 @@ try {
   handler = createResearchServiceHandler({ root: requestRoot, keys, runner }); const rec = await handler.reconcile();
   assert.equal(rec.interrupted, 0); assert.deepEqual(await runner.heldLeases?.() ?? [], []);
   checks.push('restart_reconcile_clean_and_no_held_slot');
+  const t3 = await turn(handler, randomUUID(), 'Which unverifiable RP2040 PIO examples exist?'), p3 = t3.last.payload;
+  evidence.invalidAnswer = { state: p3.state, reason: p3.reason ?? null, calls: p3.usage.calls };
+  assert.equal(p3.state, 'failed'); assert.equal(p3.reason, 'invalid'); assert.equal(p3.usage.calls, 2); assert.equal(t3.last.answer, undefined);
+  checks.push('unverifiable_citation_is_failed_invalid_with_usage_not_unknown');
   evidence.state = 'service_passed'; evidence.usage = [p1.usage, t2.last.payload.usage];
 } catch (error) {
   evidence.state = 'failed'; evidence.error = String(error?.message ?? error).replace(/[a-f0-9]{64}/g, '[hash]').slice(0, 400); process.exitCode = 1;

@@ -36,7 +36,8 @@ const envelope = (action, i, over = {}) => { const d = { v: 1, action, subjectHa
 const fresh = input();
 assert.deepEqual(await client.status(fresh), { state: 'not_found' }); log('signed_status_unknown_id_reaches_host_404');
 const t = Date.now(), first = await client.turn(fresh);
-assert.equal(first.state, 'failed'); log('signed_turn_returns_verified_result', JSON.stringify({ state: first.state, reason: first.reason, calls: first.usage?.calls, ms: Date.now() - t }));
+// Without an attestation this is a signed failed:attestation_expired (no provider call); with one it is a real cited turn.
+assert.ok(['failed', 'evidence', 'insufficient'].includes(first.state)); log('signed_turn_returns_verified_result', JSON.stringify({ state: first.state, reason: first.reason, citations: first.answer?.citations?.length, usage: first.usage, ms: Date.now() - t }));
 const replay = await client.turn(fresh); assert.deepEqual(replay, first); log('same_request_replays_stored_result');
 assert.deepEqual(await client.status(fresh), first); log('status_returns_same_signed_result');
 assert.deepEqual(await client.status({ ...fresh, subject: 'user_other_' + randomUUID() }), { state: 'not_found' }); log('other_subject_cannot_read_request');

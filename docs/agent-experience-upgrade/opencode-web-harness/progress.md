@@ -189,3 +189,26 @@ Cross-session coordination, 11 November 2026: a parallel Claude session ("Agenti
     - The host security group gained exactly one rule: 8444 from the new relay group.
   - **Tests:** research/quota/relay/client 293/293; native typecheck passes.
   - **Not done yet:** real turns through the API (they need a fresh Brave privacy re-read, then a 24 h attestation), and D4 localhost routing.
+- **D3 real turns through the new API, 12 Nov 2026.**
+  - **Privacy re-check:** after a fresh OpenRouter privacy re-read in Brave (read-only), a 24 h attestation was installed. It contains only hashes and booleans and expires 2026-11-12T20:14Z.
+    - Unchanged since the earlier review: paid training, prompt publishing, the 1% discount, the global switches and input/output logging are all off.
+    - LangSmith "PandaByte RAG evaluation" still has Privacy Mode on, sends cost fields only, and is limited to DatummAgent.
+    - The key's workspace matches the UI (hash prefix `158ce549`). Key spend before the tests was $19.51 of its $25 limit.
+  - **Real cited answers through the full path** (app client → SigV4 → API → relay → host → native OpenCode → Tavily → OpenRouter), each `evidence` with 2 citations:
+
+    | Model | Time | Cost |
+    |---|---|---|
+    | Haiku | 26–35 s | $0.0006–0.0008 |
+    | Luna | 31.6 s | $0.00036 |
+    | Terra | 39.8 s | $0.0059 |
+
+  - **Memory floor fix:** idle MemAvailable is about 1,044 MB, below the old 1 GiB floor, so Terra returned `busy` with 0 calls. The floor is now the container hard cap plus 256 MiB (768 MiB, `researchHostFloorKiB`). The cap is enforced by `--memory` equal to `--memory-swap`.
+  - **Follow-up turns:**
+    - The first real follow-ups (Terra, then Haiku) ended `unknown` with diagnostic `answer_invalid`. The model cited sources from the previous turn, which verification rejects by design.
+    - Fix 1: the host preface now requires a fresh search for every question.
+    - Fix 2: a settled but verified-invalid answer is now `failed:invalid` with its real usage, not `unknown`.
+    - Injected host gate `67e15cb1…`: 6/6, including the new `unverifiable_citation_is_failed_invalid_with_usage_not_unknown`, with 0 real calls.
+    - The service also logs the runner's sanitized diagnostic codes.
+  - **Live gate `--real haiku`:** 15/15. The follow-up searched again and returned an honest `insufficient` (3 calls, $0.0014).
+  - **Spend:** about $0.025 in total today for D3 real turns.
+  - **Service:** redeployed three times by source hash (current `7112cad1…`); restart reconcile was clean each time.

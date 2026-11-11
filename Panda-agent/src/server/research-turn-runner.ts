@@ -48,6 +48,8 @@ export type RunnerOptions = {
 /** Failure before any provider call could have been sent; the reason maps straight into a signed failed result. */
 export class ResearchRunFailure extends Error { reason: ResearchFailure; constructor(reason: ResearchFailure) { super(reason); this.reason = reason; } }
 class Cancelled extends Error {}
+/** The native turn finished and every model attempt settled, but the answer failed citation verification: a certain outcome (nothing saved), not an unknown one. */
+class SettledInvalidAnswer extends ResearchRunFailure { constructor() { super('invalid'); this.message = 'answer_invalid'; } }
 
 // ---- pure helpers (exported for tests) ----
 export const researchBindingHash = (subjectHash: string, chatId: string, epoch: number) => sha('panda-research-binding-v1\n' + subjectHash + chatId + epoch);
@@ -61,7 +63,9 @@ export function researchQueryInScope(query: unknown, promptText: string): boolea
   const allowed = new Set([...promptText.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean), ...genericDocWords]);
   return words.every(word => allowed.has(word));
 }
-export const researchPromptPreface = 'Host rules: you may search only public documentation. Every search query must be 1 to 12 words using letters, digits, spaces or hyphens, and each word must come from the question below or be a generic documentation word (datasheet, documentation, docs, official, reference, manual, guide, pinout, example, tutorial, specification). Never put private data in a query. Answer only from returned excerpts and cite exact passages.\n\nQuestion:\n';
+/** Host MemAvailable needed before a turn: the container hard cap (memory = memory-swap) plus a 256 MiB margin for the host. */
+export const researchHostFloorKiB = researchMemoryBytes / 1024 + 262144;
+export const researchPromptPreface = 'Host rules: you may search only public documentation. Every search query must be 1 to 12 words using letters, digits, spaces or hyphens, and each word must come from the question below or be a generic documentation word (datasheet, documentation, docs, official, reference, manual, guide, pinout, example, tutorial, specification). Never put private data in a query. Search again for every question, even a follow-up: cite only sources returned by searches made for this question, never sources from earlier turns. Answer only from returned excerpts and cite exact passages.\n\nQuestion:\n';
 export const prefacedPrompt = (prompt: string) => researchPromptPreface + prompt;
 
 /** Throws on any invalid field; returns the parsed attestation. keyHash is sha256 of the OpenRouter key. */
@@ -311,7 +315,7 @@ export function createResearchTurnRunner(options: RunnerOptions) {
         need(await store.authorizeRelease(ctx.run, identity(op!), op!.resultHash!), 'release_denied'); catalog.push({ operationKey: op!.key, resultHash: op!.resultHash, receipt: r.result.receipt });
       }
       onProgress?.('checking_citations');
-      const answer = verifyResearchAnswer(observed.result.text, catalog, proof!.content); need(answer.state !== 'invalid', 'answer_invalid');
+      const answer = verifyResearchAnswer(observed.result.text, catalog, proof!.content); if (answer.state === 'invalid') throw new SettledInvalidAnswer();
       if (answer.state === 'evidence') for (const use of answer.usedSources) { const op = record.operations.find(v => v.key === use.operationKey); need(op && await store.authorizeRelease(ctx.run, identity(op), use.resultHash), 'release_denied'); }
       need(await store.authorizeRelease(ctx.run, identity(final!), proof!.resultHash), 'release_denied');
       return { answer, catalog, observed, proof: proof!, record, attempts, receipt: structuredClone(ctx.run) };
@@ -345,7 +349,7 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       const image = JSON.parse(await docker(['image', 'inspect', researchImageId])); need(image.length === 1 && image[0].Id === researchImageId && image[0].Architecture === 'arm64', 'image_mismatch'); ctx.image = image[0];
       await privateDir(root, true);
       // Memory dips briefly after the previous turn's container is removed on this small host; wait (bounded, before any provider call) for it to recover.
-      for (let waited = 0; await host.memAvailableKiB() < 1048576; waited += 500) { if (waited >= 15000) throw new ResearchRunFailure('busy'); check(); await sleep(500); }
+      for (let waited = 0; await host.memAvailableKiB() < researchHostFloorKiB; waited += 500) { if (waited >= 15000) throw new ResearchRunFailure('busy'); check(); await sleep(500); }
       if (await host.diskAvailableKiB(root) < 2097152) throw new ResearchRunFailure('busy');
       const source = await readSource(); ctx.profileHash = researchProfileHash(source, profile); ctx.codeDirectory = await ensureCode(ctx.profileHash, profile, source);
       // 3. per-chat layout and epoch
@@ -390,13 +394,13 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       // Cancel: fence the run, interrupt native work, then fall through to removal. Never an evidence result.
       if (cancelled && ctx.run && store!) { try { await store.cancelRun(ctx.run, 'cancelled'); } catch { /* the container removal below still fences it */ } try { await ctx.transport?.request('POST', `/api/session/${ctx.binding.sessionID}/interrupt?resume=false`, {}); } catch { /* removal follows */ } }
       usage = await settledUsage();
-      result = promptClaimed ? { state: 'unknown', usage }
+      result = promptClaimed && !(error instanceof SettledInvalidAnswer) ? { state: 'unknown', usage }
         : { state: 'failed', reason: error instanceof ResearchRunFailure ? error.reason : 'invalid', usage };
     } finally {
       try { memoryOk = (await remove()).memoryOk; } catch { memoryOk = false; if (result?.state === 'evidence' || result?.state === 'insufficient') result = { state: 'unknown', usage: result.usage }; }
     }
     // A failed OOM/cgroup proof withholds the answer but keeps the real usage.
-    if (!memoryOk && (result!.state === 'evidence' || result!.state === 'insufficient')) result = { state: 'unknown', usage: result!.usage };
+    if (!memoryOk && (result!.state === 'evidence' || result!.state === 'insufficient')) { try { options.diagnostic?.('memory_proof_withheld'); } catch { /* diagnostics never affect the result */ } result = { state: 'unknown', usage: result!.usage }; }
     return result!;
   }
 

@@ -47,6 +47,7 @@ try {
 const runner = createResearchTurnRunner({
   codeSource: fileURLToPath(new URL('../runtime/opencode/', import.meta.url)),
   keys: credentials,
+  diagnostic: code => console.log(JSON.stringify({ diagnostic: code })), // runner codes are pre-sanitized to [a-z0-9_:.-], at most 80 chars
   attestation: async () => { try { await fs.lstat(path.join(etc, 'attestation.json')); } catch (e) { if (e?.code === 'ENOENT') return null; throw e; } return jsonFile(path.join(etc, 'attestation.json'), 0o600); },
 });
 const handler = createResearchServiceHandler({ keys, runner });
