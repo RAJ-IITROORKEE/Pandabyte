@@ -433,3 +433,8 @@
 .dangerItem:hover:not(:disabled) { background: color-mix(in srgb, #e5484d 10%, transparent); }
 .dangerItem:disabled { opacity: .5; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { .historyRow .menuTrigger { transition: none; } }
+
+.provenance { flex-wrap: wrap; }
+.searchWebAction { display: inline-flex; align-items: center; gap: 5px; margin-left: 4px; min-height: 28px; padding: 3px 10px; border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--foreground); font: inherit; font-size: 12px; cursor: pointer; }
+.searchWebAction:hover { background: var(--status-soft); }
+.searchWebAction:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
