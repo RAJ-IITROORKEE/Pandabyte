@@ -410,3 +410,26 @@
 .chartUnit { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
 .chartFallback { margin: 8px 0; color: var(--muted); font-size: 12px; }
 .chartFallback summary { cursor: pointer; }
+
+/* Provenance line for answers that carry no sources (12 Nov 2026). */
+.provenance { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+
+/* Sidebar (12 Nov 2026): date groups, Recent/Archived tabs, search shortcut, quiet rows with hover actions. */
+.search { position: relative; }
+.kbd { margin-left: auto; padding: 1px 6px; border: 1px solid var(--divider); border-radius: 5px; color: var(--muted); font: 11px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+.historyTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 14px 0 6px; padding: 3px; border: 1px solid var(--divider); border-radius: 10px; }
+.historyTabs button { min-height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+.historyTabs button[aria-pressed="true"] { background: var(--status-soft); color: var(--foreground); }
+.historyTabs button:disabled { cursor: not-allowed; }
+.historyGroup { display: grid; gap: 1px; width: 100%; min-width: 0; margin-top: 10px; }
+.groupLabel { margin: 0 0 4px; padding: 0 8px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.historyRow .menuTrigger { opacity: 0; transition: opacity .12s; }
+.historyRow:hover .menuTrigger, .historyRow:focus-within .menuTrigger, .historyRow details[open] .menuTrigger, .historySelect[aria-current="page"] + details .menuTrigger { opacity: 1; }
+@media (hover: none) { .historyRow .menuTrigger { opacity: 1; } }
+.historySelect[aria-current="page"] { box-shadow: inset 2px 0 0 var(--accent-ink); }
+.historyStatus { display: inline-flex; align-items: center; gap: 5px; flex: none; color: #d9892b; font-size: 11px; }
+.historyStatus::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+.dangerItem { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 6px 10px; border: 0; border-radius: 8px; background: transparent; color: #e5484d; font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.dangerItem:hover:not(:disabled) { background: color-mix(in srgb, #e5484d 10%, transparent); }
+.dangerItem:disabled { opacity: .5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { .historyRow .menuTrigger { transition: none; } }

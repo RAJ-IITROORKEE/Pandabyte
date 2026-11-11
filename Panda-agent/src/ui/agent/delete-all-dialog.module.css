@@ -1,0 +1,18 @@
+.dialog { width: min(440px, calc(100vw - 32px)); box-sizing: border-box; padding: 18px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); color: var(--foreground); font-size: 14px; line-height: 1.55; }
+.dialog::backdrop { background: color-mix(in srgb, var(--background) 55%, transparent); backdrop-filter: blur(2px); }
+.dialog p { margin: 10px 0 0; color: var(--muted); }
+.head { display: flex; align-items: center; gap: 10px; }
+.head h2 { flex: 1; margin: 0; font-size: 16px; font-weight: 600; }
+.icon { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 9px; background: color-mix(in srgb, #e5484d 14%, transparent); color: #e5484d; }
+.close { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.close:hover { background: var(--status-soft); color: var(--foreground); }
+.field { display: grid; gap: 6px; margin-top: 14px; font-size: 13px; }
+.field input { min-height: 40px; padding: 8px 10px; border: 1px solid var(--divider); border-radius: 9px; background: var(--background); color: var(--foreground); font: inherit; letter-spacing: .04em; }
+.field input[aria-invalid="true"] { border-color: #e5484d; }
+.error { color: #e5484d !important; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.secondary, .danger { min-height: 38px; padding: 8px 14px; border-radius: 9px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.secondary { border: 1px solid var(--divider); background: transparent; color: var(--foreground); }
+.danger { border: 1px solid #e5484d; background: #e5484d; color: #fff; }
+.danger:disabled, .secondary:disabled { opacity: .5; cursor: not-allowed; }
+.dialog button:focus-visible, .field input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

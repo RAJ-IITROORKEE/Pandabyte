@@ -82,7 +82,7 @@ export function createLightweightHandler(deps:Dependencies) {
   if(!Number.isInteger(guideDeadlineMs)||guideDeadlineMs<1||guideDeadlineMs>30000)throw Error('Invalid guide deadline');
   const diagnosticDeadlineMs=deps.diagnosticDeadlineMs??30000;
   if(!Number.isInteger(diagnosticDeadlineMs)||diagnosticDeadlineMs<1||diagnosticDeadlineMs>30000)throw Error('Invalid diagnostic deadline');
-  async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'cancel'|'cleanup',id?:string):Promise<Response> {
+  async function handle(request:Request,method:string,action:'list'|'create'|'read'|'message'|'archive'|'delete'|'deleteAll'|'cancel'|'cleanup',id?:string):Promise<Response> {
     const requestStarted=performance.now();
     try {
       if (request.method!==method) return new Response(null,{status:405,headers:{allow:method,'cache-control':'private, no-store'}});
@@ -120,6 +120,8 @@ export function createLightweightHandler(deps:Dependencies) {
       if(action==='list')return json(await store.list(url.search==='?archived=true'));
       if(action==='create')return json(await store.create((input.title as string|undefined)?.trim()??'New chat'),201);
       if(action==='archive')return json(await store.archive(id!,input.archived as boolean));
+      // Bulk delete needs per-thread native cleanup, so it is refused while that runtime is wired.
+      if(action==='deleteAll') { if(native)throw new ChatStoreError('unavailable'); return json(await store.deleteAll()); }
       if(action==='delete') {
         if(native && !await native.cleanupThread(id!,request.signal))throw new ChatStoreError('conflict');
         if(native && !await deps.current(actor))throw new ChatStoreError('unauthenticated');
@@ -363,7 +365,7 @@ export function createLightweightHandler(deps:Dependencies) {
   return {
     listGET:(r:Request)=>handle(r,'GET','list'),createPOST:(r:Request)=>handle(r,'POST','create'),
     readGET:(r:Request,id:string)=>handle(r,'GET','read',id),messagePOST:(r:Request,id:string)=>handle(r,'POST','message',id),
-    archivePATCH:(r:Request,id:string)=>handle(r,'PATCH','archive',id),deleteDELETE:(r:Request,id:string)=>handle(r,'DELETE','delete',id),
+    archivePATCH:(r:Request,id:string)=>handle(r,'PATCH','archive',id),deleteDELETE:(r:Request,id:string)=>handle(r,'DELETE','delete',id),deleteAllDELETE:(r:Request)=>handle(r,'DELETE','deleteAll'),
     cancelPOST:(r:Request,id:string)=>handle(r,'POST','cancel',id),
     cleanupPOST:(r:Request,id:string)=>handle(r,'POST','cleanup',id),
   };

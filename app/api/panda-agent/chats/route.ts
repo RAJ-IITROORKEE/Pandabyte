@@ -2,3 +2,4 @@ import { lightweightChatHandlers as chatHandlers } from '@/Panda-agent/src/serve
 export const dynamic = 'force-dynamic';
 export const GET = chatHandlers.listGET;
 export const POST = chatHandlers.createPOST;
+export const DELETE = chatHandlers.deleteAllDELETE;

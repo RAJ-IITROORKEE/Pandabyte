@@ -60,6 +60,8 @@ export function clarificationText(rows: readonly CatalogRow[]): string {
 // Catalog text is admin-controlled; Markdown control characters are still removed so a title can never form a link, image or emphasis.
 const cell = (s: string) => s.replace(/[|\\[\]<>`*_]/g, ' ').replace(/[\r\n]+/g, ' ').trim();
 /** A Markdown table of matching catalog rows; every value is a catalog field or a literal title match. */
+/** Catalog tables come from the live product list, so the chat must not label them as unchecked general knowledge. */
+export const isCatalogTableText = (text: string): boolean => text.includes('This list comes from the live PandaByte catalog.');
 export function catalogTableText(rows: readonly CatalogRow[], scope: CatalogScope): string {
   const matching = rows.filter(r => (scope.category === 'all' || categoryOf(r.title) === scope.category) && (!scope.family || chipFromTitle(r.title)?.startsWith('ESP32')))
     .slice().sort((a, b) => a.title.localeCompare(b.title, 'en'));
