@@ -2,6 +2,23 @@
 @source "./";
 @source "../components";
 @source "../lib";
+@source "../node_modules/streamdown/dist/*.js";
+@source "../node_modules/@streamdown/code/dist/*.js";
+
+/* Streamdown (Panda Agent answers) uses shadcn token names and dark: variants. Tokens resolve from --sd-* set on
+   the scoped .rich wrapper (rich-markdown.module.css); dark follows data-theme, matching app/theme.css. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@theme inline {
+  --color-background: var(--sd-background);
+  --color-foreground: var(--sd-foreground);
+  --color-muted: var(--sd-muted);
+  --color-muted-foreground: var(--sd-muted-foreground);
+  --color-sidebar: var(--sd-sidebar);
+  --color-border: var(--sd-border);
+  --color-primary: var(--sd-primary);
+  --color-primary-foreground: var(--sd-primary-foreground);
+  --color-ring: var(--sd-ring);
+}
 
 * {
   box-sizing: border-box;

@@ -1,0 +1,35 @@
+/* Scope for Streamdown: maps its shadcn tokens to PandaByte tokens (app/theme.css) so site styles are untouched. */
+.rich {
+  --sd-background: var(--surface);
+  --sd-foreground: var(--foreground);
+  --sd-muted: color-mix(in srgb, var(--foreground) 5%, var(--surface));
+  --sd-muted-foreground: var(--muted);
+  --sd-sidebar: var(--surface);
+  --sd-border: var(--divider);
+  --sd-primary: var(--accent-ink);
+  --sd-primary-foreground: var(--action-text);
+  --sd-ring: var(--focus-ring);
+  --radius: 12px;
+  min-width: 0;
+  max-width: 100%;
+  contain: inline-size;
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  color: var(--foreground);
+}
+.rich > * { min-width: 0; max-width: 100%; }
+.rich > :first-child { margin-top: 0; }
+.rich > :last-child { margin-bottom: 0; }
+.rich [data-streamdown^="heading"] { margin: 1.1em 0 .4em; font-size: 1.1em; line-height: 1.35; }
+.rich [data-streamdown="heading-1"] { font-size: 1.3em; }
+.rich [data-streamdown="heading-2"] { font-size: 1.18em; }
+.rich [data-streamdown="link"], .rich [data-streamdown="link"]:hover { color: var(--accent-ink); }
+.rich [data-streamdown="inline-code"] { padding: 2px 5px; border-radius: 4px; background: var(--status-soft); font-size: .9em; }
+.rich [data-streamdown="blockquote"] { border-left: 2px solid var(--divider); color: var(--muted); }
+.rich [data-streamdown="code-block"], .rich [data-streamdown="table-wrapper"] { max-width: 100%; border-color: var(--divider); border-radius: 12px; }
+.rich [data-streamdown="code-block"] pre, .rich [data-streamdown="code-block"] code { max-width: 100%; overflow-x: auto; font-size: 13px; }
+.rich [data-streamdown="table-wrapper"] { overflow-x: auto; }
+.rich [data-streamdown="table-wrapper"] table { min-width: 100%; }
+.rich input[type="checkbox"] { margin-right: .4em; accent-color: var(--accent-ink); }
+.rich button:focus-visible, .rich a:focus-visible, .rich [role="button"]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

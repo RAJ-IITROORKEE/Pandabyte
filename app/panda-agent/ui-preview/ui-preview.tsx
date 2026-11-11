@@ -6,6 +6,7 @@ import { ToolCallGroup } from "@/Panda-agent/src/ui/agent/tool-calls";
 import { CitationChip, CitationProvider, SourceAccordion, SourcePanel, SourceStrip } from "@/Panda-agent/src/ui/agent/cited-answer";
 import { WorkingPill } from "@/Panda-agent/src/ui/agent/working-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { RichMarkdown } from "@/Panda-agent/src/ui/rich-markdown";
 import { MermaidBlock } from "@/Panda-agent/src/ui/blocks/mermaid-block";
 import { WiringBlock } from "@/Panda-agent/src/ui/blocks/wiring-block";
 import { FlowBlock } from "@/Panda-agent/src/ui/blocks/flow-block";
@@ -41,6 +42,74 @@ const flowSample = JSON.stringify({ title: "ESP32 relay circuit", nodes: [
 
 const wiringBad = JSON.stringify({ parts: [{ id: "esp", label: "ESP32", pins: ["3V3"] }, { id: "dht", label: "DHT22", pins: ["VCC"] }], wires: [{ from: "esp.GPIO9", to: "dht.VCC" }] });
 
+const richSample = `## Reading a DHT22 on the x8266
+
+Use the **x8266** \`D4\` pin with a 10k pull-up [S1]. The board has 4 MB of flash [S2]; unknown marker [S9] stays plain.
+
+| Board | Flash | Wi-Fi |
+|---|---|---|
+| x8266 | 4 MB | 2.4 GHz |
+| xS3 | 16 MB | 2.4 GHz + BLE |
+
+- [x] Install the driver
+- [x] Select the board
+- [ ] Upload the sketch
+
+1. Wire the sensor
+2. Open the serial monitor
+3. Read the values
+
+> Keep GPIO signals at 3.3 V.
+
+\`\`\`cpp
+#include <DHT.h>
+DHT dht(D4, DHT22);
+void setup() { Serial.begin(115200); dht.begin(); }
+\`\`\`
+
+\`\`\`bash
+arduino-cli upload -p COM3 --fqbn esp8266:esp8266:nodemcuv2
+\`\`\`
+
+\`\`\`json
+{ "baud": 115200, "sensor": "DHT22" }
+\`\`\`
+
+Divider output: $$V_{out} = V_{in} \\cdot \\frac{R_2}{R_1 + R_2}$$ inline, and as a block:
+
+$$V_{out} = V_{in}\\,\\frac{R_2}{R_1+R_2}$$
+
+\`\`\`mermaid
+flowchart LR
+  A[USB] --> B[3.3V] --> C[ESP]
+\`\`\`
+
+\`\`\`chart
+{"type":"bar","title":"Flash (MB)","x":["x8266","xS3"],"series":[{"name":"MB","values":[4,16]}]}
+\`\`\`
+
+\`\`\`wiring
+${wiringSample}
+\`\`\`
+
+\`\`\`steps
+${stepsSample}
+\`\`\`
+
+\`\`\`callout
+${calloutSample}
+\`\`\`
+
+\`\`\`flow
+${flowSample}
+\`\`\`
+
+`;
+const hostileSample = `![tracker](https://evil.example/t.png) ![d](data:image/png;base64,AAAA)
+
+<script>alert(1)</script> <img src=x onerror=alert(1)> <iframe src="https://evil.example"></iframe>
+
+[js link](javascript:alert(1)) [data link](data:text/html,hi) [rel](/account) [ok link](https://example.com/docs) [S9]`;
 export function UiPreview() {
   const [started] = useState(() => Date.now());
   return <main style={{ maxWidth: 820, margin: "0 auto", padding: "24px 16px 80px", display: "grid", gap: 28, background: "var(--background)", color: "var(--foreground)", minHeight: "100dvh" }}>
@@ -56,5 +125,7 @@ export function UiPreview() {
     <section><h2 style={{ fontSize: 14 }}>Answer blocks</h2><div style={{ display: "grid", gap: 4 }}><MermaidBlock code={mermaidSample} /><WiringBlock code={wiringSample} /><StepsBlock code={stepsSample} /><CalloutBlock code={calloutSample} /><WiringBlock code={wiringBad} /></div></section>
     <section><h2 style={{ fontSize: 14 }}>Flow guide</h2><div style={{ display: "grid", gap: 4 }}><FlowBlock code={flowSample} /><FlowBlock code="{broken" /></div></section>
     <section><h2 style={{ fontSize: 14 }}>Source accordion</h2><CitationProvider messageId="preview-acc" citations={citations}><p style={{ lineHeight: 1.65 }}>The x8266 uses the ESP8266 <CitationChip id="S1">[S1]</CitationChip> with 4 MB of flash <CitationChip id="S2">[S2]</CitationChip>.</p><SourceAccordion /></CitationProvider><CitationProvider messageId="preview-acc-same" citations={sameListing}><p style={{ lineHeight: 1.65 }}>Compact board <CitationChip id="S1">[S1]</CitationChip> with USB Type-C <CitationChip id="S2">[S2]</CitationChip>.</p><SourceAccordion /></CitationProvider></section>
+    <section><h2 style={{ fontSize: 14 }}>Rich answer (Streamdown)</h2><CitationProvider messageId="rich" citations={citations}><RichMarkdown text={richSample} citations={{ messageId: "rich", ids: citations.map(c => c.id) }} /><SourceAccordion /></CitationProvider></section>
+    <section><h2 style={{ fontSize: 14 }}>Rich answer: hostile sample</h2><CitationProvider messageId="hostile" citations={citations}><RichMarkdown text={hostileSample} citations={{ messageId: "hostile", ids: citations.map(c => c.id) }} /></CitationProvider></section>
   </main>;
 }
