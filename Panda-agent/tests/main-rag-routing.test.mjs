@@ -16,3 +16,9 @@ test('PandaByte codes, titles and listing questions still go to product lookup',
     'Tell me about the Cytron Maker UNO.', 'What does the WS2812B ring listing say?', 'What is the price of the ESP32 board?'])
     assert.equal(isMainProductQuestion(q, catalog), true, q);
 });
+
+test("a bare it is a product follow-up only for hardware attributes", async () => {
+  const { isImplicitProductFollowup } = await import("../src/server/main-rag-chat.ts");
+  for (const q of ["What USB connector does it have?", "How much flash does it have?", "What is the price of this board?"]) assert.equal(isImplicitProductFollowup(q, catalog), true, q);
+  for (const q of ["What is the latest stable ESP-IDF release and when was it published?", "How does it work, in simple words?"]) assert.equal(isImplicitProductFollowup(q, catalog), false, q);
+});

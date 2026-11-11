@@ -25,12 +25,12 @@ function Chart({ spec }: { spec: ChartSpec }) {
         : <g key={k} className={styles[`chartS${k}`]}><polyline fill="none" stroke="currentColor" strokeWidth={2} points={s.values.map((v, i) => `${cx(i)},${y(v)}`).join(" ")} />{s.values.map((v, i) => <circle key={i} cx={cx(i)} cy={y(v)} r={3} fill="currentColor"><title>{`${s.name}, ${spec.x[i]}: ${fmt(v)}`}</title></circle>)}</g>)}
       {spec.x.map((label, i) => i % every === 0 && <text key={i} className={styles.chartTick} x={cx(i)} y={H - B + 16} textAnchor="middle">{label.length > 10 ? `${label.slice(0, 9)}…` : label}</text>)}
     </svg>
-    {spec.series.length > 1 && <ul className={styles.chartLegend}>{spec.series.map((s, k) => <li key={k}><span className={styles[`chartS${k}`]} aria-hidden="true" />{s.name}</li>)}</ul>}
+    {spec.series.length === 1 && <p className={styles.chartUnit}>{spec.series[0].name}</p>}{spec.series.length > 1 && <ul className={styles.chartLegend}>{spec.series.map((s, k) => <li key={k}><span className={styles[`chartS${k}`]} aria-hidden="true" />{s.name}</li>)}</ul>}
   </figure>;
 }
 
 // Used as a markdown SyntaxHighlighter for ```chart blocks; invalid specs fall back to a normal code block.
 export function ChartBlock({ code, components }: { code: string; components: { Pre: React.ComponentType<ComponentProps<"pre">>; Code: React.ComponentType<ComponentProps<"code">> } }) {
   const spec = parseChartSpec(code);
-  return spec ? <Chart spec={spec} /> : <components.Pre><components.Code>{code}</components.Code></components.Pre>;
+  return spec ? <Chart spec={spec} /> : <details className={styles.chartFallback}><summary>Chart could not be drawn · show data</summary><components.Pre><components.Code>{code}</components.Code></components.Pre></details>;
 }

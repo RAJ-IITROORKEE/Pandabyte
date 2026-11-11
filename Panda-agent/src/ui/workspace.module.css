@@ -405,3 +405,8 @@
 .quickActions button:hover:not(:disabled) { background: var(--status-soft); color: var(--foreground); }
 .quickActions button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .quickActions button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Chart extras (12 Nov 2026). */
+.chartUnit { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.chartFallback { margin: 8px 0; color: var(--muted); font-size: 12px; }
+.chartFallback summary { cursor: pointer; }

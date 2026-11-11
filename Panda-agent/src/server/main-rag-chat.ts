@@ -33,7 +33,9 @@ const namedProduct = (question:string,catalog:Catalog) => {
   ||/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b/i.test(text);
 };
 
-const factualReference = (text:string) => /\b(?:it|its|this board|that board|this product|that product)\b/.test(text)
+// A bare "it" is a product follow-up only when the question asks about a hardware attribute; "when was it published?" is not.
+const factualReference = (text:string) => (/\b(?:this|that) (?:board|product|module|kit)\b/.test(text)
+  || (/\b(?:it|its)\b/.test(text)&&/\b(?:usb|connector|port|mcu|cpu|chip|soc|pins?|pinout|gpio|voltage|current|power|battery|flash|memory|ram|psram|specs?|specifications?|wi-?fi|bluetooth|ble|antenna|sensor|led|button|size|dimensions?|weight|price|cost|stock|warranty|compatible|support|temperature|certifi\w*|run|\d+(?:\.\d+)?\s?v)\b/.test(text)))
  && /^(?:what|which|whose|where|when|why|how|does|do|did|is|are|was|were|can|could|will|would|should|has|have)\b/.test(text);
 export function isImplicitProductFollowup(question:string,catalog:Catalog):boolean {
  const text=question.normalize('NFKC').toLowerCase();
