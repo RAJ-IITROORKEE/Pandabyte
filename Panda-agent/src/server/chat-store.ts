@@ -73,6 +73,7 @@ export function createChatStore(client: InsForgeClient) {
     async list(archived = false) { const v = await rpc('chats_list_v2', { p_archived: archived }); if (!record(v) || !Array.isArray(v.threads) || v.threads.length > 100) return bad(); return { threads: v.threads.map(thread) }; },
     async archive(id: string, archived: boolean) { const v = await rpc('chat_archive', { p_thread: id, p_archived: archived }); if (!record(v) || v.ok !== true) return bad(); return { ok: true as const }; },
     async delete(id: string) { const v = await rpc('chat_delete', { p_thread: id }); if (!record(v) || v.ok !== true) return bad(); return { ok: true as const }; },
+    async deleteAll() { const v = await rpc('chats_delete_all', {}); if (!record(v) || !Number.isSafeInteger(v.deleted) || !Number.isSafeInteger(v.skipped) || (v.deleted as number) < 0 || (v.skipped as number) < 0) return bad(); return { deleted: v.deleted as number, skipped: v.skipped as number }; },
     async create(title: string) { const v = await rpc('chat_create', { p_title: title }); if (!record(v)) return bad(); return { thread: thread(v.thread) }; },
     async read(id: string) { return parseChatRead(await rpc('chat_read', { p_thread: id })); },
   };
