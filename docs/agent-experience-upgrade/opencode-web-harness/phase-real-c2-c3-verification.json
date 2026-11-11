@@ -1,0 +1,40 @@
+{
+  "phase": "Real C2 gate per hosted model (C3 models) with C4-capable harness",
+  "date": "2026-11-11",
+  "accepted": "real C2 gate passed for tavily-hosted-haiku, tavily-hosted-luna, tavily-hosted-terra; semantic answer review and LangSmith correlation still pending; real image calls not run",
+  "privacy": {
+    "review": "read-only owner-approved Brave review of OpenRouter, re-read before each real lease (<=30 min)",
+    "observed": {"paidTraining": false, "publicPrompts": false, "dataDiscount": false, "inputOutputLogging": false, "globalZdrToggles": false, "freeTraining": "on (no free endpoint used)", "langsmith": "Privacy Mode on, Cost metadata only, identity/request context off, 100% sampling, 1 key (DatummAgent)", "workspaceHashPrefix": "158ce549", "settingsChanged": false},
+    "lease": "fresh <=20-minute lease per real run via existing encrypted handoff; key never printed"
+  },
+  "realPathFixes": [
+    "Haiku 5.5 descriptor sends reasoning:{enabled:false} (otherwise a signature-only reasoning_details block)",
+    "MCP shim queues parallel tool calls one at a time (host store admits one unsettled operation)",
+    "Gateway binds OpenCode 2.2.5 errored-tool wire string {\"error\":{\"type\":\"tool.execution\",\"message\":<shim failure>},\"content\":[]}; projection hash stays []",
+    "Answer verifier accepts a preamble + one closing ```json block (preamble discarded)",
+    "Uncited answer (evidence:[]) is insufficient; text never shown",
+    "Luna/Terra: exact reasoning.encrypted reasoning_details blocks accepted and discarded",
+    "Owner decision: non-legacy maxInput 32,000 tokens / wireMax 48,000 B (GPT-OSS unchanged 16,000 / 14,000); reservations Luna 4,785,001, Terra 47,850,001, Haiku 6,750,001 nano-USD"
+  ],
+  "realRuns": [
+    {"profile": "tavily-hosted-haiku", "run": 1, "fixture": "f49b6bb90f214ec0ba1a5d07cb9c5dfc", "ssm": "04f1b545-9cb3-4c97-9de8-a99359f97084", "result": "fail_closed", "cause": "signature-only reasoning_details", "costUsd": 0.000169},
+    {"profile": "tavily-hosted-haiku", "run": 2, "fixture": "861474e155e141dd883be26fa1dfcc98", "ssm": "04be8c4d-7068-4641-8daa-eb78a931ab81", "result": "fail_closed", "cause": "shim single-flight + error-result wire mismatch"},
+    {"profile": "tavily-hosted-haiku", "run": 3, "fixture": "fd45a879012e47bb9385b4ec7abe255f", "ssm": "bc2fe70c-66b5-49b8-9337-3ec221f89daa", "result": "fail_closed", "cause": "answer prose + fenced JSON"},
+    {"profile": "tavily-hosted-haiku", "run": 4, "fixture": "de6cc2081e8741849f93a4379e29b9cf", "ssm": "4a1c0b95-a177-4202-b7a5-a818e9034ae3", "result": "fail", "cause": "honest insufficient answer; test vocabulary too narrow"},
+    {"profile": "tavily-hosted-haiku", "run": 5, "fixture": "bb471b7367a048e1a7ebcd281391a061", "ssm": "7f610540-731a-4164-a675-f12cbdda7c74", "result": "fail_closed", "cause": "follow-up exceeded 14,000 B wire bound (not_sent)"},
+    {"profile": "tavily-hosted-haiku", "run": 6, "fixture": "f1fcb30f06404115a1cfe35635545ec2", "ssm": "583fa38e-ae92-4481-8e67-93083474b2e3", "result": "fail", "cause": "uncited refusal marked invalid"},
+    {"profile": "tavily-hosted-haiku", "run": 7, "fixture": "c90ca03cfbf84806884e04df90245997", "ssm": "fe00f672-945d-41f1-9acf-80360a0bc0b9", "result": "pass", "checks": 6, "modelCalls": 4, "realSearches": 2, "costNanoUsd": 2172800, "firstTurnMs": 32030, "secondTurnMs": 7116, "peakBytes": 407339008, "oomKill": 0},
+    {"profile": "tavily-hosted-luna", "run": 1, "fixture": "aea5466daebc41d495bb84403db1bc00", "ssm": "4aa51a9b-b354-486b-93f9-84e1526c0987", "result": "fail_closed", "cause": "encrypted reasoning_details; retained unknown, not resent; OpenRouter shows cancelled $0.000207"},
+    {"profile": "tavily-hosted-luna", "run": 2, "fixture": "743387193865408789a238c177857245", "ssm": "40c30cdf-5cf1-4b9d-881f-d8a91945d087", "result": "pass", "checks": 6, "modelCalls": 3, "realSearches": 1, "costNanoUsd": 476378, "firstTurnMs": 22990, "secondTurnMs": 8380, "peakBytes": 386437120, "oomKill": 0},
+    {"profile": "tavily-hosted-terra", "run": 1, "fixture": "74f3da6d20074e948c87a7269a140dcb", "ssm": "22a27b2f-edba-4fac-bc3d-e846e1f0a869", "result": "pass", "checks": 6, "modelCalls": 3, "realSearches": 1, "costNanoUsd": 4401210, "firstTurnMs": 21636, "secondTurnMs": 11690, "peakBytes": 391827456, "oomKill": 0}
+  ],
+  "injectedRegressionsOnFinalCode": [
+    {"gate": "Haiku image (C4)", "fixture": "c8baa8823988475393bf33f4f9f202e1", "ssm": "7def9b87-4262-45e6-b55e-ec4baa33602c", "result": "pass", "checks": 17},
+    {"gate": "GPT-OSS text", "fixture": "d8732ae21a67401d931673450c572e91", "ssm": "17ff099e-7f48-4085-88db-e3f9dec992fa", "result": "pass", "checks": 9},
+    {"gate": "C1 native search", "fixture": "f67afdceaf8546cb9fbb56f69167d3b3", "ssm": "dfb4b5fe-476a-4d05-9acf-2b934f5bce9f", "result": "pass", "checks": 4},
+    {"gate": "B synthetic matrix", "fixture": "40f0422be8824111887754ed6be28835", "ssm": "d805bc8b-536a-40e0-b693-c3951e60be23", "result": "pass", "checks": 13, "oomKill": 0},
+    {"gate": "parallel tools (one refused)", "fixture": "49413cce6b764535bd8bde798793b27a", "ssm": "c9c95d7f-e610-4e04-8428-ada5662049f3", "result": "pass", "checks": 12}
+  ],
+  "review": "independent review of all real-path fixes: no Blocker/Major; minors addressed or deferred (stale queued shim call, native profile context limit 16,000 vs host 32,000 -> phase D/F)",
+  "notEstablished": ["semantic answer quality review", "LangSmith metadata correlation", "real image calls", "app/UI integration (D/E)", "deployment"]
+}

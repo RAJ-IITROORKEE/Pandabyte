@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { nativeUserImageMatches } from './research-image-binding.ts';
 import { researchJSON, researchObject, researchText, type ResearchObject } from './research-values.ts';
 
 export type ResearchTodo = { content: string; status: 'pending' | 'in_progress' | 'completed' | 'cancelled' };
@@ -28,8 +29,9 @@ function todos(value: unknown): ResearchTodo[] | null {
 /** Private native projection only; source receipts, ownership and provider settlement are separate authorities. */
 export function projectResearchTurn(expected: unknown, session: unknown, active: unknown, messages: unknown, allowedTools: readonly string[]): ResearchTurnResult {
  if (!researchJSON({ expected, session, active, messages, allowedTools }, 1048576) || !researchObject(expected)
-  || Object.keys(expected).sort().join(',') !== 'messageID,promptHash' || !id(expected.messageID)
+  || (Object.keys(expected).sort().join(',') !== 'messageID,promptHash' && Object.keys(expected).sort().join(',') !== 'imageSha256,messageID,promptHash') || !id(expected.messageID)
   || typeof expected.promptHash !== 'string' || !/^[a-f0-9]{64}$/.test(expected.promptHash)
+  || ('imageSha256' in expected && (typeof expected.imageSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(expected.imageSha256)))
   || !researchObject(session) || !researchObject(session.time) || typeof active !== 'boolean'
   || !time(session.time.created) || !time(session.time.updated) || session.time.updated < session.time.created
   || (session.time.busy !== undefined && !time(session.time.busy)) || (session.time.idle !== undefined && !time(session.time.idle))
@@ -45,7 +47,8 @@ export function projectResearchTurn(expected: unknown, session: unknown, active:
  const start = rows.findIndex(m => m.id === expected.messageID);
  if (start < 0) return active || session.outcome === undefined ? { state: 'pending' } : unknown();
  const user = rows[start];
- if (user.type !== 'user' || !byteText(user.text, 98304) || createHash('sha256').update(user.text, 'utf8').digest('hex') !== expected.promptHash) return unknown();
+ if (user.type !== 'user' || !byteText(user.text, 98304) || createHash('sha256').update(user.text, 'utf8').digest('hex') !== expected.promptHash
+  || !nativeUserImageMatches(user, 'imageSha256' in expected ? expected.imageSha256 as string : undefined)) return unknown();
  const suffix = rows.slice(start + 1), assistants: { row: Record<string, unknown>; text: string; toolCount: number }[] = [];
  const projected: ResearchTool[] = [], compactions: ResearchCompaction[] = [], toolKeys = new Set<string>();
  const toolTimes: { created: number; ran?: number; completed?: number }[] = [];

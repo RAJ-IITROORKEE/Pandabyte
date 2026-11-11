@@ -1,0 +1,37 @@
+{
+  "phase": "C4 image input through the native harness",
+  "date": "2026-11-11",
+  "accepted": false,
+  "acceptanceBlockedBy": [
+    "Real per-model image calls not run: require a freshly reviewed OpenRouter privacy lease",
+    "C2 real-answer gate and C3 real per-model calls still open",
+    "Multi-turn image history (B') deferred; app/UI integration is phase D/E",
+    "Native MCP startup race (first tool call before tool registration) observed once; fix assigned to phase D"
+  ],
+  "design": "phase-c4-plan.md D1+D2+D3 (three readiness reviews, final READY)",
+  "visionProfiles": ["tavily-hosted-luna", "tavily-hosted-terra", "tavily-hosted-haiku"],
+  "defaultHarnessProfile": "tavily-hosted-haiku (owner decision; driver and helper only, library/live defaults unchanged)",
+  "probe": {"fixture": "64aba62fb883400c91717744e5c08719", "ssm": "bc06ffbc-d34b-4bf5-a758-b979abb7a306", "result": "shapes recorded in phase-c4-plan.md C4.0 result", "network": "none"},
+  "offline": {
+    "fullServerSuite": "1207 pass (Node 24.18, react-server conditions)",
+    "nativeStrictTypecheck": "pass",
+    "sourceReview": "0 Blockers, 0 Majors; 22/27 mutations caught, proxy gap closed with a non-canonical base64 regression afterwards",
+    "sourceBundle": "exact 25 files including research-image-binding.ts"
+  },
+  "injectedNativeHost": {
+    "image": "sha256:bbcbbcf6fd524caefa0063d6334e31889153e2c492713cf7f87e6eeb1cce33df",
+    "openCodeVersion": "2.2.5",
+    "imageEvidenceEachVisionPass": {"jpegBytes": 46415, "pngBytes": 1064, "toolRoundDeliveries": 2, "textOnlyUserRowFiles": "absent"},
+    "runs": [
+      {"profile": "tavily-hosted-haiku", "image": true, "fixture": "c4a589134239444fb314bdbd5f711dbb", "ssm": "887c926b-e9f2-4710-a10e-916b86997a17", "result": "fail_closed", "detail": "driver observation() omitted imageSha256; image row correctly rejected; driver fixed", "realCalls": 0},
+      {"profile": "tavily-hosted-haiku", "image": true, "fixture": "3975276f0de14c96b2b6b96af6787165", "ssm": "43c74872-e070-4749-aa15-9d165fd886ff", "result": "fail_closed", "detail": "native MCP startup race on first text turn; gateway 403 on continuation; unrelated to C4", "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted-haiku", "image": true, "fixture": "d3164d536efa4c8aa65925669ceb8685", "ssm": "3da325fd-e81e-4504-a0c5-da2bfaeda61b", "result": "pass", "checks": 17, "peakBytes": 424587264, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted-luna", "image": true, "fixture": "638ddb83c1b2452aba7d745571f06dfb", "ssm": "42e0a5de-7c5f-4780-a5f0-04959c129ffa", "result": "pass", "checks": 17, "peakBytes": 423071744, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted-terra", "image": true, "fixture": "25a9cd4173074c858df2a1128295ffeb", "ssm": "5509c775-0884-4f1f-a570-7a75b53b50d3", "result": "pass", "checks": 17, "peakBytes": 417079296, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted", "image": false, "regression": "GPT-OSS text-only", "fixture": "3394716161194766827c501be7b5594f", "ssm": "c6d965c0-92c6-4721-a66e-5945ecd23309", "result": "pass", "checks": 9, "peakBytes": 408662016, "oomKill": 0, "realCalls": 0},
+      {"gate": "C1 native search regression", "fixture": "39962443c458494c89097480550f4d81", "ssm": "66630275-3802-4883-b5dc-04396d20cae8", "result": "pass", "checks": 4, "peakBytes": 418271232, "oomKill": 0, "realSearchCalls": 0},
+      {"gate": "B synthetic matrix regression", "fixture": "0dc9c27daa7e495e9d0498b18c74457e", "ssm": "b33fe369-fcf1-4f42-b260-7d3092aa61ef", "result": "pass", "checks": 13, "maxPeakBytes": 406900736, "oomKill": 0}
+    ]
+  },
+  "notEstablished": ["real image answers or latency per model", "image semantic quality", "multi-turn image history", "web UI upload/model picker (E)", "deployment"]
+}

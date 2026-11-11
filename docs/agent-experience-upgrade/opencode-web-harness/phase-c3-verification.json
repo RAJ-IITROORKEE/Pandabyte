@@ -1,0 +1,39 @@
+{
+  "phase": "C3 hosted research model allowlist",
+  "date": "2026-11-11",
+  "accepted": false,
+  "acceptanceBlockedBy": [
+    "Real per-model provider calls not run: require a freshly reviewed OpenRouter privacy lease (owner unavailable to sign in to OpenRouter in a reviewable browser)",
+    "C2 real-answer gate still open",
+    "Semantic answer/passage review and LangSmith metadata correlation pending"
+  ],
+  "models": {
+    "openai/gpt-6-luna": {"endpointTag": "azure/us", "outputParam": "max_completion_tokens", "reasoning": "low", "reservationNanoUsd": 2585001},
+    "openai/gpt-6.1-terra": {"endpointTag": "azure/us", "outputParam": "max_completion_tokens", "reasoning": "low", "reservationNanoUsd": 25850001},
+    "anthropic/claude-haiku-5.5": {"endpointTag": "amazon-bedrock", "outputParam": "max_tokens", "reasoning": "omit", "reservationNanoUsd": 3550001, "historyIdSanitize": true},
+    "openai/gpt-oss-20b": {"endpointTag": "groq", "legacy": true, "reservationNanoUsd": 1410001}
+  },
+  "offline": {
+    "focusedTests": "200/200 combined after workers; 113/113 gateway/policy/openrouter/runtime/bundle after the Haiku history-ID fix",
+    "fullServerSuite": "1176 tests: 1144 pass, 0 fail, 32 existing opt-in skips (Node 24.18)",
+    "nativeStrictTypecheck": "pass",
+    "scopedLint": "pass",
+    "readinessReviews": "2 (review 1: 1 Blocker + 4 Majors resolved; review 2: 1 Major resolved via frozen R11 interface)",
+    "sourceReview": "no Blocker/Major; 11 mutations all caught",
+    "goldenGptOss": {"policyHash": "1b2fc53bd1217575d696bbf3812583bcb3f50b85e67f14ff0604c9c62ca8cfe8", "wireRequestHash": "b4e81106c096df3818efa7810feb64af28f63990f0a8da8551f0b1927a88d28d", "profileConfigSha256": "53c1d15cc2b1dda9665201faab14d56fdd396c515347aaa1c8bc0df08b3a13ba"}
+  },
+  "injectedNativeHost": {
+    "image": "sha256:bbcbbcf6fd524caefa0063d6334e31889153e2c492713cf7f87e6eeb1cce33df",
+    "openCodeVersion": "2.2.5",
+    "runs": [
+      {"profile": "tavily-hosted-luna", "fixture": "b8992a6f57d740d7ab720d2078b28dd0", "ssm": "4ff2836f-c6d6-4f9b-b948-8d6b102943a4", "result": "pass", "checks": 9, "peakBytes": 398544896, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted-terra", "fixture": "6c2e2990caed45f6b14a4783a916004e", "ssm": "233c759d-760f-4daa-bfec-bcf7f75e27a1", "result": "pass", "checks": 9, "peakBytes": 414920704, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted-haiku", "fixture": "d1fa49f297a842cab60e4f44b71497e6", "ssm": "4fb479b7-f00f-442f-9f12-1df58031d232", "result": "fail_closed", "detail": "gateway 403 on continuation: OpenCode replaced '.'/':' in the 64-char Anthropic tool-call ID with '_' (no truncation); exact message keys, no cache_control; exact container removed", "peakBytes": 375066624, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted-haiku", "fixture": "4824295f0f0a4688a91771d9ff683665", "ssm": "bc8fb850-9ca1-41b2-aa7f-0b0635f96f82", "result": "pass", "after": "historyIdSanitize descriptor rule", "checks": 9, "peakBytes": 400994304, "oomKill": 0, "realCalls": 0},
+      {"profile": "tavily-hosted", "fixture": "db59099a0db2457c8d01ffcd73322813", "ssm": "5ca585e4-b9fc-4152-a65a-5a58738096b9", "result": "pass", "checks": 9, "peakBytes": 377843712, "oomKill": 0, "realCalls": 0},
+      {"gate": "C1 native search", "fixture": "668524f6b4f84fb2a2c89e6aee7feac9", "ssm": "5ec862fc-00d8-4f7b-85a9-00551dd3ffd6", "result": "pass", "checks": 4, "peakBytes": 388599808, "oomKill": 0, "realSearchCalls": 0},
+      {"gate": "B matrix", "fixture": "be4d0c623a0d4eb981073bf7fd6103bf", "ssm": "08c206f4-0d44-4a43-9bb5-69698508ee14", "result": "pass", "checks": 13, "maxPeakBytes": 389005312, "oomKill": 0}
+    ]
+  },
+  "notEstablished": ["real model answers or latency per model", "image input (C4)", "web UI model picker (E)", "deployment"]
+}

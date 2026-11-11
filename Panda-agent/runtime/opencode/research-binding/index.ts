@@ -27,7 +27,7 @@ const queryInput = (value: unknown): value is { query: string } => {
 const researchBinding = {
   id: 'panda-research-binding',
   async setup(context: Context) {
-    const selected = researchProfileSelection(process.env.PANDA_RESEARCH_PROFILE as 'synthetic-echo' | 'tavily-search');
+    const selected = researchProfileSelection(process.env.PANDA_RESEARCH_PROFILE as Parameters<typeof researchProfileSelection>[0]);
     const generation = process.env.PANDA_RESEARCH_GENERATION;
     if (!/^[a-f0-9]{64}$/.test(generation ?? '')) throw Error('research_binding_invalid');
     await context.session.hook('http.request', event => {

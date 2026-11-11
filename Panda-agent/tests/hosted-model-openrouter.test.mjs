@@ -116,6 +116,13 @@ test('partial content is never released before the final usage frame and DONE ar
  release();const result=await pending;assert.equal(result.evaluation.evidence[0].quote,input().passages[0].text);
  assert.equal(f.observations[0].stage,'validated');assert.deepEqual(f.counts,{claims:1,posts:1});
 });
+test('extracted usage rejection preserves the hosted public error and observation stage',async()=>{
+ for(const direct of [false,true]){
+  const f=fixture({direct,frames:frames=>{frames.at(-1).usage.completion_tokens=701;}});
+  await assert.rejects(run(f,direct?{question:'Hello'}:input()),error=>error.constructor.name==='BasicRagProviderError'&&error.code==='outcome_unknown');
+  assert.equal(f.observations[0].stage,'outcome_unknown');assert.equal(f.counts.posts,1);
+ }
+});
 
 test('malformed, truncated, mixed, tool/reasoning or mispriced streams remain unknown with no second dispatch',async()=>{
  const cases=[

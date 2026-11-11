@@ -4,10 +4,11 @@ import { isDeepStrictEqual } from 'node:util';
 import { researchProfile, researchProfileSelection } from '../../runtime/opencode/research-profile.mjs';
 import { researchJSON, researchObject } from './research-values.ts';
 
+export const researchMemoryBytes = 512 * 1024 * 1024;
 export const researchNativeVersion = '2.2.5';
 export const researchImageId = 'sha256:bbcbbcf6fd524caefa0063d6334e31889153e2c492713cf7f87e6eeb1cce33df';
 export const researchToolName = 'panda_research_echo';
-export type ResearchProfileID = 'synthetic-echo' | 'tavily-search';
+export type ResearchProfileID = 'synthetic-echo' | 'tavily-search' | 'tavily-hosted' | 'tavily-hosted-luna' | 'tavily-hosted-terra' | 'tavily-hosted-haiku';
 export const researchCodeFiles = ['research-binding/index.ts', 'research-controller.mjs', 'research-http-proxy.mjs', 'research-mcp-shim.mjs', 'research-profile.mjs', 'research-provider-channel.mjs'] as const;
 export const researchConfig = researchProfile;
 
@@ -85,7 +86,7 @@ export function verifyResearchContainer(value: unknown, expected: ResearchContai
     if(environment.size!==expectedEnvironment.size||![...expectedEnvironment].every(([key,val])=>environment.get(key)===val))return false;
     if (host.NetworkMode !== 'none' || host.ReadonlyRootfs !== true || host.Privileged !== false
       || !isDeepStrictEqual(host.CapDrop, ['ALL']) || !empty(host.CapAdd) || !empty(host.Devices) || !empty(host.DeviceRequests)
-      || !isDeepStrictEqual(host.SecurityOpt, ['no-new-privileges']) || host.Memory !== 402653184 || host.MemorySwap !== 402653184
+      || !isDeepStrictEqual(host.SecurityOpt, ['no-new-privileges']) || host.Memory !== researchMemoryBytes || host.MemorySwap !== researchMemoryBytes
       || host.NanoCpus !== 1000000000 || host.PidsLimit !== 128 || !empty(host.PortBindings)
       || !isDeepStrictEqual(host.Tmpfs, { '/tmp': 'rw,noexec,nosuid,nodev,size=16777216,uid=10001,gid=10001,mode=0700' })
       || !empty(host.VolumesFrom) || !empty(host.Links) || !empty(host.ExtraHosts) || !empty(host.Binds) && (!Array.isArray(host.Binds) || host.Binds.length !== 2)

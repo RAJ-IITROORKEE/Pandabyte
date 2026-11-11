@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { researchJSON, researchObject } from '../opencode/research-values.ts';
-import { researchProfileSelection } from '../../runtime/opencode/research-profile.mjs';
+import { researchProfileSelection, isVisionResearchProfile } from '../../runtime/opencode/research-profile.mjs';
+import { decodeResearchImageDataUri, researchImageTextMax } from '../opencode/research-image-binding.ts';
 import type { ResearchProfileID } from '../opencode/research-runtime.ts';
 
 export type ResearchWireResponse = { status:number; contentType:string; body:string };
@@ -21,13 +22,13 @@ function response(value:unknown):ResearchWireResponse{
  return {status:value.status as number,contentType:value.contentType,body:value.body};
 }
 export function createResearchDockerTransport(config:{containerId:string;sessionID:string;directory:string;generation:string;profile?:ResearchProfileID;ownership:{binding:string;owner:string;profileHash:string};run?:(request:Wire)=>Promise<ResearchWireResponse>}){
- const profile=config.profile===undefined?'synthetic-echo':config.profile,selected=researchProfileSelection(profile);
+ const profile=config.profile===undefined?'synthetic-echo':config.profile,selected=researchProfileSelection(profile),vision=isVisionResearchProfile(profile);
  if(!config||!hex(config.containerId)||!nativeID(config.sessionID,'ses_')||config.directory!=='/runtime/workspace'||!hex(config.generation)||!researchObject(config.ownership)
   ||Object.keys(config.ownership).sort().join(',')!=='binding,owner,profileHash'||!Object.values(config.ownership).every(hex))throw unavailable();
  const {containerId,sessionID,directory,generation}=config,ownership=Object.freeze({...config.ownership}),base='/api/session/'+sessionID;
  let closed=false,channel:ReturnType<typeof spawn>|undefined,ready:Promise<void>|undefined,provider:ChannelHandler|undefined,broker:ChannelHandler|undefined;
  const pendingChildren=new Set<ReturnType<typeof spawn>>();
- const createBody={id:sessionID,title:'panda-research-'+ownership.binding,agent:'panda-research',model:{providerID:'panda-research-fixture',id:'panda-fixture'},location:{directory},metadata:{pandaResearch:ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:selected.toolName,resource:'*',effect:'allow'}]};
+ const createBody={id:sessionID,title:'panda-research-'+ownership.binding,agent:'panda-research',model:{providerID:selected.providerID,id:selected.modelID},location:{directory},metadata:{pandaResearch:ownership},permissions:[{action:'*',resource:'*',effect:'deny'},{action:selected.toolName,resource:'*',effect:'allow'}]};
  function valid(method:string,path:string,body:unknown){
   if(closed||typeof path!=='string'||!['GET','POST'].includes(method))return false;
   if(method==='GET')return body===undefined&&(['/api/info','/api/config','/api/model','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(path)
@@ -35,7 +36,12 @@ export function createResearchDockerTransport(config:{containerId:string;session
   if(!researchJSON(body,98304)||!researchObject(body))return false;
   if(path===base+'/interrupt?resume=false')return Object.keys(body).length===0;
   if(path==='/api/session')return JSON.stringify(body)===JSON.stringify(createBody);
-  return path===base+'/prompt'&&Object.keys(body).sort().join(',')==='id,text'&&nativeID(body.id,'msg_')&&typeof body.text==='string'&&body.text.trim().length>0&&body.text.isWellFormed()&&Buffer.byteLength(body.text)<=96000;
+  if(path!==base+'/prompt')return false;
+  const keys=Object.keys(body).sort().join(',');
+  if(!(keys==='id,text'||vision&&keys==='files,id,text')||!nativeID(body.id,'msg_')||typeof body.text!=='string'||body.text.trim().length===0||!body.text.isWellFormed())return false;
+  if(keys==='id,text')return Buffer.byteLength(body.text)<=96000;
+  const file=Array.isArray(body.files)&&body.files.length===1?body.files[0]:null,image=researchObject(file)&&Object.keys(file).sort().join(',')==='name,uri'&&typeof file.uri==='string'?decodeResearchImageDataUri(file.uri):null;
+  return Buffer.byteLength(body.text)<=researchImageTextMax&&image!==null&&(image.mediaType==='image/png'?'image.png':'image.jpg')===(file as {name?:unknown}).name;
  }
  async function run(q:Wire):Promise<ResearchWireResponse>{
   if(config.run)return response(await config.run(structuredClone(q)));

@@ -27,21 +27,35 @@ function binding(params) {
   return { ...envelope, input };
 }
 const digest = value => createHash('sha256').update(value).digest('hex');
+const ordered = (value, names) => object(value) && Object.keys(value).join('\n') === names.join('\n');
+// Structural only: the host recomputes the broker's single splitter and binds it by result hash; re-splitting here could only add false rejections.
+function passageContent(passages) {
+  if (!Array.isArray(passages) || passages.length < 1 || passages.length > 64) return null;
+  let content = '';
+  for (const [index, passage] of passages.entries()) {
+    if (!ordered(passage, ['id', 'text']) || passage.id !== 'P' + (index + 1) || typeof passage.text !== 'string'
+      || !passage.text || passage.text.length > 180 || !passage.text.isWellFormed()) return null;
+    content += passage.text;
+  }
+  return content;
+}
 function validSources(value) {
   if (!Array.isArray(value) || value.length > 3) return false;
   const urls = new Set(), handles = new Set(); let size = 0;
   for (const source of value) {
-    if (!keys(source, ['handle', 'url', 'title', 'content', 'capturedAt'])
-      || !['handle', 'url', 'title', 'content', 'capturedAt'].every(key => typeof source[key] === 'string' && source[key].isWellFormed())
-      || !source.title.trim() || source.title.length > 300 || !source.content.trim() || source.content.length > 6000 || source.url.length > 500
+    if (!ordered(source, ['handle', 'url', 'title', 'passages', 'capturedAt'])
+      || !['handle', 'url', 'title', 'capturedAt'].every(key => typeof source[key] === 'string' && source[key].isWellFormed())) return false;
+    const content = passageContent(source.passages);
+    if (content === null || !source.title.trim() || source.title.length > 300 || !content.trim() || content.length > 6000 || !content.isWellFormed() || source.url.length > 500
       || source.capturedAt.length !== 24 || !Number.isFinite(Date.parse(source.capturedAt)) || new Date(source.capturedAt).toISOString() !== source.capturedAt) return false;
     const url = new URL(source.url);
     if (url.href !== source.url || url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash
       || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(url.hostname)
       || /(?:^|\.)(?:localhost|localdomain|local|internal|test|example|invalid)$/.test(url.hostname)) return false;
-    const contentHash = digest(source.content);
-    if (source.handle !== `web:${digest(source.url)}:${contentHash}:${contentHash}` || urls.has(source.url) || handles.has(source.handle)) return false;
-    urls.add(source.url); handles.add(source.handle); size += Buffer.byteLength(source.content);
+    const contentHash = digest(content);
+    const canonicalHandle = `web:${digest(source.url)}:${contentHash}:${contentHash}`;
+    if (source.handle !== 'S'+digest(canonicalHandle).slice(0,16) || urls.has(source.url) || handles.has(source.handle)) return false;
+    urls.add(source.url); handles.add(source.handle); size += Buffer.byteLength(content);
     if (size > 16000) return false;
   }
   return true;
@@ -77,7 +91,9 @@ function callBroker(body) {
     request.on('error', reject); request.end(encoded);
   });
 }
-let initialized = false, active = false, pending = Buffer.alloc(0);
+// Parallel native tool calls (at most 4 per provider response) are queued and sent to the broker one at a time:
+// the host store admits a new operation only after the previous one settled, so concurrent calls would 409.
+let initialized = false, queued = 0, tail = Promise.resolve(), pending = Buffer.alloc(0);
 function dispatch(line) {
   let frame;
   try { frame = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(line)); } catch { error(null, -32700, 'Parse error'); return; }
@@ -93,9 +109,9 @@ function dispatch(line) {
   if (frame.method === 'tools/list') { send({ jsonrpc: '2.0', id, result: { tools } }); return; }
   if (frame.method !== 'tools/call') { error(id, -32601, 'Method not found'); return; }
   const bound = binding(frame.params);
-  if (!bound || active) { failure(id); return; }
-  active = true;
-  void callBroker(bound).then(result => send({ jsonrpc: '2.0', id, result }), () => failure(id)).finally(() => { active = false; });
+  if (!bound || queued >= 4) { failure(id); return; }
+  queued++;
+  tail = tail.then(() => callBroker(bound).then(result => send({ jsonrpc: '2.0', id, result }), () => failure(id))).catch(() => {}).finally(() => { queued--; });
 }
 process.stdin.on('data', chunk => {
   // Cap each frame before accumulating it; a producer cannot stream an unbounded unterminated line.

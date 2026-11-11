@@ -5,7 +5,7 @@ import path from 'node:path';
 import { researchJSON, type ResearchValue } from '../opencode/research-values.ts';
 
 export type ResearchBinding = { binding: string; owner: string; sessionID: string; profileHash: string; imageId: string; created: number };
-export type ResearchRunReceipt = { binding: string; owner: string; runID: string; messageID: string; promptHash: string; sourceRevision: string; generation: string };
+export type ResearchRunReceipt = { binding: string; owner: string; runID: string; messageID: string; promptHash: string; sourceRevision: string; generation: string; imageSha256?: string };
 export type ResearchOperation = { kind: 'primary' | 'tool'; key: string; requestHash: string };
 export type ResearchAssociation = { assistantMessageID: string; callsDigest: string };
 export type ResearchAttempt = ResearchOperation & { state: 'claimed' | 'sent' | 'settled'; grant?: string; resultHash?: string; association?: ResearchAssociation };
@@ -21,7 +21,8 @@ const native = (prefix: string, value: unknown) => typeof value === 'string' && 
 const hex = (value: unknown): value is string => typeof value === 'string' && HEX.test(value);
 const valid = (value: unknown, keys: string[]) => researchJSON(value, 4096) && !!value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).sort().join(',') === keys.sort().join(',');
 const bindingValid = (b: ResearchBinding) => valid(b, ['binding', 'owner', 'sessionID', 'profileHash', 'imageId', 'created']) && hex(b.binding) && hex(b.owner) && hex(b.profileHash) && native('ses', b.sessionID) && typeof b.imageId === 'string' && /^sha256:[0-9a-f]{64}$/.test(b.imageId) && Number.isSafeInteger(b.created) && b.created >= 0;
-const receiptValid = (r: ResearchRunReceipt) => valid(r, ['binding', 'owner', 'runID', 'messageID', 'promptHash', 'sourceRevision', 'generation']) && hex(r.binding) && hex(r.owner) && hex(r.generation) && hex(r.promptHash) && hex(r.sourceRevision) && typeof r.runID === 'string' && UUID.test(r.runID) && native('msg', r.messageID);
+const receiptKeys7 = ['binding', 'owner', 'runID', 'messageID', 'promptHash', 'sourceRevision', 'generation'], receiptKeys8 = [...receiptKeys7, 'imageSha256'];
+const receiptValid = (r: ResearchRunReceipt) => (valid(r, receiptKeys7) || valid(r, receiptKeys8) && hex(r.imageSha256)) && hex(r.binding) && hex(r.owner) && hex(r.generation) && hex(r.promptHash) && hex(r.sourceRevision) && typeof r.runID === 'string' && UUID.test(r.runID) && native('msg', r.messageID);
 const operationValid = (o: ResearchOperation) => valid(o, ['kind', 'key', 'requestHash']) && (o.kind === 'primary' || o.kind === 'tool') && hex(o.key) && hex(o.requestHash);
 const associationValid = (a: ResearchAssociation) => valid(a, ['assistantMessageID', 'callsDigest']) && native('msg', a.assistantMessageID) && hex(a.callsDigest);
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -213,6 +214,9 @@ export async function openResearchRuntimeStore(root: string, options: { isCurren
    if (!receiptValid(input)) return { state: 'conflict' }; const r = copy(input);
    return locked(r.binding, async dir => {
     const old = await read<ResearchRunRecord>(runPath(dir, r)); if (old) return { state: equal(old.receipt, r) ? old.state : 'conflict' };
+    // C4 R5: an image run is the only run of its binding; a failed or cancelled one keeps blocking, a retry needs a new binding.
+    const priors = await Promise.all((await readdir(path.join(dir, 'runs')).catch(() => [])).map(name => read<ResearchRunRecord>(path.join(dir, 'runs', name))));
+    if (priors.some(prior => prior && receiptValid(prior.receipt) && prior.receipt.imageSha256 !== undefined) || r.imageSha256 !== undefined && priors.length) return { state: priors.includes(null) ? 'conflict' : 'image_single_turn' };
     const b = await read<ResearchBinding>(path.join(dir, 'binding.json')); const c = await currentRecord(dir);
     if (!b || b.owner !== r.owner || c.generation !== r.generation || c.create !== 'created' || c.activeRun) return { state: 'conflict' };
     try { if (options.isCurrent && await options.isCurrent(copy(r)) !== true) return { state: 'conflict' }; } catch { return { state: 'conflict' }; }

@@ -151,3 +151,34 @@ test('native enum fields are literal strings without array coercion', async () =
  const f = fixture(), item = tool('todowrite', 'todo', 31); item.state.metadata = { todos: [{ content: 'Task', status: ['completed'] }] }; f.messages[8].content.push(item);
  assert.deepEqual(read(m, f), { state: 'unknown' });
 });
+
+const imgBytes = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.from('synthetic png body')]);
+const imgSha = createHash('sha256').update(imgBytes).digest('hex');
+const imageRow = (over = {}) => ({ data: imgBytes.toString('base64'), mime: 'image/png', source: { type: 'inline' }, name: 'image.png', ...over });
+const withImage = (files) => { const f = fixture(); f.messages.find(m => m.id === expected.messageID).files = files; return f; };
+const readWith = (m, f, exp) => m.projectResearchTurn(exp, f.session, f.active, f.messages, tools);
+const imageExpected = { ...expected, imageSha256: imgSha };
+
+test('image receipt binds the stored user row; text receipt rejects any image row', async () => {
+ const m = await module();
+ assert.equal(readWith(m, withImage([imageRow()]), imageExpected).outcome, 'succeeded');
+ assert.equal(readWith(m, withImage([imageRow()]), expected).state, 'unknown', 'image on a text receipt');
+ assert.equal(readWith(m, fixture(), imageExpected).state, 'unknown', 'missing image on an image receipt');
+ assert.equal(readWith(m, withImage([]), imageExpected).state, 'unknown', 'empty files on an image receipt');
+ assert.equal(readWith(m, withImage([]), expected).outcome, 'succeeded', 'files:[] is text-only');
+ for (const files of [[imageRow(), imageRow()], [imageRow({ mime: 'image/jpeg' })], [imageRow({ name: 'image.jpg' })], [imageRow({ source: { type: 'file' } })], [imageRow({ extra: 1 })],
+  [imageRow({ data: imgBytes.toString('base64').replace(/=+$/, '') })], [imageRow({ data: Buffer.concat([imgBytes, Buffer.from('zz')]).toString('base64') })]]) {
+  assert.equal(readWith(m, withImage(files), imageExpected).state, 'unknown', JSON.stringify(files).slice(0, 60));
+ }
+});
+test('expected key set is exactly {messageID,promptHash} or with a hex imageSha256', async () => {
+ const m = await module();
+ for (const bad of [{ ...expected, imageSha256: undefined }, { ...expected, imageSha256: null }, { ...expected, imageSha256: 'ABC' }, { ...expected, imageSha256: imgSha.toUpperCase() }, { ...imageExpected, extra: 1 }])
+  assert.equal(readWith(m, withImage([imageRow()]), bad).state, 'unknown');
+});
+test('OpenCode text-only note appended to the user text still fails the promptHash frontier', async () => {
+ const m = await module(), f = fixture(), user = f.messages.find(row => row.id === expected.messageID);
+ user.text = question + 'ERROR: Cannot read "image.png" (this model does not support image input). Inform the user.';
+ assert.equal(readWith(m, f, expected).state, 'unknown');
+ assert.equal(readWith(m, f, imageExpected).state, 'unknown');
+});

@@ -174,3 +174,47 @@ test('native and UUID identifiers require literal strings before any filesystem 
  assert.equal((await store.createBinding({ ...binding, binding: h('9'), imageId: [binding.imageId] })).state, 'conflict');
  assert.equal((await store.admitRun({ ...r, messageID: 'msg_' + 'Z'.repeat(26) })).state, 'conflict');
 });
+
+async function fresh(t) {
+ const m = await import('../src/server/research-runtime-store.ts');
+ const root = await mkdtemp(path.join(tmpdir(), 'panda-research-')); await chmod(root, 0o700); t.after(() => rm(root, { recursive: true, force: true }));
+ const store = await m.openResearchRuntimeStore(root);
+ await store.createBinding(binding); await store.startGeneration(binding, null, h('1'));
+ assert.equal((await store.claimCreate(binding, h('1'))).state, 'dispatch');
+ assert.equal(await store.markCreated(binding, h('1'), { sessionID: binding.sessionID, profileHash: binding.profileHash }), true);
+ return { m, store };
+}
+const imageReceipt = (over = {}) => ({ ...receipt(), imageSha256: h('a'), ...over });
+
+test('receipt validity: exactly the 7 keys, or those plus a hex imageSha256', async t => {
+ const { store } = await fresh(t);
+ for (const bad of [imageReceipt({ imageSha256: 'abc' }), imageReceipt({ imageSha256: h('A') }), imageReceipt({ imageSha256: null }), imageReceipt({ imageSha256: undefined }), imageReceipt({ imageSha256: [h('a')] }), imageReceipt({ extra: 1 })])
+  assert.equal((await store.admitRun(bad)).state, 'conflict');
+ const text = receipt(); assert.equal((await store.admitRun(text)).state, 'admitted');
+});
+test('an image run is single-turn per binding: admitted first, then nothing else, and failed runs keep blocking', async t => {
+ const { store } = await fresh(t);
+ const image = imageReceipt(); assert.equal((await store.admitRun(image)).state, 'admitted');
+ assert.equal((await store.admitRun(image)).state, 'admitted', 'replay returns the old state');
+ assert.equal((await store.claimPrompt(image)).state, 'dispatch');
+ assert.equal((await store.admitRun(image)).state, 'prompt_claimed', 'replay keeps returning the stored state, never image_single_turn');
+ assert.equal((await store.admitRun({ ...receipt(), messageID: 'msg_' + '3'.repeat(26) })).state, 'image_single_turn', 'text follow-up blocked');
+ assert.equal((await store.admitRun(imageReceipt({ messageID: 'msg_' + '4'.repeat(26) }))).state, 'image_single_turn', 'second image blocked');
+ assert.equal(await store.cancelRun(image, 'cancelled'), true);
+ assert.equal((await store.admitRun({ ...receipt(), messageID: 'msg_' + '5'.repeat(26) })).state, 'image_single_turn', 'a cancelled image run still blocks its binding');
+ assert.equal((await store.readRun(image)).receipt.imageSha256, h('a'), 'stored receipt keeps the image hash');
+});
+test('an image run cannot join a binding that already has runs, even a finished one', async t => {
+ const { store, r } = await fixture(t);
+ assert.equal((await store.admitRun(imageReceipt({ messageID: 'msg_' + '6'.repeat(26) }))).state, 'image_single_turn');
+ assert.equal(await store.cancelRun(r, 'cancelled'), true);
+ assert.equal((await store.admitRun(imageReceipt({ messageID: 'msg_' + '6'.repeat(26) }))).state, 'image_single_turn');
+ assert.equal((await store.admitRun({ ...receipt(), messageID: 'msg_' + '7'.repeat(26) })).state, 'conflict', 'text follow-up keeps the pre-existing active-run conflict');
+});
+test('image receipts survive reopen and keep operation authority', async t => {
+ const { m, store } = await fresh(t); const image = imageReceipt();
+ assert.equal((await store.admitRun(image)).state, 'admitted'); assert.equal((await store.claimPrompt(image)).state, 'dispatch'); await store.markPromptAccepted(image);
+ assert.equal((await store.claimOperation(image, op())).state, 'dispatch');
+ assert.equal((await store.claimOperation({ ...image, imageSha256: h('b') }, op())).state, 'conflict', 'a different image hash is a different receipt');
+ const { claimOperation } = store; assert.equal(typeof claimOperation, 'function'); void m;
+});
