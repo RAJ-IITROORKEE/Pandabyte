@@ -14,6 +14,8 @@ BEGIN
 END $$;
 
 -- One product's passages by exact SKU. Listing prices are removed here so no caller can receive them.
+-- Case-sensitive on purpose: "Rs 250" is a price, "RS485" is not. Residual: a bare number with no currency word
+-- (for example "only 499") is not removed. Untested in PostgreSQL; run against real listing text before applying.
 CREATE FUNCTION public.panda_agent_public_passages(p_sku text) RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
 DECLARE r public.panda_agent_releases; result jsonb;
@@ -22,7 +24,7 @@ BEGIN
  r:=public.panda_agent_runtime_candidate();
  SELECT jsonb_build_object('sku',min(sku),'title',min(title),'sourceUrl',min(source_url),
   'passages',jsonb_agg(jsonb_build_object('capturedAt',captured_at,
-   'text',regexp_replace(chunk_text,'(?:₹|\mRs\.?|\mINR)\s*[0-9][0-9,]*(?:\.[0-9]+)?','[price removed]','gi')) ORDER BY document_version_id,logical_chunk_id))
+   'text',regexp_replace(chunk_text,'(?:(?:₹|\mRs\.?|\mINR|\mMRP|\m(?:Sale |Regular )?[Pp]rice)\s*:?\s*[0-9][0-9,]*(?:\.[0-9]+)?(?:/-)?|[0-9][0-9,]*(?:\.[0-9]+)?\s*(?:INR|Rs\.?)(?![A-Za-z0-9]))','[price removed]','g')) ORDER BY document_version_id,logical_chunk_id))
  INTO result FROM public.panda_agent_runtime_eligible(r.id) WHERE lower(sku)=lower(p_sku)
  HAVING count(*)>0 AND count(DISTINCT product_id)=1 AND count(DISTINCT source_url)=1;
  IF result IS NULL THEN PERFORM public.phase3_fail('not_found'); END IF;
