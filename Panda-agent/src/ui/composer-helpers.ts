@@ -18,3 +18,10 @@ export function linkCitationMarkers(tree: Root, targets: ReadonlyMap<string, str
   }
   walk(tree);
 }
+
+/** Remark plugin form of linkCitationMarkers. Streamdown caches its processor by plugin name plus JSON options, so the targets must be options. */
+export type CitationOptions = { prefix: string; ids: string };
+export function citationLinks({ prefix, ids }: CitationOptions) {
+  const targets = new Map(ids.split("|").filter(Boolean).map(id => [id, prefix + id]));
+  return (tree: Root) => linkCitationMarkers(tree, targets);
+}

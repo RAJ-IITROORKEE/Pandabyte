@@ -6,8 +6,7 @@ import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import "katex/dist/katex.min.css";
 import remarkGfm from "remark-gfm";
-import type { Root } from "mdast";
-import { linkCitationMarkers } from "./composer-helpers";
+import { citationLinks, type CitationOptions } from "./composer-helpers";
 import { makeUrlTransform, rehypePlugins, STREAM_ANSWER_TOKENS } from "./streamdown-config";
 import { ChartBlock } from "./chart-block";
 import { MermaidBlock } from "./blocks/mermaid-block";
@@ -32,12 +31,6 @@ const renderers = [
 const plugins = { code, math, renderers };
 const shikiTheme: ["github-light", "github-dark"] = ["github-light", "github-dark"];
 const SafeLink = defaultComponents.a;
-
-type CitationOptions = { prefix: string; ids: string };
-function citationLinks({ prefix, ids }: CitationOptions) {
-  const targets = new Map(ids.split("|").filter(Boolean).map(id => [id, prefix + id]));
-  return (tree: Root) => linkCitationMarkers(tree, targets);
-}
 
 /** Renders model Markdown (untrusted) through Streamdown. `citations` maps [S1] markers to chips for one message. */
 export function RichMarkdown({ text, citations }: { text: string; citations?: { messageId: string; ids: string[] } }) {

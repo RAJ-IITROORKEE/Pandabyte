@@ -24,3 +24,13 @@ test('hostile markdown renders no image, script, handler or dangerous link', () 
   assert.doesNotMatch(html, /<(img|script|iframe)|<[^>]*\s(on\w+|src)=|href="(javascript|data):|evil\.com\/a\.png/i);
   assert.match(html, /data-streamdown="link"[^>]*>ok</);
 });
+
+test("each message links its own citation markers (processor cache is per options)", async () => {
+  const { citationLinks } = await import("../src/ui/composer-helpers.ts");
+  for (const id of ["m1", "m2"]) {
+    const prefix = `#source-${id}-`, t = new Map([["S1", prefix + "S1"]]);
+    const html = renderToStaticMarkup(React.createElement(Streamdown, { mode: "static", isAnimating: false, skipHtml: true, rehypePlugins, remarkPlugins: [[citationLinks, { prefix, ids: "S1" }]], urlTransform: makeUrlTransform(t), components: { a: p => React.createElement("a", { href: p.href }, p.children) } }, "Claim [S1] and [S9]."));
+    assert.ok(html.includes(`href="${prefix}S1"`), html);
+    assert.ok(!html.includes("S9\""), html);
+  }
+});
