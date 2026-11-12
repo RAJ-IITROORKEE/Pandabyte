@@ -1,7 +1,14 @@
 # Visual ingestion drafts: review pack (13 Nov 2026)
 
-Thirteen draft transcriptions of listing photos, written by five Sonnet 5.5 subagents for owner review. NOTHING here is
-ingested or used by the agent. The only ingested photo passage so far is xC3 (see `../visual-ingestion-pilot-xc3.md`).
+Thirteen draft transcriptions of listing photos, written by five Sonnet 5.5 subagents for owner review.
+
+Status, 13 Nov 2026 (later the same day): the owner approved "Ingest suggested five". INGESTED and live: the header tables of
+ESPX8266, ESPXC5, ESPXC6, ESPXS3 and ESPXC3M (migrations 20261113110000 and 20261113110001, 290-member candidate), plus the
+earlier xC3 pilot passage. Only header labels and printed names were ingested; the pinout diagrams, front-photo silkscreen
+names (except xC3m's) and printed marks beyond the board name were not. In ESPXS3 the two top-left labels were no reader
+could confirm are stored as "not legible in the photo" (the draft's 3V3 was an inference). Every other draft below is
+still NOT ingested. xC6, xS3 and xC3m were independently re-read blind by a second agent (no mismatches; the xS3 two
+cells unconfirmed); x8266 and xC5 were checked by me against the full-size photo.
 Ingesting a batch is one more migration (new sealed candidate, dual-accept code, switch), so each product below needs
 the owner's explicit yes first. A misread pin label would make the agent give wrong wiring advice with a citation, so
 the bar is accuracy, not coverage.
