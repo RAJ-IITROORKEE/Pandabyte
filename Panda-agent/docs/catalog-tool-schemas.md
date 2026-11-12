@@ -11,6 +11,10 @@ room showed that does not fit the harness (see "Why revision 1 was dropped"). Th
   paths; the host stamps the read time instead of `capturedAt` and strips control characters (soft hyphens).
 - Website side (web search off): whole-product context (up to 24 passages), 6,000-character cited answers, and
   matching-product buttons for questions that name no single product (`productChoiceAnswer`).
+- 13 Nov 2026: the corpus is now a 285-member candidate (manifest `cea39f13...`): the 284 members plus one xC3
+  board-photo passage (`docs/visual-ingestion-pilot-xc3.md`). The application accepts both candidates
+  (`engineering-proof.ts`), which is the pattern for every later addition: seal the new candidate, deploy code that
+  accepts both, then switch `panda_agent_runtime_candidate()`.
 - Still open: issue 7 below (which path owns product questions for Admin accounts) and retrieval steps 2 to 4.
 
 ## Recommended shape: a catalog backend behind the existing search tool

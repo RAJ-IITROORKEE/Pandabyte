@@ -3,7 +3,7 @@ import { webSearchSection } from "../search/citation-url.ts";
 type Cited = { sourceUrl?: string | null; url?: string | null; title: string; sectionPath?: readonly string[] };
 
 const productPage = /^https:\/\/(www\.)?pandabyte\.in\/product-page\/[^/?#]+/i;
-const priceWords = /\b(price|prices|pricing|cost|costs|how much|stock|in stock|availability|buy)\b/i;
+const priceWords = /\b(price|prices|pricing|cost|costs|how much (?:is|are|for) (?:it|this|that|the|an?)\b(?!.*\b(?:flash|memory|ram|psram|current|power|voltage|storage)\b)|stock|in stock|availability|buy)\b/i;
 
 const urlOf = (c: Cited) => c.sourceUrl ?? c.url ?? "";
 

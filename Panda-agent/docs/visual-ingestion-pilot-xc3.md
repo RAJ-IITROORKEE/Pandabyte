@@ -1,8 +1,9 @@
 # Visual ingestion pilot: PandaByte xC3 (SKU ESPXC3)
 
-Status, 13 Nov 2026: draft transcription for owner review. Nothing here is ingested, stored in the corpus or used by
-the agent. No migration, no paid model call, no file download: the two listing photos were viewed in the browser and
-transcribed by the assistant in this session.
+Status, 13 Nov 2026: the board-back pin table below is ingested. The owner approved it ("Yes, ingest it");
+migration 20261113100000 stored it as one passage and sealed a 285-member candidate, and 20261113100001 switched the
+runtime to it. The front-photo notes are not ingested. No paid model call or file download was involved: the two
+listing photos were viewed in the browser and transcribed by the assistant.
 
 Product page: https://www.pandabyte.in/product-page/pandabyte-xc3-esp32c3-microcontroller-board-arduino-compatible
 
