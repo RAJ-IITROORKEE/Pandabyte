@@ -117,7 +117,7 @@ test('sources over the byte budget keep whole top-ranked passages instead of fai
   const table = rank => ({ rank, text: (`| Pin | Function ${rank} |\n|---|---|\n` + '| IO35 | SPIIO6, GPIO35, FSPID, SUBSPID |\n'.repeat(70)) });
   const passages = [1, 2, 3, 4, 5, 6, 7, 8].map(table), small = { rank: 9, text: 'Flash: 16 MB.' };
   const { quotes } = buildHostedSourceQuotes([...passages, small], 'cap');
-  assert.ok(new TextEncoder().encode(JSON.stringify({ quotes })).length <= 16000);
+  assert.ok(new TextEncoder().encode(JSON.stringify({ quotes })).length <= 12000);
   const ranks = [...new Set(quotes.map(q => q.rank))];
   assert.equal(ranks[0], 1);
   assert.ok(ranks.length >= 2 && ranks.length < 9);

@@ -27,8 +27,8 @@ function excerptEnd(text: string, start: number) {
 }
 
 // Sources sent to the hosted model are capped in bytes. Whole passages are taken in rank (relevance) order and a passage that would
-// overflow is skipped, so a table is never cut in half. 16 KB stays well inside the 11k-token RAG input limit.
-const SOURCE_BYTES = 16000;
+// overflow is skipped, so a table is never cut in half. 12 KB leaves room for the prompt and schema in the 18 KB request cap.
+const SOURCE_BYTES = 12000;
 export function buildHostedSourceQuotes(passages: Array<{ rank: number; text: string }>, requestTag: string = randomUUID()): { quotes: HostedSourceQuote[] } {
   if (!Array.isArray(passages) || passages.length > 24 || typeof requestTag !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(requestTag)) throw new Error('Invalid hosted source context');
   const ranks = new Set<number>();
