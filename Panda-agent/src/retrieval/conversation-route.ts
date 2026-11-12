@@ -30,6 +30,7 @@ export function conversationRoute(question: string, catalog: readonly ChatScopeP
   if (isProjectMemoryQuestion(question)) return { kind: 'conversation' } as const;
   // Request a specific board only when the user actually asks about a product or its specifications.
   if (/\bpanda\s*byte\b|\b(?:sku|this (?:board|product)|its (?:pins?|flash|voltage|memory)|pinout|datasheet|schematic|which (?:board|product)|product specifications?)\b/.test(text)
-      || /\b(?:ws2812b|grove|rgb|esp32(?:[- ]?[a-z]\d+)?)\b/.test(text) && /\b(?:board|module|product|pin|pins|voltage|flash|memory|specs?|specifications?)\b/.test(text)) return scope;
+      // A chip name alone is general electronics ("ESP32 ADC voltage divider"); it asks for a PandaByte board only with a product noun.
+      || /\b(?:ws2812b|grove|rgb|esp32(?:[- ]?[a-z]\d+)?)\b/.test(text) && /\b(?:board|module|product|kit|shield|specs?|specifications?)\b/.test(text)) return scope;
   return { kind: 'conversation' } as const;
 }

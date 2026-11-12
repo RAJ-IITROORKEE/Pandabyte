@@ -22,3 +22,11 @@ test("a bare it is a product follow-up only for hardware attributes", async () =
   for (const q of ["What USB connector does it have?", "How much flash does it have?", "What is the price of this board?"]) assert.equal(isImplicitProductFollowup(q, catalog), true, q);
   for (const q of ["What is the latest stable ESP-IDF release and when was it published?", "How does it work, in simple words?"]) assert.equal(isImplicitProductFollowup(q, catalog), false, q);
 });
+
+test("chip names with generic engineering words stay general; product nouns still ask for a board", () => {
+  for (const q of ["I want to read a 3.3V sensor with an ESP32 ADC through a voltage divider from a 5V sensor. Give me the formula, a table, a parts checklist and Arduino code.",
+    "Explain how an ESP32 reads a 5V sensor through a voltage divider.", "What voltage do ESP32 GPIO pins tolerate?", "How much flash and memory does an ESP32 usually have?"])
+    assert.equal(isMainProductQuestion(q, catalog), false, q);
+  for (const q of ["ESP32 board voltage?", "What memory does the ESP32 board have?", "What can you tell me about an ESP32 board?"])
+    assert.equal(isMainProductQuestion(q, catalog), true, q);
+});
