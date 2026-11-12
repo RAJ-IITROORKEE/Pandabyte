@@ -73,20 +73,31 @@ const choiceCue=/\b(?:have|has|sells?|offers?|stock|carry|buy|price|cost|availab
 export function productChoiceAnswer(question:string,catalog:Catalog):ChatAnswer|null {
  const matches=choiceCue.test(question)?matchingProducts(catalog,question):[];
  if(!matches.length)return null;
- // A title that the resolver cannot map back to its own product (it contains another product's code) is offered by SKU instead.
+ const ask=productOption(catalog,question);
+ return {outcome:'clarification',text:productChoiceText(matches.map(ask)),citations:[]};
+}
+
+/** One selectable follow-up per product; a title the resolver cannot map back to its own product (it contains another product's code) is offered by SKU instead. */
+function productOption(catalog:Catalog,question:string){
  const own=(row:Catalog[number],q:string)=>{const plan=resolveMultiProductIdentity(catalog,q);return plan.kind==='planned'&&plan.products.length===1&&plan.products[0].sku===row.sku&&!catalogListingAnswer(q,catalog);};
  // The option carries the original question (reduced to the option character set) so the pick answers what was asked, not only an overview;
  // it is used only when it still resolves to exactly this product, so a pick can never return to this clarification.
  // Not carried: a question across products ("which has the most flash") or one whose punctuation carries meaning ("<5V", "don't", "1,000").
  const plain=/^[A-Za-z0-9 .+-]+[?!.]*$/.test(question.trim())&&!/\b(?:which|best|cheapest|most|least|compare|recommend\w*|better)\b/i.test(question);
  const tail=plain?question.trim().replace(/[?!]+$/,'').replace(/\s+/g,' ').trim():'';
- const ask=(row:Catalog[number])=>{
+ return (row:Catalog[number])=>{
   const base=productQuestion(row);
   if(!own(row,base))return productQuestion(row,true);
   const full=`${base}. ${tail}`;
   return tail.length>=3&&tail.length<=140&&full.length<=220&&own(row,full)?`${full}: ${base.slice(14)}`:base;
  };
- return {outcome:'clarification',text:productChoiceText(matches.map(ask)),citations:[]};
+}
+
+/** A question naming two or three products: the cited-answer pipeline reads one product listing at a time, so offer each named product as a selectable follow-up (no model call). */
+export function comparisonChoiceAnswer(question:string,products:readonly {sku:string}[],catalog:Catalog):ChatAnswer|null {
+ const rows=products.flatMap(p=>catalog.filter(r=>r.sku===p.sku));
+ if(rows.length<2||rows.length!==products.length)return null;
+ return {outcome:'clarification',text:productChoiceText(rows.map(productOption(catalog,question)),'I answer from one PandaByte product listing at a time, so I cannot compare products in a single answer yet. Which one should I start with?'),citations:[]};
 }
 
 /** Catalog aliases select the source path; a product question that resolves to no catalog product falls back to the direct model (owner decision, 12 Nov 2026), whose prompt forbids PandaByte facts. */
@@ -223,6 +234,11 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    }
    preparedSnapshot=await prepareMainRagContext({subject:actor.subject,question,retrievalQuestion,historyCurrent,signal,snapshotClient:client,liveClient:actor.client,
     authorizeCurrent:options.current,adminCurrent:current});
+   // Two or three named products: offer each one instead of the dead-end "name one product" card.
+   if(preparedSnapshot.kind==='ready'&&preparedSnapshot.products.length>1){
+    const comparison=comparisonChoiceAnswer(question,preparedSnapshot.products,catalog);
+    if(comparison){preparedSnapshot=undefined;presetAnswer=comparison;return 'rag';}
+   }
    // No resolvable product: offer the closest catalog products as choices (no model call); with no match, answer from the general model (shown as uncited).
    if(preparedSnapshot.kind==='clarification'){
     preparedSnapshot=undefined;

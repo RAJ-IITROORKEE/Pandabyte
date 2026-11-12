@@ -68,3 +68,18 @@ test('an unmatched PandaByte question offers the closest products, and every cat
     if (row.sku === 'X32SHIELD') assert.deepEqual([parsed.options[0].label, parsed.options[0].question], ['Tell me about x32 xLoRa Grove Expansion Board Shield HAT', 'Tell me about X32SHIELD']);
   }
 });
+
+test('a comparison offers each named product as a selectable follow-up, each resolving to one product', async () => {
+  const { comparisonChoiceAnswer } = await import('../src/server/main-rag-chat.ts');
+  const pick = sku => rows.find(r => r.sku === sku);
+  for (const [a, b] of [['ESPXC3', 'ESPXC6'], ['ESPXS3', 'ESPXC5'], ['ESPXC3', 'ESPXC3M'], ['XLORA', 'ESPX32']]) {
+    const answer = comparisonChoiceAnswer('Compare these boards', [pick(a), pick(b)], rows);
+    const parsed = parseClarificationOptions(answer.text);
+    assert.ok(parsed && parsed.question.startsWith('I answer from one PandaByte product listing at a time'), answer.text);
+    for (const [i, sku] of [a, b].entries()) {
+      const plan = resolveMultiProductIdentity(rows, parsed.options[i].question);
+      assert.deepEqual(plan.kind === 'planned' && plan.products.map(p => p.sku), [sku], parsed.options[i].question);
+    }
+  }
+  assert.equal(comparisonChoiceAnswer('x', [pick('ESPXC3')], rows), null);
+});

@@ -63,9 +63,9 @@ const nameOf = (r: CatalogRow) => /panda\s*byte/i.test(r.title) ? plainName(r.ti
 // "with ..." is dropped from a title: the resolver reads "with" as a comparison between two products.
 // The SKU form is "Tell me about <SKU>: <readable name>": the button shows the name and sends the SKU question.
 export const productQuestion = (r: CatalogRow, bySku = false): string => `Tell me about ${bySku ? `${r.sku}: ${plainName(r.title)}` : nameOf(r).split(/ with /i)[0]}`;
-export function productChoiceText(questions: readonly string[]): string {
+export function productChoiceText(questions: readonly string[], heading = 'I could not match that to one PandaByte product. Which one do you mean?'): string {
   const options = [...questions, listQuestion({ category: 'all' })];
-  return ['I could not match that to one PandaByte product. Which one do you mean?', '', optionHeader, ...options.map((o, i) => `${i + 1}. ${o}`), '', optionFooter].join('\n');
+  return [heading, '', optionHeader, ...options.map((o, i) => `${i + 1}. ${o}`), '', optionFooter].join('\n');
 }
 /** Asks which board the projects should use; every option names one catalog board, so its answer is cited from that listing. */
 export function projectClarificationText(rows: readonly CatalogRow[]): string {
