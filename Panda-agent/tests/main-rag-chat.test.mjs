@@ -25,7 +25,8 @@ test('catalog identity, descriptive product questions, unknown models and mixed 
 
 test('short pronoun hardware follow-ups are grounded and explicit product identity overrides history',()=>{
  for(const question of ['What is its USB connector?','Does it support Bluetooth?','Can it run from 5 V?',
-  'How much does it cost?','Is it in stock?','What is its operating temperature?','Does it have certification?']){
+  'How much does it cost?','Is it in stock?','What is its operating temperature?','Does it have certification?',
+  'Which pad is VIN on it?','What are its header labels?','Does it have a 5V pad?']){
   assert.equal(isImplicitProductFollowup(question,catalog),true,question);assert.equal(isMainProductQuestion(question,catalog),true,question);
  }
  for(const question of ['Does BOARDGREEN support Bluetooth?','What is its xGreen32 USB connector?','Can it run from 5 V, the xUnknown90?',
