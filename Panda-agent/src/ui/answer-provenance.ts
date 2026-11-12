@@ -47,6 +47,12 @@ const vagueRetry = /^(?:(?:ok(?:ay)?|now|so|please|pls|then|hi|hey)[,\s]+)*(?:te
 
 /** After a paused web-search reply, a vague nudge ("now tell me", "try again") re-asks the question that was paused. */
 export function retryAfterPause(text: string, history: readonly { role: string; text: string }[]): string {
-  const last = history.at(-1), previous = history.at(-2);
-  return last?.role === "assistant" && researchFailureNotice(last.text) !== null && previous?.role === "user" && vagueRetry.test(text.trim()) ? previous.text : text;
+  if (!vagueRetry.test(text.trim()) || researchFailureNotice(history.at(-1)?.role === "assistant" ? history.at(-1)!.text : null) === null) return text;
+  // Walk back over failed research replies and earlier nudges to the question that was actually asked.
+  for (let i = history.length - 1; i >= 0; i--) {
+    const m = history[i];
+    if (m.role === "assistant") { if (researchFailureNotice(m.text) === null) return text; continue; }
+    if (m.role === "user" && !vagueRetry.test(m.text.trim())) return m.text;
+  }
+  return text;
 }

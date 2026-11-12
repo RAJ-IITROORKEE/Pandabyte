@@ -52,3 +52,11 @@ test('every saved research failure gets a notice and a nudge re-asks the questio
   assert.equal(researchFailureNotice('constructor'), null);
   assert.equal(retryAfterPause('now tell me', [{ role: 'user', text: 'tell me about the xC6' }, { role: 'assistant', text: budget }]), 'tell me about the xC6');
 });
+
+test('a second nudge walks back past the first nudge to the real question', async () => {
+  const { retryAfterPause } = await import('../src/ui/answer-provenance.ts');
+  const budget = "Today's research budget is used up. Please try again tomorrow.";
+  const history = [{ role: 'user', text: 'tell me about the PandaByte xC6 board' }, { role: 'assistant', text: budget }, { role: 'user', text: 'now tell me' }, { role: 'assistant', text: budget }];
+  assert.equal(retryAfterPause('now tell me', history), 'tell me about the PandaByte xC6 board');
+  assert.equal(retryAfterPause('now tell me', [{ role: 'user', text: 'q' }, { role: 'assistant', text: 'A real answer.' }, { role: 'user', text: 'now tell me' }, { role: 'assistant', text: budget }]), 'now tell me');
+});
