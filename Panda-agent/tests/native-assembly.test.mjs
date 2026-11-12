@@ -9,7 +9,7 @@ const exportsByModule={
  '../guide/client':['createGuideClient'], './diagnostic-store':['createDiagnosticStore'], './diagnostic-answer':['createDiagnosticAnswer'],
  './agentic-store':['createAgenticStore'], './agentic-answer':['createAgenticAnswer'], '../agentic/mcp-client':['createMcpClient'],
  './native-chat':['nativeChatForActor'], './basic-rag-runtime':['basicRagForActor'], './native-assistant-chat':['nativeAssistantForActor'],
- './direct-assistant-runtime':['directAssistantForActor'],
+ './direct-assistant-runtime':['directAssistantForActor','researchWebSearchEnabled'],
 };
 registerHooks({resolve(specifier,context,next){
  if(context.parentURL && new URL(context.parentURL).pathname.endsWith('/server/lightweight-chat.ts')) {
