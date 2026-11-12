@@ -46,6 +46,8 @@ test('an unmatched PandaByte question offers the closest products, and every cat
   const picked = parseClarificationOptions(productChoiceAnswer('Does PandaByte have a LoRa board?', rows).text).options;
   assert.equal(picked.length, lora.length + 1);
   assert.deepEqual([picked[0].label, picked[0].question], ['Tell me about PandaByte xLoRa ESP32 LoRaWAN Development Board', 'Tell me about PandaByte xLoRa ESP32 LoRaWAN Development Board. Does PandaByte have a LoRa board']);
+  for (const q of ['Which PandaByte ESP32 board has the most flash?', "Doesn't PandaByte have a GPS sensor?", 'Does PandaByte have a GPS sensor under <5V?'])
+    for (const o of parseClarificationOptions(productChoiceAnswer(q, rows).text).options) assert.equal(o.label, o.question, o.question);
   // Every offered question resolves to one product and is not itself a catalog or choice question, for a spread of real questions.
   for (const q of ['Does PandaByte have a LoRa board?', 'Does PandaByte sell a GPS sensor?', 'what is the price of your esp32 c3 board', 'Which PandaByte ESP32 board or shield has the most pins?', 'Does PandaByte have a WS2812B LED strip with a switch?', 'x'.repeat(10) + ' which esp32 ' + 'word '.repeat(40)])
     for (const o of parseClarificationOptions(productChoiceAnswer(q, rows).text).options.slice(0, -1)) {

@@ -74,12 +74,14 @@ export function productChoiceAnswer(question:string,catalog:Catalog):ChatAnswer|
  const own=(row:Catalog[number],q:string)=>{const plan=resolveMultiProductIdentity(catalog,q);return plan.kind==='planned'&&plan.products.length===1&&plan.products[0].sku===row.sku&&!catalogListingAnswer(q,catalog);};
  // The option carries the original question (reduced to the option character set) so the pick answers what was asked, not only an overview;
  // it is used only when it still resolves to exactly this product, so a pick can never return to this clarification.
- const tail=question.normalize('NFKC').replace(/[^A-Za-z0-9 .+-]/g,' ').replace(/\s+/g,' ').trim();
+ // Not carried: a question across products ("which has the most flash") or one whose punctuation carries meaning ("<5V", "don't", "1,000").
+ const plain=/^[A-Za-z0-9 .+-]+[?!.]*$/.test(question.trim())&&!/\b(?:which|best|cheapest|most|least|compare|recommend\w*|better)\b/i.test(question);
+ const tail=plain?question.trim().replace(/[?!]+$/,'').replace(/\s+/g,' ').trim():'';
  const ask=(row:Catalog[number])=>{
   const base=productQuestion(row);
   if(!own(row,base))return productQuestion(row,true);
   const full=`${base}. ${tail}`;
-  return tail.length>=3&&tail.length<=140&&own(row,full)?`${full}: ${base.slice(14)}`:base;
+  return tail.length>=3&&tail.length<=140&&full.length<=220&&own(row,full)?`${full}: ${base.slice(14)}`:base;
  };
  return {outcome:'clarification',text:productChoiceText(matches.map(ask)),citations:[]};
 }

@@ -9,6 +9,7 @@ test('listing verification needs every citation to be a pandabyte.in product pag
   assert.equal(isListingVerified([p('xc3'), { title: 'w', sourceUrl: 'https://example.com/product-page/x' }]), false);
   assert.equal(isListingVerified([{ title: 'w', sourceUrl: 'https://pandabyte.in.evil.com/product-page/x' }]), false);
   assert.equal(isListingVerified([]), false);
+  assert.equal(isListingVerified([{ ...p('xc3'), sectionPath: ['Web search excerpt (Tavily)'] }]), false);
 });
 
 test('price and stock questions are detected', () => {
