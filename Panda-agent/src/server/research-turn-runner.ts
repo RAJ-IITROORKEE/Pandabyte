@@ -15,7 +15,7 @@ import { createResearchDockerTransport } from './research-docker-transport.ts';
 import { reserveDockerHostSlot, releaseStaleDockerHostSlot } from './native-docker-host-quota.ts';
 import { createResearchSearchBroker, verifyResearchAnswer } from './research-search-broker.ts';
 import { searchHostedPublicWeb } from '../search/tavily.ts';
-import { isPandabyteQuery, searchPandabyteSite } from '../search/pandabyte-site.ts';
+import { isPandabyteQuery, searchPandabyteSite, type CatalogReader } from '../search/pandabyte-site.ts';
 import { createResearchOpenRouter } from './research-openrouter.ts';
 import { researchChatProfiles, type ResearchChatProfile, type ResearchFailure, type ResearchUsage } from './research-envelopes.ts';
 import { buildResearchPromptBody } from '../opencode/research-image-binding.ts';
@@ -38,6 +38,8 @@ export type HostProbes = { memAvailableKiB(): Promise<number>; diskAvailableKiB(
 export type RunnerOptions = {
   root?: string; codeSource: string; slotDir?: string;
   keys(): Promise<{ openrouterKey: string; tavilyKey: string }>; attestation(): Promise<unknown>;
+  /** Optional published-catalog reader for PandaByte queries; null or a failure means the live pages are read instead. */
+  catalog?(): Promise<CatalogReader | null>;
   fetcher?: typeof fetch; searchFetch?: typeof fetch; siteFetch?: (url: string, init: any) => Promise<Response>; searchLookup?: (host: string) => Promise<{ address: string; family: number }[]>;
   docker?: (args: string[], env?: Record<string, string>) => Promise<string>; host?: Partial<HostProbes>; now?: () => number; sleep?: (ms: number) => Promise<void>;
   // Test seams; production uses the real Docker transport and verifiers.
@@ -304,7 +306,7 @@ export function createResearchTurnRunner(options: RunnerOptions) {
         allowPublicQuery: q => researchQueryInScope(q, input.prompt),
         // PandaByte catalog queries read the live pandabyte.in pages; every other query is a Tavily web search.
         search: (query, beforeSend, sig) => { const granted = async () => { const allowed = await beforeSend(); if (allowed) onProgress?.('searching_web'); return allowed; };
-          return isPandabyteQuery(query) ? searchPandabyteSite(query, { signal: sig, beforeSend: granted, ...(options.siteFetch ? { fetchImpl: options.siteFetch } : {}) })
+          return isPandabyteQuery(query) ? searchPandabyteSite(query, { signal: sig, beforeSend: granted, ...(options.siteFetch ? { fetchImpl: options.siteFetch } : {}), ...(ctx.catalog ? { catalog: ctx.catalog } : {}) })
             : searchHostedPublicWeb(query, { apiKey: creds.tavilyKey, signal: sig, beforeSend: granted,
               ...(options.searchFetch ? { fetchImpl: options.searchFetch } : {}), ...(options.searchLookup ? { lookupImpl: options.searchLookup as any } : {}) }); } });
       await ctx.transport.broker((request: any) => broker.handle(request));
@@ -374,7 +376,7 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       await onLease?.(lease);
       slot = await reserveDockerHostSlot(slotDir, lease, true); if (!slot) throw new ResearchRunFailure('busy');
       // 2. attestation, credentials, host preflight (no provider call possible yet)
-      ctx.creds = await options.keys(); attNow = validateResearchAttestation(await options.attestation(), sha(ctx.creds.openrouterKey), now());
+      ctx.creds = await options.keys(); ctx.catalog = options.catalog ? await options.catalog().catch(() => null) : null; attNow = validateResearchAttestation(await options.attestation(), sha(ctx.creds.openrouterKey), now());
       const image = JSON.parse(await docker(['image', 'inspect', researchImageId])); need(image.length === 1 && image[0].Id === researchImageId && image[0].Architecture === 'arm64', 'image_mismatch'); ctx.image = image[0];
       await privateDir(root, true);
       // Memory dips briefly after the previous turn's container is removed on this small host; wait (bounded, before any provider call) for it to recover.

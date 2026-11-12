@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createResearchTurnRunner } from '../src/server/research-turn-runner.ts';
 import { createResearchServiceHandler, researchBodyMax, isPrivateBindAddress } from '../src/server/research-service-handler.ts';
+import { createPandabyteCatalog } from '../src/search/pandabyte-site.ts';
 
 const etc = '/etc/panda-research';
 const bad = message => Object.assign(Error(message), { fixed: true });
@@ -28,6 +29,17 @@ async function credentials() {
   return { openrouterKey: c.OPENROUTER_API_KEY, tavilyKey: c.TAVILY_API_KEY };
 }
 
+// Optional published-catalog access for PandaByte queries: {baseUrl, anonKey} (the public key, read-only RPCs).
+// Missing or invalid means the live pandabyte.in pages are read instead. One reader per file content keeps its cache.
+let catalogReader = null, catalogRaw = null;
+async function catalog() {
+  try { await fs.lstat(path.join(etc, 'catalog.json')); } catch (e) { if (e?.code === 'ENOENT') return null; throw e; }
+  const c = await jsonFile(path.join(etc, 'catalog.json'), 0o600), raw = JSON.stringify(c);
+  if (raw === catalogRaw) return catalogReader;
+  if (Object.keys(c).sort().join(',') !== 'anonKey,baseUrl') throw bad('catalog.json invalid');
+  catalogReader = createPandabyteCatalog({ baseUrl: c.baseUrl, anonKey: c.anonKey }); catalogRaw = raw; return catalogReader;
+}
+
 let config, keys, cert, tlsKey;
 try {
   const dirStat = await fs.lstat(etc).catch(() => null);
@@ -47,6 +59,7 @@ try {
 const runner = createResearchTurnRunner({
   codeSource: fileURLToPath(new URL('../runtime/opencode/', import.meta.url)),
   keys: credentials,
+  catalog,
   diagnostic: code => console.log(JSON.stringify({ diagnostic: code })), // runner codes are pre-sanitized to [a-z0-9_:.-], at most 80 chars
   attestation: async () => { try { await fs.lstat(path.join(etc, 'attestation.json')); } catch (e) { if (e?.code === 'ENOENT') return null; throw e; } return jsonFile(path.join(etc, 'attestation.json'), 0o600); },
 });
