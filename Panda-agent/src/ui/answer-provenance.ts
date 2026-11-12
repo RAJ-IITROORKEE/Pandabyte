@@ -30,3 +30,13 @@ export function distinctProductPages(citations: readonly Cited[]): { href: strin
   const seen = new Set<string>();
   return citations.flatMap(c => { const href = urlOf(c); if (seen.has(href)) return []; seen.add(href); return [{ href, title: c.title }]; });
 }
+
+/** Saved by the research harness when its daily privacy attestation has lapsed. */
+export const researchPausedText = "The research agent is paused until its privacy review is renewed.";
+const vagueRetry = /^(?:(?:ok(?:ay)?|now|so|please|pls|then|hi|hey)[,\s]+)*(?:tell me(?: (?:about it|now|again|please))?|answer(?: (?:it|that|this))?(?: (?:now|please))?|try again|again|retry|go on|continue|go ahead|do it)[\s.!?]*$/i;
+
+/** After a paused web-search reply, a vague nudge ("now tell me", "try again") re-asks the question that was paused. */
+export function retryAfterPause(text: string, history: readonly { role: string; text: string }[]): string {
+  const last = history.at(-1), previous = history.at(-2);
+  return last?.role === "assistant" && last.text === researchPausedText && previous?.role === "user" && vagueRetry.test(text.trim()) ? previous.text : text;
+}

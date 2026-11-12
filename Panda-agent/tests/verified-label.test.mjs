@@ -34,3 +34,11 @@ test('a datasheet excerpt under the product page is not labelled as PandaByte li
   assert.equal(citesManufacturerDatasheet([listing]), false);
   assert.equal(citesManufacturerDatasheet([{ ...datasheet, sourceUrl: 'https://example.com/x' }]), false);
 });
+
+test('a vague nudge after a paused web-search reply re-asks the paused question', async () => {
+  const { retryAfterPause, researchPausedText } = await import('../src/ui/answer-provenance.ts');
+  const history = [{ role: 'user', text: 'hi tell me about pandabyte xc3 board' }, { role: 'assistant', text: researchPausedText }];
+  for (const nudge of ['now tell me', 'Now tell me.', 'try again', 'ok, answer it', 'answer it please', 'go ahead']) assert.equal(retryAfterPause(nudge, history), 'hi tell me about pandabyte xc3 board', nudge);
+  for (const other of ['tell me about the xS3', 'what is its flash?', 'now tell me a joke']) assert.equal(retryAfterPause(other, history), other, other);
+  assert.equal(retryAfterPause('now tell me', [{ role: 'user', text: 'q' }, { role: 'assistant', text: 'An answer.' }]), 'now tell me');
+});

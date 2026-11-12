@@ -19,7 +19,7 @@ import { publicSearchCitationUrl, webSearchSection } from "../search/citation-ur
 import { MarkdownText } from "./markdown-text";
 import { answerKind } from "../retrieval/abstain-text";
 import { parseClarificationOptions, isCatalogTableText } from "../retrieval/catalog-listing";
-import { isListingVerified, isPriceQuestion, distinctProductPages, citesManufacturerDatasheet } from "./answer-provenance";
+import { isListingVerified, isPriceQuestion, distinctProductPages, citesManufacturerDatasheet, researchPausedText, retryAfterPause } from "./answer-provenance";
 import { CitedMarkdown } from "./cited-markdown";
 import { createGuardedDictation } from "./guarded-dictation";
 import { VoiceButton } from "./agent/voice-button";
@@ -222,6 +222,7 @@ function Workspace({ user, nativeAssistant, directAssistant, previewReadOnly, gu
   }
   async function sendMessage(input: MessageInput, modelId: ChatModelId = selectedModel) {
     if (("guide" in input && !guidesEnabled)||("diagnostic" in input&&!diagnosticsEnabled)||('agentic' in input&&!agenticEnabled)) return;
+    if ("question" in input) input = { ...input, question: retryAfterPause(input.question, messages) };
     const question = messageQuestion(input);
     if (!question || previewReadOnly || (modelAssistant && (capabilities?.mode !== expectedMode || capabilities.status !== "ready" || capabilityLoading || !capabilities.models.some(model => model.id === modelId && model.enabled))) || busyRef.current || loading || mutating || selectedArchived || uncertain || (selected && selected.status !== "idle")) return;
     if (question.length > 2000) { setError("Messages must be 2,000 characters or fewer. Shorten your message and try again."); return; }
@@ -513,7 +514,7 @@ function AssistantMessage({ messages, speech, speaking, nativeAssistant, suggest
   const index = messages.findIndex(message => message.id === id), item = messages[index];
   const kind = item ? answerKind(item.text) : "answer";
   // Saved by the research harness when its daily privacy attestation has lapsed; the cited product path still works.
-  const researchPaused = item?.text === "The research agent is paused until its privacy review is renewed.";
+  const researchPaused = item?.text === researchPausedText;
   const views = item ? item.citations.map(citationView) : [];
   // Only the newest answer can be asked again, and only when its question is the message right before it.
   const retryQuestion = index === messages.length - 1 && messages[index - 1]?.role === "user" ? messages[index - 1].text : null;
