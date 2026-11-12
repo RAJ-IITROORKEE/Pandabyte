@@ -24,7 +24,7 @@ test('bounded paid receipt requires explicit test policy and does not change zer
   assert.equal(r.status,policy?'answered':'unavailable');
   if(policy)assert.equal(r.usage.costNanoUsd,20000);
  }
- for(const usage of [{inputTokens:21025,outputTokens:20,costNanoUsd:20},{inputTokens:80,outputTokens:701,costNanoUsd:20},{inputTokens:80,outputTokens:20,costNanoUsd:2697641}]){
+ for(const usage of [{inputTokens:21025,outputTokens:20,costNanoUsd:20},{inputTokens:80,outputTokens:1601,costNanoUsd:20},{inputTokens:80,outputTokens:20,costNanoUsd:2697641}]){
   const f=fixture(),complete=f.deps.complete;f.deps.usagePolicy='bounded_luna_test';f.deps.complete=async(...args)=>({...await complete(...args),usage});
   assert.equal((await runBasicRag(input(),f.deps)).status,'unavailable');
  }
