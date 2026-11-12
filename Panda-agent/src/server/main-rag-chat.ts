@@ -60,7 +60,10 @@ export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer
  const named=resolveMultiProductIdentity(catalog,question).kind==='planned';
  if(projectIdeasIntent(question,named))return {outcome:'clarification',text:projectClarificationText(catalog),citations:[]};
  const intent=catalogIntent(question,named);
- return intent?{outcome:'clarification',text:intent.kind==='clarify'?clarificationText(catalog):catalogTableText(catalog,intent.scope),citations:[]}:null;
+ if(!intent)return null;
+ // "Does PandaByte sell a GPS sensor?" names a kind of product: offer the matching products before the general category choices.
+ if(intent.kind==='clarify')return productChoiceAnswer(question,catalog)??{outcome:'clarification',text:clarificationText(catalog),citations:[]};
+ return {outcome:'clarification',text:catalogTableText(catalog,intent.scope),citations:[]};
 }
 
 /** For a PandaByte question that resolved to no single product: the closest catalog products as selectable follow-ups (no model call), or null when none match. */
