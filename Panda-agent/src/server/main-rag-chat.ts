@@ -64,8 +64,11 @@ export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer
 }
 
 /** For a PandaByte question that resolved to no single product: the closest catalog products as selectable follow-ups (no model call), or null when none match. */
+// Only questions about what PandaByte sells or about a product's specifications get choices; a general engineering question that merely
+// mentions PandaByte ("how do I write a LoRa gateway script") keeps the general model.
+const choiceCue=/\b(?:have|has|sells?|offers?|stock|carry|buy|price|cost|available|which|recommend\w*|specifications?|specs?|pinout|pins?|datasheet|voltage|flash|memory|psram|dimensions?|features?)\b/i;
 export function productChoiceAnswer(question:string,catalog:Catalog):ChatAnswer|null {
- const matches=matchingProducts(catalog,question);
+ const matches=choiceCue.test(question)?matchingProducts(catalog,question):[];
  if(!matches.length)return null;
  // A title that the resolver cannot map back to its own product (it contains another product's code) is offered by SKU instead.
  const ask=(row:Catalog[number])=>{const q=productQuestion(row),plan=resolveMultiProductIdentity(catalog,q);return plan.kind==='planned'&&plan.products.length===1&&plan.products[0].sku===row.sku?q:productQuestion(row,true);};

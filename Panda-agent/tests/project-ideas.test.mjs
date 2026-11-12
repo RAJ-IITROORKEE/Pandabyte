@@ -40,11 +40,13 @@ test('an unmatched PandaByte question offers the closest products, and every cat
   assert.ok(lora.length >= 1 && lora.length <= 5 && lora.every(r => /lora/i.test(r.title)), JSON.stringify(lora.map(r => r.title)));
   assert.equal(lora[0].sku, 'XLORA');
   assert.deepEqual(matchingProducts(rows, 'Does PandaByte sell a quantum flux capacitor?'), []);
-  assert.equal(productChoiceAnswer('Does PandaByte sell a quantum flux capacitor?', rows), null);
+  for (const q of ['Does PandaByte sell a quantum flux capacitor?', 'What is the difference between ESP32 and ESP32-C3 for a PandaByte project?', 'PandaByte how do I write a Python script for LoRa gateway',
+    'PandaByte what does GPS NMEA mean', 'Is PandaByte a good place to learn Arduino programming?', 'How do I build a LoRa weather station with PandaByte parts?']) assert.equal(productChoiceAnswer(q, rows), null, q);
+  for (const q of ['Does PandaByte sell a GPS sensor?', 'what is the price of your esp32 c3 board', 'specs of the pandabyte esp32 c3 board']) assert.ok(productChoiceAnswer(q, rows), q);
   assert.equal(parseClarificationOptions(productChoiceAnswer('Does PandaByte have a LoRa board?', rows).text).options.length, lora.length + 1);
   for (const row of rows) {
     // The full title as the question makes this row the only top match.
-    const parsed = parseClarificationOptions(productChoiceAnswer(row.title, rows).text);
+    const parsed = parseClarificationOptions(productChoiceAnswer('Which is ' + row.title, rows).text);
     assert.ok(parsed && parsed.options.length === 2, row.title);
     const identity = resolveMultiProductIdentity(rows, parsed.options[0].question);
     assert.equal(identity.kind, 'planned', parsed.options[0].question);
