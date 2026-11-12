@@ -20,7 +20,7 @@ export function isProjectMemoryQuestion(question: string): boolean {
 }
 
 /** Lowercased text names the user's own generic board ("my ESP32 board") without asking for its specifications. */
-export const ownHardware = (text: string) => /\bmy\s+(?:esp32[\w-]*|ws2812b|grove|rgb)\s+(?:dev(?:elopment)?\s+)?(?:board|module|kit)\b/.test(text) && !/\bspecs?\b|\bspecifications?\b/.test(text);
+export const ownHardware = (text: string) => /\b(?:my|(?:it is|it's|i have|i use|i am using|i'm using|using|on|with)\s+an?)\s+(?:esp32[\w-]*|ws2812b|grove|rgb)\s+(?:dev(?:elopment)?\s*)?(?:board|module|kit)\b/.test(text) && !/\bspecs?\b|\bspecifications?\b/.test(text);
 
 /** Classify the task, never grant tools or treat conversation history as source evidence. */
 export function conversationRoute(question: string, catalog: readonly ChatScopeProduct[], previous?: string) {

@@ -35,7 +35,7 @@ test('general how-to questions about the user\'s own hardware stay on the direct
   const { readFileSync } = await import('node:fs');
   const { isMainProductQuestion } = await import('../src/server/main-rag-chat.ts');
   const rows = JSON.parse(readFileSync(new URL('./fixtures/catalog-42.json', import.meta.url), 'utf8'));
-  for (const q of ['How do I connect a 5V ultrasonic sensor to my board?', 'How do I read a DHT22 with my ESP32 board?', 'How do I use an OLED display with Arduino?'])
+  for (const q of ['How do I connect a 5V ultrasonic sensor to my board?', 'How do I read a DHT22 with my ESP32 board?', 'It is an ESP32 dev kit. Give me the sketch.', 'I am using an ESP32 board, how do I blink an LED?', 'How do I use an OLED display with Arduino?'])
     assert.equal(isMainProductQuestion(q, rows), false, q);
   for (const q of ['What are the specs of an ESP32 board?', 'Tell me about the PandaByte MAX485 TTL To RS485 5V 12V', 'What is the flash size of the xC3?'])
     assert.equal(isMainProductQuestion(q, rows), true, q);
