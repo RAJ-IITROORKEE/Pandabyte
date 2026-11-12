@@ -55,7 +55,7 @@ export function resolveRuntimeIdentity(rows: ProductRow[], input: Question) {
 function validateScope(data: ScopeRow, product: Product): CanonicalChunk[] | null {
     const c = data?.candidate, p = data?.product, rows = data?.chunks;
     // Only the listed sealed candidates are accepted, each with its own member count and per-product proofs.
-    const candidate = c && Object.hasOwn(ENGINEERING_CANDIDATES, c.manifestHash) ? ENGINEERING_CANDIDATES[c.manifestHash] : undefined;
+    const candidate = c && typeof c.manifestHash === 'string' && Object.hasOwn(ENGINEERING_CANDIDATES, c.manifestHash) ? ENGINEERING_CANDIDATES[c.manifestHash] : undefined;
     if (!c || !candidate || c.configHash !== ENGINEERING_CONFIG || c.membershipHash !== c.manifestHash || c.memberCount !== candidate.count || c.state !== 'candidate' || c.sealed !== true || !productValid(p) || p.id !== product.id || p.sku !== product.sku || !Array.isArray(rows)) return null;
     const proof = candidate.proofs[sha(p.id)];
     if (!proof || rows.length !== proof.count) return null;

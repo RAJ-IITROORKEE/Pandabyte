@@ -35,7 +35,7 @@ test('malformed, oversized, duplicate and prototype-tainted snapshots fail close
  for(const change of [
   v=>{delete v.subject;},v=>{v.subject='';},v=>{v.catalog.items.push(v.catalog.items[0]);},
   v=>{v.catalog.items.push({...v.catalog.items[0],id:id.replace(/1$/,'2'),sku:'example'});},
-  v=>{v.catalog.items=Array(43).fill(v.catalog.items[0]);},v=>{v.scopes[id].chunks=Array(285).fill(v.scopes[id].chunks[0]);},
+  v=>{v.catalog.items=Array(43).fill(v.catalog.items[0]);},v=>{v.scopes[id].chunks=Array(291).fill(v.scopes[id].chunks[0]);},
   v=>{v.scopes[id].chunks.push({...v.scopes[id].chunks[0]});v.catalog.items[0].approvedChunksCount=2;},
   v=>{v.scopes[id].product.id=id.replace(/1$/,'2');},v=>{v.scopes[id].product.title='Wrong';},
   v=>{v.scopes[id].candidate.sealed='true';},
