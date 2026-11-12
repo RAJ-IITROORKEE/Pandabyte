@@ -33,10 +33,20 @@ export function distinctProductPages(citations: readonly Cited[]): { href: strin
 
 /** Saved by the research harness when its daily privacy attestation has lapsed. */
 export const researchPausedText = "The research agent is paused until its privacy review is renewed.";
+// Every fixed failure text the research harness saves (migration 20261112090000), with a plain notice for the chat.
+const researchFailures: Record<string, string> = {
+  [researchPausedText]: "Web search is paused until its privacy review is renewed.",
+  "Today's research budget is used up. Please try again tomorrow.": "Today's web search budget is used up.",
+  "The research agent is busy with another request. Please try again shortly.": "Web search is busy with another request.",
+  "The research agent could not start its search tool. Please try again.": "Web search could not start its search tool.",
+  "The research agent returned an answer that could not be verified, so it was not saved.": "Web search returned an answer that could not be verified.",
+};
+/** The notice for a saved research failure, or null when the text is an ordinary answer. */
+export const researchFailureNotice = (text: string | null | undefined): string | null => text && Object.hasOwn(researchFailures, text) ? researchFailures[text] : null;
 const vagueRetry = /^(?:(?:ok(?:ay)?|now|so|please|pls|then|hi|hey)[,\s]+)*(?:tell me(?: (?:about it|now|again|please))?|answer(?: (?:it|that|this))?(?: (?:now|please))?|try again|again|retry|go on|continue|go ahead|do it)[\s.!?]*$/i;
 
 /** After a paused web-search reply, a vague nudge ("now tell me", "try again") re-asks the question that was paused. */
 export function retryAfterPause(text: string, history: readonly { role: string; text: string }[]): string {
   const last = history.at(-1), previous = history.at(-2);
-  return last?.role === "assistant" && last.text === researchPausedText && previous?.role === "user" && vagueRetry.test(text.trim()) ? previous.text : text;
+  return last?.role === "assistant" && researchFailureNotice(last.text) !== null && previous?.role === "user" && vagueRetry.test(text.trim()) ? previous.text : text;
 }

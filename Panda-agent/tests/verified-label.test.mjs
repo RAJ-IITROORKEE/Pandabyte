@@ -42,3 +42,13 @@ test('a vague nudge after a paused web-search reply re-asks the paused question'
   for (const other of ['tell me about the xS3', 'what is its flash?', 'now tell me a joke']) assert.equal(retryAfterPause(other, history), other, other);
   assert.equal(retryAfterPause('now tell me', [{ role: 'user', text: 'q' }, { role: 'assistant', text: 'An answer.' }]), 'now tell me');
 });
+
+test('every saved research failure gets a notice and a nudge re-asks the question', async () => {
+  const { researchFailureNotice, retryAfterPause } = await import('../src/ui/answer-provenance.ts');
+  const budget = "Today's research budget is used up. Please try again tomorrow.";
+  assert.equal(researchFailureNotice(budget), "Today's web search budget is used up.");
+  assert.equal(researchFailureNotice('The research agent is busy with another request. Please try again shortly.'), 'Web search is busy with another request.');
+  assert.equal(researchFailureNotice('An ordinary answer.'), null);
+  assert.equal(researchFailureNotice('constructor'), null);
+  assert.equal(retryAfterPause('now tell me', [{ role: 'user', text: 'tell me about the xC6' }, { role: 'assistant', text: budget }]), 'tell me about the xC6');
+});
