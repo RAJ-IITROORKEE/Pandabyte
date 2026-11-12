@@ -53,3 +53,21 @@ export const PRODUCT_MEMBERSHIP: Record<string, { count: number; digest: string 
   'f5e14680e1fdc8522a790151bff886a44bec389fbea5acf51a284bd731c545de': { count: 6, digest: 'd6b96f35bf8258734bf819de9900d3fcbccd172370a4e28f4b580e22a6ed9dca' },
   'fa4f93bad6d6a3bf45c8950602877396685834b3fccf06de7c067a6593b44afc': { count: 4, digest: '02134e79df5775fe22c87c340e40201732481eb47ba0b8c63f21ef6ce49c333c' },
 };
+
+// Third sealed candidate (13 Nov 2026): the 285 members plus owner-approved board-photo header tables for x8266, xC5, xC6, xS3 and
+// xC3m (migration 20261113110000). Products not listed here have the same membership as in the earlier candidates.
+export const ENGINEERING_MANIFEST_290 = 'a394ce0899a29907df6cd3edf0dbb8dfaf2a604bc1c00335e888754d376a3d49';
+export const PRODUCT_MEMBERSHIP_290: Record<string, { count: number; digest: string }> = {
+  'bd8f4d40bfe6eaca987b3b002b3a79ebe50a1daa8f17a95e3bb6fe74a73a3188': { count: 13, digest: '901bab5f1673cc7dfc1ef0063b5b70b8f0229f60f47fb882f6e11b08d5bb6ea4' }, // xC3m
+  '5f33295ac6baa6f964faa183b414a8ecae8fb50559c66dd003e56ac9abe2ed1a': { count: 9, digest: '8e1370c69a06120fcf59a153ba9e2b03cf74409f13943cd55cd0c12700475d8f' }, // x8266
+  '5128aa021676b0bb60173c469723aedd2f0584eec2a059845180886a32d9928e': { count: 12, digest: '0c37b9c3cb82ded088650cc5c2c87c25a3f6e0fe07c63e7aa1f4300a358564ad' }, // xC6
+  'e0575d2c14a468af9c4eaca8d97afe56b0621569d2f72e823bd2e9ddd4b0ba4b': { count: 12, digest: 'f3248d1d768cdba4121ac08ee3fdb3bf87d7bc58c8467e41de3c41d955a3437a' }, // xS3
+  '8a2fb03bd46c5374c51ab33e8b36095dc49bd6a17fa79836d97f83b0ad45c09a': { count: 9, digest: '6ca14ec7fe1a9520a1b219c6ea885cea14c3256989eee2b71d97c880b659bf10' }, // xC5
+};
+// Exactly these sealed candidates are accepted, each with its own member count and per-product proofs. Add the next one here
+// before switching panda_agent_runtime_candidate() to it; older entries stay so a switch can be rolled back.
+export const ENGINEERING_CANDIDATES: Record<string, { count: number; proofs: Record<string, { count: number; digest: string }> }> = {
+  [ENGINEERING_MANIFEST]: { count: 284, proofs: PRODUCT_MEMBERSHIP },
+  [ENGINEERING_MANIFEST_285]: { count: 285, proofs: { ...PRODUCT_MEMBERSHIP, ...PRODUCT_MEMBERSHIP_285 } },
+  [ENGINEERING_MANIFEST_290]: { count: 290, proofs: { ...PRODUCT_MEMBERSHIP, ...PRODUCT_MEMBERSHIP_285, ...PRODUCT_MEMBERSHIP_290 } },
+};

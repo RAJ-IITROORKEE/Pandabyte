@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { normalizeLexicalTerm, matchesLexicalTerm } from './lexical-terms.ts';
 import type { Adapters, CanonicalChunk, Product, Question } from './contracts.ts';
-import { BLOCKED_LOGICAL_IDS, ENGINEERING_CONFIG, ENGINEERING_MANIFEST, ENGINEERING_MANIFEST_285, PRODUCT_MEMBERSHIP, PRODUCT_MEMBERSHIP_285 } from './engineering-proof.ts';
+import { BLOCKED_LOGICAL_IDS, ENGINEERING_CANDIDATES, ENGINEERING_CONFIG, PRODUCT_MEMBERSHIP } from './engineering-proof.ts';
 
 // The caller must construct this client from the active Clerk session, once per request.
 type Client = { database: { rpc: (name: string, params?: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }> } };
@@ -54,10 +54,10 @@ export function resolveRuntimeIdentity(rows: ProductRow[], input: Question) {
 }
 function validateScope(data: ScopeRow, product: Product): CanonicalChunk[] | null {
     const c = data?.candidate, p = data?.product, rows = data?.chunks;
-    // Exactly two sealed candidates are accepted, each with its own member count and per-product proof.
-    const next = c?.manifestHash === ENGINEERING_MANIFEST_285;
-    if (!c || c.configHash !== ENGINEERING_CONFIG || c.manifestHash !== (next ? ENGINEERING_MANIFEST_285 : ENGINEERING_MANIFEST) || c.membershipHash !== c.manifestHash || c.memberCount !== (next ? 285 : 284) || c.state !== 'candidate' || c.sealed !== true || !productValid(p) || p.id !== product.id || p.sku !== product.sku || !Array.isArray(rows)) return null;
-    const proof = (next && PRODUCT_MEMBERSHIP_285[sha(p.id)]) || PRODUCT_MEMBERSHIP[sha(p.id)];
+    // Only the listed sealed candidates are accepted, each with its own member count and per-product proofs.
+    const candidate = c && Object.hasOwn(ENGINEERING_CANDIDATES, c.manifestHash) ? ENGINEERING_CANDIDATES[c.manifestHash] : undefined;
+    if (!c || !candidate || c.configHash !== ENGINEERING_CONFIG || c.membershipHash !== c.manifestHash || c.memberCount !== candidate.count || c.state !== 'candidate' || c.sealed !== true || !productValid(p) || p.id !== product.id || p.sku !== product.sku || !Array.isArray(rows)) return null;
+    const proof = candidate.proofs[sha(p.id)];
     if (!proof || rows.length !== proof.count) return null;
     const lines: string[] = [], chunks: CanonicalChunk[] = [];
     for (const x of rows) {
