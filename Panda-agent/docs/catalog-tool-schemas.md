@@ -3,7 +3,7 @@
 Status: proposal, revision 2, 12 Nov 2026. Nothing here is built. Revision 1 proposed two new named tools run by the
 website; the control room showed that does not fit the harness as built (see "Why revision 1 was dropped"). The owner
 picked this direction on 12 Nov 2026: catalog backend behind the existing search tool, prices stripped. The public
-read function is drafted in `catalog-public-read.draft.sql` and is not applied; applying it still needs the owner.
+read function was applied on 12 Nov 2026 (`migrations/20261112130000_panda-agent-public-catalog-read.sql`): 42 products, 282 passages, anon only.
 
 ## Recommended shape: a catalog backend behind the existing search tool
 
