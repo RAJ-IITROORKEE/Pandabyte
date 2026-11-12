@@ -15,7 +15,7 @@ END $$;
 
 -- One product's passages by exact SKU. Listing prices are removed here so no caller can receive them.
 -- Case-sensitive on purpose: "Rs 250" is a price, "RS485" is not. Residual: a bare number with no currency word
--- (for example "only 499") is not removed. Untested in PostgreSQL; run against real listing text before applying.
+-- (for example "only 499") is not removed. Checked in PostgreSQL on 12 Nov 2026 with 16 literal samples (prices removed, RS485 and units kept); not yet run against real listing text.
 CREATE FUNCTION public.panda_agent_public_passages(p_sku text) RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
 DECLARE r public.panda_agent_releases; result jsonb;
