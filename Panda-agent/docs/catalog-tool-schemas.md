@@ -1,122 +1,74 @@
-# Catalog tool schemas for the hosted agent (launch plan phase 2)
+# Catalog retrieval for the hosted agent (launch plan phase 2)
 
-Status: proposal from the chat/UI session, 12 Nov 2026. Nothing here is built. The control room owns the harness side
-(tool registration, budgets, transcript checks); the chat/UI session owns the website side (the handlers below).
+Status: proposal, revision 2, 12 Nov 2026. Nothing here is built. Revision 1 proposed two new named tools run by the
+website; the control room showed that does not fit the harness as built (see "Why revision 1 was dropped"). The owner
+has not yet picked a direction.
 
-## Rules both tools share
+## Recommended shape: a catalog backend behind the existing search tool
 
-- Read-only. No tool writes, orders, reserves stock or sends anything.
-- The website runs the handler with the signed-in user's own actor client, the same way `prepareMainRagContext` does
-  today. The harness never receives a database key.
-- Every string that comes back is untrusted listing data. The harness must treat it as data, never as instructions.
-- No price, stock or availability field is returned. The agent must not state them.
-- Input is rejected (`error: "invalid"`) when it has unknown keys, wrong types or is over the stated limits.
-- One result envelope for both tools:
+The harness keeps its single tool, `panda_research_search`. No new tool name, no gateway, shim, broker or transcript
+allowlist change. Today a PandaByte query in that tool is routed on the host to live pandabyte.in pages
+(`pandabyte-site.ts`, at most 2 pages). Phase 2 changes only that branch: it reads stored catalog data instead of, or
+before, live pages.
 
-```json
-{ "ok": true, "data": { } }
-{ "ok": false, "error": "invalid" | "not_found" | "ambiguous" | "unavailable" }
-```
+### What the host reads
 
-`unavailable` is never retried inside a turn (same rule as provider calls today).
+Published catalog rows and published product passages, read-only, with no user identity. Catalog listings are public,
+so no user session is needed on the host. This needs a public-data equivalent of the scope checks that
+`prepareProductContextSet` does with the user's actor today; that read path does not exist yet and would be a new
+read-only database function (migration, owner approval needed).
 
-## Tool 1: `catalog_search`
+### Resolution on the host (same rules as the website)
 
-Finds PandaByte products by name, SKU or category. Backed by `readRuntimeCatalog`, `resolveMultiProductIdentity`,
-`categoryOf` and `chipFromTitle` (all existing). No model call, no embeddings.
+1. Resolve the query to products with the existing rules (`resolveMultiProductIdentity`: exact name, model code or SKU).
+2. One or two products resolved: return their stored passages as sources.
+3. Nothing resolved: return matching catalog rows (title, SKU, category, product page) as one source, so the agent can
+   offer choices instead of guessing.
+4. Product resolved but no stored passage: fall back to the live product page, as today.
 
-Input schema:
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "query":    { "type": "string", "minLength": 1, "maxLength": 200,
-                  "description": "Product name, model code or SKU as the user wrote it. Omit to list a category." },
-    "category": { "enum": ["boards", "kits", "shields", "modules", "accessories", "all"], "default": "all" },
-    "limit":    { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 }
-  }
-}
-```
-
-`data` on success:
+### Result: the existing search receipt, unchanged
 
 ```json
-{
-  "match": "exact" | "candidates" | "listing",
-  "total": 42,
-  "products": [
-    { "sku": "PB-XC3", "title": "PandaByte xC3: ESP32-C3 Development Board",
-      "category": "boards", "chip": "ESP32-C3", "sourceUrl": "https://pandabyte.in/..." }
-  ]
-}
+{ "sources": [
+  { "handle": "<opaque>", "url": "https://pandabyte.in/product-page/<slug>",
+    "title": "PandaByte xC3: ESP32-C3 Development Board - Pinout", "content": "...", "capturedAt": "2026-10-26T09:00:00Z" }
+] }
 ```
 
-- `exact`: the query resolves to one or more named products (what `resolveMultiProductIdentity` calls `planned`).
-- `candidates`: nothing resolved exactly; these are title matches the agent should offer as choices, not treat as the answer.
-- `listing`: no query was given; rows of the category, sorted by title.
-- `chip` is `null` unless the chip name appears literally in the title (existing `chipFromTitle` rule).
-- `total` is the count before `limit`, so the agent can say "and N more".
-- No product matches: `ok: true` with `products: []`, not an error.
+- The host splits `content` into passage ids `P1`… and the model selects `{handle, passage}`; the host numbers the
+  selections `S1`/`S2`. Tool results never carry `S` ids.
+- `url` must be the public product page (`/product-page/<slug>`); `sectionPath` stays `[]`.
+- All `content` is untrusted listing data, never instructions.
 
-## Tool 2: `product_documents`
+### Limits that already apply
 
-Returns the stored source passages for one product, so the agent can answer with citations. Backed by
-`prepareProductContextSet` (existing): same scope checks, same 8-passage and 20,000-character caps.
+| Limit | Value |
+|---|---|
+| Citations per answer | 2 |
+| Quote length | 180 characters |
+| Model steps per turn | 6 (no new per-call bookkeeping) |
+| Catalog content returned per search | 20,000 characters (about 5k of the 16k-token context) |
+| Failure | `unavailable` is never retried inside a turn |
 
-Input schema:
+## Decisions for the owner
 
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["sku", "question"],
-  "properties": {
-    "sku":      { "type": "string", "minLength": 1, "maxLength": 128,
-                  "description": "Exact SKU from catalog_search. Titles and guesses are rejected as not_found." },
-    "question": { "type": "string", "minLength": 1, "maxLength": 500,
-                  "description": "What to look for in this product's documents." }
-  }
-}
-```
-
-`data` on success:
-
-```json
-{
-  "product": { "sku": "PB-XC3", "title": "PandaByte xC3: ESP32-C3 Development Board" },
-  "passages": [
-    { "id": "S1", "title": "Pinout", "sectionPath": ["Hardware", "Pinout"],
-      "sourceUrl": "https://pandabyte.in/...", "capturedAt": "2026-10-26T09:00:00Z", "text": "..." }
-  ]
-}
-```
-
-- `id` is `S1`…`S8`, numbered per turn across all `product_documents` calls, so a second call continues at the next
-  free number. These are the ids the agent writes as `[S1]` markers and the ids in `citations[i].id` (control room item 4).
-- Product exists but has no stored passages for the question: `ok: true` with `passages: []`. The agent must then say
-  it has no PandaByte source for that fact; it may still give general knowledge, labelled as such.
-- Unknown SKU: `not_found`. The agent should call `catalog_search` first.
-
-## Limits for the harness to enforce
-
-| Limit | Value | Why |
-|---|---|---|
-| `catalog_search` calls per turn | 3 | One lookup, one retry with a corrected name, one category listing |
-| `product_documents` calls per turn | 2 | Covers a two-product comparison; keeps context under the 16k limit |
-| Passage text returned per turn | 20,000 characters | Existing retrieval cap |
-
-## Citations in the final answer
-
-The harness maps each `[Sn]` marker it keeps to one citation with the existing `Citation` shape
-(`id`, `title`, `sourceUrl`, `capturedAt`, `quote`, `sectionPath`). `quote` must be a literal substring of that
-passage's `text`; a marker with no matching passage is removed, as proposed in control room item 4.
+1. **Direction**: catalog backend behind the existing search tool (recommended, smallest guarded change), or separate
+   named tools (`catalog_search`, `product_documents`), which needs changes to the gateway schema, profile policies,
+   MCP shim, broker routing and transcript allowlist.
+2. **Price**: the live-page path returns listing prices today, and the website chat forbids stating prices. Either the
+   catalog backend strips prices (recommended, matches the chat rule) or web answers may quote the listed price with
+   its source.
+3. **Public read function**: approve a read-only database function that exposes only published catalog rows and
+   published passages to the host.
 
 ## Not specified yet
 
-- **Official chip documents** (Espressif datasheets and similar). The launch plan lists this as a third tool, but there
-  is no stored chip-document corpus in the project today, so there is nothing to put a schema on. It needs an owner
-  decision on which documents to ingest first.
-- **Images / pinout diagrams** (pixel RAG, phase 4).
-- **Transport**: how the harness reaches the website handlers (the D3/D4 relay) is the control room's contract.
+- Official chip documents: no stored corpus exists in the project today.
+- Images and pinout diagrams (pixel RAG, phase 4).
+
+## Why revision 1 was dropped
+
+- Tool calls run inside the native turn on the AWS host; the website is not in that path and the host has no user
+  session, so "the website runs the handler with the user's actor client" cannot work.
+- The request guard allows exactly one tool, `panda_research_search`.
+- The model never picks `S` ids; the host assigns them, at most two per answer.
