@@ -43,7 +43,7 @@ export function createBasicRagCompletion(options: {
     try {
       if (!options.apiKey || /[\r\n]/.test(options.apiKey) || typeof input.question !== 'string' || !input.question.trim()
         || !input.question.isWellFormed() || input.question.length > 2000 || !Array.isArray(input.passages)
-        || !input.passages.length || input.passages.length > 8
+        || !input.passages.length || input.passages.length > 24
         || input.passages.some((p, i) => !p || p.rank !== i + 1 || typeof p.text !== 'string' || !p.text.trim() || !p.text.isWellFormed() || p.text.length > 12000)
         || input.passages.reduce((n, p) => n + p.text.length, 0) > 20000
         || deadline.aborted) throw new BasicRagProviderError('not_admitted');

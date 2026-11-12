@@ -27,7 +27,7 @@ function excerptEnd(text: string, start: number) {
 }
 
 export function buildHostedSourceQuotes(passages: Array<{ rank: number; text: string }>, requestTag: string = randomUUID()): { quotes: HostedSourceQuote[] } {
-  if (!Array.isArray(passages) || passages.length > 8 || typeof requestTag !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(requestTag)) throw new Error('Invalid hosted source context');
+  if (!Array.isArray(passages) || passages.length > 24 || typeof requestTag !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(requestTag)) throw new Error('Invalid hosted source context');
   const ranks = new Set<number>();
   for (const passage of passages) {
     if (!passage || !Number.isSafeInteger(passage.rank) || passage.rank < 1 || ranks.has(passage.rank) || typeof passage.text !== 'string' || passage.text.length > 12000 || !passage.text.isWellFormed()) throw new Error('Invalid hosted source passage');

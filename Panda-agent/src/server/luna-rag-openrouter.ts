@@ -171,7 +171,7 @@ function createLunaCompletion(options: LunaCompletionOptions, mode: 'rag' | 'cha
     try {
       if (!options.apiKey || /[\r\n]/.test(options.apiKey) || !object(input) || typeof input.question !== 'string' || !input.question.trim()
         || !input.question.isWellFormed() || input.question.length > 2000 || (mode === 'chat' && Object.keys(input).join(',') !== 'question')
-        || (mode === 'rag' && (!('passages' in input) || !Array.isArray(input.passages) || !input.passages.length || input.passages.length > 8
+        || (mode === 'rag' && (!('passages' in input) || !Array.isArray(input.passages) || !input.passages.length || input.passages.length > 24
           || input.passages.some((p, i) => !p || p.rank !== i + 1 || typeof p.text !== 'string' || !p.text.trim() || !p.text.isWellFormed() || p.text.length > 12000)))
         || deadline.aborted) throw new BasicRagProviderError('not_admitted');
       const question = input.question, passages = mode === 'rag' ? (input as Input).passages.map(({ rank, text }) => ({ rank, text })) : [];

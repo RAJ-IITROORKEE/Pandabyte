@@ -77,7 +77,9 @@ test('lexical search uses eligible matching chunks and never calls dense', { ski
     const eligible = scope.chunks.filter(c => !c.blocked);
     const word = eligible[0].text.match(/[a-zA-Z]{5,}/)[0];
     assert.ok((await a.lexical(word, eligible.map(c => c.handle))).length);
-    assert.deepEqual(await a.lexical('zzznomatchingtermzzz', eligible.map(c => c.handle)), []);
+    // Whole-product context: a question with no matching word still gets the product's passages.
+    const unmatched = await a.lexical('zzznomatchingtermzzz', eligible.map(c => c.handle));
+    assert.ok(unmatched.length > 0 && unmatched.every(h => eligible.some(c => c.handle === h)));
     await assert.rejects(a.dense(word, []));
     assert.equal((await answerQuestion(actor, { question: word, productSku: f.p.sku }, a)).kind, 'evidence');
 });

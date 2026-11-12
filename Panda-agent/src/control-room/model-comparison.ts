@@ -34,7 +34,7 @@ async function body(request:Request) {
 }
 
 function snapshot(value:ComparisonContext):ComparisonContext {
- if(!value||typeof value.revalidate!=='function'||!Array.isArray(value.passages)||value.passages.length>8||!/^[a-f0-9]{64}$/.test(value.provenanceDigest))throw Error('Invalid context');
+ if(!value||typeof value.revalidate!=='function'||!Array.isArray(value.passages)||value.passages.length>24||!/^[a-f0-9]{64}$/.test(value.provenanceDigest))throw Error('Invalid context');
  let chars=0;const passages=value.passages.map((p,i)=>{
   if(!p||p.rank!==i+1||typeof p.text!=='string'||!p.text.isWellFormed()||!p.text.trim()||p.text.length>12000||typeof p.title!=='string'||!p.title.trim()||p.title.length>300||!publicUrl(p.sourceUrl)||!Number.isFinite(Date.parse(p.capturedAt))||!Array.isArray(p.sectionPath)||p.sectionPath.length>12||p.sectionPath.some(s=>typeof s!=='string'||s.length>200))throw Error('Invalid context');
   chars+=p.text.length;return Object.freeze({rank:p.rank,text:p.text,title:p.title,sourceUrl:p.sourceUrl,capturedAt:p.capturedAt,sectionPath:Object.freeze([...p.sectionPath]) as unknown as string[]});

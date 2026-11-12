@@ -139,7 +139,7 @@ export async function prepareQuestionEvidence(actor: Actor, raw: unknown, adapte
             if (text.length <= remaining) {
                 fragments.push({ handle, text });
                 remaining -= text.length;
-                if (fragments.length === 8 || remaining === 0) break;
+                if (fragments.length === 16 || remaining === 0) break; // 16 covers the largest product (12 passages)
             }
         }
         if (!fragments.length)

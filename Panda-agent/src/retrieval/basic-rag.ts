@@ -60,7 +60,7 @@ export async function runBasicRag(input: { question: string; signal: AbortSignal
     if (context.kind !== 'ready') return fail(context.kind);
     if (context.products.length !== 1) return fail('clarification');
     const passages = context.passages.map(p => ({ ...p, sectionPath: [...p.sectionPath] }));
-    if (!passages.length || passages.length > 8 || passages.some((p, i) => p.rank !== i + 1
+    if (!passages.length || passages.length > 24 || passages.some((p, i) => p.rank !== i + 1
       || p.productSku !== context.products[0].sku || typeof p.text !== 'string' || !p.text.isWellFormed()
       || !p.text.trim() || p.text.length > 12000) || passages.reduce((total, p) => total + p.text.length, 0) > 20000) return fail('unavailable');
     const revalidate = async () => {

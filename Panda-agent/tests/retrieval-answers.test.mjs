@@ -288,3 +288,13 @@ test('withdrawal of a droppable metadata handle after selection still rejects th
  x=make({lexical:async(_q,h)=>h,dense:async()=>[],select:async()=>{x.scope.chunks[0]={...x.scope.chunks[0],blocked:true};return {selections:[{handle:h1,quote:meta},{handle:h2,quote:'4 pins'}]};}});x.scope.chunks=[chunk(h1,{text:meta,textHash:hash(meta)}),chunk(h2)];
  const answer=await ask(x.adapters);assert.equal(answer.kind,'unavailable');assert.equal(x.scope.fingerprint,'g1');assert.equal(x.calls.filter(v=>v==='scope').length,3);
 });
+
+test('a product with twelve passages is supplied whole, not cut at eight', async () => {
+    const x = make(), handles = Array.from({length: 12}, (_, i) => chunk().handle.replace('000000000001:', `${String(i + 1).padStart(12, '0')}:`));
+    const texts = handles.map((_, i) => `passage ${i} has 4 pins`);
+    x.scope.chunks = handles.map((h, i) => chunk(h, {text: texts[i], textHash: hash(texts[i])}));
+    x.adapters.ranking = {mode: 'lexical'}; x.adapters.lexical = async () => handles;
+    let supplied; x.adapters.select = async (_q, fragments) => { supplied = fragments; return {selections: [{handle: handles[11], quote: 'passage 11 has 4 pins'}]}; };
+    assert.equal((await ask(x.adapters)).kind, 'evidence');
+    assert.deepEqual(supplied.map(f => f.handle), handles);
+});

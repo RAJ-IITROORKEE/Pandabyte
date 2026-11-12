@@ -86,12 +86,14 @@ export function createInsforgeAdapters(client: Client, select: Adapters['select'
         },
         lexical: async (question, eligible) => {
             const terms = [...new Set(tokens(question).map(normalizeLexicalTerm))];
+            // Whole-product context: passages with no matching word are kept (after the matching ones) so a synonym
+            // question cannot lose a detail; only source-label chunks are left out.
             return eligible.map(handle => {
                 const chunk = current.get(handle);
-                if (!chunk || isCanonicalSourceLabel(chunk)) return { handle, score: 0 };
+                if (!chunk || isCanonicalSourceLabel(chunk)) return { handle, score: -1 };
                 const text = chunk.text.toLowerCase();
                 return { handle, score: terms.filter(t => matchesLexicalTerm(t, text)).length };
-            }).filter(x => x.score > 0).sort((a, b) => b.score - a.score || a.handle.localeCompare(b.handle, 'en')).slice(0, 100).map(x => x.handle);
+            }).filter(x => x.score >= 0).sort((a, b) => b.score - a.score || a.handle.localeCompare(b.handle, 'en')).slice(0, 100).map(x => x.handle);
         },
         dense: async () => { throw new Error('Native scoped search unavailable'); },
         select,

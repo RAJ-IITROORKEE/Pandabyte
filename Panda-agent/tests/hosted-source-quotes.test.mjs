@@ -37,7 +37,7 @@ test('astral characters and complete whitespace runs retain exact UTF-16 boundar
 });
 
 test('source count, source length and total JSON byte overflow fail closed', () => {
-  assert.throws(() => buildHostedSourceQuotes(Array.from({ length: 9 }, (_, i) => ({ rank: i + 1, text: 'x' }))));
+  assert.throws(() => buildHostedSourceQuotes(Array.from({ length: 25 }, (_, i) => ({ rank: i + 1, text: "x" }))));
   assert.throws(() => buildHostedSourceQuotes([{ rank: 1, text: 'x'.repeat(12001) }]));
   assert.throws(() => buildHostedSourceQuotes([{ rank: 1, text: '\u{1f43c}'.repeat(2600) }]));
   assert.throws(() => buildHostedSourceQuotes([{ rank: 1, text: 'x'.repeat(9800) }]));
