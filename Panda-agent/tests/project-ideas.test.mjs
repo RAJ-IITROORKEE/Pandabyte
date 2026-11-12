@@ -52,5 +52,6 @@ test('an unmatched PandaByte question offers the closest products, and every cat
     assert.equal(identity.kind, 'planned', parsed.options[0].question);
     assert.deepEqual(identity.products.map(p => p.sku), [row.sku], parsed.options[0].question);
     assert.equal(catalogListingAnswer(parsed.options[0].question, rows), null, parsed.options[0].question);
+    if (row.sku === 'X32SHIELD') assert.deepEqual([parsed.options[0].label, parsed.options[0].question], ['Tell me about x32 xLoRa Grove Expansion Board Shield HAT', 'Tell me about X32SHIELD']);
   }
 });
