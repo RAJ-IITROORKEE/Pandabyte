@@ -63,7 +63,7 @@ export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer
  return intent?{outcome:'clarification',text:intent.kind==='clarify'?clarificationText(catalog):catalogTableText(catalog,intent.scope),citations:[]}:null;
 }
 
-/** Catalog aliases select the source path; unresolved product requests never become general model facts. */
+/** Catalog aliases select the source path; a product question that resolves to no catalog product falls back to the direct model (owner decision, 12 Nov 2026), whose prompt forbids PandaByte facts. */
 export function isMainProductQuestion(question:string,catalog:Catalog):boolean {
  if(isUnscopedConversation(question))return false;
  const text=question.normalize('NFKC').toLowerCase();
@@ -187,7 +187,7 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    let retrievalQuestion=question,historyCurrent:(()=>Promise<boolean>)|undefined;
    if(isImplicitProductFollowup(question,catalog)){
     const scope=thread?resolveMainFollowupScope(await historyStore.read(thread),catalog,thread):null;
-    if(!scope){preparedSnapshot={kind:'clarification'};return 'rag';}
+    if(!scope)return 'direct';
     retrievalQuestion=`${question}\nProduct SKU: ${scope.sku}`;
     historyCurrent=async()=>{try{
      const [history,liveCatalog]=await Promise.all([historyStore.read(thread!),readRuntimeCatalog(actor.client)]);
@@ -197,6 +197,8 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    }
    preparedSnapshot=await prepareMainRagContext({subject:actor.subject,question,retrievalQuestion,historyCurrent,signal,snapshotClient:client,liveClient:actor.client,
     authorizeCurrent:options.current,adminCurrent:current});
+   // No resolvable product: answer from the general model (shown as uncited) instead of the "name the exact product" notice.
+   if(preparedSnapshot.kind==='clarification'){preparedSnapshot=undefined;return 'direct';}
    const elapsed=Math.round(performance.now()-retrievalStarted);
    if(preparedSnapshot.kind==='ready'&&Number.isSafeInteger(elapsed)&&elapsed>=0&&elapsed<=120000)try{report?.('reading_sources',{
     fragments:preparedSnapshot.passages.length,characters:preparedSnapshot.passages.reduce((n,p)=>n+p.text.length,0),duplicatesRemoved:0,limitCharacters:20000,retrievalMs:elapsed,
