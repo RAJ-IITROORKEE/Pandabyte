@@ -101,5 +101,5 @@ test('hosted selections deduplicate only fully validated IDs and withhold unsupp
  assert.deepEqual(resolveHostedSourceEvaluation({answer:'Unsupported fabricated answer is withheld.',evidence:[]},quotes),{answer:'',evidence:[]});
  for(const reason of ['', 'x'.repeat(501), 'private_key=secret', '\ud800'])assert.equal(resolveHostedSourceEvaluation({...raw,evidence:[first,{...first,reason}]},quotes),null);
  assert.equal(resolveHostedSourceEvaluation({...raw,evidence:[first,{id:'foreign:q1',reason:'Unsupported.'}]},quotes),null);
- assert.equal(resolveHostedSourceEvaluation({answer:'x'.repeat(2001),evidence:[]},quotes),null);
+ assert.equal(resolveHostedSourceEvaluation({answer:'x'.repeat(6001),evidence:[]},quotes),null);
 });

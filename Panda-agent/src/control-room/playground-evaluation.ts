@@ -14,7 +14,7 @@ export function validatePlaygroundEvaluation(value: unknown, fragments: Array<{ 
     if (Object.keys(v).sort().join(',') !== 'answer,evidence') return reject('exact-keys');
     if (!Array.isArray(v.evidence) || v.evidence.length > 4) return reject('evidence-bounds');
     if (v.evidence.length === 0) return v.answer === '' ? { answer:'', evidence:[], selections:[] } : reject('answer-bounds');
-    if (!text(v.answer, 2000)) return reject('answer-bounds');
+    if (!text(v.answer, 6000)) return reject('answer-bounds');
     const seen = new Set<string>(), evidence: Evidence[] = [], selections: Selection[] = [];
     for (const entry of v.evidence) {
         if (!entry || typeof entry !== 'object' || Array.isArray(entry) || Object.keys(entry).sort().join(',') !== 'quote,rank,reason') return reject('evidence-entry');

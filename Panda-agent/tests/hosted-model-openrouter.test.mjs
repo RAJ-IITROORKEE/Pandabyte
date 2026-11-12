@@ -90,7 +90,7 @@ test('RAG buffers split UTF-8/CRLF SSE, resolves exact quote IDs, accounts hidde
  assert.deepEqual(result.usage,{inputTokens:40,outputTokens:20,costNanoUsd:8625});
  assert.deepEqual(Object.keys(result.timing).sort(),['admissionMs','providerRoundTripMs']);
  const wire=f.wire,source=JSON.parse(wire.messages[1].content).source;
- assert.equal(wire.model,fastHostedModel.id);assert.equal(wire.max_tokens,700);assert.equal(wire.max_completion_tokens,undefined);
+ assert.equal(wire.model,fastHostedModel.id);assert.equal(wire.max_tokens,1600);assert.equal(wire.max_completion_tokens,undefined);
  assert.equal(wire.stream,true);assert.deepEqual(wire.stream_options,{include_usage:true});
  assert.deepEqual(wire.reasoning,{effort:'low',exclude:true});assert.equal(wire.include_reasoning,false);assert.equal(wire.tool_choice,'none');
  assert.deepEqual(wire.provider,{only:['groq'],allow_fallbacks:false,require_parameters:true,zdr:true,data_collection:'deny',max_price:{prompt:0.075,completion:0.3,request:0,image:0}});

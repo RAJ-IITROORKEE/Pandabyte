@@ -46,7 +46,7 @@ export function buildHostedSourceQuotes(passages: Array<{ rank: number; text: st
 }
 
 export function resolveHostedSourceEvaluation(raw: unknown, quotes: readonly HostedSourceQuote[]): { answer: string; evidence: Array<{ rank: number; quote: string; reason: string }> } | null {
-  if (!record(raw) || !keys(raw, 'answer,evidence') || typeof raw.answer !== 'string' || raw.answer.length > 2000 || !raw.answer.isWellFormed() || !Array.isArray(raw.evidence) || raw.evidence.length > 4) return null;
+  if (!record(raw) || !keys(raw, 'answer,evidence') || typeof raw.answer !== 'string' || raw.answer.length > 6000 || !raw.answer.isWellFormed() || !Array.isArray(raw.evidence) || raw.evidence.length > 4) return null;
   const allowed = new Map<string, HostedSourceQuote>();
   for (const quote of quotes) {
     if (!quote || typeof quote.id !== 'string' || allowed.has(quote.id) || !Number.isSafeInteger(quote.rank) || quote.rank < 1 || typeof quote.text !== 'string' || quote.text.length > 600) return null;

@@ -19,7 +19,7 @@ test('each strict rejection reports only its fixed branch reason and still retur
  const cases=[
   [null,'exact-keys'],[[],'exact-keys'],[{...valid(),extra:'PRIVATE_PAYLOAD'},'exact-keys'],
   [{answer:'a',evidence:{}},'evidence-bounds'],[{...valid(),evidence:Array(5).fill(valid().evidence[0])},'evidence-bounds'],
-  [{answer:'not empty',evidence:[]},'answer-bounds'],[{...valid(),answer:'a'.repeat(2001)},'answer-bounds'],
+  [{answer:'not empty',evidence:[]},'answer-bounds'],[{...valid(),answer:'a'.repeat(6001)},'answer-bounds'],
   [{...valid(),answer:'file://PRIVATE_PATH'},'answer-bounds'],
   [{...valid(),evidence:[null]},'evidence-entry'],[{...valid(),evidence:[{...valid().evidence[0],extra:1}]},'evidence-entry'],
   ...[0,2,1.5,'1'].map(rank=>[{...valid(),evidence:[{...valid().evidence[0],rank}]},'rank-bounds']),
@@ -68,7 +68,7 @@ test('mismatch diagnostics distinguish whitespace only without accepting or norm
 });
 
 test('diagnostics cannot alter validation or relax the original string bounds',()=>{
- const value={answer:'a'.repeat(2000),evidence:[{rank:1,quote:'q'.repeat(600),reason:'r'.repeat(500)}]};
+ const value={answer:'a'.repeat(6000),evidence:[{rank:1,quote:'q'.repeat(600),reason:'r'.repeat(500)}]};
  assert.ok(validatePlaygroundEvaluation(value,[{handle:'source',text:'q'.repeat(600)}],()=>assert.fail('accepted input reported a rejection')));
  assert.equal(validatePlaygroundEvaluation(null,fragments,()=>{throw Error('diagnostic unavailable');}),null);
 });
