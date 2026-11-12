@@ -40,3 +40,9 @@ test('general how-to questions about the user\'s own hardware stay on the direct
   for (const q of ['What are the specs of an ESP32 board?', 'Tell me about the PandaByte MAX485 TTL To RS485 5V 12V', 'What is the flash size of the xC3?'])
     assert.equal(isMainProductQuestion(q, rows), true, q);
 });
+
+test('an unresolved product question falls back to the direct model instead of the exact-product notice', () => {
+  const source = readFileSync(new URL('../src/server/main-rag-chat.ts', import.meta.url), 'utf8');
+  assert.match(source, /if\(!scope\)return 'direct';/);
+  assert.match(source, /preparedSnapshot\.kind==='clarification'\)\{preparedSnapshot=undefined;return 'direct';\}/);
+});
