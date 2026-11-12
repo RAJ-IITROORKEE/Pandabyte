@@ -7,9 +7,18 @@ const priceWords = /\b(price|prices|pricing|cost|costs|how much (?:is|are|for) (
 
 const urlOf = (c: Cited) => c.sourceUrl ?? c.url ?? "";
 
-/** True only when every citation is a PandaByte product listing page. */
+// Manufacturer datasheet excerpts are stored under the product page but carry this section marker (migration 20261113120000).
+const manufacturerSection = /^Espressif .+ datasheet$/;
+const isManufacturerExcerpt = (c: Cited) => !!c.sectionPath?.some(s => manufacturerSection.test(s));
+
+/** True only when every citation is PandaByte's own listing text on a pandabyte.in product page. */
 export function isListingVerified(citations: readonly Cited[]): boolean {
-  return citations.length > 0 && citations.every(c => productPage.test(urlOf(c)) && !c.sectionPath?.includes(webSearchSection));
+  return citations.length > 0 && citations.every(c => productPage.test(urlOf(c)) && !c.sectionPath?.includes(webSearchSection) && !isManufacturerExcerpt(c));
+}
+
+/** True when an answer cites the module maker's datasheet (alone or together with the listing). */
+export function citesManufacturerDatasheet(citations: readonly Cited[]): boolean {
+  return citations.some(c => productPage.test(urlOf(c)) && isManufacturerExcerpt(c));
 }
 
 export function isPriceQuestion(question: string | null | undefined): boolean {

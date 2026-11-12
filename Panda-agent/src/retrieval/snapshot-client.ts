@@ -23,10 +23,10 @@ function copyJson(value: unknown, budget: {remaining: number}, depth = 0): unkno
     }
     const array = Array.isArray(value);
     requireValid(array || record(value));
-    if (array) requireValid(Object.getPrototypeOf(value) === Array.prototype && value.length <= 290);
+    if (array) requireValid(Object.getPrototypeOf(value) === Array.prototype && value.length <= 700);
     const result: Record<string, unknown> | unknown[] = array ? [] : {};
     const keys = Object.keys(value);
-    requireValid(keys.length <= 290 && (!array || keys.length === value.length));
+    requireValid(keys.length <= 700 && (!array || keys.length === value.length));
     budget.remaining -= 2 + Math.max(0, keys.length - 1); // braces/brackets and commas
     requireValid(budget.remaining >= 0);
     for (const [index, key] of keys.entries()) {
@@ -61,7 +61,7 @@ export function createSnapshotClient(value: unknown) {
         requireValid(fields(product, [...productFields, 'approvedChunksCount']) && uuid(product.id)
             && typeof product.sku === 'string' && product.sku.trim() && typeof product.title === 'string' && typeof product.sourceUrl === 'string'
             && typeof product.approvedChunksCount === 'number' && Number.isSafeInteger(product.approvedChunksCount)
-            && product.approvedChunksCount > 0 && product.approvedChunksCount <= 290);
+            && product.approvedChunksCount > 0 && product.approvedChunksCount <= 700);
         const sku = product.sku.toLowerCase();
         requireValid(!products.has(product.id) && !skus.has(sku));
         products.set(product.id, product);
@@ -77,7 +77,7 @@ export function createSnapshotClient(value: unknown) {
             && Number.isSafeInteger(candidate.memberCount) && typeof candidate.state === 'string' && typeof candidate.sealed === 'boolean'
             && fields(source, productFields)
             && productFields.every(key => source[key] === product[key]));
-        requireValid(Array.isArray(chunks) && chunks.length === product.approvedChunksCount && seenChunks.size + chunks.length <= 290);
+        requireValid(Array.isArray(chunks) && chunks.length === product.approvedChunksCount && seenChunks.size + chunks.length <= 700);
         for (const chunk of chunks) {
             requireValid(fields(chunk, chunkFields) && uuid(chunk.documentVersionId) && typeof chunk.logicalChunkId === 'string'
                 && typeof chunk.chunkVersionId === 'string' && typeof chunk.textHash === 'string' && typeof chunk.text === 'string'

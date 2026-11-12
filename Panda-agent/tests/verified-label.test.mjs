@@ -23,3 +23,14 @@ test('price and stock questions are detected', () => {
 test('product pages are de-duplicated', () => {
   assert.equal(distinctProductPages([p('xc3'), p('xc3'), p('xc5')]).length, 2);
 });
+
+test('a datasheet excerpt under the product page is not labelled as PandaByte listing text', async () => {
+  const { isListingVerified, citesManufacturerDatasheet } = await import('../src/ui/answer-provenance.ts');
+  const listing = { title: 'xC3', sourceUrl: 'https://www.pandabyte.in/product-page/xc3', sectionPath: ['PandaByte xC3 ESP32-C3 Development Board', 'Specification claims'] };
+  const datasheet = { ...listing, sectionPath: ['PandaByte xC3 ESP32-C3 Development Board', 'Espressif ESP32-C3-WROOM-02 datasheet', 'Pin definitions'] };
+  assert.equal(isListingVerified([listing]), true);
+  assert.equal(isListingVerified([listing, datasheet]), false);
+  assert.equal(citesManufacturerDatasheet([listing, datasheet]), true);
+  assert.equal(citesManufacturerDatasheet([listing]), false);
+  assert.equal(citesManufacturerDatasheet([{ ...datasheet, sourceUrl: 'https://example.com/x' }]), false);
+});
