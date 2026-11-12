@@ -26,6 +26,9 @@ function excerptEnd(text: string, start: number) {
   return end;
 }
 
+// Sources sent to the hosted model are capped in bytes. Whole passages are taken in rank (relevance) order and a passage that would
+// overflow is skipped, so a table is never cut in half. 16 KB stays well inside the 11k-token RAG input limit.
+const SOURCE_BYTES = 16000;
 export function buildHostedSourceQuotes(passages: Array<{ rank: number; text: string }>, requestTag: string = randomUUID()): { quotes: HostedSourceQuote[] } {
   if (!Array.isArray(passages) || passages.length > 24 || typeof requestTag !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(requestTag)) throw new Error('Invalid hosted source context');
   const ranks = new Set<number>();
@@ -34,13 +37,15 @@ export function buildHostedSourceQuotes(passages: Array<{ rank: number; text: st
     ranks.add(passage.rank);
   }
   const result: { quotes: HostedSourceQuote[] } = { quotes: [] };
-  for (const passage of passages) {
+  for (const passage of [...passages].sort((a, b) => a.rank - b.rank)) {
+    const quotes: HostedSourceQuote[] = [];
     for (let start = 0; start < passage.text.length;) {
       const end = excerptEnd(passage.text, start);
-      result.quotes.push({ id: `${requestTag}:q${result.quotes.length + 1}`, rank: passage.rank, text: passage.text.slice(start, end) });
-      if (new TextEncoder().encode(JSON.stringify(result)).byteLength > 10000) throw new Error('Hosted source context exceeds byte limit');
+      quotes.push({ id: `${requestTag}:q${result.quotes.length + quotes.length + 1}`, rank: passage.rank, text: passage.text.slice(start, end) });
       start = end;
     }
+    const next = { quotes: [...result.quotes, ...quotes] };
+    if (new TextEncoder().encode(JSON.stringify(next)).byteLength <= SOURCE_BYTES) result.quotes = next.quotes;
   }
   return result;
 }

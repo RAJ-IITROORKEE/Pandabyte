@@ -36,11 +36,11 @@ test('astral characters and complete whitespace runs retain exact UTF-16 boundar
   }
 });
 
-test('source count, source length and total JSON byte overflow fail closed', () => {
+test('source count and length fail closed; byte overflow leaves out whole passages', () => {
   assert.throws(() => buildHostedSourceQuotes(Array.from({ length: 25 }, (_, i) => ({ rank: i + 1, text: "x" }))));
   assert.throws(() => buildHostedSourceQuotes([{ rank: 1, text: 'x'.repeat(12001) }]));
-  assert.throws(() => buildHostedSourceQuotes([{ rank: 1, text: '\u{1f43c}'.repeat(2600) }]));
-  assert.throws(() => buildHostedSourceQuotes([{ rank: 1, text: 'x'.repeat(9800) }]));
+  assert.deepEqual(buildHostedSourceQuotes([{ rank: 1, text: '\u{1f43c}'.repeat(5000) }]), { quotes: [] });
+  assert.deepEqual([...new Set(buildHostedSourceQuotes([{ rank: 1, text: 'x'.repeat(9800) }, { rank: 2, text: 'y'.repeat(9800) }]).quotes.map(q => q.rank))], [1]);
   assert.deepEqual(buildHostedSourceQuotes([]), { quotes: [] });
 });
 
@@ -111,4 +111,17 @@ test('excerpt ids copied into the answer are removed, other brackets are kept', 
   assert.equal(out.answer, 'Flash: 4 MB. Pins [0:3] and [other:q9] stay.');
   const two = [...quotes, { id: 'req:q2', rank: 1, text: 'It has Wi-Fi.' }];
   assert.equal(resolveHostedSourceEvaluation({ answer: 'LEDs [req:q2, req:q1] and [req:q1, other:q9].', evidence: [{ id: 'req:q1', reason: 'flash size' }] }, two).answer, 'LEDs and [req:q1, other:q9].');
+});
+
+test('sources over the byte budget keep whole top-ranked passages instead of failing', () => {
+  const table = rank => ({ rank, text: (`| Pin | Function ${rank} |\n|---|---|\n` + '| IO35 | SPIIO6, GPIO35, FSPID, SUBSPID |\n'.repeat(70)) });
+  const passages = [1, 2, 3, 4, 5, 6, 7, 8].map(table), small = { rank: 9, text: 'Flash: 16 MB.' };
+  const { quotes } = buildHostedSourceQuotes([...passages, small], 'cap');
+  assert.ok(new TextEncoder().encode(JSON.stringify({ quotes })).length <= 16000);
+  const ranks = [...new Set(quotes.map(q => q.rank))];
+  assert.equal(ranks[0], 1);
+  assert.ok(ranks.length >= 2 && ranks.length < 9);
+  assert.ok(ranks.includes(9), 'a small later passage that still fits is kept');
+  for (const rank of ranks) assert.equal(quotes.filter(q => q.rank === rank).map(q => q.text).join(''), [...passages, small].find(p => p.rank === rank).text);
+  assert.deepEqual(quotes.map(q => q.id), quotes.map((_, i) => `cap:q${i + 1}`));
 });
