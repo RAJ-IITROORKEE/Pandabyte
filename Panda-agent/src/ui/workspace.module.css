@@ -468,3 +468,6 @@
 .listTabs button[aria-pressed="true"] { background: var(--status-soft); color: var(--accent-ink); }
 .listTabs button:disabled { cursor: not-allowed; opacity: .6; }
 .historyTabs { display: none; }
+
+.pricePointer { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.pricePointer a { color: var(--accent-ink); text-decoration: underline; }

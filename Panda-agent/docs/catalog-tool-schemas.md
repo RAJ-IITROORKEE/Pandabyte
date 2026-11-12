@@ -1,9 +1,17 @@
 # Catalog retrieval for the hosted agent (launch plan phase 2)
 
-Status: proposal, revision 2, 12 Nov 2026. Nothing here is built. Revision 1 proposed two new named tools run by the
-website; the control room showed that does not fit the harness as built (see "Why revision 1 was dropped"). The owner
-picked this direction on 12 Nov 2026: catalog backend behind the existing search tool, prices stripped. The public
-read function was applied on 12 Nov 2026 (`migrations/20261112130000_panda-agent-public-catalog-read.sql`): 42 products, 282 passages, anon only.
+Status, 13 Nov 2026: revision 2 is built. Revision 1 proposed two new named tools run by the website; the control
+room showed that does not fit the harness (see "Why revision 1 was dropped"). The owner picked this direction on
+12 Nov 2026: catalog backend behind the existing search tool, prices stripped.
+
+- Public read functions applied 12 Nov 2026 (`migrations/20261112130000_panda-agent-public-catalog-read.sql`): 42
+  products, 282 passages, anon only.
+- Host side live per the control room (main `81cb0bc`): web-search turns that name a PandaByte product read the two
+  public functions; category queries and any catalog failure fall back to live pages; prices are stripped on both
+  paths; the host stamps the read time instead of `capturedAt` and strips control characters (soft hyphens).
+- Website side (web search off): whole-product context (up to 24 passages), 6,000-character cited answers, and
+  matching-product buttons for questions that name no single product (`productChoiceAnswer`).
+- Still open: issue 7 below (which path owns product questions for Admin accounts) and retrieval steps 2 to 4.
 
 ## Recommended shape: a catalog backend behind the existing search tool
 
@@ -90,7 +98,7 @@ Found by reading the current code and migrations; none is fixed by this proposal
 - The request guard allows exactly one tool, `panda_research_search`.
 - The model never picks `S` ids; the host assigns them, at most two per answer.
 
-## Retrieval quality: "miss no detail" (owner request, 12 Nov 2026; proposal, not built)
+## Retrieval quality: "miss no detail" (owner request, 12 Nov 2026; step 1 built, step 5 has a script, rest proposed)
 
 Current state, from `current_RAG.md`: 42 listings, 282 eligible text chunks (about 7 per product). Chunks are whole
 blocks (paragraphs, tables, code) with no overlap. Ranking is a count of distinct matching words, inside one product.

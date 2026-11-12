@@ -111,7 +111,7 @@ export function parseClarificationOptions(text: string): { question: string; opt
   if (at < 2 || lines.at(-1) !== optionFooter || lines.length > 16) return null;
   const options = [];
   for (const line of lines.slice(at + 1, -2)) {
-    const m = /^(\d)\. ((?:List|Suggest|Tell me about) [A-Za-z0-9 .+-]{3,110}?)(?:: ([A-Za-z0-9 .+-]{3,110}))?( \(recommended\))?$/.exec(line);
+    const m = /^(\d)\. ((?:List|Suggest|Tell me about) [A-Za-z0-9 .+-]{3,220}?)(?:: ([A-Za-z0-9 .+-]{3,110}))?( \(recommended\))?$/.exec(line);
     if (!m || Number(m[1]) !== options.length + 1) return null;
     options.push({ label: m[3] ? `Tell me about ${m[3]}` : m[2], question: m[2], recommended: !!m[4] });
   }

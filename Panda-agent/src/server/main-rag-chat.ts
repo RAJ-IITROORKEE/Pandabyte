@@ -71,7 +71,16 @@ export function productChoiceAnswer(question:string,catalog:Catalog):ChatAnswer|
  const matches=choiceCue.test(question)?matchingProducts(catalog,question):[];
  if(!matches.length)return null;
  // A title that the resolver cannot map back to its own product (it contains another product's code) is offered by SKU instead.
- const ask=(row:Catalog[number])=>{const q=productQuestion(row),plan=resolveMultiProductIdentity(catalog,q);return plan.kind==='planned'&&plan.products.length===1&&plan.products[0].sku===row.sku?q:productQuestion(row,true);};
+ const own=(row:Catalog[number],q:string)=>{const plan=resolveMultiProductIdentity(catalog,q);return plan.kind==='planned'&&plan.products.length===1&&plan.products[0].sku===row.sku&&!catalogListingAnswer(q,catalog);};
+ // The option carries the original question (reduced to the option character set) so the pick answers what was asked, not only an overview;
+ // it is used only when it still resolves to exactly this product, so a pick can never return to this clarification.
+ const tail=question.normalize('NFKC').replace(/[^A-Za-z0-9 .+-]/g,' ').replace(/\s+/g,' ').trim();
+ const ask=(row:Catalog[number])=>{
+  const base=productQuestion(row);
+  if(!own(row,base))return productQuestion(row,true);
+  const full=`${base}. ${tail}`;
+  return tail.length>=3&&tail.length<=140&&own(row,full)?`${full}: ${base.slice(14)}`:base;
+ };
  return {outcome:'clarification',text:productChoiceText(matches.map(ask)),citations:[]};
 }
 

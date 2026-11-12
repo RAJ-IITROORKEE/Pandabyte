@@ -43,7 +43,16 @@ test('an unmatched PandaByte question offers the closest products, and every cat
   for (const q of ['Does PandaByte sell a quantum flux capacitor?', 'What is the difference between ESP32 and ESP32-C3 for a PandaByte project?', 'PandaByte how do I write a Python script for LoRa gateway',
     'PandaByte what does GPS NMEA mean', 'Is PandaByte a good place to learn Arduino programming?', 'How do I build a LoRa weather station with PandaByte parts?']) assert.equal(productChoiceAnswer(q, rows), null, q);
   for (const q of ['Does PandaByte sell a GPS sensor?', 'what is the price of your esp32 c3 board', 'specs of the pandabyte esp32 c3 board']) assert.ok(productChoiceAnswer(q, rows), q);
-  assert.equal(parseClarificationOptions(productChoiceAnswer('Does PandaByte have a LoRa board?', rows).text).options.length, lora.length + 1);
+  const picked = parseClarificationOptions(productChoiceAnswer('Does PandaByte have a LoRa board?', rows).text).options;
+  assert.equal(picked.length, lora.length + 1);
+  assert.deepEqual([picked[0].label, picked[0].question], ['Tell me about PandaByte xLoRa ESP32 LoRaWAN Development Board', 'Tell me about PandaByte xLoRa ESP32 LoRaWAN Development Board. Does PandaByte have a LoRa board']);
+  // Every offered question resolves to one product and is not itself a catalog or choice question, for a spread of real questions.
+  for (const q of ['Does PandaByte have a LoRa board?', 'Does PandaByte sell a GPS sensor?', 'what is the price of your esp32 c3 board', 'Which PandaByte ESP32 board or shield has the most pins?', 'Does PandaByte have a WS2812B LED strip with a switch?', 'x'.repeat(10) + ' which esp32 ' + 'word '.repeat(40)])
+    for (const o of parseClarificationOptions(productChoiceAnswer(q, rows).text).options.slice(0, -1)) {
+      const plan = resolveMultiProductIdentity(rows, o.question);
+      assert.ok(plan.kind === 'planned' && plan.products.length === 1, o.question);
+      assert.equal(catalogListingAnswer(o.question, rows), null, o.question);
+    }
   for (const row of rows) {
     // The full title as the question makes this row the only top match.
     const parsed = parseClarificationOptions(productChoiceAnswer('Which is ' + row.title, rows).text);
