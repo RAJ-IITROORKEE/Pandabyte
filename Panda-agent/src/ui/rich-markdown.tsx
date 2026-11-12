@@ -33,15 +33,21 @@ const plugins = { code, math, renderers };
 const shikiTheme: ["github-light", "github-dark"] = ["github-light", "github-dark"];
 const SafeLink = defaultComponents.a;
 
+type CitationOptions = { prefix: string; ids: string };
+function citationLinks({ prefix, ids }: CitationOptions) {
+  const targets = new Map(ids.split("|").filter(Boolean).map(id => [id, prefix + id]));
+  return (tree: Root) => linkCitationMarkers(tree, targets);
+}
+
 /** Renders model Markdown (untrusted) through Streamdown. `citations` maps [S1] markers to chips for one message. */
 export function RichMarkdown({ text, citations }: { text: string; citations?: { messageId: string; ids: string[] } }) {
   const messageId = citations?.messageId, idKey = citations?.ids.join("|");
   const config = useMemo(() => {
     const prefix = messageId === undefined ? "" : `#source-${messageId}-`;
     const targets = new Map((idKey ? idKey.split("|") : []).map(id => [id, prefix + id]));
-    const citationPlugin = () => (tree: Root) => linkCitationMarkers(tree, targets);
     return {
-      remarkPlugins: messageId !== undefined ? [remarkGfm, citationPlugin] : [remarkGfm],
+      // Streamdown caches its processor by plugin name plus JSON options, so the targets must be options, not a closure.
+      remarkPlugins: messageId !== undefined ? [remarkGfm, [citationLinks, { prefix, ids: idKey ?? "" }] as [typeof citationLinks, CitationOptions]] : [remarkGfm],
       urlTransform: makeUrlTransform(targets),
       components: {
         img: () => null,
