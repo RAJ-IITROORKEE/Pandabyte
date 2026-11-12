@@ -35,8 +35,8 @@ export function basicRagUsage(value: unknown, policy: BasicRagUsagePolicy = 'zer
   if (Object.keys(v).sort().join(',') !== 'costNanoUsd,inputTokens,outputTokens'
     || (policy === 'zero_cost' ? v.costNanoUsd !== 0 : !Number.isSafeInteger(v.costNanoUsd) || (v.costNanoUsd as number) < 0 || (v.costNanoUsd as number) > 2697640)
     || !Number.isSafeInteger(v.inputTokens) || (v.inputTokens as number) < 0 || (v.inputTokens as number) > 128000
-    || !Number.isSafeInteger(v.outputTokens) || (v.outputTokens as number) < 0 || (v.outputTokens as number) > 1000
-    || (policy === 'bounded_luna_test' && ((v.inputTokens as number) > 21024 || (v.outputTokens as number) > 700))) return null;
+    || !Number.isSafeInteger(v.outputTokens) || (v.outputTokens as number) < 0 || (v.outputTokens as number) > 1600
+    || (policy === 'bounded_luna_test' && ((v.inputTokens as number) > 21024 || (v.outputTokens as number) > 1600))) return null; // matches the hosted grounded output room; the cost ceiling is unchanged
   return { inputTokens: v.inputTokens as number, outputTokens: v.outputTokens as number, costNanoUsd: v.costNanoUsd as number };
 }
 
