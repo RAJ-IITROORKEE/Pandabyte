@@ -4,7 +4,7 @@ import { runtimeSnapshot as snapshot } from './fixtures/runtime-snapshot.mjs';
 import { createInsforgeAdapters, listRuntimeProducts, getRuntimeProductEvidence, isCanonicalSourceLabel } from '../src/retrieval/insforge-adapters.ts';
 import { answerQuestion } from '../src/retrieval/answers.ts';
 import { prepareProductContextSet } from '../src/retrieval/product-context-set.ts';
-import { ENGINEERING_CONFIG, ENGINEERING_MANIFEST } from '../src/retrieval/engineering-proof.ts';
+import { ENGINEERING_CONFIG, ENGINEERING_MANIFEST, ENGINEERING_MANIFEST_285 } from '../src/retrieval/engineering-proof.ts';
 
 const actor = { subject: 'test-subject' };
 function fixture(productTitle) {
@@ -65,6 +65,11 @@ test('user-scoped RPC denial and unknown product fail closed', { skip }, async (
 test('snapshot membership is pinned; stale metadata and altered bodies fail', { skip }, async () => {
     const f = fixture(), a = createInsforgeAdapters(f.client, async () => ({ selections: [] }));
     assert.ok(await a.currentScope(actor, f.p));
+    // The second candidate is accepted only with its own manifest, membership hash and count together.
+    const first = structuredClone(f.result.candidate), second = { ...first, manifestHash: ENGINEERING_MANIFEST_285, membershipHash: ENGINEERING_MANIFEST_285, memberCount: 285 };
+    f.result.candidate = second; assert.ok(await a.currentScope(actor, f.p));
+    for (const bad of [{ ...second, memberCount: 284 }, { ...second, membershipHash: first.membershipHash }, { ...first, memberCount: 285 }]) { f.result.candidate = bad; assert.equal(await a.currentScope(actor, f.p), null); }
+    f.result.candidate = first;
     for (const change of [r => r.candidate.configHash = 'a'.repeat(64), r => r.candidate.membershipHash = 'a'.repeat(64), r => r.candidate.memberCount--, r => r.candidate.sealed = false, r => r.chunks[0].generation++, r => r.chunks[0].text += 'x', r => r.chunks.pop(), r => r.chunks[0].sectionPath = ['forged'], r => r.product.sourceUrl += 'changed']) {
         const prior = structuredClone(f.result); change(f.result);
         assert.equal(await a.currentScope(actor, f.p), null);

@@ -1,6 +1,12 @@
 // Historical source-visible local engineering candidate, not a release or quality approval.
 export const ENGINEERING_CONFIG = '47d91adb459d6fcebfe928bbb4e875cb4ab1f5949e11c8b04d708bc503063019';
 export const ENGINEERING_MANIFEST = '0ebfec3480bffa6c53304bb0f3d6333b2b81eb466e8cadb488a869cf3aff6ffa';
+// Second sealed candidate (13 Nov 2026): the same 284 members plus the owner-approved xC3 board-photo passage
+// (migration 20261113100000). Both are accepted so the database pin can switch without a window where answers fail.
+export const ENGINEERING_MANIFEST_285 = 'cea39f13bfe41f6279e23b507dd2f01d8145873b7f4b3bde17ddc399987fe03e';
+export const PRODUCT_MEMBERSHIP_285: Record<string, { count: number; digest: string }> = {
+  'eb8b644bb6a8b7884a02fdb5aefe783aebd1453fa4b07fae7d78a0babac2a18b': { count: 9, digest: '6bac87b702a751c70fdfb7ea246b11e6fab1707ebb4c976dea239b6b8a7fa39d' },
+};
 export const ENGINEERING_NATIVE_RECEIPT = 'e60428c88d5fa21415ebc728bb053a6e3a95260d58b4718afab162951bc66a61';
 export const BLOCKED_LOGICAL_IDS = new Set(['21638b9445898f6a03aa24d24a7e60cc344c6bbb2bccd33959537178c2bd4fb4','3ea5b9267d4102142b48cf8e5393e1f9a42fe0c3ff283c13cff04b5bdf3864ac']);
 export const PRODUCT_MEMBERSHIP: Record<string, { count: number; digest: string }> = {
