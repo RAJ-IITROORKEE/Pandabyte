@@ -30,6 +30,8 @@
 .rich [data-streamdown="code-block"], .rich [data-streamdown="table-wrapper"] { max-width: 100%; border-color: var(--divider); border-radius: 12px; }
 .rich [data-streamdown="code-block"] pre, .rich [data-streamdown="code-block"] code { max-width: 100%; overflow-x: auto; font-size: 13px; }
 .rich [data-streamdown="table-wrapper"] { overflow-x: auto; }
-.rich [data-streamdown="table-wrapper"] table { min-width: 100%; }
+.rich [data-streamdown="table-wrapper"] table { min-width: 100%; width: max-content; }
+/* Table cells keep whole words and scroll sideways on narrow screens instead of breaking inside a word. */
+.rich [data-streamdown="table-wrapper"] th, .rich [data-streamdown="table-wrapper"] td { overflow-wrap: normal; word-break: normal; min-width: 7rem; }
 .rich input[type="checkbox"] { margin-right: .4em; accent-color: var(--accent-ink); }
 .rich button:focus-visible, .rich a:focus-visible, .rich [role="button"]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
