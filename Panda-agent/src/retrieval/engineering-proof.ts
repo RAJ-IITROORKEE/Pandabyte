@@ -64,10 +64,23 @@ export const PRODUCT_MEMBERSHIP_290: Record<string, { count: number; digest: str
   'e0575d2c14a468af9c4eaca8d97afe56b0621569d2f72e823bd2e9ddd4b0ba4b': { count: 12, digest: 'f3248d1d768cdba4121ac08ee3fdb3bf87d7bc58c8467e41de3c41d955a3437a' }, // xS3
   '8a2fb03bd46c5374c51ab33e8b36095dc49bd6a17fa79836d97f83b0ad45c09a': { count: 9, digest: '6ca14ec7fe1a9520a1b219c6ea885cea14c3256989eee2b71d97c880b659bf10' }, // xC5
 };
+// Fourth sealed candidate (13 Nov 2026): the 290 members plus 105 Espressif datasheet excerpts (scope 'technical') for xC3, xC3m,
+// x32, xLoRa, xC5, xC6 and xS3 (migration 20261113120000). Other products keep their earlier membership.
+export const ENGINEERING_MANIFEST_395 = '02d397543fa324baa1d3940c21b2edcd062b2f1de395e62397bcf349092a75ed';
+export const PRODUCT_MEMBERSHIP_395: Record<string, { count: number; digest: string }> = {
+  'eb8b644bb6a8b7884a02fdb5aefe783aebd1453fa4b07fae7d78a0babac2a18b': { count: 23, digest: '927b77477278487a41c60cbb79c100f2a843afd21bc715330c348fc06f15f519' }, // xC3
+  'bd8f4d40bfe6eaca987b3b002b3a79ebe50a1daa8f17a95e3bb6fe74a73a3188': { count: 27, digest: '165816ca698ae09e9790a3a7070a2436fce3249708f4a55d38e031be9d836a71' }, // xC3m
+  '4408cb503a48e884633ad098da06cd8e7e9b675b7cb358ac53824553a51f6c03': { count: 23, digest: '3130d0dad804099477a0df4c53bdd05b00fa7b1272747c28706356c659c59242' }, // x32
+  'bf8be62292bc22c7629a90b60d967952787bcead83f4efa00bb043e26df9cf3f': { count: 24, digest: '36aecb2086c926a5e4ad03d9c360fa2da671b9ce95e4de6a1e806077ab079cd4' }, // xLoRa
+  '8a2fb03bd46c5374c51ab33e8b36095dc49bd6a17fa79836d97f83b0ad45c09a': { count: 25, digest: '95599add0e36dc1676b477a051613e88e4dd1fc36680fc9e20738b1ef412cd05' }, // xC5
+  '5128aa021676b0bb60173c469723aedd2f0584eec2a059845180886a32d9928e': { count: 30, digest: 'c452a5d3d9f0bb1321d671b13d7e89085ea2a7974bb0fa590e35f94f7439ca59' }, // xC6
+  'e0575d2c14a468af9c4eaca8d97afe56b0621569d2f72e823bd2e9ddd4b0ba4b': { count: 27, digest: 'cf88ee611bbfa7d1a5128f95484841419d6c8524794f01d9a3663d8f0d498b52' }, // xS3
+};
 // Exactly these sealed candidates are accepted, each with its own member count and per-product proofs. Add the next one here
 // before switching panda_agent_runtime_candidate() to it; older entries stay so a switch can be rolled back.
 export const ENGINEERING_CANDIDATES: Record<string, { count: number; proofs: Record<string, { count: number; digest: string }> }> = {
   [ENGINEERING_MANIFEST]: { count: 284, proofs: PRODUCT_MEMBERSHIP },
   [ENGINEERING_MANIFEST_285]: { count: 285, proofs: { ...PRODUCT_MEMBERSHIP, ...PRODUCT_MEMBERSHIP_285 } },
   [ENGINEERING_MANIFEST_290]: { count: 290, proofs: { ...PRODUCT_MEMBERSHIP, ...PRODUCT_MEMBERSHIP_285, ...PRODUCT_MEMBERSHIP_290 } },
+  [ENGINEERING_MANIFEST_395]: { count: 395, proofs: { ...PRODUCT_MEMBERSHIP, ...PRODUCT_MEMBERSHIP_285, ...PRODUCT_MEMBERSHIP_290, ...PRODUCT_MEMBERSHIP_395 } },
 };
