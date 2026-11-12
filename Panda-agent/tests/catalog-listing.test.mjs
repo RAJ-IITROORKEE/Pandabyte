@@ -77,3 +77,8 @@ test('the option parser accepts only the exact clarification shape', () => {
     good + '\nextra']) assert.equal(parseClarificationOptions(bad), null);
   assert.equal(parseClarificationOptions('| a | b |'), null);
 });
+
+test('a short PandaByte catalog question is a catalog question even with a mistyped verb', () => {
+  for (const q of ['tell me abou tthe pandabyte boards', 'pandabyte boards', 'Tell me about the PandaByte boards', 'pandabyte products?']) assert.deepEqual(catalogIntent(q, false), { kind: 'clarify' }, q);
+  for (const q of ['how do I flash the pandabyte boards', 'Is PandaByte a good place to learn Arduino programming?', 'pandabyte boards with lora', 'compare pandabyte boards and arduino']) assert.equal(catalogIntent(q, false), null, q);
+});

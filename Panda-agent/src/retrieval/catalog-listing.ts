@@ -28,10 +28,13 @@ const pandaCatalog = /\b(?:tell\s+me\s+about|what\s+are|show\s+me|list)\b.{0,40}
 const listing = /^(?:please\s+)?(?:list|show)\b|\b(?:all|every)\b/i;
 const advice = /\b(?:with|has|have\s+(?:a|an|any)\b.{0,30}\b(?:support|bluetooth|wi-?fi)|supports?|bluetooth|ble|psram|flash|gpio|pins?|pinout|voltage|ram|memory|wi-?fi|lora\w*|zigbee|thread|matter|recommend\w*|best|better|should|explain|how|works?|why|help|pick|choose|compare|differences?|vs\.?|versus|for\s+(?:a|an|my|the)\b)/i;
 
+// A short question that names PandaByte and a kind of product ("pandabyte boards", "tell me abou tthe pandabyte boards") is a catalog question even when the verb is mistyped.
+const shortBrandQuestion = (q: string) => /\bpanda\s*byte\b/i.test(q) && q.split(/\s+/).length <= 12;
+
 /** `named` is whether the question resolves to a specific catalog product: those stay on product RAG. */
 export function catalogIntent(question: string, named: boolean): CatalogIntent | null {
   const q = question.normalize('NFKC').trim();
-  if (named || q.length > 240 || !catalogNoun.test(q) || advice.test(q) || !(possession.test(q) || pandaCatalog.test(q) || (listing.test(q) && /\bpanda\s*byte\b|\byour\b/i.test(q)))) return null;
+  if (named || q.length > 240 || !catalogNoun.test(q) || advice.test(q) || !(possession.test(q) || pandaCatalog.test(q) || shortBrandQuestion(q) || (listing.test(q) && /\bpanda\s*byte\b|\byour\b/i.test(q)))) return null;
   const category = /\b(?:shields?|hats?|expansion)\b/i.test(q) ? 'shields' : /\b(?:sensors?|modules?)\b/i.test(q) ? 'modules' : /\bkits?\b/i.test(q) && !/\bdev\s*kit/i.test(q) ? 'kits'
     : /\bboards?\b/i.test(q) ? 'boards' : null;
   // The ESP32 family filter applies to development boards only.
