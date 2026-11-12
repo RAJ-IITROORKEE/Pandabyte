@@ -24,7 +24,7 @@ if(q.method==='GET'){
   const keys=body&&typeof body==='object'&&!Array.isArray(body)?Object.keys(body).sort().join(','):'';
   if(!(keys==='id,text'||vision&&keys==='files,id,text')||!nativeID(body.id,'msg_')||typeof body.text!=='string'||!body.text.trim()||!body.text.isWellFormed())fail();
   if(keys==='id,text'?Buffer.byteLength(body.text)>96000:Buffer.byteLength(body.text)>4000||!Array.isArray(body.files)||body.files.length!==1||!imageFile(body.files[0]))fail();
- }else if(q.path!==base+'/interrupt?resume=false'||!body||Object.keys(body).length)fail();
+ }else if(q.path!==base+'/interrupt?resume=false'&&q.path!==base+'/compact'||!body||Object.keys(body).length)fail();
 }
 const response=await fetch('http://127.0.0.1:4172'+q.path,{method:q.method,headers:{authorization:'Basic '+Buffer.from('opencode:'+password).toString('base64'),'content-type':'application/json','x-opencode-directory':encodeURIComponent(q.directory)},...(q.body===undefined?{}:{body:q.body}),redirect:'error',signal:AbortSignal.timeout(9000)});
 const contentType=(response.headers.get('content-type')??'').split(';')[0].trim();if(contentType!=='application/json'&&response.status!==204)fail();

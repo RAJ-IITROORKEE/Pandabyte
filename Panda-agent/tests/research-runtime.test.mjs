@@ -212,9 +212,9 @@ const hostedFamily = { 'tavily-hosted': 'openai/gpt-oss-20b', 'tavily-hosted-lun
 const configSha = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 test('GPT-OSS hosted profile config is byte-identical to the pre-C3 golden values', () => {
-  // Captured from the C2 working tree before C3 edits; the code-bound researchProfileHash legitimately changes with edited code bytes.
-  assert.equal(configSha(researchProfile('a'.repeat(64), 'b'.repeat(64), 'tavily-hosted')), '53c1d15cc2b1dda9665201faab14d56fdd396c515347aaa1c8bc0df08b3a13ba');
-  assert.equal(configSha(researchConfig('0'.repeat(64), '0'.repeat(64), 'tavily-hosted')), '58ad4ec211d4a11798e35fd244f28adbd2c9fc360420e3bba10568043637204a');
+  // Captured from the C2 working tree before C3 edits (hosted values updated 12 Nov 2026 for the [S1]/[S2] marker prompt); the code-bound researchProfileHash legitimately changes with edited code bytes.
+  assert.equal(configSha(researchProfile('a'.repeat(64), 'b'.repeat(64), 'tavily-hosted')), 'de2d4968ddfd94952ba1d7a0be84e23dfc073d51affb82480c694b10c7e6575e');
+  assert.equal(configSha(researchConfig('0'.repeat(64), '0'.repeat(64), 'tavily-hosted')), 'be4be0487de4f900d019d6bfb05094d0d2cba3fcd9da57747abaf8e6dd2ca8bc');
   assert.equal(configSha(researchProfile('a'.repeat(64), 'b'.repeat(64), 'tavily-search')), 'ed00b6e9607177f04b44a43ed302783277ccda061cb04742f26744b07dfe6b6f');
   assert.equal(configSha(researchProfile('a'.repeat(64), 'b'.repeat(64), 'synthetic-echo')), '93d5a1843e060a0fb1875a7f5e3ffaa3109a2704f0fb1086387dcadc2ddb005e');
 });

@@ -40,7 +40,9 @@ test('prompt has a fixed native id and text bounds; interrupt cannot resume',asy
  const seen=[];const transport=createResearchDockerTransport({...base,run:async q=>{seen.push(q);return response;}});
  await transport.request('POST',`/api/session/${sessionID}/prompt`,{id:'msg_abcdef123456ABCDEFGHIJKLMN',text:'Public fixture query.'});
  await transport.request('POST',`/api/session/${sessionID}/interrupt?resume=false`,{});
- assert.equal(seen.length,2);
+ await transport.request('POST',`/api/session/${sessionID}/compact`,{});
+ assert.equal(seen.length,3);
+ await assert.rejects(()=>transport.request('POST',`/api/session/${sessionID}/compact`,{auto:true}));
  await assert.rejects(()=>transport.request('POST',`/api/session/${sessionID}/prompt`,{id:'msg_abcdef123456ABCDEFGHIJKLMN',text:'x'.repeat(98305)}));
  await assert.rejects(()=>transport.request('POST',`/api/session/${sessionID}/interrupt?resume=true`,{}));
  await transport.close();

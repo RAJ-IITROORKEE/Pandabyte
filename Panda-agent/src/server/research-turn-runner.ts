@@ -69,6 +69,8 @@ export function researchQueryInScope(query: unknown, promptText: string): boolea
 }
 /** Host MemAvailable needed before a turn: the container hard cap (memory = memory-swap) plus a 256 MiB margin for the host. */
 export const researchHostFloorKiB = researchMemoryBytes / 1024 + 262144;
+/** Native history size (JSON bytes) above which a chat is compacted before its next question; the guard refuses bodies over 128 KiB. */
+export const researchCompactBytes = 48 * 1024;
 export const researchPromptPreface = 'Host rules: you may search only public documentation. Every search query must be 1 to 12 words using letters, digits, spaces or hyphens, and each word must come from the question below or be a generic documentation word (datasheet, documentation, docs, official, reference, manual, guide, pinout, example, tutorial, specification, pandabyte). For PandaByte products, put pandabyte or the product code (for example xS3, x8266) in the query: the search then reads the live pandabyte.in product or category pages. Never put private data in a query. Search again for every question, even a follow-up: cite only sources returned by searches made for this question, never sources from earlier turns. Answer only from returned excerpts and cite exact passages.\n\nQuestion:\n';
 export const prefacedPrompt = (prompt: string) => researchPromptPreface + prompt;
 
@@ -202,6 +204,26 @@ export function createResearchTurnRunner(options: RunnerOptions) {
     const observation = async () => {
       const [state, activity, rows] = await Promise.all([owned(), json('GET', '/api/session/active'), messages()]), active = Object.hasOwn(activity.data, ctx.binding.sessionID);
       return { state, rows, active, result: projectResearchTurn({ messageID: ctx.run.messageID, promptHash: ctx.run.promptHash }, { ...(state.outcome ? { outcome: state.outcome } : {}), time: state.time }, active, rows, ['panda_research_search']) as any };
+    };
+    // Memory: a long chat is compacted by OpenCode before the next question (manual compaction; the binding plugin writes the
+    // summary, so no model is called). It runs before admitRun, so the guard would refuse any provider call it attempted.
+    // A failed compaction leaves the history as it was and the turn proceeds; one that stalls fails the turn before any model call.
+    // shortcut: native rows are never deleted, so a chat past ~40 web turns still hits the 200-row read bound; start a new epoch then.
+    const compactIfLarge = async () => {
+      // Rows are never deleted, so only history since the last completed compaction counts toward the threshold.
+      const rows = await messages(), since = rows.findLastIndex(r => r.type === 'compaction' && r.status === 'completed');
+      if (Buffer.byteLength(JSON.stringify(rows.slice(since + 1))) < researchCompactBytes) return;
+      const before = rows.filter(r => r.type === 'compaction').length;
+      await json('POST', `/api/session/${ctx.binding.sessionID}/compact`, {});
+      let busy = true;
+      for (const end = now() + 20000; now() < end; await sleep(200)) {
+        check(); const [latest, activity] = await Promise.all([messages(), json('GET', '/api/session/active')]);
+        const added = latest.filter(r => r.type === 'compaction').slice(before);
+        busy = Object.hasOwn(activity.data, ctx.binding.sessionID) || added.some(r => r.status === 'running');
+        if (added.length && !busy) return; // completed, or failed (history unchanged; a refused body then fails as before)
+      }
+      // No row at all (OpenCode found nothing to compact) is harmless once the session is idle; a running one is not.
+      if (busy) throw Error('compaction_stalled');
     };
     const waitTerminal = async () => { for (;;) { check(); const o = await observation(); if (o.result.state === 'terminal') return o; await sleep(100); } };
     const identity = (o: { kind: string; key: string; requestHash: string }) => ({ kind: o.kind as 'primary' | 'tool', key: o.key, requestHash: o.requestHash });
@@ -383,7 +405,7 @@ export function createResearchTurnRunner(options: RunnerOptions) {
       if (rec.create !== 'created') {
         need((await store.claimCreate(binding, ctx.generation)).state === 'dispatch', 'create_claim');
         await json('POST', '/api/session', ctx.transport.createBody); await owned(); need(await store.markCreated(binding, ctx.generation, { sessionID: binding.sessionID, profileHash: ctx.profileHash }), 'mark_created');
-      } else await owned();
+      } else { await owned(); await compactIfLarge(); }
       // 5. prompt: the first provider call can only follow claimPrompt, so failures before it are safe-to-retry
       const messageID = createNativeMessageID(), built = buildResearchPromptBody({ messageID, text: promptText, image: null, vision: false }); need(!('error' in built), 'prompt_rejected');
       // input.runId is the deterministic envelope runId (signed, in the request file); the store's run id is an independent random UUID.

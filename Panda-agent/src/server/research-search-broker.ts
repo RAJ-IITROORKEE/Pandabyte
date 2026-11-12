@@ -213,7 +213,13 @@ export function verifyResearchAnswer(rawText:string,catalog:readonly ResearchEvi
   if(!exact(value,['answer','evidence'])||!publicAnswerText(value.answer,1200)||!Array.isArray(value.evidence)||value.evidence.length>2)return invalid;
   // Observed real Haiku 5.5: a helpful uncited refusal with evidence:[]; without evidence the text is never shown, so it is insufficient.
   if(value.evidence.length===0)return{state:'insufficient'};
-  if(!value.answer.trim()||!value.evidence.length||/(?:\b[a-z][a-z0-9+.-]*:\/\/|www\.|\[[^\]]*\]\([^)]*\)|<[^>]+>|\[S\d+\]|\[(?:web|source|citation|ref(?:erence)?)[^\]]*\]|(?:^|[^A-Za-z0-9_`])\[[^\]\n]+\])/i.test(value.answer))return invalid;
+  // [S1]/[S2] mark the first/second evidence selection (citation ids S1/S2); any other bracket stays refused.
+  const markers=[...value.answer.matchAll(/\[S(\d+)\]/g)].map(m=>m[1]);
+  if(markers.some(n=>n!=='1'&&n!=='2'||Number(n)>value.evidence.length))return invalid;
+  const bare=value.answer.replace(/\[S[12]\]/g,'');
+  // A marker may not become link text, an image or a reference definition, and no other bracket may remain.
+  if(/!\[S\d|\[S\d+\](?:[(:]|\[(?!S\d+\]))/.test(value.answer)||/[[\]]/.test(bare))return invalid;
+  if(!bare.trim()||!value.evidence.length||/(?:\b[a-z][a-z0-9+.-]*:\/\/|www\.|\[[^\]]*\]\([^)]*\)|<[^>]+>|\[S\d+\]|\[(?:web|source|citation|ref(?:erence)?)[^\]]*\]|(?:^|[^A-Za-z0-9_`])\[[^\]\n]+\])/i.test(bare))return invalid;
   const citations:Extract<ResearchAnswer,{state:'evidence'}>['citations']=[],usedSources:Extract<ResearchAnswer,{state:'evidence'}>['usedSources']=[],pairs=new Set<string>();
   for(const selection of value.evidence){
    if(!exact(selection,['handle','passage'])||typeof selection.handle!=='string'||typeof selection.passage!=='string')return invalid;
@@ -224,6 +230,8 @@ export function verifyResearchAnswer(rawText:string,catalog:readonly ResearchEvi
    citations.push({handle:source.handle,url:source.url,title:source.title,quote,capturedAt:source.capturedAt});
    usedSources.push({operationKey,resultHash,sourceHandle:source.handle,passageID:selection.passage,quote});
   }
-  return{state:'evidence',answer:value.answer,citations,usedSources};
+  // A model that wrote no marker still gets one per citation at the end, so the UI always links its sources.
+  const answer=markers.length?value.answer:value.answer.trimEnd()+' '+citations.map((_,i)=>`[S${i+1}]`).join('');
+  return{state:'evidence',answer,citations,usedSources};
  }catch{return invalid;}
 }

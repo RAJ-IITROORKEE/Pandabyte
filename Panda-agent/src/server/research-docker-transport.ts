@@ -34,7 +34,7 @@ export function createResearchDockerTransport(config:{containerId:string;session
   if(method==='GET')return body===undefined&&(['/api/info','/api/config','/api/model','/api/mcp','/api/session/active',base,base+'/message?limit=100&order=asc'].includes(path)
    ||new RegExp('^'+base+'/message\\?limit=100&cursor=[A-Za-z0-9_-]{1,2048}(?:%3D){0,2}$').test(path));
   if(!researchJSON(body,98304)||!researchObject(body))return false;
-  if(path===base+'/interrupt?resume=false')return Object.keys(body).length===0;
+  if(path===base+'/interrupt?resume=false'||path===base+'/compact')return Object.keys(body).length===0;
   if(path==='/api/session')return JSON.stringify(body)===JSON.stringify(createBody);
   if(path!==base+'/prompt')return false;
   const keys=Object.keys(body).sort().join(',');

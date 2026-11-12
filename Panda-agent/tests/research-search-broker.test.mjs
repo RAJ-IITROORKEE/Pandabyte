@@ -171,7 +171,7 @@ test('hosted final answer accepts one closing fenced JSON block after a preamble
  const r=multi(),[s1]=r.sources,catalog=[catalogEntry(r)],json=JSON.stringify({answer:'PIO is programmable.',evidence:[{handle:alias(s1),passage:'P1'}]});
  const check=raw=>verifyResearchAnswer(raw,catalog,raw);
  for(const raw of ['The search returned the datasheet. Unverified http://example.com claim.\n\n```json\n'+json+'\n```','```json\n'+json+'\n```\n'])
-  {const result=check(raw);assert.equal(result.state,'evidence');assert.equal(result.answer,'PIO is programmable.');}
+  {const result=check(raw);assert.equal(result.state,'evidence');assert.equal(result.answer,'PIO is programmable. [S1]');}
  for(const raw of ['Preamble.\n```json\n'+json+'\n```\nTrailing text.','A\n```json\n'+json+'\n```\n```json\n'+json+'\n```','Use `code` here.\n```json\n'+json+'\n```',
   'Preamble.\n```\n'+json+'\n```','Preamble.\n```JSON\n'+json+'\n```','Preamble. '+json,'Preamble.\n```json\n'+json+' extra\n```'])
   assert.deepEqual(check(raw),{state:'invalid'});
@@ -187,6 +187,16 @@ test('hosted final answer selects passage IDs, rejects free quotes and records p
  for(const evidence of [[{handle:alias(s1),passage:'P2'}],[{handle:alias(s2),passage:'P3'}],[{handle:alias(s1),passage:'P0'}],[{handle:alias(s1),passage:'P65'}],[{handle:alias(s1),passage:'p1'}],[{handle:alias(s1),passage:'P01'}],[{handle:alias(s1),passage:' P1'}],[{handle:alias(s1),passage:1}],
   [{handle:alias(s1),quote:s1.content}],[{handle:alias(s1),passage:'P1',quote:s1.content}],[{handle:alias(s1),passage:'P1'},{handle:alias(s1),passage:'P1'}],[{handle:alias(s1),passage:'P1'},{handle:alias(s2),passage:'P1'},{handle:alias(s2),passage:'P2'}],[{handle:'foreign',passage:'P1'}],[{handle:s1.handle,passage:'P1'}]])
   assert.deepEqual(ok(evidence),{state:'invalid'},JSON.stringify(evidence));
+});
+test('answers keep [S1]/[S2] markers matching their evidence, get one appended when none, and refuse any other marker',()=>{
+ const r=multi(),[s1,s2]=r.sources,catalog=[catalogEntry(r)],run=(answer,evidence)=>{const raw=JSON.stringify({answer,evidence});return verifyResearchAnswer(raw,catalog,raw);};
+ const one=[{handle:alias(s1),passage:'P1'}],two=[...one,{handle:alias(s2),passage:'P2'}];
+ assert.equal(run('PIO is programmable [S1].',one).answer,'PIO is programmable [S1].');
+ assert.equal(run('A [S1]. B [S2].',two).answer,'A [S1]. B [S2].');
+ assert.equal(run('A and B.',two).answer,'A and B. [S1][S2]');
+ assert.equal(run('A and B [S1][S2].',two).answer,'A and B [S1][S2].');
+ for(const answer of ['A [S2].','A [S3].','A [S0].','A [S01].','A [s1].','A [S1, S2].','A [1].','[S1]','A [web].','See [S1](javascript:alert(1)).','A [S1](/admin).','A ![S1](x).','[S1]: x','A [[S1]].','A [S1]].','A [[S1].','A [S1][x].'])
+  assert.deepEqual(run(answer,answer==='A [S2].'?one:two),{state:'invalid'},answer);
 });
 test('non-selectable blank, CR and format-character passages invalidate the answer',()=>{
  for(const [content,passage] of [[' '.repeat(180)+'Visible tail.','P1'],['Line one\r\nLine two.','P1'],['Soft­hyphen text.','P1'],['Zero​width.','P1']]){
