@@ -1,4 +1,5 @@
 import { readRuntimeCatalog } from './insforge-adapters.ts';
+import { categoryOf } from './catalog-listing.ts';
 type CatalogRow = Awaited<ReturnType<typeof readRuntimeCatalog>>[number];
 export type PlannedProduct = Readonly<{id:string;sku:string;title:string}>;
 const contains=(q:string,raw:string,model=false)=>{const needle=raw.toLowerCase();let at=q.indexOf(needle);while(at>=0){const edge=model?/[a-z0-9-]/:/[a-z0-9]/;if((at===0||!edge.test(q[at-1]))&&(at+needle.length===q.length||!edge.test(q[at+needle.length])))return true;at=q.indexOf(needle,at+1);}return false;};
@@ -27,7 +28,10 @@ export function resolveMultiProductIdentity(rows:CatalogRow[],question:string):{
  const aliases=new Map<string,CatalogRow[]>();
  for(const p of rows)for(const token of new Set(p.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[])){const key=token.toLowerCase();aliases.set(key,[...(aliases.get(key)??[]),p]);}
  const bases=new Map<string,Set<string>>();for(const [token,owners] of aliases){const base=token.split('-')[0];const set=bases.get(base)??new Set<string>();for(const owner of owners)set.add(owner.id);bases.set(base,set);}
- const named=(text:string)=>rows.filter(p=>contains(text,p.sku)||contains(text,p.title)||[...aliases].some(([token,owners])=>owners.length===1&&owners[0].id===p.id&&contains(text,token,!/^x[a-z0-9]{2,}$/i.test(token))));
+ // A PandaByte model code (x-prefixed) shared by a board and its accessories ("xC3M" and the xC3M shield) means the board, unless the text
+ // asks for a shield, HAT, expansion board or kit; it resolves only when exactly one owner is left.
+ const preferred=(text:string,owners:CatalogRow[])=>{const accessory=/\b(?:shields?|hats?|expansion|kits?)\b/.test(text);const left=owners.filter(o=>(categoryOf(o.title)==='boards')!==accessory);return left.length===1?left[0]:null;};
+ const named=(text:string)=>rows.filter(p=>contains(text,p.sku)||contains(text,p.title)||[...aliases].some(([token,owners])=>(owners.length===1?owners[0].id===p.id:/^x[a-z0-9]{2,}$/i.test(token)&&preferred(text,owners)?.id===p.id)&&contains(text,token,!/^x[a-z0-9]{2,}$/i.test(token))));
  const selected=named(q);
  const productChoice=/\bor\s+[^?!.]{1,100}\b(?:have|has|support|supports|use|uses|contain|contains)\b/i.test(q);
  if(!selected.length && !/\b(?:compare|comparison|versus|vs|between|or|with|and)\b/.test(q)){

@@ -46,3 +46,14 @@ test('an unresolved product question falls back to the direct model instead of t
   assert.match(source, /if\(!scope\)return 'direct';/);
   assert.match(source, /preparedSnapshot\.kind==='clarification'\)\{preparedSnapshot=undefined;return 'direct';\}/);
 });
+
+test('a model code shared with an accessory resolves to the board unless a shield or kit is asked for', async () => {
+  const { resolveMultiProductIdentity } = await import('../src/retrieval/multi-product-identity.ts');
+  const one = q => { const r = resolveMultiProductIdentity(catalog, q); return r.kind === 'planned' && r.products.length === 1 ? r.products[0].sku : r.kind; };
+  assert.equal(one('Give me the complete specifications of the PandaByte xC3M board as a table.'), 'ESPXC3M');
+  assert.equal(one('What is the flash size of the xC3M?'), 'ESPXC3M');
+  assert.equal(one('What does the xC3M shield add?'), 'XC3MHAT');
+  assert.equal(one('pinout of the xLoRa'), 'XLORA');
+  assert.equal(one('Which ESP32 has more flash?'), 'clarification');
+  assert.equal(one('How do I wire a WS2812B?'), 'clarification');
+});
