@@ -2,7 +2,8 @@
 
 Status: proposal, revision 2, 12 Nov 2026. Nothing here is built. Revision 1 proposed two new named tools run by the
 website; the control room showed that does not fit the harness as built (see "Why revision 1 was dropped"). The owner
-has not yet picked a direction.
+picked this direction on 12 Nov 2026: catalog backend behind the existing search tool, prices stripped. The public
+read function is drafted in `catalog-public-read.draft.sql` and is not applied; applying it still needs the owner.
 
 ## Recommended shape: a catalog backend behind the existing search tool
 
@@ -60,6 +61,22 @@ read-only database function (migration, owner approval needed).
    its source.
 3. **Public read function**: approve a read-only database function that exposes only published catalog rows and
    published passages to the host.
+
+## Potential issues with changing the current RAG system
+
+Found by reading the current code and migrations; none is fixed by this proposal alone.
+
+| # | Issue | What goes wrong | Proposed handling |
+|---|---|---|---|
+| 1 | Every current catalog read requires a signed-in user and is revoked from anonymous callers. The host has no user. | The new function is the first anonymous read of approved passage text. Anyone holding the public key could read all 42 listings' text. | Acceptable only because it is already-public listing text. Return no ids, hashes or release data; one SKU per call; never give the host an admin key instead. |
+| 2 | The corpus release is pinned in SQL by two hard-coded hashes and a member count of 284. | Any re-import or added document makes every catalog read fail with not found, on the website and on the host at once. | Unchanged by this work, but every corpus update needs a new migration first. Add a health check before relying on the host path. |
+| 3 | The website rejects a catalog of more than 42 products. | Adding a 43rd product breaks product answers until the code limit is raised. | Raise the limit when the catalog grows; the host must not copy the constant. |
+| 4 | Website RAG re-checks its sources just before saving an answer; the host path would read once per call. | A source withdrawn mid-turn could still be cited in that one answer. | Accept for a single turn; the saved citation still points at the public product page. |
+| 5 | Listing passages contain prices, and the live-page path formats prices on purpose. | Stripping in one place leaves the other leaking prices; the pattern can miss formats such as "MRP 499". | Strip in the database function (drafted) and remove the price formatting from the live-page fallback; test with real listing text before go-live. |
+| 6 | Product-name resolution exists only in website code. | A copy on the host drifts, so the same question resolves differently with web search on and off. | The host imports the same module from this repository; no second implementation. |
+| 7 | Two answer paths with different limits: website RAG cites up to 8 passages; the harness allows 2 citations of 180 characters. | The same question gets a thinner, differently cited answer when web search is on, and web search is the default for Admin accounts. | Decide which path owns product questions for Admin accounts before go-live; compare both on the saved evaluation set. |
+| 8 | Model context on the harness is 16k tokens. | Two products' passages plus web results plus history can overflow and cut the answer. | Cap catalog content per search (20,000 characters is the ceiling; 12,000 is safer with history). |
+| 9 | Migration ownership: research migrations belong to the control room, runtime reads to this session. | Two sessions writing migrations in the same area collide. | One owner for this migration; agree before anyone applies it. |
 
 ## Not specified yet
 
