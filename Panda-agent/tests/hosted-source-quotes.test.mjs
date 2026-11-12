@@ -103,3 +103,10 @@ test('hosted selections deduplicate only fully validated IDs and withhold unsupp
  assert.equal(resolveHostedSourceEvaluation({...raw,evidence:[first,{id:'foreign:q1',reason:'Unsupported.'}]},quotes),null);
  assert.equal(resolveHostedSourceEvaluation({answer:'x'.repeat(6001),evidence:[]},quotes),null);
 });
+
+test('excerpt ids copied into the answer are removed, other brackets are kept', async () => {
+  const { resolveHostedSourceEvaluation } = await import('../src/control-room/hosted-source-quotes.ts');
+  const quotes = [{ id: 'req:q1', rank: 1, text: 'The board has 4 MB flash.' }];
+  const out = resolveHostedSourceEvaluation({ answer: 'Flash: 4 MB [req:q1][req:q1]. Pins [0:3] and [other:q9] stay.', evidence: [{ id: 'req:q1', reason: 'flash size' }] }, quotes);
+  assert.equal(out.answer, 'Flash: 4 MB. Pins [0:3] and [other:q9] stay.');
+});
