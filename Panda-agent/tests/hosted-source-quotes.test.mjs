@@ -109,4 +109,6 @@ test('excerpt ids copied into the answer are removed, other brackets are kept', 
   const quotes = [{ id: 'req:q1', rank: 1, text: 'The board has 4 MB flash.' }];
   const out = resolveHostedSourceEvaluation({ answer: 'Flash: 4 MB [req:q1][req:q1]. Pins [0:3] and [other:q9] stay.', evidence: [{ id: 'req:q1', reason: 'flash size' }] }, quotes);
   assert.equal(out.answer, 'Flash: 4 MB. Pins [0:3] and [other:q9] stay.');
+  const two = [...quotes, { id: 'req:q2', rank: 1, text: 'It has Wi-Fi.' }];
+  assert.equal(resolveHostedSourceEvaluation({ answer: 'LEDs [req:q2, req:q1] and [req:q1, other:q9].', evidence: [{ id: 'req:q1', reason: 'flash size' }] }, two).answer, 'LEDs and [req:q1, other:q9].');
 });

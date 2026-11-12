@@ -65,6 +65,6 @@ export function resolveHostedSourceEvaluation(raw: unknown, quotes: readonly Hos
   }
   // Some models copy the supplied excerpt ids ("[<request>:q6]") into the answer despite the instruction; they are internal, so they are removed.
   const ids = new Set(quotes.map(q => q.id));
-  const answer = raw.answer.replace(/ ?\[([^\[\]\s]{1,80}:q\d{1,3})\]/g, (all: string, id: string) => ids.has(id) ? '' : all);
+  const answer = raw.answer.replace(/ ?\[([^\[\]]{1,400}:q\d{1,3})\]/g, (all: string, list: string) => list.split(/\s*[,;]\s*|\s+/).every(id => ids.has(id)) ? '' : all);
   return { answer: evidence.length ? answer : '', evidence };
 }
