@@ -2,7 +2,7 @@ import 'server-only';
 import { createHostedRagCompletion } from './hosted-model-openrouter.ts';
 import { fastHostedModel, hostedDirectModelIds, hostedModelSelection, requestedHostedModel } from '../hosted-model.ts';
 import { createHash } from 'node:crypto';
-import { conversationRoute, isUnscopedConversation, isProjectMemoryQuestion } from '../retrieval/conversation-route.ts';
+import {ownHardware, conversationRoute, isUnscopedConversation, isProjectMemoryQuestion } from '../retrieval/conversation-route.ts';
 import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforge-adapters.ts';
 import { resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
 import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
@@ -27,7 +27,7 @@ const contains = (text:string, value:string) => {
 const namedProduct = (question:string,catalog:Catalog) => {
  const text=question.normalize('NFKC').toLowerCase();
  // PandaByte codes (x8266, xC3) name a product on their own; plain chip names that appear in titles (ESP32, WS2812B) only do with a shopping word.
- const shopping=/\b(?:pandabyte|listing|listed|board|module|kit|ring|shield|product|buy|price|stock|sell|order)\b/.test(text);
+ const shopping=/\b(?:pandabyte|listing|listed|board|module|kit|ring|shield|product|buy|price|stock|sell|order)\b/.test(text)&&!ownHardware(text);
  return catalog.some(row=>contains(text,row.sku)||contains(text,row.title)
   ||(row.title.match(/\b(?:x[a-z0-9]{2,}|[a-z]{2,}[0-9]{2,}[a-z0-9]*(?:-[a-z0-9]+)?)\b/gi)??[]).some(alias=>contains(text,alias)&&(/^x/i.test(alias)||shopping)))
   ||/\bpanda\s*byte\b|\bsku\b|\bx[a-z0-9]{2,}\b/i.test(text);

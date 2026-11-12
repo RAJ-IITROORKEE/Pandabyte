@@ -2,7 +2,7 @@ import { readRuntimeCatalog } from './insforge-adapters.ts';
 type CatalogRow = Awaited<ReturnType<typeof readRuntimeCatalog>>[number];
 export type PlannedProduct = Readonly<{id:string;sku:string;title:string}>;
 const contains=(q:string,raw:string,model=false)=>{const needle=raw.toLowerCase();let at=q.indexOf(needle);while(at>=0){const edge=model?/[a-z0-9-]/:/[a-z0-9]/;if((at===0||!edge.test(q[at-1]))&&(at+needle.length===q.length||!edge.test(q[at+needle.length])))return true;at=q.indexOf(needle,at+1);}return false;};
-const genericTitleWords = new Set(['a','and','the','with','for','pandabyte','board','module','sensor','development','compatible','kit','pcs','units']);
+const genericTitleWords = new Set(['to','of','in','on','or','by','my','a','and','the','with','for','pandabyte','board','module','sensor','development','compatible','kit','pcs','units']);
 function titleWords(text: string): string[] {
  return (text.toLowerCase().replace(/\b(\d+)\s+(cm|mm)\b/g,'$1$2').match(/[a-z0-9]+/g) ?? [])
   .filter(word=>word.length>1 && !genericTitleWords.has(word));
