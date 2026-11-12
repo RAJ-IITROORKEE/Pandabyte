@@ -89,3 +89,31 @@ Found by reading the current code and migrations; none is fixed by this proposal
   session, so "the website runs the handler with the user's actor client" cannot work.
 - The request guard allows exactly one tool, `panda_research_search`.
 - The model never picks `S` ids; the host assigns them, at most two per answer.
+
+## Retrieval quality: "miss no detail" (owner request, 12 Nov 2026; proposal, not built)
+
+Current state, from `current_RAG.md`: 42 listings, 282 eligible text chunks (about 7 per product). Chunks are whole
+blocks (paragraphs, tables, code) with no overlap. Ranking is a count of distinct matching words, inside one product.
+Embedding and hybrid modules exist (`pgvector-adapter.ts`, `embedding-client.ts`, `config/hybrid-v1.json`) but are
+not wired in. Images and scanned PDFs are not ingested at all.
+
+Where details are lost today, in order of impact:
+
+1. **The detail was never ingested.** Pinout diagrams, dimension drawings and linked datasheets or wiki pages exist
+   only as images or off-site documents. No ranking change can recover them.
+2. **Cross-product questions** ("which board has Bluetooth?") have no retrieval path; ranking runs inside one product.
+3. **Ranking inside a large product**: only when a product has more than 8 chunks or 20,000 characters can a relevant
+   chunk be dropped, and word-count ranking misses synonyms ("supply voltage" vs "VIN").
+
+Recommended design, smallest first:
+
+| Step | Change | Why it is the right fit here |
+|---|---|---|
+| 1 | **Whole-product context**: when the resolved product's passages fit the 20,000-character budget, send all of them, unranked. | With about 7 chunks per product, most products fit. Nothing can be missed by a ranker that does not run. Needs a size measurement first. |
+| 2 | **Hybrid ranking only when a product does not fit**: word match plus the existing 1024-dimension embeddings, merged by reciprocal rank fusion (already coded, constant 60). Prefix each chunk with product title and section path before embedding. | Covers synonyms; reuses built modules instead of new ones. |
+| 3 | **Visual ingestion ("pixel RAG")**: render each product image and PDF page, have a vision model transcribe it to structured Markdown (pin tables, dimensions), review it in the control room, store it as a chunk that cites the image. | For 42 products, transcription at ingestion with human review is more auditable than image-embedding search, and the answer path stays text-only and cited. |
+| 4 | **Spec table per product** extracted at ingestion (chip, flash, wireless, voltage, connectors) with a source chunk per value. | Gives cross-product questions an exact, citable lookup instead of a fuzzy search. |
+| 5 | **Recall check**: a fact checklist per product (every spec row), run in the Admin RAG Control Room before and after each step. | "No detail missed" becomes a number; a step ships only if recall does not drop. |
+
+Not recommended now: sliding-window overlap, a learned reranker, a separate vector database or image-embedding
+retrieval. The corpus is a few hundred chunks; each adds cost and review burden without a measured gain.
