@@ -44,7 +44,7 @@ test('general how-to questions about the user\'s own hardware stay on the direct
 test('an unresolved product question falls back to the direct model instead of the exact-product notice', () => {
   const source = readFileSync(new URL('../src/server/main-rag-chat.ts', import.meta.url), 'utf8');
   assert.match(source, /if\(!scope\)return 'direct';/);
-  assert.match(source, /preparedSnapshot\.kind==='clarification'\)\{preparedSnapshot=undefined;return 'direct';\}/);
+  assert.match(source, /preparedSnapshot\.kind==='clarification'\)\{\s*preparedSnapshot=undefined;\s*presetAnswer=productChoiceAnswer\(question,catalog\);\s*return presetAnswer\?'rag':'direct';/);
 });
 
 test('a model code shared with an accessory resolves to the board unless a shield or kit is asked for', async () => {

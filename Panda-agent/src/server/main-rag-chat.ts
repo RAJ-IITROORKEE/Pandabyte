@@ -4,10 +4,10 @@ import { fastHostedModel, hostedDirectModelIds, hostedModelSelection, requestedH
 import { createHash } from 'node:crypto';
 import {ownHardware, conversationRoute, isUnscopedConversation, isProjectMemoryQuestion } from '../retrieval/conversation-route.ts';
 import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforge-adapters.ts';
-import { resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
+import { matchingProducts, resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
 import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
 import { createSnapshotClient } from '../retrieval/snapshot-client.ts';
-import { catalogIntent, catalogTableText, clarificationText, projectClarificationText, projectIdeasIntent } from '../retrieval/catalog-listing.ts';
+import { catalogIntent, catalogTableText, clarificationText, productChoiceText, productQuestion, projectClarificationText, projectIdeasIntent } from '../retrieval/catalog-listing.ts';
 import { createBasicRagChatService } from './basic-rag-chat-service.ts';
 import { createBasicRagStore } from './basic-rag-store.ts';
 import { createLightweightStore } from './lightweight-store.ts';
@@ -61,6 +61,15 @@ export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer
  if(projectIdeasIntent(question,named))return {outcome:'clarification',text:projectClarificationText(catalog),citations:[]};
  const intent=catalogIntent(question,named);
  return intent?{outcome:'clarification',text:intent.kind==='clarify'?clarificationText(catalog):catalogTableText(catalog,intent.scope),citations:[]}:null;
+}
+
+/** For a PandaByte question that resolved to no single product: the closest catalog products as selectable follow-ups (no model call), or null when none match. */
+export function productChoiceAnswer(question:string,catalog:Catalog):ChatAnswer|null {
+ const matches=matchingProducts(catalog,question);
+ if(!matches.length)return null;
+ // A title that the resolver cannot map back to its own product (it contains another product's code) is offered by SKU instead.
+ const ask=(row:Catalog[number])=>{const q=productQuestion(row),plan=resolveMultiProductIdentity(catalog,q);return plan.kind==='planned'&&plan.products.length===1&&plan.products[0].sku===row.sku?q:productQuestion(row,true);};
+ return {outcome:'clarification',text:productChoiceText(matches.map(ask)),citations:[]};
 }
 
 /** Catalog aliases select the source path; a product question that resolves to no catalog product falls back to the direct model (owner decision, 12 Nov 2026), whose prompt forbids PandaByte facts. */
@@ -197,8 +206,12 @@ export function mainRagChatForActor(options:{actor:ChatActor;request:Request;dir
    }
    preparedSnapshot=await prepareMainRagContext({subject:actor.subject,question,retrievalQuestion,historyCurrent,signal,snapshotClient:client,liveClient:actor.client,
     authorizeCurrent:options.current,adminCurrent:current});
-   // No resolvable product: answer from the general model (shown as uncited) instead of the "name the exact product" notice.
-   if(preparedSnapshot.kind==='clarification'){preparedSnapshot=undefined;return 'direct';}
+   // No resolvable product: offer the closest catalog products as choices (no model call); with no match, answer from the general model (shown as uncited).
+   if(preparedSnapshot.kind==='clarification'){
+    preparedSnapshot=undefined;
+    presetAnswer=productChoiceAnswer(question,catalog);
+    return presetAnswer?'rag':'direct';
+   }
    const elapsed=Math.round(performance.now()-retrievalStarted);
    if(preparedSnapshot.kind==='ready'&&Number.isSafeInteger(elapsed)&&elapsed>=0&&elapsed<=120000)try{report?.('reading_sources',{
     fragments:preparedSnapshot.passages.length,characters:preparedSnapshot.passages.reduce((n,p)=>n+p.text.length,0),duplicatesRemoved:0,limitCharacters:20000,retrievalMs:elapsed,

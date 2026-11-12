@@ -17,6 +17,16 @@ function describedProduct(rows: CatalogRow[], question: string): CatalogRow | un
  const matching=rows.filter((_row,i)=>known.every(word=>titles[i].has(word)));
  return matching.length===1?matching[0]:undefined;
 }
+/** Up to five catalog rows whose titles share the most words with a question that resolved to no single product: choices to offer, never an answer.
+ *  Boards come first unless the question asks for an accessory. */
+export function matchingProducts(rows: CatalogRow[], question: string): CatalogRow[] {
+ const titles=rows.map(row=>new Set(titleWords(row.title))), words=[...new Set(titleWords(question.normalize('NFKC')))];
+ // A word of four or more letters also matches inside a longer title word ("lora" in "xLoRa" and "LoRaWAN").
+ const scores=titles.map(title=>words.filter(word=>title.has(word)||(word.length>=4&&[...title].some(t=>t.includes(word)))).length), top=Math.max(0,...scores);
+ if(!top)return [];
+ const accessory=/\b(?:shields?|hats?|expansion|kits?|sensors?|modules?)\b/i.test(question), rank=(row:CatalogRow)=>(categoryOf(row.title)==='boards')===accessory?1:0;
+ return rows.filter((_row,i)=>scores[i]===top).sort((a,b)=>rank(a)-rank(b)).slice(0,5);
+}
 /** Rows must be the full, validated projection, never a filtered catalog. */
 export function resolveMultiProductIdentity(rows:CatalogRow[],question:string):{kind:'planned';products:PlannedProduct[]}|{kind:'clarification'} {
  if(typeof question!=='string'||!question.isWellFormed()||!question.trim()||question.length>2000)return {kind:'clarification'};

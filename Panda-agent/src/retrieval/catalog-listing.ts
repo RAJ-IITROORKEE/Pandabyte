@@ -54,12 +54,19 @@ export function projectIdeasIntent(question: string, named: boolean): boolean {
 }
 
 const plainName = (title: string) => title.split(':')[0].replace(/[^A-Za-z0-9 .+-]/g, ' ').replace(/\s+/g, ' ').trim();
+// A title without the PandaByte prefix (for example "Maker UNO") is not resolvable by name alone, so its SKU is added.
+const nameOf = (r: CatalogRow) => /panda\s*byte/i.test(r.title) ? plainName(r.title) : `${plainName(r.title)} ${r.sku}`;
+/** For a PandaByte question that matched no single product: offers the closest catalog products, each option naming one, so its answer is cited from that listing. */
+// "with ..." is dropped from a title: the resolver reads "with" as a comparison between two products.
+export const productQuestion = (r: CatalogRow, bySku = false): string => `Tell me about ${bySku ? r.sku : nameOf(r).split(/ with /i)[0]}`;
+export function productChoiceText(questions: readonly string[]): string {
+  const options = [...questions, listQuestion({ category: 'all' })];
+  return ['I could not match that to one PandaByte product. Which one do you mean?', '', optionHeader, ...options.map((o, i) => `${i + 1}. ${o}`), '', optionFooter].join('\n');
+}
 /** Asks which board the projects should use; every option names one catalog board, so its answer is cited from that listing. */
 export function projectClarificationText(rows: readonly CatalogRow[]): string {
   const boards = rows.filter(r => categoryOf(r.title) === 'boards').slice(0, 5);
-  // A title without the PandaByte prefix (for example "Maker UNO") is not resolvable by name alone, so its SKU is added.
-  const nameOf = (r: CatalogRow) => /panda\s*byte/i.test(r.title) ? plainName(r.title) : `${plainName(r.title)} ${r.sku}`;
-  const options = boards.map((r, i) => `Suggest projects I can build with ${nameOf(r)}${i === 0 ? ' (recommended)' : ''}`);
+   const options = boards.map((r, i) => `Suggest projects I can build with ${nameOf(r)}${i === 0 ? ' (recommended)' : ''}`);
   options.push(listQuestion({ category: 'boards' }));
   return ['Which PandaByte board should the project use?', '', optionHeader, ...options.map((o, i) => `${i + 1}. ${o}`), '', optionFooter].join('\n');
 }
@@ -103,7 +110,7 @@ export function parseClarificationOptions(text: string): { question: string; opt
   if (at < 2 || lines.at(-1) !== optionFooter || lines.length > 16) return null;
   const options = [];
   for (const line of lines.slice(at + 1, -2)) {
-    const m = /^(\d)\. ((?:List|Suggest) [A-Za-z0-9 .+-]{3,110}?)( \(recommended\))?$/.exec(line);
+    const m = /^(\d)\. ((?:List|Suggest|Tell me about) [A-Za-z0-9 .+-]{3,110}?)( \(recommended\))?$/.exec(line);
     if (!m || Number(m[1]) !== options.length + 1) return null;
     options.push({ label: m[2], question: m[2], recommended: !!m[3] });
   }
