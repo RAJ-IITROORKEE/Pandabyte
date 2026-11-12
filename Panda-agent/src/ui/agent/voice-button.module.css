@@ -1,0 +1,12 @@
+.root { display: inline-flex; align-items: center; gap: 6px; }
+.button { display: inline-flex; min-width: 36px; height: 36px; align-items: center; justify-content: center; gap: 6px; padding: 0 9px; border: 0; border-radius: 999px; background: transparent; color: var(--foreground); cursor: pointer; }
+.button:hover, .button[aria-pressed="true"] { background: var(--status-soft); }
+.button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.button:disabled { opacity: .5; cursor: not-allowed; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; }
+.time { font-size: .75rem; font-variant-numeric: tabular-nums; color: var(--accent-ink); }
+.spin { animation: spin 1s linear infinite; }
+.message { max-width: 220px; font-size: .75rem; color: var(--muted); }
+.message:empty { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }

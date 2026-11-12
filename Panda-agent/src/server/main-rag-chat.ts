@@ -7,7 +7,7 @@ import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforg
 import { resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
 import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
 import { createSnapshotClient } from '../retrieval/snapshot-client.ts';
-import { catalogIntent, catalogTableText, clarificationText } from '../retrieval/catalog-listing.ts';
+import { catalogIntent, catalogTableText, clarificationText, projectClarificationText, projectIdeasIntent } from '../retrieval/catalog-listing.ts';
 import { createBasicRagChatService } from './basic-rag-chat-service.ts';
 import { createBasicRagStore } from './basic-rag-store.ts';
 import { createLightweightStore } from './lightweight-store.ts';
@@ -57,7 +57,9 @@ export function resolveMainFollowupScope(history:ChatRead,catalog:Catalog,thread
 
 /** Catalog-wide questions get a saved, zero-model answer (clarifying options or a catalog table); named products and every other question return null. */
 export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer|null {
- const intent=catalogIntent(question,resolveMultiProductIdentity(catalog,question).kind==='planned');
+ const named=resolveMultiProductIdentity(catalog,question).kind==='planned';
+ if(projectIdeasIntent(question,named))return {outcome:'clarification',text:projectClarificationText(catalog),citations:[]};
+ const intent=catalogIntent(question,named);
  return intent?{outcome:'clarification',text:intent.kind==='clarify'?clarificationText(catalog):catalogTableText(catalog,intent.scope),citations:[]}:null;
 }
 

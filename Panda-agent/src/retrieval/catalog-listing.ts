@@ -46,6 +46,24 @@ const optionFooter = 'Or type your own question, for example with a board name s
 const listQuestion = (scope: CatalogScope) => scope.family === 'esp32' ? 'List PandaByte ESP32 development boards'
   : scope.category === 'all' ? 'List all PandaByte products' : `List all PandaByte ${labels[scope.category]}`;
 
+/** "Suggest some projects I can build with PandaByte devices": no single product named, but clearly about our range. */
+export function projectIdeasIntent(question: string, named: boolean): boolean {
+  const q = question.normalize('NFKC').trim();
+  return !named && q.length <= 240 && /\bpanda\s*byte\b|\byour\b/i.test(q) && /\b(?:projects?|ideas?|what (?:can|could) i (?:build|make|create)|build|make)\b/i.test(q)
+    && /\b(?:suggest|recommend\w*|ideas?|what (?:can|could) i|(?:can|could) i (?:build|make|create)|give me|show me|any|some)\b/i.test(q);
+}
+
+const plainName = (title: string) => title.split(':')[0].replace(/[^A-Za-z0-9 .+-]/g, ' ').replace(/\s+/g, ' ').trim();
+/** Asks which board the projects should use; every option names one catalog board, so its answer is cited from that listing. */
+export function projectClarificationText(rows: readonly CatalogRow[]): string {
+  const boards = rows.filter(r => categoryOf(r.title) === 'boards').slice(0, 5);
+  // A title without the PandaByte prefix (for example "Maker UNO") is not resolvable by name alone, so its SKU is added.
+  const nameOf = (r: CatalogRow) => /panda\s*byte/i.test(r.title) ? plainName(r.title) : `${plainName(r.title)} ${r.sku}`;
+  const options = boards.map((r, i) => `Suggest projects I can build with ${nameOf(r)}${i === 0 ? ' (recommended)' : ''}`);
+  options.push(listQuestion({ category: 'boards' }));
+  return ['Which PandaByte board should the project use?', '', optionHeader, ...options.map((o, i) => `${i + 1}. ${o}`), '', optionFooter].join('\n');
+}
+
 /** A clarifying question whose numbered lines are complete follow-up questions (the UI renders them as buttons). */
 export function clarificationText(rows: readonly CatalogRow[]): string {
   const present = new Set(rows.map(r => categoryOf(r.title)));
@@ -85,7 +103,7 @@ export function parseClarificationOptions(text: string): { question: string; opt
   if (at < 2 || lines.at(-1) !== optionFooter || lines.length > 16) return null;
   const options = [];
   for (const line of lines.slice(at + 1, -2)) {
-    const m = /^(\d)\. (List [A-Za-z0-9 ]{3,80}?)( \(recommended\))?$/.exec(line);
+    const m = /^(\d)\. ((?:List|Suggest) [A-Za-z0-9 .+-]{3,110}?)( \(recommended\))?$/.exec(line);
     if (!m || Number(m[1]) !== options.length + 1) return null;
     options.push({ label: m[2], question: m[2], recommended: !!m[3] });
   }
