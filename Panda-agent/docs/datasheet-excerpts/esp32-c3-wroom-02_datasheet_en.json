@@ -1,0 +1,16 @@
+{"document":"ESP32-C3-WROOM-02 Datasheet","file":"esp32-c3-wroom-02_datasheet_en.pdf","source_url":"https://documentation.espressif.com/esp32-c3-wroom-02_datasheet_en.pdf","version":"v1.7, 2026-03-05","chunks":[
+{"key":"overview-features","title":"Module overview and features","parts":[{"page":2,"from":9,"to":36}]},
+{"key":"pin-definitions","title":"Pin definitions","parts":[{"page":10,"from":44,"to":50},{"page":11,"from":3,"to":44}]},
+{"key":"strapping-pins","title":"Strapping pins and boot configuration","parts":[{"page":12,"from":9,"to":46}]},
+{"key":"boot-mode","title":"Chip boot mode control","parts":[{"page":13,"from":22,"to":50},{"page":14,"from":3,"to":7}]},
+{"key":"module-variants","title":"Module variants (Tables 1-1 and 1-2)","parts":[{"page":3,"from":15,"to":38},{"page":4,"from":3,"to":14}]},
+{"key":"variant-notes","title":"Module variant notes (flash, temperature, chip revision)","parts":[{"page":4,"from":16,"to":43}]},
+{"key":"electrical-ratings","title":"Absolute maximum ratings and recommended operating conditions","parts":[{"page":21,"from":5,"to":30}]},
+{"key":"dc-characteristics","title":"DC characteristics (3.3 V, 25 C)","parts":[{"page":21,"from":32,"to":62},{"page":22,"from":3,"to":11}]},
+{"key":"current-wifi-active","title":"Current consumption, Wi-Fi active mode","parts":[{"page":22,"from":13,"to":33}]},
+{"key":"current-sleep-modes","title":"Current consumption, modem-sleep and low-power modes","parts":[{"page":22,"from":35,"to":60},{"page":23,"from":3,"to":8}]},
+{"key":"wifi-rf","title":"Wi-Fi RF characteristics and TX power","parts":[{"page":24,"from":5,"to":36}]},
+{"key":"ble-rf","title":"Bluetooth LE RF characteristics","parts":[{"page":26,"from":40,"to":46}]},
+{"key":"peripherals-uart-spi","title":"Peripherals: UART and SPI","parts":[{"page":16,"from":28,"to":44},{"page":17,"from":3,"to":29}]},
+{"key":"peripherals-i2c-i2s-usb","title":"Peripherals: I2C, I2S and USB Serial/JTAG","parts":[{"page":17,"from":34,"to":44},{"page":18,"from":3,"to":35}]}
+]}

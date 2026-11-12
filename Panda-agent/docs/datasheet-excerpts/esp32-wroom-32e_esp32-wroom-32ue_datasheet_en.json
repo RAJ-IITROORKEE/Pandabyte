@@ -1,0 +1,16 @@
+{"document":"ESP32-WROOM-32E and ESP32-WROOM-32UE Datasheet","file":"esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf","source_url":"https://documentation.espressif.com/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf","version":"v2.1, 2026-08-05","chunks":[
+{"key":"features","title":"Features and key specifications","parts":[{"page":2,"from":9,"to":55}]},
+{"key":"series-comparison-wroom-32e","title":"Series comparison: ESP32-WROOM-32E variants","parts":[{"page":3,"from":5,"to":28}]},
+{"key":"series-comparison-wroom-32ue","title":"Series comparison: ESP32-WROOM-32UE variants and notes","parts":[{"page":3,"from":30,"to":54}]},
+{"key":"pin-definitions-1","title":"Pin definitions (part 1/2)","parts":[{"page":11,"from":5,"to":58}]},
+{"key":"pin-definitions-2","title":"Pin definitions (part 2/2)","parts":[{"page":11,"from":60,"to":86},{"page":12,"from":3,"to":23}]},
+{"key":"strapping-pins","title":"Strapping pins and defaults","parts":[{"page":13,"from":9,"to":48}]},
+{"key":"boot-mode","title":"Chip boot mode and download mode","parts":[{"page":14,"from":28,"to":47},{"page":15,"from":5,"to":7}]},
+{"key":"peripherals-spi-uart-i2c","title":"SPI, UART and I2C peripheral notes","parts":[{"page":18,"from":34,"to":45},{"page":19,"from":3,"to":43}]},
+{"key":"abs-max-recommended","title":"Absolute maximum ratings and recommended operating conditions","parts":[{"page":28,"from":5,"to":36}]},
+{"key":"dc-characteristics-1","title":"DC characteristics (part 1/2)","parts":[{"page":28,"from":40,"to":56}]},
+{"key":"dc-characteristics-2","title":"DC characteristics (part 2/2)","parts":[{"page":29,"from":5,"to":44}]},
+{"key":"current-consumption","title":"Current consumption","parts":[{"page":29,"from":46,"to":71}]},
+{"key":"wifi-rf","title":"Wi-Fi RF characteristics","parts":[{"page":31,"from":5,"to":39}]},
+{"key":"bluetooth-rf","title":"Bluetooth radio characteristics","parts":[{"page":33,"from":17,"to":44}]}
+]}

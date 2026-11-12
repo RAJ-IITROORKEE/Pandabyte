@@ -1,0 +1,20 @@
+{"document":"ESP32-C6-WROOM-1 and ESP32-C6-WROOM-1U Datasheet","file":"esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf","source_url":"https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf","version":"Datasheet Version 1.4","chunks":[
+{"key":"module-overview","title":"Module overview and headline features","parts":[{"page":1,"from":1,"to":11}]},
+{"key":"features-1","title":"Features: CPU, memory and Wi-Fi (part 1/2)","parts":[{"page":2,"from":9,"to":34}]},
+{"key":"features-2","title":"Features: Wi-Fi 6 and Bluetooth LE (part 2/2)","parts":[{"page":2,"from":36,"to":51}]},
+{"key":"features-802154-peripherals","title":"Features: 802.15.4, peripherals, antenna and operating conditions","parts":[{"page":3,"from":3,"to":29}]},
+{"key":"variants-flash-antenna","title":"Series comparison: variants, flash and antenna options","parts":[{"page":3,"from":31,"to":47}]},
+{"key":"pin-layout","title":"Pin layout (top view)","parts":[{"page":10,"from":5,"to":55}]},
+{"key":"pin-definitions","title":"Pin definitions (Table 3-1)","parts":[{"page":11,"from":3,"to":69}]},
+{"key":"strapping-pins","title":"Strapping pins and defaults","parts":[{"page":12,"from":9,"to":47}]},
+{"key":"boot-mode","title":"Chip boot mode and download mode","parts":[{"page":13,"from":29,"to":51}]},
+{"key":"jtag-source","title":"JTAG signal source control (GPIO15)","parts":[{"page":15,"from":19,"to":45}]},
+{"key":"absolute-recommended","title":"Absolute maximum ratings and recommended operating conditions","parts":[{"page":26,"from":5,"to":32}]},
+{"key":"dc-characteristics","title":"DC characteristics (3.3 V, 25 C)","parts":[{"page":26,"from":34,"to":63},{"page":27,"from":3,"to":7}]},
+{"key":"current-active-wifi","title":"Current consumption in active mode: Wi-Fi","parts":[{"page":27,"from":9,"to":27}]},
+{"key":"current-active-ble-154","title":"Current consumption in active mode: Bluetooth LE and 802.15.4","parts":[{"page":27,"from":29,"to":45}]},
+{"key":"current-sleep","title":"Current consumption in sleep modes","parts":[{"page":28,"from":6,"to":37}]},
+{"key":"wifi-tx","title":"Wi-Fi RF characteristics and TX power","parts":[{"page":30,"from":14,"to":38}]},
+{"key":"ble-802154-rf","title":"Bluetooth LE and 802.15.4 radio highlights","parts":[{"page":33,"from":21,"to":27},{"page":37,"from":3,"to":10}]},
+{"key":"uart-spi","title":"UART and SPI peripherals","parts":[{"page":17,"from":32,"to":46},{"page":18,"from":3,"to":39}]}
+]}

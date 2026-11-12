@@ -1,0 +1,16 @@
+{"document":"ESP32-C5-WROOM-1 and ESP32-C5-WROOM-1U Datasheet","file":"esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf","source_url":"https://documentation.espressif.com/esp32-c5-wroom-1_wroom-1u_datasheet_en.pdf","version":"v1.3, 2026-09-03","chunks":[
+{"key":"features-cpu-wifi-bluetooth","title":"Features: CPU, memory, Wi-Fi 6 dual-band, Bluetooth LE","parts":[{"page":2,"from":9,"to":47}]},
+{"key":"features-802154-peripherals-antenna","title":"Features: 802.15.4, peripherals, antenna options, operating conditions","parts":[{"page":3,"from":1,"to":44}]},
+{"key":"part-numbers-flash-psram-antenna","title":"Part numbers: flash, PSRAM, antenna and size options","parts":[{"page":4,"from":3,"to":43}]},
+{"key":"pin-definitions-1","title":"Pin definitions (part 1/2)","parts":[{"page":13,"from":43,"to":71},{"page":14,"from":1,"to":24}]},
+{"key":"pin-definitions-2","title":"Pin definitions (part 2/2)","parts":[{"page":14,"from":26,"to":56},{"page":15,"from":48,"to":62}]},
+{"key":"strapping-pins","title":"Strapping pins and default configuration","parts":[{"page":16,"from":9,"to":46}]},
+{"key":"boot-mode-download","title":"Chip boot mode and download boot control","parts":[{"page":18,"from":3,"to":37}]},
+{"key":"ratings-operating-conditions","title":"Absolute maximum ratings and recommended operating conditions","parts":[{"page":32,"from":8,"to":31}]},
+{"key":"dc-characteristics","title":"DC characteristics (3.3 V, 25 C)","parts":[{"page":32,"from":33,"to":61},{"page":33,"from":3,"to":14}]},
+{"key":"current-wifi-active","title":"Current consumption: Wi-Fi active mode","parts":[{"page":33,"from":16,"to":47}]},
+{"key":"current-ble-154-sleep","title":"Current consumption: Bluetooth LE, 802.15.4 and low-power modes","parts":[{"page":34,"from":3,"to":19},{"page":35,"from":3,"to":11}]},
+{"key":"rf-wifi-tx-power","title":"Wi-Fi TX power, 2.4 GHz and 5 GHz","parts":[{"page":36,"from":24,"to":38},{"page":39,"from":21,"to":45}]},
+{"key":"rf-wifi-rx-sensitivity","title":"2.4 GHz Wi-Fi RX sensitivity (continued table, HT40 MCS2-7 and HE20)","parts":[{"page":38,"from":3,"to":39}]},
+{"key":"rf-ble-802154","title":"Bluetooth LE and 802.15.4 radio","parts":[{"page":42,"from":21,"to":28},{"page":46,"from":3,"to":28}]}
+]}

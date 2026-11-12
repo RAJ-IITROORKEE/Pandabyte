@@ -1,0 +1,187 @@
+{
+ "document": "ESP32-S3-WROOM-1 and ESP32-S3-WROOM-1U Datasheet",
+ "file": "esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf",
+ "source_url": "https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf",
+ "version": "v1.8, 2026-03-02",
+ "chunks": [
+  {
+   "key": "features-overview",
+   "title": "Module features and key specifications",
+   "parts": [
+    {
+     "page": 2,
+     "from": 10,
+     "to": 52
+    }
+   ]
+  },
+  {
+   "key": "variants-flash-psram-1",
+   "title": "Module variants, flash and PSRAM options (part 1/2)",
+   "parts": [
+    {
+     "page": 3,
+     "from": 12,
+     "to": 45
+    }
+   ]
+  },
+  {
+   "key": "variants-flash-psram-2",
+   "title": "Module variants, flash and PSRAM options (part 2/2)",
+   "parts": [
+    {
+     "page": 3,
+     "from": 47,
+     "to": 62
+    },
+    {
+     "page": 4,
+     "from": 3,
+     "to": 19
+    }
+   ]
+  },
+  {
+   "key": "pin-definitions-1",
+   "title": "Pin definitions (part 1/2)",
+   "parts": [
+    {
+     "page": 11,
+     "from": 9,
+     "to": 67
+    }
+   ]
+  },
+  {
+   "key": "pin-definitions-2",
+   "title": "Pin definitions (part 2/2)",
+   "parts": [
+    {
+     "page": 11,
+     "from": 69,
+     "to": 84
+    },
+    {
+     "page": 12,
+     "from": 3,
+     "to": 38
+    }
+   ]
+  },
+  {
+   "key": "strapping-pins",
+   "title": "Strapping pins and default configuration",
+   "parts": [
+    {
+     "page": 13,
+     "from": 9,
+     "to": 46
+    }
+   ]
+  },
+  {
+   "key": "boot-mode",
+   "title": "Chip boot mode and download boot",
+   "parts": [
+    {
+     "page": 14,
+     "from": 28,
+     "to": 54
+    },
+    {
+     "page": 15,
+     "from": 3,
+     "to": 10
+    }
+   ]
+  },
+  {
+   "key": "absolute-recommended",
+   "title": "Absolute maximum ratings and recommended operating conditions",
+   "parts": [
+    {
+     "page": 27,
+     "from": 5,
+     "to": 34
+    }
+   ]
+  },
+  {
+   "key": "dc-characteristics",
+   "title": "DC characteristics (3.3 V, 25 C)",
+   "parts": [
+    {
+     "page": 27,
+     "from": 36,
+     "to": 62
+    },
+    {
+     "page": 28,
+     "from": 3,
+     "to": 10
+    }
+   ]
+  },
+  {
+   "key": "current-active",
+   "title": "Current consumption in active mode (Wi-Fi and Bluetooth LE)",
+   "parts": [
+    {
+     "page": 28,
+     "from": 12,
+     "to": 40
+    }
+   ]
+  },
+  {
+   "key": "current-low-power",
+   "title": "Current consumption in low-power modes",
+   "parts": [
+    {
+     "page": 30,
+     "from": 3,
+     "to": 33
+    }
+   ]
+  },
+  {
+   "key": "wifi-tx-rf",
+   "title": "Wi-Fi RF characteristics and TX power",
+   "parts": [
+    {
+     "page": 32,
+     "from": 14,
+     "to": 36
+    }
+   ]
+  },
+  {
+   "key": "ble-rf",
+   "title": "Bluetooth LE RF characteristics",
+   "parts": [
+    {
+     "page": 34,
+     "from": 41,
+     "to": 47
+    }
+   ]
+  },
+  {
+   "key": "uart-i2c-notes",
+   "title": "UART and I2C peripheral notes",
+   "parts": [
+    {
+     "page": 17,
+     "from": 30,
+     "to": 45
+    },
+    {
+     "page": 18,
+     "from": 3,
+     "to": 30
+    }
+   ]
+  }
+ ]
+}
