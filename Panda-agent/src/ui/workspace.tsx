@@ -222,7 +222,8 @@ function Workspace({ user, nativeAssistant, directAssistant, previewReadOnly, gu
   }
   async function sendMessage(input: MessageInput, modelId: ChatModelId = selectedModel) {
     if (("guide" in input && !guidesEnabled)||("diagnostic" in input&&!diagnosticsEnabled)||('agentic' in input&&!agenticEnabled)) return;
-    if ("question" in input) input = { ...input, question: retryAfterPause(input.question, messages) };
+    // A nudge after a paused web-search reply re-asks that question on the path that works (web search off).
+    if ("question" in input) { const retried = retryAfterPause(input.question, messages); if (retried !== input.question) input = { question: retried, webSearch: false }; }
     const question = messageQuestion(input);
     if (!question || previewReadOnly || (modelAssistant && (capabilities?.mode !== expectedMode || capabilities.status !== "ready" || capabilityLoading || !capabilities.models.some(model => model.id === modelId && model.enabled))) || busyRef.current || loading || mutating || selectedArchived || uncertain || (selected && selected.status !== "idle")) return;
     if (question.length > 2000) { setError("Messages must be 2,000 characters or fewer. Shorten your message and try again."); return; }
