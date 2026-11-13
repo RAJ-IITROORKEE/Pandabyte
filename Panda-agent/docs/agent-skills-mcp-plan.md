@@ -42,6 +42,13 @@ Status: **plan only** (13 Nov 2026). Nothing here is built until the owner start
   - MCP approval cards (migration 20261114090000): Admin mode Allow / Ask / Never. An Ask tool ends the turn with a card showing the
     exact call (arguments written losslessly) and a reference; "Allow once" runs exactly that call before the model continues.
     Live check with Context7 query-docs passed; both Context7 tools are back on Allow.
+- 14 Nov: web search is always on for agent-loop models (all but GPT-OSS); the composer globe toggle and the "start chats with web
+  search" setting are gone; the agent decides when to search. Replays: product questions use PandaByte tools, not the web.
+- Phase 6 (device tools), slice 1 live, Admin only: chat-header USB button opens a Device panel. Web Serial (Chrome/Edge on a
+  computer) connect, Identify (esptool-js 0.7.0, Apache-2.0, Espressif; restarts the board), serial monitor (500 lines, baud picker),
+  "Ask the agent" with the newest lines, and .bin flashing only after a confirmation dialog; the image header's chip id must match
+  the connected chip, the address must be 4 KB aligned and the image must fit the flash. Hardware flashing is not yet tested.
+  Next slice (owner pick): compile service on AWS Lambda (container with arduino-cli + ESP32 core, isolated builds, no network).
 - Open cost items: read_product by name, regional Vertex endpoint for cache hits (profile owned by the control room session).
 
 ## Phases (each: tests, deploy, live check before the next)
