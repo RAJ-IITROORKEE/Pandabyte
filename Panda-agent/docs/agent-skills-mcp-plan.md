@@ -30,7 +30,19 @@ Status: **plan only** (13 Nov 2026). Nothing here is built until the owner start
   pin tables, then strapping pins; 8,000 bytes) and attaches the board's own published pinout image. Its fixed focus avoids the words the
   evidence reader refuses (GPIO, pinout, wiring). Live xS3 check: header table + datasheet UART defaults, 4 citations, image shown, $0.0056.
   Pin tables exist for xS3, xC5, xC6, xC3, xC3m, x32, xLoRa; board-photo labels for x8266, xC5, xC6, xS3, xC3, xC3m.
-- Open cost items: repair-instead-of-reject in final_answer (pin answers often try more than 4 ids), read_product by name, regional Vertex endpoint for cache hits (profile owned by the control room session).
+- Phase 5 (harness upgrades, 14 Nov): live except the web helper.
+  - Up to 8 citations (migration 20261113210000); more ids are trimmed (one per source first) instead of rejected.
+  - Plan checklist: `plan` tool on streamed turns, rides along with other calls (no extra step); live in the thinking panel, kept
+    collapsed with the answer ("4/4 planned steps"); a delivered answer ticks open steps. Not saved across reloads (like the steps).
+  - Waste fixes: the product cap counts products (a board's pin read after its listing read is free); filler in `sourced`
+    ("No PandaByte product facts were used") is dropped, not rejected; plan + answer-as-text is taken as the reply.
+  - Web-research helper: built and tested, OFF unless `PANDA_AGENT_WEB_HELPER=true`. It names sentence ranges per result and the
+    agent sees ~1.2 KB instead of ~3-4 KB per search at about the same cost, but in replays it named the wrong "latest" release in
+    2 of 3 runs (reading whole pages was right). Revisit if searches return full pages (include_raw_content).
+  - MCP approval cards (migration 20261114090000): Admin mode Allow / Ask / Never. An Ask tool ends the turn with a card showing the
+    exact call (arguments written losslessly) and a reference; "Allow once" runs exactly that call before the model continues.
+    Live check with Context7 query-docs passed; both Context7 tools are back on Allow.
+- Open cost items: read_product by name, regional Vertex endpoint for cache hits (profile owned by the control room session).
 
 ## Phases (each: tests, deploy, live check before the next)
 
