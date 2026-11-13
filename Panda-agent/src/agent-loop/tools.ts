@@ -31,8 +31,9 @@ export function webHelperMessages(question: string, query: string, pages: readon
   const text = pages.map(p => `[${p.id}] ${p.title}\n${webSegments(p.content).map((g, i) => `${i + 1}| ${p.content.slice(g.start, g.end).trim()}`).join('\n')}`).join('\n\n');
   return [{ role: 'system' as const, content: webHelperPrompt }, { role: 'user' as const, content: `Question: ${question}\nSearch: ${query}\n\n${text}` }];
 }
-/** The helper's picks: per result id, one range of consecutive sentences. The saved quote is that span of the page's own text
- *  (cut at a word to fit a citation); unknown ids, bad ranges and spans under 20 characters are dropped, never an error. */
+/** The helper's picks: per result id, one range of consecutive sentences. The saved quote is that span of the page's own text,
+ *  after the page's opening (title, version, date) joined by " … " when the span starts later, cut at a word to fit a citation;
+ *  the agent sees exactly this text. Unknown ids, bad ranges and spans under 20 characters are dropped, never an error. */
 export function pickWebQuotes(raw: unknown, pages: readonly { id: string; content: string }[]): Map<string, string> {
   const out = new Map<string, string>();
   const list = raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray((raw as { picks?: unknown }).picks) ? (raw as { picks: unknown[] }).picks.slice(0, 10) : [];
@@ -43,9 +44,12 @@ export function pickWebQuotes(raw: unknown, pages: readonly { id: string; conten
     if (!page || !Number.isSafeInteger(from) || !Number.isSafeInteger(to)) continue;
     const segments = webSegments(page.content), a = from as number, b = to as number;
     if (a < 1 || b < a || b > segments.length) continue;
-    let quote = page.content.slice(segments[a - 1].start, segments[b - 1].end).trim();
+    const span = page.content.slice(segments[a - 1].start, segments[b - 1].end).trim();
+    if (span.length < 20) continue;
+    const lead = segments[a - 1].start > WEB_LEAD_CHARS ? page.content.slice(0, WEB_LEAD_CHARS).replace(/\s+\S*$/, '').trim() : '';
+    let quote = lead ? `${lead} … ${span}` : span;
     if (quote.length > WEB_QUOTE_CHARS) quote = quote.slice(0, WEB_QUOTE_CHARS).replace(/\s+\S*$/, '').trim();
-    if (quote.length >= 20) out.set(page.id, quote);
+    out.set(page.id, quote);
   }
   return out;
 }
@@ -107,7 +111,7 @@ const pinSection = (p: ProductPassage) => { const s = p.sectionPath.join(' > ');
 export const pinOrder = (passages: readonly ProductPassage[]) => [...passages].sort((a, b) => pinSection(a) - pinSection(b)
   || (pinSection(a) < 3 ? a.sectionPath.join(' > ').localeCompare(b.sectionPath.join(' > '), 'en') : 0));
 // shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
-export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600;
+export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600, WEB_LEAD_CHARS = 200;
 export const WEB_SOURCES_HEADING = '### Web sources';
 export const MAX_SUGGESTIONS = 3, SUGGESTION_CHARS = 120, MAX_SKILL_LOADS = 2;
 export const GENERAL_HEADING = '### General guidance (not from PandaByte sources)';

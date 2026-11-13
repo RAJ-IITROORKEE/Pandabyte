@@ -766,14 +766,18 @@ test('web-research helper: sentence-range picks replace long page text with the 
   const from = at('The Grove port uses G1 for SDA and G2 for SCL.'), to = at('It runs at 3.3 V logic.');
   assert.ok(from > 1 && to === from + 1);
   assert.match(webHelperMessages('Q?', 'grove pins', [{ id: 'W1.1', title: 'T', content: page }])[1].content, new RegExp(`${from}\\| The Grove port`));
-  assert.equal(pickWebQuotes({ picks: [{ id: 'W1.1', from, to }] }, pages).get('W1.1'), 'The Grove port uses G1 for SDA and G2 for SCL.\nIt runs at 3.3 V logic.');
+  // A span later in the page comes after the page's opening (title, version), marked with an ellipsis; the agent sees exactly this.
+  const lead = page.slice(0, 200).replace(/\s+\S*$/, '').trim();
+  const quote = `${lead} … The Grove port uses G1 for SDA and G2 for SCL.\nIt runs at 3.3 V logic.`;
+  assert.ok(quote.length <= 600);
+  assert.equal(pickWebQuotes({ picks: [{ id: 'W1.1', from, to }] }, pages).get('W1.1'), quote);
+  assert.equal(pickWebQuotes({ picks: [{ id: 'W1.1', from: 1, to: 2 }] }, pages).get('W1.1'), 'Intro text about the board. Filler sentence here.', 'a span at the start has no lead');
   assert.ok(pickWebQuotes({ picks: [{ id: 'W1.1', from: 1, to: segs.length }] }, pages).get('W1.1').length <= 600, 'long spans are cut to fit a citation');
   for (const bad of [{ picks: [{ id: 'W1.1', from: to, to: from }] }, { picks: [{ id: 'W9.9', from, to }] }, { picks: [{ id: 'W1.1', from: 0, to: 1 }] },
     { picks: [{ id: 'W1.1', from, to: segs.length + 1 }] }, { picks: [{ id: 'W1.1', from: '3', to: 4 }] }, null, { picks: 'x' }])
     assert.equal(pickWebQuotes(bad, pages).size, 0);
   const sources = [{ handle: 'web:a', url: 'https://docs.example-maker.com/atoms3', title: 'AtomS3 docs', content: page, capturedAt: '2026-11-13T00:00:00.000Z' }];
   const helperUsage = { inputTokens: 900, outputTokens: 30, costNanoUsd: 50 };
-  const quote = 'The Grove port uses G1 for SDA and G2 for SCL.\nIt runs at 3.3 V logic.';
   const helped = createToolHost({ ...deps().tools, webSearch: async () => sources,
     condenseWeb: async (q, results) => { assert.equal(results[0].content, page.slice(0, 1500)); return { args: { picks: [{ id: 'W1.1', from, to }] }, usage: helperUsage }; } });
   const seen = JSON.parse((await helped.call('web_search', JSON.stringify({ query: 'AtomS3 grove pins' }), signal())).content);

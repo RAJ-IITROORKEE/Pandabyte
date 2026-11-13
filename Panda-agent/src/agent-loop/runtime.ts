@@ -97,6 +97,7 @@ export function agentLoopChatForActor(options: { actor: ChatActor; key: string; 
   policy: Parameters<typeof createAgentLoopChat>[0]['policy'] }): BasicRagChatBridge {
   const { actor } = options;
   return createAgentLoopChat({ store: createAgentLoopStore(actor, options.key), current: options.current, policy: options.policy, model: options.model, step: createOpenRouterStep,
+    webHelper: process.env.PANDA_AGENT_WEB_HELPER === 'true',
     tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal),
       skills: () => readSkillCatalog(actor), loadSkill: name => loadSkill(actor, name), mcp: () => readMcp(actor),
       pinoutImages: row => pinoutImages(actor, row.sourceUrl),

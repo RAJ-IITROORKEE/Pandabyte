@@ -18,7 +18,9 @@ type Tools = Omit<ToolDeps, 'progress' | 'webSearch' | 'skills'> & { webSearch?(
   skills?(): Promise<readonly SkillEntry[]>;
   /** Admin-approved MCP tools for this turn (Admin chats only); a failure means no MCP tools. */
   mcp?(): Promise<{ tools: readonly McpAgentTool[]; call: NonNullable<ToolDeps['callMcp']> } | null> };
-type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Tools; step: StepFactory; turnMs?: number };
+type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Tools; step: StepFactory; turnMs?: number;
+  /** Web-research helper on web turns (off by default: in 14 Nov replays it was cost-neutral but dropped facts, e.g. which release is latest). */
+  webHelper?: boolean };
 
 /** The whole turn ends before the route's 300 s limit, so a late step cannot outlive its request. */
 export const LOOP_TURN_MS = 230000;
@@ -74,7 +76,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       };
       // A server named in the question is opened up front; others are listed in one line each and opened on demand.
       const mcpTools = mcp?.tools ?? [], mcpOpen = [...new Set(mcpTools.map(t => t.server))].filter(s => new RegExp(`\\b${s}\\b`, 'i').test(turn.question));
-      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), condenseWeb } : {}) });
+      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), ...(options.webHelper ? { condenseWeb } : {}) } : {}) });
       const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools, !!plan), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
