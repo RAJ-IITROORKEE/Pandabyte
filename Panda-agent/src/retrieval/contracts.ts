@@ -67,6 +67,8 @@ export type Citation = {
     capturedAt: string;
     quote: string;
     sectionPath: string[];
+    /** Web citations only: reference images found on that page (see search/citation-image.ts). */
+    images?: { url: string; description: string }[];
 };
 export type Outcome = {
     kind: 'evidence';

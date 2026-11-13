@@ -1,6 +1,7 @@
 import type { InsForgeClient } from '@insforge/sdk';
 import {parseVendorCitation,parseCompositeVendorCitation} from '../diagnostics/contracts.ts';
 import { publicSearchCitationUrl, webSearchSection } from '../search/citation-url.ts';
+import { citationImages, type CitationImage } from '../search/citation-image.ts';
 import {parseProjectMemory} from '../guide/contracts.ts';
 import { uuid, type ChatAnswer, type ChatCitation, type ChatMessage, type ChatRead, type ChatThread, type ChatTurn } from './chat-contracts.ts';
 
@@ -17,6 +18,7 @@ function citations(value: unknown): ChatCitation[] {
   return value.map(c => {
     if(record(c) && Object.hasOwn(c,'kind')) { const vendor=parseVendorCitation(c)??parseCompositeVendorCitation(c);return vendor??bad(); }
     if (!record(c) || !string(c.id, 40) || !string(c.title, 300) || !string(c.sourceUrl, 500) || !date(c.capturedAt) || !string(c.quote, 600) || !Array.isArray(c.sectionPath) || c.sectionPath.length > 12 || c.sectionPath.some((p: unknown) => !string(p, 200))) return bad();
+    let images: CitationImage[] = [];
     try {
       const u = new URL(c.sourceUrl);
       const product = ['pandabyte.in', 'www.pandabyte.in'].includes(u.hostname) && /^\/product-page\/[a-zA-Z0-9_-]+\/?$/.test(u.pathname);
@@ -25,8 +27,9 @@ function citations(value: unknown): ChatCitation[] {
       // by the host and the DB before saving) carry an empty sectionPath. Both must be a public https page.
       const web = (c.sectionPath.length === 0 || (c.sectionPath.length === 1 && c.sectionPath[0] === webSearchSection)) && publicSearchCitationUrl(c.sourceUrl);
       if (u.protocol !== 'https:' || u.port || u.username || u.password || u.search || u.hash || !(product || manufacturer || web)) return bad();
+      if (web) images = citationImages(c.sourceUrl, c.images);
     } catch { return bad(); }
-    return { id: c.id, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: c.quote, sectionPath: c.sectionPath as string[] };
+    return { id: c.id, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: c.quote, sectionPath: c.sectionPath as string[], ...(images.length ? { images } : {}) };
   });
 }
 export function cleanAnswer(v: unknown): ChatAnswer {
