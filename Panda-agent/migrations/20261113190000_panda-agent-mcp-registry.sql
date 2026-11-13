@@ -1,3 +1,4 @@
+-- Owner-approved and applied 13 Nov 2026 after a rolled-back dry run (16 statements; 7 Admin-only functions; anon no execute; tables closed).
 -- MCP registry (phase 3, owner request 13 Nov 2026; plan: Panda-agent/docs/agent-skills-mcp-plan.md).
 -- Admin-registered remote MCP servers (Streamable HTTP over https only; no commands run on our servers). The app encrypts any
 -- API key with AES-256-GCM (key in PANDA_AGENT_MCP_SECRET_KEY, never in the database) and stores only the ciphertext here.
