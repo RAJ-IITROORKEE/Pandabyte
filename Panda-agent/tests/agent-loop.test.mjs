@@ -677,16 +677,22 @@ test('find_pinout: pin-focused read with a larger budget and its own slot; the b
   assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3', focus: 'x' }), signal())).content).error, 'invalid_arguments');
 });
 
-test('final_answer: up to eight excerpt ids (S1-S8), nine are refused', async () => {
+test('final_answer: up to eight citations (S1-S8); extra ids are trimmed, one per passage first', async () => {
   const host = createToolHost({ catalog: async () => catalog,
     readProduct: async row => ({ kind: 'ready', revalidate: async () => true,
       passages: Array.from({ length: 9 }, (_, i) => ({ text: `Pin fact ${i + 1} for ${row.sku}.`, title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath: [`Part ${i + 1}`] })) }) });
   const ids = JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).excerpts.map(e => e.id);
   assert.ok(ids.length >= 9);
-  const nine = JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: 'Pins.', citations: ids.slice(0, 9), general: '' }), signal())).content);
-  assert.equal(nine.error, 'invalid_arguments'); assert.match(nine.message, /at most 8 excerpt ids/);
+  const tooMany = JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: 'Pins.', citations: Array.from({ length: 41 }, () => ids[0]), general: '' }), signal())).content);
+  assert.equal(tooMany.error, 'invalid_arguments');
   const done = await host.call('final_answer', JSON.stringify({ sourced: 'Pins.', citations: ids.slice(0, 8), general: '' }), signal());
   assert.equal(done.kind, 'final'); assert.deepEqual(done.answer.citations.map(c => c.id), ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8']);
+  // Nine ids from nine passages: the first eight are kept, in order.
+  const host2 = createToolHost({ catalog: async () => catalog, readProduct: async row => ({ kind: 'ready', revalidate: async () => true,
+    passages: Array.from({ length: 9 }, (_, i) => ({ text: `Pin fact ${i + 1} for ${row.sku}.`, title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath: [`Part ${i + 1}`] })) }) });
+  const ids2 = JSON.parse((await host2.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).excerpts.map(e => e.id);
+  const nine = await host2.call('final_answer', JSON.stringify({ sourced: 'Pins.', citations: ids2.slice(0, 9), general: '' }), signal());
+  assert.equal(nine.kind, 'final'); assert.deepEqual(nine.answer.citations.map(c => c.quote), Array.from({ length: 8 }, (_, i) => `Pin fact ${i + 1} for ESPXS3.`));
 });
 
 test('find_pinout: its focus passes the evidence reader wiring-proof guard; a failed pin read shows no image', async () => {
@@ -734,4 +740,20 @@ test('plan: offered only with a checklist sink; validated, reported, capped; rid
   assert.equal((await host2.call('final_answer', JSON.stringify({ sourced: '', citations: [], general: 'Done.' }), signal())).kind, 'final');
   assert.deepEqual(open.at(-1), done);
   assert.match(loopMessages('q', [], null, false, [], [], true)[0].content, /plan tool/); assert.doesNotMatch(loopMessages('q', [], null)[0].content, /plan tool/);
+});
+
+test('product cap counts products: a pin read of a product already read is allowed, a fourth product is not', async () => {
+  const host = createToolHost(deps().tools);
+  for (const sku of ['PB-BMV080', 'PB96OLED', 'ESPXS3']) assert.ok(JSON.parse((await host.call('read_product', JSON.stringify({ sku }), signal())).content).excerpts.length);
+  assert.ok(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).excerpts.length, 'same product, pin read allowed');
+  assert.equal(JSON.parse((await host.call('read_product', JSON.stringify({ sku: 'PBDHT11' }), signal())).content).error, 'product_limit');
+});
+
+test('plan sent beside an answer written as text: the checklist is shown and the text is the reply', async () => {
+  const shown = [];
+  const d = deps(); d.tools.plan = s => shown.push(s);
+  const steps = [{ text: 'Explain I2C', done: true }, { text: 'Give pull-up values', done: true }];
+  const script = scripted([() => ({ content: 'I2C uses two lines, SDA and SCL, with pull-up resistors of about 4.7 kOhm.', toolCalls: [call('plan', { steps })], usage })]);
+  const result = await runAgentLoop({ messages: loopMessages('Explain I2C wiring basics', [], null) }, { step: script.step, tools: createToolHost(d.tools), signal: signal() });
+  assert.equal(result.kind, 'final'); assert.equal(result.steps, 1); assert.match(result.answer.text, /SDA and SCL/); assert.deepEqual(shown, [steps]);
 });

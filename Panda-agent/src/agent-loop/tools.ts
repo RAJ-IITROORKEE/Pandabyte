@@ -205,7 +205,9 @@ export function createToolHost(deps: ToolDeps) {
     const known = reads.get(key);
     if (known) return { kind: 'result', content: JSON.stringify({ sku: row.sku, alreadyRead: true, excerptIds: known.ids }) };
     if (reading.has(key)) return error('already_reading', 'That product is already being read in this step; use the excerpt ids from that result.');
-    if (reads.size + reading.size >= MAX_PRODUCTS) return error('product_limit', `At most ${MAX_PRODUCTS} products can be read per turn. Answer with what you have.`);
+    // The cap counts products (an answer cites at most 3): a product's listing read and pin read count once.
+    const products = new Set([...[...reads.values()].map(r => r.row.sku), ...[...reading].map(k => k.replace(/#pins$/, ''))]);
+    if (!products.has(row.sku) && products.size >= MAX_PRODUCTS) return error('product_limit', `At most ${MAX_PRODUCTS} products can be read per turn. Answer with what you have.`);
     reading.add(key); const number = ++readNumber;
     try {
     report('reading_sources');
@@ -275,13 +277,19 @@ export function createToolHost(deps: ToolDeps) {
     const sourced = typeof args.sourced === 'string' ? stripExcerptIds(args.sourced).trim() : args.sourced === undefined ? '' : null;
     const general = typeof args.general === 'string' ? stripProcessNote(stripExcerptIds(httpsOnlyLinks(args.general)).trim()) : args.general === undefined ? '' : null;
     const ids = args.citations === undefined ? [] : args.citations;
-    if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
+    if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > 5 * MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
       return error('invalid_arguments', `final_answer needs sourced and general strings and at most ${MAX_CITATIONS} excerpt ids.`);
     if (!sourced && !general) return error('empty_answer', 'Write the answer in sourced or general.');
     const cited = [...new Set(ids as string[])], missing = cited.filter(id => !excerpts.has(id) && !web.has(id));
     if (missing.length) return error('unknown_citation', `These ids were not returned by read_product, find_pinout or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);
     // One citation per web page, even when both searches returned it.
-    const unique = cited.filter(id => excerpts.has(id)), webIdsCited = cited.filter(id => web.has(id)),
+    // Over the cap: keep one id per source passage or page first (in the model's order), then fill in order. Rejecting
+    // made the model rewrite its whole answer; every kept citation is still proven and the text came from this turn's reads.
+    const source = (id: string) => excerpts.get(id)?.passage ?? web.get(id)?.url;
+    const keep = new Set(cited.filter((id, i) => cited.findIndex(other => source(other) === source(id)) === i).slice(0, MAX_CITATIONS));
+    for (const id of cited) if (keep.size < MAX_CITATIONS) keep.add(id);
+    const kept = cited.filter(id => keep.has(id));
+    const unique = kept.filter(id => excerpts.has(id)), webIdsCited = kept.filter(id => web.has(id)),
       webCited = webIdsCited.filter((id, i) => webIdsCited.findIndex(other => web.get(other)!.url === web.get(id)!.url) === i);
     if (webCited.length && !general) return error('web_without_general', 'Put facts from web results in general.');
     if (sourced && !unique.length) return error('uncited_sourced', 'sourced text needs at least one excerpt id. Move uncited content to general, or read the product first.');
