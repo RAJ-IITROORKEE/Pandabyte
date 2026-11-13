@@ -2,7 +2,7 @@
 
 import type { RefObject } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Globe, Lock, Palette, Sparkles, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, Check, Lock, Palette, Sparkles, Trash2, UserRound } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import styles from "./settings-view.module.css";
 
@@ -22,14 +22,11 @@ const sections = [
   { id: "settings-account", label: "Account", icon: UserRound },
 ] as const;
 
-export function SettingsView({ titleRef, models, defaultModel, onDefaultModel, webSearchAvailable, webSearchDefault, onWebSearchDefault, saved, onDeleteAll, onClose, deleteDisabled }: {
+export function SettingsView({ titleRef, models, defaultModel, onDefaultModel, saved, onDeleteAll, onClose, deleteDisabled }: {
   titleRef: RefObject<HTMLHeadingElement | null>;
   models: { id: string; label: string }[];
   defaultModel: string;
   onDefaultModel: (id: string) => void;
-  webSearchAvailable: boolean;
-  webSearchDefault: boolean;
-  onWebSearchDefault: (on: boolean) => void;
   saved: boolean;
   onDeleteAll: () => void;
   onClose: () => void;
@@ -57,8 +54,6 @@ export function SettingsView({ titleRef, models, defaultModel, onDefaultModel, w
         <section id="settings-preferences" className={styles.card} aria-labelledby="settings-preferences-title">
           <h2 id="settings-preferences-title"><Palette size={15} aria-hidden="true" /> Preferences</h2>
           <div className={styles.row}><span><strong>Appearance</strong><span>Light or dark theme for the whole site.</span></span><ThemeToggle /></div>
-          {webSearchAvailable && <div className={styles.row}><span><strong><Globe size={14} aria-hidden="true" /> Start new chats with web search on</strong><span>Answers search the web and cite their sources. They take about 30 seconds.</span></span>
-            <button type="button" role="switch" aria-checked={webSearchDefault} className={styles.switch} onClick={() => onWebSearchDefault(!webSearchDefault)}><span className={styles.srOnly}>Start new chats with web search on</span></button></div>}
         </section>
         <section id="settings-data" className={styles.card} aria-labelledby="settings-data-title">
           <h2 id="settings-data-title"><Lock size={15} aria-hidden="true" /> Data &amp; privacy</h2>

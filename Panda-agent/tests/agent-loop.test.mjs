@@ -335,10 +335,9 @@ test('agent questions are plain text for the question panel; the catalog menu pa
   assert.equal(searchCatalog(catalog, 'zzzz').matched, false); assert.equal(searchCatalog(catalog, 'zzzz').products.length, catalog.length);
 });
 
-test('web search starts off for agent-loop sessions unless the user saved it on', async () => {
-  const { webSearchOn } = await import('../src/ui/agent/preferences.ts');
-  assert.equal(webSearchOn(undefined, true), false); assert.equal(webSearchOn(true, true), true);
-  assert.equal(webSearchOn(undefined, false), true); assert.equal(webSearchOn(false, false), false);
+test('web search is always on for agent-loop turns: no per-message switch in the prompt', () => {
+  assert.match(loopMessages('q', [], null, true)[0].content, /Web search is available/);
+  assert.doesNotMatch(loopMessages('q', [], null, true)[0].content, /turned web search on/);
 });
 
 test('a greeting is answered in plain text in one step with no tool call; the prompt keeps every safety rule', async () => {
@@ -491,7 +490,7 @@ test('web_search reaches the model only on turns sent with web search on, and ea
   const sent = [];
   const webSearch = async (q, _s, beforeSend) => { sent.push([q, await beforeSend()]); return [{ handle: 'web:a', url: 'https://docs.example-maker.com/atoms3', title: 'AtomS3', content: 'G1 and G2.', capturedAt: '2026-11-13T00:00:00.000Z' }]; };
   const script = () => scripted([(m, tools) => tools.includes('web_search') ? reply(call('web_search', { query: 'AtomS3 grove' })) : { content: 'There is no web search on this turn.', toolCalls: [], usage },
-    m => { assert.match(m[0].content, /web search on for this message/i); return reply(call('final_answer', { sourced: '', citations: ['W1.1'], general: 'The AtomS3 page lists G1 and G2.' })); }]);
+    m => { assert.match(m[0].content, /Web search is available/); return reply(call('final_answer', { sourced: '', citations: ['W1.1'], general: 'The AtomS3 page lists G1 and G2.' })); }]);
   const on = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });
   assert.equal((await on.chat.start({ ...turn, webSearch: true }, signal())).status, 'saved');
   assert.deepEqual(sent, [['AtomS3 grove', true]]);

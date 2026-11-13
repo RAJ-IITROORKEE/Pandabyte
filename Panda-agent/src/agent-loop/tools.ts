@@ -101,7 +101,7 @@ export type ToolDeps = {
   /** Up to two of the board's own published images that show pins (pinout drawing first, then a labelled photo). */
   pinoutImages?(row: CatalogRow, signal: AbortSignal): Promise<CitationImage[]>;
   progress?(stage: 'searching_sources' | 'reading_sources' | 'checking_citations'): void;
-  /** Public web search; present only on turns where the user turned web search on. */
+  /** Public web search; present on web-search turns (every agent-loop turn while web search is available). */
   webSearch?(query: string, signal: AbortSignal): Promise<WebSource[]>;
   /** Web-research helper: one model call in its own context that names, per result, the sentences answering the question.
    *  Returns the helper's raw tool arguments (validated here) and the call's usage, which the loop adds to the turn. */

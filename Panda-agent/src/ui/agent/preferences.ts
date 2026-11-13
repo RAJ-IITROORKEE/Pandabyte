@@ -1,5 +1,5 @@
 // Per-account chat preferences kept in this browser only; storage may be blocked, so every access is guarded.
-export type AgentPreferences = { defaultModel?: string; webSearchDefault?: boolean };
+export type AgentPreferences = { defaultModel?: string };
 
 const key = (userId: string) => `panda-agent:preferences:${userId}`;
 
@@ -10,7 +10,6 @@ export function parsePreferences(raw: string | null): AgentPreferences {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   const v = value as Record<string, unknown>, out: AgentPreferences = {};
   if (typeof v.defaultModel === 'string' && /^[a-z0-9._-]+\/[a-z0-9._:-]+$/i.test(v.defaultModel) && v.defaultModel.length <= 100) out.defaultModel = v.defaultModel;
-  if (typeof v.webSearchDefault === 'boolean') out.webSearchDefault = v.webSearchDefault;
   return out;
 }
 
@@ -21,6 +20,3 @@ export function readPreferences(userId: string): AgentPreferences {
 export function writePreferences(userId: string, next: AgentPreferences): boolean {
   try { window.localStorage.setItem(key(userId), JSON.stringify(next)); return true; } catch { return false; }
 }
-
-// With the agent loop on, the agent offers web search itself, so new chats start with it off unless the user turned the default on.
-export const webSearchOn = (saved: boolean | undefined, agentLoop: boolean): boolean => agentLoop ? saved === true : saved !== false;

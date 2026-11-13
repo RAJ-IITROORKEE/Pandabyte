@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parsePreferences } from '../src/ui/agent/preferences.ts';
 
-test('valid preferences are kept', () => {
-  assert.deepEqual(parsePreferences(JSON.stringify({ defaultModel: 'anthropic/claude-haiku-5.5', webSearchDefault: true })), { defaultModel: 'anthropic/claude-haiku-5.5', webSearchDefault: true });
+test('valid preferences are kept; the retired web-search default is ignored', () => {
+  assert.deepEqual(parsePreferences(JSON.stringify({ defaultModel: 'anthropic/claude-haiku-5.5', webSearchDefault: true })), { defaultModel: 'anthropic/claude-haiku-5.5' });
   assert.deepEqual(parsePreferences(JSON.stringify({ defaultModel: 'qwen/qwen3.8-27b' })), { defaultModel: 'qwen/qwen3.8-27b' });
 });
 
