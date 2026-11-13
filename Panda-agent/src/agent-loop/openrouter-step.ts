@@ -27,7 +27,7 @@ function toolCalls(value: unknown): ToolCall[] {
   return value.map(c => {
     if (!record(c) || Object.keys(c).some(k => !['id', 'type', 'function', 'index'].includes(k)) || typeof c.id !== 'string' || !/^[A-Za-z0-9_.:-]{1,200}$/.test(c.id)
       || (c.type !== undefined && c.type !== 'function') || !record(c.function) || Object.keys(c.function).some(k => !['name', 'arguments'].includes(k))
-      || typeof c.function.name !== 'string' || !/^[a-z_]{1,64}$/.test(c.function.name) || typeof c.function.arguments !== 'string'
+      || typeof c.function.name !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(c.function.name) || typeof c.function.arguments !== 'string'
       || c.function.arguments.length > 24000 || !c.function.arguments.isWellFormed()) return fail('response_rejected');
     return { id: c.id, name: c.function.name, arguments: c.function.arguments };
   });

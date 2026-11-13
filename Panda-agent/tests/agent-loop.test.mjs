@@ -318,6 +318,9 @@ test('the OpenRouter step sends tools on the pinned zero-retention endpoint, cla
     const bad = make(true, { role: 'assistant', content: null, tool_calls: [{ id: 'bad id!', type: 'function', function: { name: 'search_catalog', arguments: '{}' } }] });
     assert.deepEqual(await bad.step(messages, [], signal(), 3000), { content: null, toolCalls: [], usage: { inputTokens: 900, outputTokens: 40, costNanoUsd: 70000 }, finish: 'tool_calls' }, 'a malformed message still counts its usage');
     assert.equal(first.finish, 'tool_calls'); assert.equal(f.wires[0].max_tokens, 3000, 'the per-step output cap reaches the wire');
+    // MCP tool names carry digits and hyphens (mcp_<server>__<tool>); they must reach the loop, which refuses unknown names itself.
+    const mcpCall = { role: 'assistant', content: null, tool_calls: [{ id: 'call_2', type: 'function', function: { name: 'mcp_context7__resolve-library-id', arguments: '{"libraryName":"ArduinoJson"}' } }] };
+    assert.equal((await make(true, mcpCall).step(messages, [], signal(), 3000)).toolCalls[0].name, 'mcp_context7__resolve-library-id');
     await assert.rejects(make(true, good).step(messages, [], signal(), STEP_OUTPUT_MAX + 1), { code: 'not_admitted' });
   } finally { console.info = original; }
 });
