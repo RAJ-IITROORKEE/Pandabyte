@@ -102,7 +102,7 @@ function ToolRow({ tool, busy, onMode }: { tool: McpTool; busy: boolean; onMode:
       {tool.description && <details className={styles.toolDesc}><summary><span>{tool.description}</span></summary><p>{tool.description}</p></details>}
     </div>
     <div className={styles.segment} role="group" aria-label={`Access for ${tool.name}`}>
-      {(["allow", "ask", "never"] as const).map(mode => <button key={mode} type="button" aria-pressed={tool.mode === mode} disabled={busy} title={mode === "ask" ? "The user approves each call first" : undefined} onClick={() => tool.mode !== mode && onMode(tool, mode)}>{modeLabel[mode]}</button>)}
+      {(["allow", "ask", "never"] as const).map(mode => <button key={mode} type="button" aria-pressed={tool.mode === mode} disabled={busy} onClick={() => tool.mode !== mode && onMode(tool, mode)}>{modeLabel[mode]}</button>)}
     </div>
   </li>;
 }
@@ -177,7 +177,7 @@ export function McpRegistry() {
 
   return <section className={styles.registry} aria-labelledby="mcp-registry-title">
     <div className={styles.head}>
-      <div><h2 id="mcp-registry-title">MCP servers</h2><p>Remote tools the agent can call on Admin chats. Only tools you allow are offered, and every result is treated as untrusted data.</p></div>
+      <div><h2 id="mcp-registry-title">MCP servers</h2><p>Remote tools the agent can call on Admin chats. Allow runs a tool when the agent needs it; Ask shows the user each call to approve first; Never hides it. Every result is treated as untrusted data.</p></div>
       <button type="button" className={styles.primary} onClick={() => setEditing("new")} disabled={load !== "ready"}><Plus size={16} aria-hidden="true" /> Add server</button>
     </div>
     <div className={styles.live} role="status" aria-live="polite">{testing ? "Testing connection…" : notice}</div>

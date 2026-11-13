@@ -5,8 +5,8 @@ import { uuid, type ActivityStage } from '../server/chat-contracts.ts';
 import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
 import { loopHistory } from './history.ts';
-import { loopMessages, newLoopTrace, runAgentLoop, type StepFn } from './loop.ts';
-import { createToolHost, webHelperMessages, webPicksSpec, approvalOf, MCP_ALLOW_LABEL, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
+import { loopMessages, newLoopTrace, runAgentLoop, type LoopMessage, type StepFn } from './loop.ts';
+import { createToolHost, webHelperMessages, webPicksSpec, approvalOf, mcpToolName, MCP_ALLOW_LABEL, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
 import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 
@@ -87,7 +87,15 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
       try {
         report('routing_question');
-        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools, !!plan) }, { step, tools, signal, trace });
+        // The approved call runs first, exactly as the card showed it; the model continues from its result.
+        const seeded: LoopMessage[] = [];
+        const shown = approved && mcpTools.find(t => t.server === approved.server && t.tool === approved.tool);
+        if (approved && shown) {
+          const id = `approved-${approved.ref}`, name = mcpToolName(shown), args = JSON.stringify(approved.args);
+          const out = await tools.call(name, args, signal);
+          if (out.kind === 'result') seeded.push({ role: 'assistant', content: null, tool_calls: [{ id, type: 'function', function: { name, arguments: args } }] }, { role: 'tool', tool_call_id: id, content: out.content });
+        }
+        const result = await runAgentLoop({ messages: [...loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools, !!plan), ...seeded] }, { step, tools, signal, trace });
         log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.

@@ -19,16 +19,35 @@ const canonical = (v: unknown): unknown => Array.isArray(v) ? v.map(canonical) :
 /** Reference shown on an approval card: the call's server, tool and exact arguments (key order ignored). */
 export const mcpApprovalRef = (server: string, tool: string, args: Record<string, unknown>) =>
   createHash('sha256').update(JSON.stringify([server, tool, canonical(args)])).digest('hex').slice(0, 8);
-/** The card's question: what will run, readable (the card keeps letters, digits and basic punctuation) and its reference. */
-export function mcpApprovalQuestion(server: string, tool: string, args: Record<string, unknown>, ref: string): string {
-  const suffix = ` (ref ${ref})`, head = `Run the ${server} tool ${tool} with `;
-  const shown = Object.entries(args).map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`).join('; ') || 'no arguments';
-  return `${head}${shown.slice(0, 290 - head.length - suffix.length)}?${suffix}`;
+// Card text keeps only letters, digits, single spaces and . , ' ’ ( ) + - / : ? ° # (agentQuestionText), so argument text is
+// written losslessly: anything else (and & % and doubled or edge spaces) is %-encoded, and the server can read the exact call back.
+const cardSafe = /[\p{L}\p{N}.,'’()+\-/:?°#]/u;
+function cardEncode(s: string): string {
+  let out = '';
+  for (const [i, c] of [...s].entries()) out += (cardSafe.test(c) && c.normalize('NFKC') === c) || (c === ' ' && i > 0 && i < [...s].length - 1 && s[i - 1] !== ' ' && [...s][i + 1] !== ' ')
+    ? c : [...new TextEncoder().encode(c)].map(b => `%${b.toString(16).toUpperCase().padStart(2, '0')}`).join('');
+  return out;
 }
-/** The server and reference of an approval card answer (its first line), or null. */
-export function approvalOf(text: string): { server: string; ref: string } | null {
-  const m = /^Run the ([a-z0-9]+(?:-[a-z0-9]+)*) tool .*\(ref ([0-9a-f]{8})\)$/.exec(text.split('\n')[0] ?? '');
-  return m ? { server: m[1], ref: m[2] } : null;
+const argsText = (args: Record<string, unknown>) => Object.entries(args).map(([k, v]) =>
+  `${cardEncode(k)}: ${typeof v === 'string' && !v.startsWith('json:') ? cardEncode(v) : cardEncode(`json:${JSON.stringify(v)}`)}`).join(' & ') || 'no arguments';
+/** The card's question: the exact call (readable; unusual characters %-encoded) and its reference; null when it is too long to show. */
+export function mcpApprovalQuestion(server: string, tool: string, args: Record<string, unknown>, ref: string): string | null {
+  const q = `Run the ${server} tool ${tool} with ${argsText(args)}? (ref ${ref})`;
+  return q.length <= 300 ? q : null;
+}
+/** The exact call an approval card answer shows (its first line), checked against its reference; null when it is not one. */
+export function approvalOf(text: string): { server: string; tool: string; args: Record<string, unknown>; ref: string } | null {
+  const m = /^Run the ([a-z0-9]+(?:-[a-z0-9]+)*) tool (\S+) with (.+)\? \(ref ([0-9a-f]{8})\)$/u.exec(text.split('\n')[0] ?? '');
+  if (!m) return null;
+  try {
+    const args: Record<string, unknown> = {};
+    if (m[3] !== 'no arguments') for (const part of m[3].split(' & ')) {
+      const at = part.indexOf(': '); if (at < 1) return null;
+      const key = decodeURIComponent(part.slice(0, at)), raw = decodeURIComponent(part.slice(at + 2));
+      args[key] = raw.startsWith('json:') ? JSON.parse(raw.slice(5)) : raw;
+    }
+    return mcpApprovalRef(m[1], m[2], args) === m[4] ? { server: m[1], tool: m[2], args, ref: m[4] } : null;
+  } catch { return null; }
 }
 const addUsage = (a: Usage, b: Usage): Usage => ({ inputTokens: a.inputTokens + b.inputTokens, outputTokens: a.outputTokens + b.outputTokens, costNanoUsd: a.costNanoUsd + b.costNanoUsd });
 /** A page's text split into sentences or lines (offsets into the text), so the web helper can name a passage by number. */
@@ -266,8 +285,9 @@ export function createToolHost(deps: ToolDeps) {
       // One approval runs exactly the call shown on the card (same server, tool and arguments), once.
       const ref = mcpApprovalRef(t.server, t.tool, args);
       if (deps.mcpApprovedRef !== ref || approvalUsed) {
-        const text = agentQuestionText(mcpApprovalQuestion(t.server, t.tool, args, ref), [MCP_ALLOW_LABEL, MCP_DENY_LABEL]);
-        if (!text) return error('unavailable', `The ${t.server} tool cannot be shown for approval. Continue without it.`);
+        const question = mcpApprovalQuestion(t.server, t.tool, args, ref), text = question && agentQuestionText(question, [MCP_ALLOW_LABEL, MCP_DENY_LABEL]);
+        // The card must show the call exactly; otherwise it cannot be approved.
+        if (!text || text.split('\n')[0] !== question) return error('invalid_arguments', `The ${t.server} tool needs the user's approval and its arguments are too long to show. Use shorter arguments or continue without it.`);
         return { kind: 'ask', answer: { outcome: 'clarification', text, citations: [] }, citedSkus: [] };
       }
       approvalUsed = true;

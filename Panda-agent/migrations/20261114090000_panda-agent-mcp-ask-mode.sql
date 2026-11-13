@@ -1,3 +1,4 @@
+-- Owner-approved and applied 14 Nov 2026 after a rolled-back dry run (grants unchanged; still Admin-only).
 -- Approval cards for MCP tools (phase 5, 14 Nov 2026): a tool's Admin mode may now be 'ask' as well as 'allow' or 'never'.
 -- The agent catalog returns 'allow' and 'ask' tools (each keeps its 'mode'); for an 'ask' tool the agent ends the turn with an
 -- approval card and runs exactly that call only after the user's "Allow once" (src/agent-loop/tools.ts). 'never' tools are

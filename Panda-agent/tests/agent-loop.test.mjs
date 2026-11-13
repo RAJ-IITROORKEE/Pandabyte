@@ -812,7 +812,7 @@ test('final_answer: filler in sourced is dropped instead of rejected; real uncit
     assert.equal(JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: real, citations: [], general: '' }), signal())).content).error, 'uncited_sourced', real);
 });
 
-test('approval cards: an Ask tool ends the turn with a card; "Allow once" next runs exactly that call, once', async () => {
+test('approval cards: an Ask tool ends the turn with a card; "Allow once" next runs exactly that call, once, before the model continues', async () => {
   const { mcpApprovalRef, approvalOf, mcpToolName } = await import('../src/agent-loop/tools.ts');
   const { parseClarificationOptions } = await import('../src/retrieval/catalog-listing.ts');
   const ran = [];
@@ -824,14 +824,14 @@ test('approval cards: an Ask tool ends the turn with a card; "Allow once" next r
   const h1 = harness({ script: scripted([() => reply(call(name, { q: 'I2C pull-ups' }))]), read: { thread, messages: [], turns: [current] }, mcp });
   await h1.chat.start({ ...turn, question: 'Check the ctx docs for I2C pull-ups' }, signal());
   const card = h1.calls.find(c => c[0] === 'finish')[1];
-  assert.equal(card.outcome, 'clarification'); assert.deepEqual(approvalOf(card.text), { server: 'ctx', ref }); assert.deepEqual(ran, []);
+  assert.equal(card.outcome, 'clarification'); assert.deepEqual(approvalOf(card.text), { server: 'ctx', tool: 'query-docs', args: { q: 'I2C pull-ups' }, ref }); assert.deepEqual(ran, []);
   assert.deepEqual(parseClarificationOptions(card.text).options.map(o => o.label), ['Allow once', "Don't allow"]);
   assert.match(card.text, /^Run the ctx tool query-docs with q: I2C pull-ups\? \(ref [0-9a-f]{8}\)$/m);
-  // Turn 2: "Allow once" after that card; the server opens up front and the same call runs once.
+  // Turn 2: "Allow once" after that card: the server runs exactly that call, and the model continues from its result.
   const prev = { requestId: '55555555-5555-4555-8555-555555555555', question: 'Check the ctx docs for I2C pull-ups', status: 'complete', createdAt: now, response: card };
   const next = { ...current, question: 'Allow once' };
-  const go = scripted([(_m, tools) => { assert.ok(tools.includes(name), 'approved server opened'); return reply(call(name, { q: 'I2C pull-ups' })); },
-    () => reply(call('final_answer', { sourced: '', citations: [], general: 'The ctx docs say to use 4.7 kOhm pull-ups.' }))]);
+  const go = scripted([m => { assert.match(JSON.stringify(m.at(-1)), /4\.7 kOhm pull-ups/, 'the approved result is already there'); assert.deepEqual(ran, [{ q: 'I2C pull-ups' }]);
+    return reply(call('final_answer', { sourced: '', citations: [], general: 'The ctx docs say to use 4.7 kOhm pull-ups.' })); }]);
   const h2 = harness({ script: go, read: { thread, messages: [], turns: [prev, next] }, mcp });
   await h2.chat.start({ ...turn, question: 'Allow once' }, signal());
   assert.deepEqual(ran, [{ q: 'I2C pull-ups' }]); assert.equal(h2.calls.find(c => c[0] === 'finish')[1].outcome, 'conversation');
@@ -840,7 +840,18 @@ test('approval cards: an Ask tool ends the turn with a card; "Allow once" next r
     read: { thread, messages: [], turns: [{ ...prev, response: { outcome: 'conversation', text: card.text, citations: [] } }, next] }, mcp });
   await h3.chat.start({ ...turn, question: 'Allow once' }, signal());
   assert.equal(ran.length, 1); assert.equal(h3.calls.find(c => c[0] === 'finish')[1].outcome, 'clarification');
-  // Tool host: other arguments, or a second identical call, get a new card.
+  // Awkward arguments survive the card exactly (quotes, underscores, double spaces, newlines, numbers, nested JSON, other scripts).
+  const { mcpApprovalQuestion } = await import('../src/agent-loop/tools.ts');
+  const { agentQuestionText } = await import('../src/retrieval/catalog-listing.ts');
+  for (const args of [{ library_id: '"/org/esp_idf"', topic: 'a  b\nc & 50%' }, { n: 3, flags: { deep: [1, 'x'] } }, { q: 'json:raw' }, { q: 'पिन  विन्यास' }, {}]) {
+    const r = mcpApprovalRef('ctx', 'query-docs', args), question = mcpApprovalQuestion('ctx', 'query-docs', args, r);
+    const text = agentQuestionText(question, ['Allow once', "Don't allow"]);
+    assert.equal(text.split('\n')[0], question, JSON.stringify(args)); assert.deepEqual(approvalOf(text)?.args, args);
+  }
+  assert.equal(mcpApprovalQuestion('ctx', 'query-docs', { q: 'x'.repeat(400) }, ref), null);
+  assert.equal(approvalOf(card.text.replace(ref, '00000000')), null, 'a reference that does not match the call approves nothing');
+  // Tool host: other arguments, or a second identical call, get a new card; arguments too long to show cannot be approved.
+  assert.equal(JSON.parse((await createToolHost({ catalog: async () => catalog, mcpTools: [tool], callMcp: mcp.call, mcpOpen: ['ctx'] }).call(name, JSON.stringify({ q: 'x'.repeat(400) }), signal())).content).error, 'invalid_arguments');
   const host = createToolHost({ catalog: async () => catalog, mcpTools: [tool], callMcp: mcp.call, mcpOpen: ['ctx'], mcpApprovedRef: ref });
   assert.equal((await host.call(name, JSON.stringify({ q: 'SPI' }), signal())).kind, 'ask');
   assert.equal((await host.call(name, JSON.stringify({ q: 'I2C pull-ups' }), signal())).kind, 'result');
