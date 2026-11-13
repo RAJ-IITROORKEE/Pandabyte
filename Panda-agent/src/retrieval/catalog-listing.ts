@@ -123,12 +123,30 @@ export function catalogTableText(rows: readonly CatalogRow[], scope: CatalogScop
   return [intro, '', header, ...lines, ...(more ? ['', `${more} more not shown here; ask for a category to see them.`] : []), '', outro].join('\n');
 }
 
+// The agent loop's own clarifying question (ask_user): model-written, so every line is reduced to plain text with no Markdown.
+const askHeader = 'Choose an option:', askFooter = 'Or type your own answer.';
+const askChars = String.raw`\p{L}\p{N} .,'’()+\-/:?&%°#`;
+const askOption = new RegExp(`^[${askChars}]{2,120}$`, 'u');
+const askClean = (s: string, max: number) => s.normalize('NFKC').replace(new RegExp(`[^${askChars}]`, 'gu'), ' ').replace(/\s+/g, ' ').trim().slice(0, max).trim();
+/** One question and 2 to 5 distinct options; null when nothing usable is left after cleaning. The UI adds a free-text answer. */
+export function agentQuestionText(question: string, options: readonly string[], recommended?: number): string | null {
+  const q = askClean(question, 300), opts = options.map(o => askClean(o, 120));
+  if (q.length < 3 || opts.length < 2 || opts.length > 5 || opts.some(o => o.length < 2) || new Set(opts.map(o => o.toLowerCase())).size !== opts.length) return null;
+  return [q, '', askHeader, ...opts.map((o, i) => `${i + 1}. ${o}${i === recommended ? ' (recommended)' : ''}`), '', askFooter].join('\n');
+}
+
 /** UI side: the options of a clarification answer, or null when the text is not one. Each option is a full question. */
 export function parseClarificationOptions(text: string): { question: string; options: { label: string; question: string; recommended: boolean }[] } | null {
-  const lines = text.split('\n'), at = lines.indexOf(optionHeader);
-  if (at < 2 || lines.at(-1) !== optionFooter || lines.length > 16) return null;
+  const lines = text.split('\n'), agent = lines[2] === askHeader && lines[1] === '', at = agent ? 2 : lines.indexOf(optionHeader);
+  if (at < 2 || lines.at(-1) !== (agent ? askFooter : optionFooter) || lines.length > 16) return null;
   const options = [];
   for (const line of lines.slice(at + 1, -2)) {
+    if (agent) {
+      const m = /^(\d)\. (.+?)( \(recommended\))?$/u.exec(line);
+      if (!m || Number(m[1]) !== options.length + 1 || !askOption.test(m[2])) return null;
+      options.push({ label: m[2], question: m[2], recommended: !!m[3] });
+      continue;
+    }
     const m = /^(\d)\. ((?:List|Suggest|Tell me about|Search the web for) [A-Za-z0-9 .+-]{3,220}?)(?:: ([A-Za-z0-9 .+-]{3,110}))?( \(recommended\))?$/.exec(line);
     if (!m || Number(m[1]) !== options.length + 1) return null;
     options.push({ label: m[3] ? `Tell me about ${m[3]}` : m[2], question: m[2], recommended: !!m[4] });

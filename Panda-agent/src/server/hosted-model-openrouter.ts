@@ -10,11 +10,11 @@ import type {DirectHistoryPair} from './direct-conversation-history.ts';
 
 const api='https://openrouter.ai/api/v1';
 // Exact reviewed endpoint facts per hosted model. Cost bounds are doubled nano-USD per token (prompt, cached read, cache write, completion).
-type Profile={id:HostedDirectModelId;tag:string;providerName:string;endpointName:string;tokenizer:string;reported:readonly string[];
+export type Profile={id:HostedDirectModelId;tag:string;providerName:string;endpointName:string;tokenizer:string;reported:readonly string[];
  pricing:{prompt:string;completion:string;input_cache_read:string};pricingKeys:readonly string[];implicitCaching:boolean;params:readonly string[];
  maxPrice:{prompt:number;completion:number};nano2:{prompt:number;cached:number;write:number;completion:number};reasoning:Record<string,unknown>;
  discount?:number;tokenParam?:'max_tokens'|'max_completion_tokens';exactTag?:boolean;encryptedReasoning?:boolean};
-const profiles:Record<HostedDirectModelId,Profile>={
+export const profiles:Record<HostedDirectModelId,Profile>={
  [fastHostedModel.id]:{id:fastHostedModel.id,tag:'groq',providerName:'Groq',endpointName:'Groq | openai/gpt-oss-20b',tokenizer:'GPT',reported:[fastHostedModel.id],
   pricing:{prompt:'0.000000075',completion:'0.0000003',input_cache_read:'0.0000000375'},pricingKeys:['prompt','completion','input_cache_read','discount'],implicitCaching:true,
   params:['response_format','reasoning','include_reasoning','tool_choice'],maxPrice:{prompt:0.075,completion:0.30},nano2:{prompt:150,cached:75,write:150,completion:600},reasoning:{effort:'low',exclude:true}},
@@ -39,7 +39,7 @@ const profiles:Record<HostedDirectModelId,Profile>={
   params:['response_format','structured_outputs','reasoning','include_reasoning','tool_choice'],maxPrice:{prompt:0.15,completion:1.875},nano2:{prompt:300,cached:75,write:300,completion:3750},
   reasoning:{enabled:false}},
 };
-const encrypted=(value:unknown)=>Array.isArray(value)&&value.length<=4&&value.every(item=>record(item)&&item.type==='reasoning.encrypted'&&typeof item.data==='string'&&item.data.length<=65536
+export const encrypted=(value:unknown)=>Array.isArray(value)&&value.length<=4&&value.every(item=>record(item)&&item.type==='reasoning.encrypted'&&typeof item.data==='string'&&item.data.length<=65536
  &&Object.keys(item).every(k=>['type','data','format','id','index'].includes(k)));
 // Whole request cap in cited-answer mode: system prompt, schema and up to 12 KB of sources (about 5.6k tokens, well under maxInput 11024).
 const RAG_WIRE_BYTES=18000;
@@ -49,7 +49,7 @@ const integer=(v:unknown,max:number):v is number=>Number.isSafeInteger(v)&&(v as
 const fail=(code:BasicRagProviderError['code']='outcome_unknown'):never=>{throw new BasicRagProviderError(code);};
 type Usage={inputTokens:number;outputTokens:number;costNanoUsd:number};
 type Stage='validated'|'response_rejected'|'outcome_unknown'|'not_admitted'|'rate_limited'|'unavailable';
-type Observation={observationId:string;model:HostedDirectModelId;provider:string;stage:Stage;
+export type Observation={observationId:string;model:HostedDirectModelId;provider:string;stage:Stage;
  generationId?:string;httpStatus?:number;metadataMs?:number;admissionMs?:number;firstContentDeltaMs?:number;providerRoundTripMs?:number;
  totalMs:number;inputTokens?:number;outputTokens?:number;reasoningTokens?:number;cachedTokens?:number;costNanoUsd?:number};
 type SharedOptions={model?:HostedDirectModelId;apiKey:string;fetcher?:typeof fetch;policyCurrent():Promise<boolean>;dispatchCurrent?():boolean;observe?:(observation:Readonly<Observation>)=>unknown};
@@ -58,7 +58,8 @@ type DirectOptions=SharedOptions&{dispatchCurrent():boolean;claim(fingerprint:st
 type RagInput={question:string;passages:Array<{rank:number;text:string}>};
 type DirectInput={question:string;history?:DirectHistoryPair[]};
 
-function approvedEndpoint(m:Profile,catalog:unknown,zdr:unknown,maxInput:number,maxOutput:number):string|null {
+/** `tools` (agent loop only) also requires function calling with tool_choice auto on the pinned endpoint. */
+export function approvedEndpoint(m:Profile,catalog:unknown,zdr:unknown,maxInput:number,maxOutput:number,tools=false):string|null {
  if(!record(catalog)||!record(catalog.data)||catalog.data.id!==m.id||!record(catalog.data.architecture)||catalog.data.architecture.tokenizer!==m.tokenizer
   ||!Array.isArray(catalog.data.endpoints)||!record(zdr)||!Array.isArray(zdr.data))return null;
  const variant=(tag:unknown)=>typeof tag==='string'&&(tag.toLowerCase()===m.tag||(!m.exactTag&&tag.toLowerCase().startsWith(m.tag+'/')));
@@ -76,7 +77,7 @@ function approvedEndpoint(m:Profile,catalog:unknown,zdr:unknown,maxInput:number,
   ||(e.max_prompt_tokens!==null&&(typeof e.max_prompt_tokens!=='number'||e.max_prompt_tokens<maxInput))
   ||!record(e.supports_tool_choice)||e.supports_tool_choice.none!==true||!Array.isArray(e.supported_parameters))return null;
  const parameters=e.supported_parameters;
- if(!m.params.every(k=>parameters.includes(k)))return null;
+ if(!m.params.every(k=>parameters.includes(k))||(tools&&(!parameters.includes('tools')||e.supports_tool_choice.auto!==true)))return null;
  const tokenParam=m.tokenParam??'max_tokens';
  return parameters.includes(tokenParam)?tokenParam:null;
 }
@@ -89,7 +90,7 @@ function nanoCost(value:unknown,maximum:number):number|null {
  return result<=BigInt(maximum)?Number(result):null;
 }
 
-function receiptUsage(m:Profile,value:unknown,maxInput:number,maxOutput:number,reservation:number){
+export function receiptUsage(m:Profile,value:unknown,maxInput:number,maxOutput:number,reservation:number){
  if(!record(value)||!integer(value.prompt_tokens,maxInput)||!integer(value.completion_tokens,maxOutput))return fail();
  let reasoningTokens=0,cachedTokens=0,writeTokens=0;
  if(value.completion_tokens_details!==undefined){
@@ -176,7 +177,7 @@ async function readStream(m:Profile,response:Response,signal:AbortSignal,started
  }finally{signal.removeEventListener('abort',cancel);cancel();reader.releaseLock();}
 }
 
-function observe(options:SharedOptions,value:Observation){
+export function observe(options:SharedOptions,value:Observation){
  const safe=Object.freeze({...value});
  try{console.info('[hosted-llm]',safe);}catch{/* Observation cannot affect a claimed turn. */}
  try{void Promise.resolve(options.observe?.(safe)).catch(()=>{});}catch{/* Observation cannot affect validation. */}

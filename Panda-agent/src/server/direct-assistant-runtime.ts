@@ -12,6 +12,8 @@ import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {ChatStoreError} from './chat-store.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
 import {openScopeIntent} from '../retrieval/catalog-listing.ts';
+import {withAgentLoop} from '../agent-loop/chat.ts';
+import {agentLoopChatForActor} from '../agent-loop/runtime.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
 import {fastHostedModel,lunaHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
 import {createResearchChat,researchProfileFor,withResearch,researchWebSearchEnabled,researchKey32 as key32} from './research-chat.ts';
@@ -37,23 +39,25 @@ function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBrid
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
  const selected=hostedModelSelection(process.env),fast=process.env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
- const direct=createDirectAssistantChat({actor,key,current,budgetRefs:policy.budgetRefs,
-  model:fast?requestedHostedModel(requested):lunaHostedModel.id,
-  ...(fast?{completion:(o:Parameters<typeof createHostedDirectCompletion>[0])=>createHostedDirectCompletion({...o,model:requestedHostedModel(requested)})}:{}),
-  policy:{...policy,enabled:async()=>{
+ const model=fast?requestedHostedModel(requested):lunaHostedModel.id;
+ const modelPolicy={...policy,enabled:async()=>{
    if(!selected||requested!==null&&(fast?!hostedDirectModelIds.includes(requested):requested!=='openai/gpt-6-luna')||!await policy.enabled())return false;
    return !fast||('isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true);
-  }},
+  }};
+ const direct=createDirectAssistantChat({actor,key,current,budgetRefs:policy.budgetRefs,model,
+  ...(fast?{completion:(o:Parameters<typeof createHostedDirectCompletion>[0])=>createHostedDirectCompletion({...o,model:requestedHostedModel(requested)})}:{}),
+  policy:modelPolicy,
   store:createDirectAssistantStore(actor,key)});
  const legacy=createPlainLlmChatService({store:createPlainLlmStore(actor,key),current,enabled:async()=>false,complete:()=>{throw Error('legacy_execution_disabled');}});
- if(process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true')return mainRagChatForActor({actor,request,direct,legacy,current});
  const service=async(thread:string,id:string)=>await direct.state(thread,id)?direct:await legacy.state(thread,id)?legacy:null;
- return {
+ const routed:BasicRagChatBridge=process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true'?mainRagChatForActor({actor,request,direct,legacy,current}):{
   state:async(thread,id)=>!!await service(thread,id),
   status:async(ref,signal)=>(await service(ref.thread,ref.request)??direct).status(ref,signal),
   cancel:async(ref,signal)=>(await service(ref.thread,ref.request)??direct).cancel(ref,signal),
   start:(turn,signal,progress)=>direct.start(turn,signal,progress),
  };
+ // Agent loop (off by default; needs the reviewed loop journal migration): new turns go to the model-driven loop instead of the fixed router.
+ return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(routed,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy})):routed;
 }
 
 /** Chat turns with web search go to the research journal; its turns keep status/cancel there. Everything else is unchanged. */
@@ -68,5 +72,6 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
    dispatchKey:key32(process.env.PANDA_RESEARCH_DISPATCH_KEY)!,resultKey:key32(process.env.PANDA_RESEARCH_RESULT_KEY)!})});
  const routed=withResearch(base,research);
  // An open board/project question is first answered by the router with a scope choice (PandaByte, web, general); research only runs once chosen.
- return {...routed,start:(turn,signal,progress)=>turn.webSearch&&process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true'&&openScopeIntent(turn.question,false)?base.start({...turn,webSearch:false},signal,progress):routed.start(turn,signal,progress)};
+ // With the agent loop on, that choice is the model's own (ask_user), so web-search turns go straight to research.
+ return {...routed,start:(turn,signal,progress)=>turn.webSearch&&process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true'&&process.env.PANDA_AGENT_LOOP_ENABLED!=='true'&&openScopeIntent(turn.question,false)?base.start({...turn,webSearch:false},signal,progress):routed.start(turn,signal,progress)};
 }
