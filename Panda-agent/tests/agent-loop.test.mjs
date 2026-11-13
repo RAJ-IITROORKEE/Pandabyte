@@ -169,7 +169,7 @@ test('history compaction starts above 75% of the context budget, keeps recent tu
   assert.ok(tight.messages.length >= 2 && Buffer.byteLength(JSON.stringify(tight.messages), 'utf8') + Buffer.byteLength(tight.summary ?? '', 'utf8') <= 6000);
 });
 
-function harness({ script, read, unmetered = true, revalidate = true, turnMs } = {}) {
+function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch } = {}) {
   const calls = []; let state = null;
   const store = {
     state: async () => state && { ...state },
@@ -186,7 +186,7 @@ function harness({ script, read, unmetered = true, revalidate = true, turnMs } =
     assert.equal(await o.beforeSend(), true, 'every provider call is gated on the journal');
     return script.step(messages, tools);
   };
-  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: d.tools, step, turnMs });
+  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}) }, step, turnMs });
   return { chat, calls, d };
 }
 const turn = { thread: thread.id, request: current.requestId, question: q2 };
@@ -468,4 +468,19 @@ test('web_search is offered only with a web search dep, caps searches per turn a
   // The same page found by both searches is listed once.
   assert.match(plain.answer.text, /### Web sources\n\n1\. [^\n]+$/);
   assert.equal(JSON.parse((await createToolHost(deps().tools).call('web_search', JSON.stringify({ query: 'x' }), signal())).content).error, 'unknown_tool');
+});
+
+test('web_search reaches the model only on turns sent with web search on, and each search passes the send check', async () => {
+  const sent = [];
+  const webSearch = async (q, _s, beforeSend) => { sent.push([q, await beforeSend()]); return [{ handle: 'web:a', url: 'https://docs.example-maker.com/atoms3', title: 'AtomS3', content: 'G1 and G2.', capturedAt: '2026-11-13T00:00:00.000Z' }]; };
+  const script = () => scripted([(m, tools) => tools.includes('web_search') ? reply(call('web_search', { query: 'AtomS3 grove' })) : { content: 'There is no web search on this turn.', toolCalls: [], usage },
+    m => { assert.match(m[0].content, /web search on for this message/i); return reply(call('final_answer', { sourced: '', citations: ['W1.1'], general: 'The AtomS3 page lists G1 and G2.' })); }]);
+  const on = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });
+  assert.equal((await on.chat.start({ ...turn, webSearch: true }, signal())).status, 'saved');
+  assert.deepEqual(sent, [['AtomS3 grove', true]]);
+  assert.match(on.calls.at(-1)[1].text, /### Web sources/);
+  const off = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });
+  assert.equal((await off.chat.start(turn, signal())).status, 'saved');
+  assert.equal(sent.length, 1);
+  assert.equal(off.calls.at(-1)[1].text, 'There is no web search on this turn.');
 });

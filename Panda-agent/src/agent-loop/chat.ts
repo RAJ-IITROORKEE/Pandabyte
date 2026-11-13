@@ -56,15 +56,16 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         claim: async hash => { if (attempted || signal.aborted) return false; attempted = true; await current(); bodyHash = hash; return store.claimUnmetered(turn.thread, turn.request, hash); } });
       // Web search is offered only on turns the user sent with web search on, and each search passes the same send check as a model step.
       const { webSearch, ...catalogTools } = options.tools;
-      const tools = createToolHost({ ...catalogTools, progress: report, ...(turn.webSearch === true && webSearch ? { webSearch: (q: string, s: AbortSignal) => webSearch(q, s, beforeSend) } : {}) });
-      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null), tools.specs(false)]), 'utf8');
+      const webOn = turn.webSearch === true && !!webSearch;
+      const tools = createToolHost({ ...catalogTools, progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, beforeSend) } : {}) });
+      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
       // One safe line per turn for the hosting logs: model, step shape, error codes and output tokens; never user text, answers, excerpts or ids.
       const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
       try {
         report('routing_question');
-        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary) }, { step, tools, signal, trace });
+        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn) }, { step, tools, signal, trace });
         log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.
