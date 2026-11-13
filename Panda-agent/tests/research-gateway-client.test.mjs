@@ -99,6 +99,10 @@ test('client and answer validation refuse bad configuration and shapes', () => {
   for (const bad of [{ ...answer, outcome: 'insufficient' }, { ...answer, citations: [] }, { ...answer, extra: 1 }, { ...answer, citations: [{ ...answer.citations[0], id: 'S2' }] },
     { ...answer, citations: [{ ...answer.citations[0], sourceUrl: 'javascript:alert(1)' }] }, { ...answer, citations: [{ ...answer.citations[0], sectionPath: ['x'] }] }, { ...answer, text: ' ' }])
     assert.equal(validResearchChatAnswer(bad), false);
+  const page = new URL(answer.citations[0].sourceUrl), image = { url: `https://${page.hostname}/pinout.png`, description: 'Pinout' };
+  assert.equal(validResearchChatAnswer({ ...answer, citations: [{ ...answer.citations[0], images: [image] }] }), true);
+  for (const images of [[], [image, image, image], [{ ...image, url: 'https://evil.example.net/x.png' }], [{ url: image.url }]])
+    assert.equal(validResearchChatAnswer({ ...answer, citations: [{ ...answer.citations[0], images }] }), false);
 });
 
 test('size bounds: an escape-heavy prompt is refused before dispatch; a maximal signed answer is accepted', async () => {

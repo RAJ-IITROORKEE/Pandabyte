@@ -4,6 +4,7 @@ import {researchJSON,researchObject} from '../opencode/research-values.ts';
 import {nativeUserImageMatches} from '../opencode/research-image-binding.ts';
 import {publicSearchCitationUrl} from '../search/citation-url.ts';
 import {hostedTavilyRequestHash,type TavilySearchReceipt} from '../search/tavily.ts';
+import {citationImages,type CitationImage} from '../search/citation-image.ts';
 import {hashResearchJSON,type openResearchRuntimeStore,type ResearchBinding,type ResearchRunReceipt,type ResearchOperation} from './research-runtime-store.ts';
 
 type Store=Awaited<ReturnType<typeof openResearchRuntimeStore>>;
@@ -34,7 +35,9 @@ function verifiedReceipt(value:unknown,expectedRequestHash?:string):TavilySearch
   ||!Array.isArray(value.sources)||value.sources.length>3)return null;
  const urls=new Set<string>(),handles=new Set<string>();let bytes=0,characters=0;
  for(const source of value.sources){
-  if(!exact(source,['handle','url','title','content','capturedAt'])||!text(source.url,500)||!publicSearchCitationUrl(source.url)
+  const images=Object.hasOwn(source as object,'images')?(source as Record<string,unknown>).images:undefined;
+  if(!exact(source,images===undefined?['handle','url','title','content','capturedAt']:['handle','url','title','content','capturedAt','images'])
+   ||images!==undefined&&!(Array.isArray(images)&&images.length>0&&JSON.stringify(citationImages(source.url as string,images))===JSON.stringify(images))||!text(source.url,500)||!publicSearchCitationUrl(source.url)
    ||!text(source.title,300)||!source.title.trim()||!text(source.content,6000)||!source.content.trim()
    ||!iso(source.capturedAt)||source.capturedAt<value.startedAt||source.capturedAt>value.completedAt
    ||source.handle!==`web:${hash(source.url)}:${hash(source.content)}:${hash(source.content)}`||urls.has(source.url)||handles.has(source.handle as string))return null;
@@ -190,7 +193,7 @@ export function isPublicResearchQuery(query:unknown,scope:{words:readonly string
 }
 
 export type ResearchEvidenceCatalogEntry={operationKey:string;resultHash:string;receipt:TavilySearchReceipt};
-type ResearchAnswer={state:'invalid'}|{state:'insufficient'}|{state:'evidence';answer:string;citations:{handle:string;url:string;title:string;quote:string;capturedAt:string}[];usedSources:{operationKey:string;resultHash:string;sourceHandle:string;passageID:string;quote:string}[]};
+type ResearchAnswer={state:'invalid'}|{state:'insufficient'}|{state:'evidence';answer:string;citations:{handle:string;url:string;title:string;quote:string;capturedAt:string;images?:CitationImage[]}[];usedSources:{operationKey:string;resultHash:string;sourceHandle:string;passageID:string;quote:string}[]};
 const publicAnswerText=(value:unknown,max:number):value is string=>text(value,max)&&!/[\p{Cf}\u0000-\u0008\u000b-\u001f\u007f-\u009f]/u.test(value);
 /** Inputs come from this run's released tool receipts and its exact verified paid stop result. */
 export function verifyResearchAnswer(rawText:string,catalog:readonly ResearchEvidenceCatalogEntry[],expectedStopText:string):ResearchAnswer{
@@ -227,7 +230,7 @@ export function verifyResearchAnswer(rawText:string,catalog:readonly ResearchEvi
    const quote=admitted?selectablePassage(admitted.source.content,selection.passage):null;
    if(pairs.has(pair)||!admitted||quote===null)return invalid;pairs.add(pair);
    const {source,operationKey,resultHash}=admitted;
-   citations.push({handle:source.handle,url:source.url,title:source.title,quote,capturedAt:source.capturedAt});
+   citations.push({handle:source.handle,url:source.url,title:source.title,quote,capturedAt:source.capturedAt,...(source.images?{images:source.images}:{})});
    usedSources.push({operationKey,resultHash,sourceHandle:source.handle,passageID:selection.passage,quote});
   }
   // A model that wrote no marker still gets one per citation at the end, so the UI always links its sources.

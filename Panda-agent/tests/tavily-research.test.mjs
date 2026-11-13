@@ -19,7 +19,7 @@ test('hosted request has one immediate durable authorization and exact fixed wir
   assert.deepEqual(events, ['grant', 'fetch']);
   assert.equal(init.method, 'POST'); assert.equal(init.redirect, 'error'); assert.equal(init.credentials, 'omit'); assert.equal(init.cache, 'no-store');
   assert.equal(init.headers.Authorization, 'Bearer fixture-key');
-  const body = { query, search_depth: 'basic', max_results: 3, include_answer: false, include_raw_content: false, include_images: false, auto_parameters: false, include_usage: true };
+  const body = { query, search_depth: 'basic', max_results: 3, include_answer: false, include_raw_content: false, include_images: true, auto_parameters: false, include_image_descriptions: true, include_usage: true };
   assert.deepEqual(JSON.parse(init.body), body);
   const canonical = JSON.stringify(Object.fromEntries(Object.keys(body).sort().map(key => [key, body[key]])));
   assert.equal(receipt.requestHash, createHash('sha256').update(canonical).digest('hex'));
@@ -132,4 +132,13 @@ test('valid zero/maximum credits and maximum exact excerpts are preserved', asyn
     assert.equal(result.usage.credits, credits); assert.equal(result.sources.reduce((total, source) => total + source.content.length, 0), 16000);
     assert.deepEqual(result.sources.map(source => source.content), ['a'.repeat(6000), 'b'.repeat(5000), 'c'.repeat(5000)]);
   }
+});
+
+test('hosted results keep at most two same-site page images and drop the rest', async () => {
+  const images = [{ url: 'https://docs.public-site.org/pinout.png', description: 'Pinout  diagram' }, 'https://docs.public-site.org/bare.png',
+    { url: 'https://evil.example.net/x.png', description: 'off-site' }, { url: 'https://cdn.public-site.org/logo.svg', description: 'svg' },
+    { url: 'https://cdn.public-site.org/board.jpg', description: 'Board' }, { url: 'https://docs.public-site.org/third.png', description: 'third' }];
+  const receipt = await searchHostedPublicWeb(query, options({ fetchImpl: async () => response([{ ...item, images }, { ...item, url: 'https://docs.public-site.org/other', images: [{ url: 'http://docs.public-site.org/a.png' }] }]) }));
+  assert.deepEqual(receipt.sources[0].images, [{ url: 'https://docs.public-site.org/pinout.png', description: 'Pinout diagram' }, { url: 'https://cdn.public-site.org/board.jpg', description: 'Board' }]);
+  assert.equal('images' in receipt.sources[1], false);
 });

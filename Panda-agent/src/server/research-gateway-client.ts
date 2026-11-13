@@ -3,6 +3,7 @@ import 'server-only';
 // dispatch envelope, and a host-signed result that must match what was dispatched. Any transport, parse or
 // verification failure is `unknown`; nothing here retries a turn. The existing hosted signer/allowlists are unchanged.
 import { createHash } from 'node:crypto';
+import { citationImages } from '../search/citation-image.ts';
 import { SignatureV4 } from '@smithy/signature-v4';
 import { HttpRequest } from '@smithy/protocol-http';
 import { Sha256 } from '@aws-crypto/sha256-js';
@@ -12,7 +13,7 @@ import { researchChatProfiles, researchSubjectHash, researchRunId, researchPromp
   type ResearchChatProfile, type ResearchFailure, type ResearchUsage, type DispatchFields } from './research-envelopes.ts';
 
 type Credentials = { accessKeyId: string; secretAccessKey: string; sessionToken?: string; expiration?: Date };
-export type ResearchCitation = { id: 'S1' | 'S2'; title: string; sourceUrl: string; capturedAt: string; quote: string; sectionPath: [] };
+export type ResearchCitation = { id: 'S1' | 'S2'; title: string; sourceUrl: string; capturedAt: string; quote: string; sectionPath: []; images?: { url: string; description: string }[] };
 export type ResearchChatAnswer = { outcome: 'evidence' | 'insufficient'; text: string; citations: ResearchCitation[] };
 export type ResearchOutcome =
   | { state: 'evidence' | 'insufficient'; answer: ResearchChatAnswer; answerHash: string; usage: ResearchUsage }
@@ -32,6 +33,7 @@ const plain = (v: unknown): v is Record<string, any> => !!v && typeof v === 'obj
 const exactKeys = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
 const sha = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
 const capturedAt = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$/;
+const citationKeys = ['id', 'title', 'sourceUrl', 'capturedAt', 'quote', 'sectionPath'];
 const trimmedLength = (s: string) => s.trim().length; // shortcut: JS trim vs SQL btrim(' ') differ on tabs/newlines; the D1 RPC rechecks, so a mismatch is rejected there, never saved
 
 /** Mirrors D1 `panda_agent_research_answer_valid` so a malformed host answer is never sent to `receipt`. */
@@ -40,12 +42,13 @@ export function validResearchChatAnswer(a: unknown): a is ResearchChatAnswer {
     || !Array.isArray(a.citations) || Buffer.byteLength(JSON.stringify(a)) > 24000) return false;
   const n = a.citations.length;
   if (!(a.outcome === 'evidence' && n >= 1 && n <= 2) && !(a.outcome === 'insufficient' && n === 0)) return false;
-  return a.citations.every((c: unknown, i: number) => plain(c) && exactKeys(c, ['id', 'title', 'sourceUrl', 'capturedAt', 'quote', 'sectionPath']) && c.id === 'S' + (i + 1)
+  return a.citations.every((c: unknown, i: number) => plain(c) && exactKeys(c, Object.hasOwn(c, 'images') ? [...citationKeys, 'images'] : citationKeys) && c.id === 'S' + (i + 1)
     && typeof c.title === 'string' && trimmedLength(c.title) >= 1 && c.title.length <= 300
     && typeof c.sourceUrl === 'string' && c.sourceUrl.length <= 2048 && /^https?:\/\/\S+$/.test(c.sourceUrl)
     && typeof c.capturedAt === 'string' && capturedAt.test(c.capturedAt)
     && typeof c.quote === 'string' && trimmedLength(c.quote) >= 1 && c.quote.length <= 180
-    && Array.isArray(c.sectionPath) && c.sectionPath.length === 0);
+    && Array.isArray(c.sectionPath) && c.sectionPath.length === 0
+    && (!Object.hasOwn(c, 'images') || Array.isArray(c.images) && c.images.length > 0 && JSON.stringify(citationImages(c.sourceUrl, c.images)) === JSON.stringify(c.images)));
 }
 
 function createSigner(endpoint: URL, roleArn: string, credentials?: () => Promise<Credentials>) {

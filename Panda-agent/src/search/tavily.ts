@@ -4,6 +4,7 @@ import { mkdir, open, readFile, rename, rm } from 'node:fs/promises';
 import { BlockList, isIP } from 'node:net';
 import path from 'node:path';
 import { publicSearchCitationUrl } from './citation-url.ts';
+import { citationImages, type CitationImage } from './citation-image.ts';
 
 type Address = { address: string; family: number };
 type Options = {
@@ -15,7 +16,8 @@ type Options = {
   ledgerDir?: string;
   now?: () => Date;
 };
-export type WebSource = { handle: string; url: string; title: string; content: string; capturedAt: string };
+/** `images`: hosted search only, at most two reference images from that page (absent when none). */
+export type WebSource = { handle: string; url: string; title: string; content: string; capturedAt: string; images?: CitationImage[] };
 export type HostedTavilyOptions = Pick<Options, 'apiKey' | 'fetchImpl' | 'lookupImpl' | 'now'> & {
   beforeSend: () => Promise<boolean>;
   signal?: AbortSignal;
@@ -96,7 +98,7 @@ async function validUrl(value: string, resolve: (host: string) => Promise<Addres
   } catch { return null; }
 }
 function providerBody(query: string, hosted: boolean) {
-  return { query: query.trim(), search_depth: 'basic', max_results: 3, include_answer: false, include_raw_content: false, include_images: false, auto_parameters: false, ...(hosted ? { include_usage: true } : {}) };
+  return { query: query.trim(), search_depth: 'basic', max_results: 3, include_answer: false, include_raw_content: false, include_images: hosted, auto_parameters: false, ...(hosted ? { include_image_descriptions: true, include_usage: true } : {}) };
 }
 function hostedQuery(query: string): void {
   if (typeof query !== 'string' || !query.isWellFormed() || /[\p{Cc}\p{Cf}]/u.test(query) || !safeQuery(query.trim())) throw new TavilySearchError('not_sent', 'invalid_query');
@@ -166,7 +168,9 @@ async function requestTavily(query: string, options: Pick<Options, 'apiKey' | 'f
       const handle = `web:${hash(url)}:${hash(item.content)}:${hash(item.content)}`;
       if (seenUrls.has(url) || seenHandles.has(handle)) continue;
       seenUrls.add(url); seenHandles.add(handle);
-      sources.push({ handle, url, title: item.title, content: item.content, capturedAt });
+      // Per-result images come from that page; invalid or off-site ones are dropped, never an error.
+      const images = hosted && 'images' in item ? citationImages(url, item.images) : [];
+      sources.push({ handle, url, title: item.title, content: item.content, capturedAt, ...(images.length ? { images } : {}) });
     }
     return { sources, requestId, credits };
 }

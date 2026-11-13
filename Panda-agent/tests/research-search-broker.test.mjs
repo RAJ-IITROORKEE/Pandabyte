@@ -264,3 +264,12 @@ test('a text-only receipt rejects a native user row that carries any image',asyn
  await fixture(async f=>{assert.equal((await f.broker.handle(f.request())).status,403);assert.equal(f.dispatches(),0);},{},{files:[imageFile()]});
  await fixture(async f=>{assert.equal((await f.broker.handle(f.request())).status,200);},{},{files:[]});
 });
+
+test('page images ride on the cited source only when they match the citation-image rules',()=>{
+ const img=[{url:'https://www.raspberrypi.com/documentation/pio.png',description:'PIO block'}];
+ const ok={...source(),images:img},r=receipt([ok]),raw=JSON.stringify({answer:'PIO is programmable.',evidence:[{handle:alias(ok),passage:'P1'}]});
+ const result=verifyResearchAnswer(raw,[catalogEntry(r)],raw);assert.equal(result.state,'evidence');assert.deepEqual(result.citations[0].images,img);
+ assert.equal(JSON.parse(researchSearchMCP(r).content[0].text).sources[0].images,undefined); // the model never sees image URLs
+ for(const images of [[],[{url:'https://evil.example.net/a.png',description:''}],[{url:img[0].url}],'x'])
+  assert.deepEqual(verifyResearchAnswer(raw,[catalogEntry(receipt([{...source(),images}]))],raw),{state:'invalid'});
+});

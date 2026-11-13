@@ -28,7 +28,7 @@ const genericDocWords = 'datasheet documentation docs official reference manual 
 const exec = promisify(execFile), sha = (v: string | Buffer) => createHash('sha256').update(v).digest('hex'), hex = () => randomBytes(32).toString('hex');
 const pause = (ms: number) => new Promise<void>(done => setTimeout(done, ms));
 
-export type ResearchCitationOut = { id: 'S1' | 'S2'; title: string; sourceUrl: string; capturedAt: string; quote: string; sectionPath: [] };
+export type ResearchCitationOut = { id: 'S1' | 'S2'; title: string; sourceUrl: string; capturedAt: string; quote: string; sectionPath: []; images?: { url: string; description: string }[] };
 export type ResearchAnswerOut = { outcome: 'evidence' | 'insufficient'; text: string; citations: ResearchCitationOut[] };
 export type RunnerResult = { state: 'evidence' | 'insufficient' | 'unknown' | 'failed'; reason?: ResearchFailure; answer?: ResearchAnswerOut; usage: ResearchUsage };
 export type RunnerInput = { subjectHash: string; chatId: string; runId: string; profile: ResearchChatProfile; prompt: string };
@@ -99,10 +99,13 @@ export function aggregateResearchUsage(attempts: { state: string; result?: { usa
   }
   return usage;
 }
-export function mapResearchAnswer(answer: { state: 'insufficient' } | { state: 'evidence'; answer: string; citations: { title: string; url: string; capturedAt: string; quote: string }[] }, contextReset = false): ResearchAnswerOut {
+export function mapResearchAnswer(answer: { state: 'insufficient' } | { state: 'evidence'; answer: string; citations: { title: string; url: string; capturedAt: string; quote: string; images?: { url: string; description: string }[] }[] }, contextReset = false): ResearchAnswerOut {
   const note = contextReset ? researchContextResetNote : '';
   if (answer.state === 'insufficient') return { outcome: 'insufficient', text: researchInsufficientText + note, citations: [] };
-  return { outcome: 'evidence', text: answer.answer + note, citations: answer.citations.map((c, i) => ({ id: (i === 0 ? 'S1' : 'S2') as 'S1' | 'S2', title: c.title, sourceUrl: c.url, capturedAt: c.capturedAt, quote: c.quote, sectionPath: [] as [] })) };
+  const out = (images: boolean): ResearchAnswerOut => ({ outcome: 'evidence', text: answer.answer + note, citations: answer.citations.map((c, i) => ({ id: (i === 0 ? 'S1' : 'S2') as 'S1' | 'S2', title: c.title, sourceUrl: c.url, capturedAt: c.capturedAt, quote: c.quote, sectionPath: [] as [], ...(images && c.images?.length ? { images: c.images } : {}) })) });
+  // Images are optional decoration: drop them rather than lose an answer that would pass the 24000-byte check without them.
+  const withImages = out(true);
+  return Buffer.byteLength(JSON.stringify(withImages)) <= 24000 ? withImages : out(false);
 }
 /** Whether this turn needs a fresh epoch (new native session). `first` means no earlier epoch existed. */
 export function decideEpoch(i: { meta: { epoch: number; profileHash: string } | null; profileHash: string; createState?: 'created' | 'existing' | 'conflict'; reconcile?: { create: 'new' | 'claimed' | 'created'; activeRun: string | null } | null }): { newEpoch: boolean; first: boolean } {
