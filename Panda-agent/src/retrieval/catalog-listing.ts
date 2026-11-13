@@ -56,6 +56,21 @@ export function projectIdeasIntent(question: string, named: boolean): boolean {
     && /\b(?:suggest|recommend\w*|ideas?|what (?:can|could) i|(?:can|could) i (?:build|make|create)|give me|show me|any|some)\b/i.test(q);
 }
 
+const boardWord = String.raw`(?:boards?|microcontrollers?|mcus?|dev(?:elopment)?\s*kits?)`;
+const boardChoice = new RegExp(String.raw`\b(?:which|what)\s+(?:\w+\s+){0,2}${boardWord}\b|\bbest\s+(?:\w+\s+){0,2}${boardWord}\b|\b(?:recommend|suggest)\w*\s+(?:me\s+)?(?:an?\s+|some\s+)?(?:\w+\s+){0,2}${boardWord}\b|\b${boardWord}\s+(?:should|would|do)\s+(?:i|you)\b`, 'i');
+/** An open board or project question that names no product and no brand: the user chooses PandaByte boards, the web, or a general suggestion. */
+export function openScopeIntent(question: string, named: boolean): boolean {
+  const q = question.normalize('NFKC').trim();
+  if (named || q.length > 240 || /\bpanda\s*byte\b|\byour\b/i.test(q) || /^(?:search the web for|suggest any board for)\b/i.test(q)) return false;
+  return boardChoice.test(q) || (/\bprojects?\b/i.test(q) && /\b(?:suggest\w*|recommend\w*|ideas?|what (?:can|could|should) i (?:build|make)|i want to (?:build|make))\b/i.test(q));
+}
+/** The scope question: each option is a complete follow-up (the web option is sent with web search on by the UI). */
+export function scopeChoiceText(question: string): string {
+  const topic = question.normalize('NFKC').replace(/[^A-Za-z0-9 .+-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160).trim();
+  return ['Should I answer from PandaByte boards, search the web across all IoT and embedded boards, or suggest one myself?', '', optionHeader,
+    `1. ${listQuestion({ category: 'boards' })} (recommended)`, `2. Search the web for ${topic}`, `3. Suggest any board for ${topic}`, '', optionFooter].join('\n');
+}
+
 const plainName = (title: string) => title.split(':')[0].replace(/[^A-Za-z0-9 .+-]/g, ' ').replace(/\s+/g, ' ').trim();
 // A title without the PandaByte prefix (for example "Maker UNO") is not resolvable by name alone, so its SKU is added.
 const nameOf = (r: CatalogRow) => /panda\s*byte/i.test(r.title) ? plainName(r.title) : `${plainName(r.title)} ${r.sku}`;
@@ -114,7 +129,7 @@ export function parseClarificationOptions(text: string): { question: string; opt
   if (at < 2 || lines.at(-1) !== optionFooter || lines.length > 16) return null;
   const options = [];
   for (const line of lines.slice(at + 1, -2)) {
-    const m = /^(\d)\. ((?:List|Suggest|Tell me about) [A-Za-z0-9 .+-]{3,220}?)(?:: ([A-Za-z0-9 .+-]{3,110}))?( \(recommended\))?$/.exec(line);
+    const m = /^(\d)\. ((?:List|Suggest|Tell me about|Search the web for) [A-Za-z0-9 .+-]{3,220}?)(?:: ([A-Za-z0-9 .+-]{3,110}))?( \(recommended\))?$/.exec(line);
     if (!m || Number(m[1]) !== options.length + 1) return null;
     options.push({ label: m[3] ? `Tell me about ${m[3]}` : m[2], question: m[2], recommended: !!m[4] });
   }

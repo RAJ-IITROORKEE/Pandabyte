@@ -11,6 +11,7 @@ import {currentLightweightSession} from './lightweight-connection';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {ChatStoreError} from './chat-store.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
+import {openScopeIntent} from '../retrieval/catalog-listing.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
 import {fastHostedModel,lunaHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
 import {createResearchChat,researchProfileFor,withResearch,researchWebSearchEnabled,researchKey32 as key32} from './research-chat.ts';
@@ -65,5 +66,7 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
   searchLimit:Number.isSafeInteger(limit)&&limit>=1&&limit<=100?limit:20,
   gateway:()=>createResearchGatewayClient({endpoint:process.env.PANDA_RESEARCH_ENDPOINT!,roleArn:process.env.PANDA_RESEARCH_CALLER_ROLE_ARN!,
    dispatchKey:key32(process.env.PANDA_RESEARCH_DISPATCH_KEY)!,resultKey:key32(process.env.PANDA_RESEARCH_RESULT_KEY)!})});
- return withResearch(base,research);
+ const routed=withResearch(base,research);
+ // An open board/project question is first answered by the router with a scope choice (PandaByte, web, general); research only runs once chosen.
+ return {...routed,start:(turn,signal,progress)=>turn.webSearch&&process.env.PANDA_AGENT_MAIN_RAG_ENABLED==='true'&&openScopeIntent(turn.question,false)?base.start({...turn,webSearch:false},signal,progress):routed.start(turn,signal,progress)};
 }

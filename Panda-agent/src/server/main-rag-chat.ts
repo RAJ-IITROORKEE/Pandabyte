@@ -7,7 +7,7 @@ import { readRuntimeCatalog, createInsforgeAdapters } from '../retrieval/insforg
 import { matchingProducts, resolveMultiProductIdentity } from '../retrieval/multi-product-identity.ts';
 import { prepareProductContextSet } from '../retrieval/product-context-set.ts';
 import { createSnapshotClient } from '../retrieval/snapshot-client.ts';
-import { catalogIntent, catalogTableText, clarificationText, productChoiceText, productQuestion, projectClarificationText, projectIdeasIntent } from '../retrieval/catalog-listing.ts';
+import { catalogIntent, catalogTableText, clarificationText, productChoiceText, productQuestion, projectClarificationText, projectIdeasIntent, openScopeIntent, scopeChoiceText } from '../retrieval/catalog-listing.ts';
 import { createBasicRagChatService } from './basic-rag-chat-service.ts';
 import { createBasicRagStore } from './basic-rag-store.ts';
 import { createLightweightStore } from './lightweight-store.ts';
@@ -59,6 +59,8 @@ export function resolveMainFollowupScope(history:ChatRead,catalog:Catalog,thread
 export function catalogListingAnswer(question:string,catalog:Catalog):ChatAnswer|null {
  const named=resolveMultiProductIdentity(catalog,question).kind==='planned';
  if(projectIdeasIntent(question,named))return {outcome:'clarification',text:projectClarificationText(catalog),citations:[]};
+ // An open board or project question with no brand and no product: ask whether to use PandaByte boards, the web or general knowledge.
+ if(openScopeIntent(question,named)&&!isImplicitProductFollowup(question,catalog))return {outcome:'clarification',text:scopeChoiceText(question),citations:[]};
  const intent=catalogIntent(question,named);
  if(!intent)return null;
  // "Does PandaByte sell a GPS sensor?" names a kind of product: offer the matching products before the general category choices.

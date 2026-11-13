@@ -40,7 +40,9 @@ test('route decision: catalog questions become a citation-free clarification pre
   assert.equal(ask.outcome, 'clarification'); assert.deepEqual(ask.citations, []); assert.ok(parseClarificationOptions(ask.text));
   const table = catalogListingAnswer('List all PandaByte development boards', rows);
   assert.match(table.text, /^PandaByte currently lists 9 development boards:/); assert.deepEqual(table.citations, []);
-  for (const q of ['hi', 'Does the xS3 have PSRAM?', 'which board do you recommend for a LoRa project?']) assert.equal(catalogListingAnswer(q, rows), null, q);
+  for (const q of ['hi', 'Does the xS3 have PSRAM?', 'how does LoRa work?']) assert.equal(catalogListingAnswer(q, rows), null, q);
+  // Owner decision 13 Nov 2026: an open board question with no brand asks PandaByte vs web vs general.
+  assert.match(catalogListingAnswer('which board do you recommend for a LoRa project?', rows).text, /^Should I answer from PandaByte boards/);
   const hostile = catalogTableText([{ sku: 'X', title: 'Bad [link](https://evil.example) <b>*x*</b> Development Board', sourceUrl: 'https://www.pandabyte.in/product-page/x' }], { category: 'boards' });
   assert.doesNotMatch(hostile, /\[link\]|<b>|\*x\*/); assert.match(hostile, /\[View\]\(https:\/\/www\.pandabyte\.in\/product-page\/x\)/);
 });
@@ -81,4 +83,17 @@ test('the option parser accepts only the exact clarification shape', () => {
 test('a short PandaByte catalog question is a catalog question even with a mistyped verb', () => {
   for (const q of ['tell me abou tthe pandabyte boards', 'pandabyte boards', 'Tell me about the PandaByte boards', 'pandabyte products?']) assert.deepEqual(catalogIntent(q, false), { kind: 'clarify' }, q);
   for (const q of ['how do I flash the pandabyte boards', 'Is PandaByte a good place to learn Arduino programming?', 'pandabyte boards with lora', 'compare pandabyte boards and arduino']) assert.equal(catalogIntent(q, false), null, q);
+});
+
+test('open board/project questions without a brand or product get the scope choice', async () => {
+  const { openScopeIntent, scopeChoiceText, parseClarificationOptions } = await import('../src/retrieval/catalog-listing.ts');
+  for (const q of ['I want to build a weather station, which board should I use?', 'Which microcontroller is best for a robot?', 'Recommend a board for home automation', 'Suggest some project ideas for beginners', 'what dev kit do you recommend for LoRa'])
+    assert.equal(openScopeIntent(q, false), true, q);
+  for (const q of ['Which board does PandaByte recommend for a robot?', 'Which board should I use?'.replace('board', 'xS3 board'), 'How do I flash an Arduino board?', 'What is the flash size of the board?', 'Search the web for which board for a robot', 'Suggest any board for a robot', 'Which GPIO is safe for I2C on ESP32?'])
+    if (!q.includes('xS3')) assert.equal(openScopeIntent(q, false), false, q);
+  assert.equal(openScopeIntent('Which board should I use with the xS3?', true), false);
+  const parsed = parseClarificationOptions(scopeChoiceText('I want a weather station; which board?'));
+  assert.deepEqual(parsed.options.map(o => o.question), ['List all PandaByte development boards', 'Search the web for I want a weather station which board', 'Suggest any board for I want a weather station which board']);
+  assert.equal(parsed.options[0].recommended, true);
+  for (const o of parsed.options) assert.equal(openScopeIntent(o.question, false), false, 'a chosen option never asks again');
 });
