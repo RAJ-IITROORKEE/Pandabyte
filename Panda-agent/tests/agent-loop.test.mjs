@@ -3,10 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { runAgentLoop, loopMessages, loopSystemPrompt, MAX_STEPS, stepLimitText } from '../src/agent-loop/loop.ts';
+import { runAgentLoop, loopMessages, loopSystemPrompt, MAX_STEPS, stepLimitText, readNudge, shortNudge, LOOP_OUTPUT_TOTAL, STEP_OUTPUT_MAX } from '../src/agent-loop/loop.ts';
 import { createToolHost, searchCatalog, GENERAL_HEADING, MAX_PRODUCTS } from '../src/agent-loop/tools.ts';
 import { loopHistory, CONTEXT_BYTES, COMPACT_AT } from '../src/agent-loop/history.ts';
-import { createAgentLoopChat, withAgentLoop, sourcesChangedText } from '../src/agent-loop/chat.ts';
+import { createAgentLoopChat, withAgentLoop, sourcesChangedText, loopModelAllowed } from '../src/agent-loop/chat.ts';
 import { createAgentLoopStore } from '../src/agent-loop/store.ts';
 import { createOpenRouterStep } from '../src/agent-loop/openrouter-step.ts';
 import { parseClarificationOptions, agentQuestionText, clarificationText } from '../src/retrieval/catalog-listing.ts';
@@ -301,16 +301,18 @@ test('the OpenRouter step sends tools on the pinned zero-retention endpoint, cla
   try {
     const good = { role: 'assistant', content: null, tool_calls: [{ id: 'call_1', type: 'function', function: { name: 'search_catalog', arguments: '{"query":"oled"}' } }] };
     const f = make(true, good), messages = loopMessages('hi', [], null);
-    const first = await f.step(messages, [], signal()); await f.step(messages, [], signal());
+    const first = await f.step(messages, [], signal(), 3000); await f.step(messages, [], signal(), 3000);
     assert.deepEqual(first.toolCalls, [{ id: 'call_1', name: 'search_catalog', arguments: '{"query":"oled"}' }]);
     assert.deepEqual(first.usage, { inputTokens: 900, outputTokens: 40, costNanoUsd: 70000 });
     assert.equal(f.claims.length, 1, 'one journal claim per turn'); assert.equal(f.wires.length, 2);
     assert.equal(f.gets.length, 2, 'endpoint and privacy metadata are read once per turn, not per step');
     assert.equal(f.wires[0].tool_choice, 'auto'); assert.equal(f.wires[0].stream, false);
     assert.deepEqual(f.wires[0].provider, { only: ['groq'], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: 0.075, completion: 0.3, request: 0, image: 0 } });
-    await assert.rejects(make(false, good).step(messages, [], signal()), { code: 'not_admitted' });
+    await assert.rejects(make(false, good).step(messages, [], signal(), 3000), { code: 'not_admitted' });
     const bad = make(true, { role: 'assistant', content: null, tool_calls: [{ id: 'bad id!', type: 'function', function: { name: 'search_catalog', arguments: '{}' } }] });
-    assert.deepEqual(await bad.step(messages, [], signal()), { content: null, toolCalls: [], usage: { inputTokens: 900, outputTokens: 40, costNanoUsd: 70000 } }, 'a malformed message still counts its usage');
+    assert.deepEqual(await bad.step(messages, [], signal(), 3000), { content: null, toolCalls: [], usage: { inputTokens: 900, outputTokens: 40, costNanoUsd: 70000 }, finish: 'tool_calls' }, 'a malformed message still counts its usage');
+    assert.equal(first.finish, 'tool_calls'); assert.equal(f.wires[0].max_tokens, 3000, 'the per-step output cap reaches the wire');
+    await assert.rejects(make(true, good).step(messages, [], signal(), STEP_OUTPUT_MAX + 1), { code: 'not_admitted' });
   } finally { console.info = original; }
 });
 
@@ -355,4 +357,85 @@ test('independent tool calls run in parallel with read numbers and results in ca
       return reply(call('final_answer', { sourced: 'Fact.', citations: [idsFor(m, 'PB-BMV080')[0]], general: '' })); }]);
   const result = await run('compare', script, d);
   assert.equal(most, 2, 'two reads were in flight together'); assert.equal(result.kind, 'final'); assert.deepEqual(result.citedSkus, ['PB-BMV080']);
+});
+
+test('a plain-text reply after a product read is sent back once for a cited final_answer; on the last step it is accepted', async () => {
+  const script = scripted([() => reply(call('read_product', { sku: 'PB-BMV080' })),
+    () => ({ content: 'The listing confirms the sensor uses I2C.', toolCalls: [], usage }),
+    m => { assert.equal(m.at(-1).content, readNudge); assert.equal(m.at(-2).content, 'The listing confirms the sensor uses I2C.');
+      return reply(call('final_answer', { sourced: 'The listing names an I2C line.', citations: [idsFor(m, 'PB-BMV080')[1]], general: '| Pin | Wire |\n|---|---|\n| SDA | 21 |' })); }]);
+  const result = await run('wiring table and code', script);
+  assert.equal(result.answer.outcome, 'evidence'); assert.equal(script.seen.length, 3);
+  const lastStep = scripted([() => reply(call('read_product', { sku: 'PB-BMV080' })), () => ({ content: 'Plain answer on the last step.', toolCalls: [], usage })]);
+  const accepted = await runAgentLoop({ messages: loopMessages('q', [], null) }, { step: lastStep.step, tools: createToolHost(deps().tools), signal: signal(), maxSteps: 2 });
+  assert.equal(accepted.answer.outcome, 'conversation'); assert.equal(accepted.answer.text, 'Plain answer on the last step.');
+  const noRead = await run('q', scripted([() => ({ content: 'General answer with no read.', toolCalls: [], usage })]));
+  assert.equal(noRead.steps, 1, 'no nudge without a read');
+});
+
+test('output room: an answer step may use 6000 tokens, the summed output never passes 18000 and tools stop when a full step cannot follow', async () => {
+  const caps = [], big = { inputTokens: 1000, outputTokens: 6000, costNanoUsd: 1 };
+  const script = scripted([() => ({ ...reply(call('search_catalog', { query: 'a' })), usage: big }), () => ({ ...reply(call('search_catalog', { query: 'b' })), usage: big }),
+    () => ({ content: null, toolCalls: [], usage: big })]);
+  const step = (m, t, sig, max) => { caps.push(max); return script.step(m, t, sig, max); };
+  const result = await runAgentLoop({ messages: loopMessages('q', [], null) }, { step, tools: createToolHost(deps().tools), signal: signal() });
+  assert.deepEqual(caps, [6000, 6000, 6000]); assert.deepEqual(script.seen.map(x => x.tools.length), [4, 4, 2]);
+  assert.equal(result.kind, 'stopped'); assert.equal(result.usage.outputTokens, LOOP_OUTPUT_TOTAL);
+  const after = { inputTokens: 1, outputTokens: 13500, costNanoUsd: 1 }, seen = [];
+  const partial = scripted([() => ({ ...reply(call('search_catalog', { query: 'a' })), usage: after }), () => reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' }))]);
+  await runAgentLoop({ messages: loopMessages('q', [], null) }, { step: (m, t, sig, max) => { seen.push(max); return partial.step(m, t, sig, max); }, tools: createToolHost(deps().tools), signal: signal() });
+  assert.deepEqual(seen, [6000, 4500], 'the last step gets only the room left');
+  // Summed receipt bound for every reviewed profile: 6 steps x 24k input and 18k output stay under the journal's 56M nano-USD.
+  const { profiles } = await import('../src/server/hosted-model-openrouter.ts');
+  for (const m of Object.values(profiles)) assert.ok(Math.ceil((144000 * Math.max(m.nano2.prompt, m.nano2.write) + LOOP_OUTPUT_TOTAL * m.nano2.completion) / 2) + 6 <= 56000000, m.id);
+});
+
+test('one safe diagnostics line per turn: model, steps, tool names, finish reasons, error codes and output tokens only', async () => {
+  const lines = [], original = console.info; console.info = (...v) => lines.push(v);
+  try {
+    const script = scripted([() => reply(call('read_product', { sku: 'PB-BMV080' })),
+      () => reply(call('final_answer', { sourced: '', citations: [], general: 'It costs Rs 99.' })),
+      m => ({ ...reply(call('final_answer', { sourced: 'Fact.', citations: [idsFor(m, 'PB-BMV080')[0]], general: 'Plan.' })), finish: 'tool_calls' })]);
+    const h = harness({ script, read: { thread, messages: [], turns: [current] } });
+    assert.equal((await h.chat.start(turn, signal())).status, 'saved');
+  } finally { console.info = original; }
+  const loop = lines.filter(v => v[0] === '[agent-loop]');
+  assert.equal(loop.length, 1);
+  const entry = JSON.parse(loop[0][1]);
+  assert.deepEqual(entry, { model: fastHostedModel.id, outcome: 'final', steps: 3, tools: [['read_product'], ['final_answer'], ['final_answer']], finish: ['unknown', 'unknown', 'tool_calls'], errors: ['price_or_stock'], output: [200, 200, 200] });
+  assert.doesNotMatch(loop[0][1], /help me|Fact|Plan|Rs 99|E1\.|SYNTHETIC|aaaaaaaa/);
+});
+
+test('excerpt ids copied into prose are removed outside code; the tool description says not to write them', async () => {
+  const script = scripted([() => reply(call('read_product', { sku: 'ESPXS3' })),
+    m => reply(call('final_answer', { sourced: 'It supports Zigbee 3.0 (E1.2, E1.1) and I2C [E1.1]; see E1.2.', citations: [idsFor(m, 'ESPXS3')[0]],
+      general: 'Wire it up (E1.1).\n```cpp\nconst char* tag = "E1.2";\n```' }))]);
+  const result = await run('xS3?', script);
+  assert.match(result.answer.text, /^It supports Zigbee 3\.0 and I2C; see\.\n\n\[S1\]/);
+  assert.match(result.answer.text, /Wire it up\.\n```cpp\nconst char\* tag = "E1\.2";/);
+  assert.doesNotMatch(result.answer.text.replace(/```[\s\S]*?```/g, ''), /E\d\.\d/);
+  const { allToolSpecs } = await import('../src/agent-loop/tools.ts');
+  assert.match(allToolSpecs.find(t => t.function.name === 'final_answer').function.description, /never in the text/);
+});
+
+test('GPT-OSS 20B keeps the existing path; other hosted models may use the loop', async () => {
+  const { hostedDirectModelIds } = await import('../src/hosted-model.ts');
+  assert.equal(loopModelAllowed('openai/gpt-oss-20b'), false);
+  for (const id of hostedDirectModelIds.filter(id => id !== 'openai/gpt-oss-20b')) assert.equal(loopModelAllowed(id), true, id);
+  const log = [], bridge = (name, held) => ({ state: async () => held, status: async () => ({ status: name }), cancel: async () => ({ status: name }), start: async () => { log.push(name); return { status: 'saved' }; } });
+  await withAgentLoop(bridge('base', false), bridge('loop', false), async () => loopModelAllowed('openai/gpt-oss-20b')).start(turn, signal());
+  assert.deepEqual(log, ['base']);
+});
+
+test('a few-word reply to a real question is sent back once; greetings and short questions are not', async () => {
+  const q = 'How do I read a DHT22 on an ESP32? Keep it short.';
+  const script = scripted([() => ({ content: 'Yes.', toolCalls: [], usage }), m => { assert.equal(m.at(-1).content, shortNudge); return { content: 'Use the DHT library and read every 2 s.', toolCalls: [], usage }; }]);
+  const result = await run(q, script);
+  assert.equal(result.steps, 2); assert.equal(result.answer.text, 'Use the DHT library and read every 2 s.');
+  for (const question of ['hello there, how are you doing today?', 'DHT22 pins?']) {
+    const once = scripted([() => ({ content: 'Hi! All good.', toolCalls: [], usage })]);
+    assert.equal((await run(question, once)).steps, 1, question);
+  }
+  const twice = scripted([() => ({ content: 'Yes.', toolCalls: [], usage }), () => ({ content: 'Yes.', toolCalls: [], usage })]);
+  assert.equal((await run(q, twice)).answer.text, 'Yes.', 'only one reminder');
 });

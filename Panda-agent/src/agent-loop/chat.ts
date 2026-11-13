@@ -5,7 +5,7 @@ import { uuid, type ActivityStage } from '../server/chat-contracts.ts';
 import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
 import { loopHistory } from './history.ts';
-import { loopMessages, runAgentLoop, type StepFn } from './loop.ts';
+import { loopMessages, newLoopTrace, runAgentLoop, type StepFn } from './loop.ts';
 import { allToolSpecs, createToolHost, type ToolDeps } from './tools.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 
@@ -55,9 +55,13 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       const step = options.step({ model: options.model, apiKey: policy.key(), policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend,
         claim: async hash => { if (attempted || signal.aborted) return false; attempted = true; await current(); bodyHash = hash; return store.claimUnmetered(turn.thread, turn.request, hash); } });
       const tools = createToolHost({ ...options.tools, progress: report });
+      const trace = newLoopTrace(); let logged = false;
+      // One safe line per turn for the hosting logs: model, step shape, error codes and output tokens; never user text, answers, excerpts or ids.
+      const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
       try {
         report('routing_question');
-        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary) }, { step, tools, signal });
+        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary) }, { step, tools, signal, trace });
+        log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.
         const answer = result.citedSkus.length && !await tools.revalidate(result.citedSkus) ? { outcome: 'insufficient' as const, text: sourcesChangedText, citations: [] } : result.answer;
@@ -66,10 +70,13 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         if (!recorded || !await beforeSend()) return { status: 'unknown' };
         await store.finish(turn.thread, turn.request, answer); await current();
         return { status: 'saved', usage: turnUsageFor(options.model, result.usage) };
-      } catch { return { status: 'unknown' }; }
+      } catch { log('unknown'); return { status: 'unknown' }; }
     },
   };
 }
+
+/** GPT-OSS 20B could not drive the tools live (13 Nov 2026: step limit on a simple question); its turns keep the existing path. */
+export const loopModelAllowed = (model: string) => model !== 'openai/gpt-oss-20b';
 
 /** Loop turns keep their own journal for status and cancel; a request another journal already holds stays there.
  *  New requests go to the loop only for an eligible session (Admin, unmetered); everyone else keeps the existing chat. */

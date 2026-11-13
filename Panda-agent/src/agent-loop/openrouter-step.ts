@@ -5,11 +5,11 @@ import { approvedEndpoint, encrypted, observe, profiles, receiptUsage, type Obse
 import { readLunaJSON } from '../server/luna-rag-openrouter.ts';
 import { BasicRagProviderError } from '../server/basic-rag-openrouter.ts';
 import { CONTEXT_BYTES } from './history.ts';
-import type { LoopMessage, StepFn, ToolCall } from './loop.ts';
+import { STEP_OUTPUT_MAX, type LoopMessage, type StepFn, type ToolCall } from './loop.ts';
 
 const api = 'https://openrouter.ai/api/v1';
 /** Per step: input tokens declared to the endpoint check and receipt, output room for a complete code answer. */
-export const LOOP_MAX_INPUT = 24000, LOOP_MAX_OUTPUT = 3000, LOOP_STEP_MS = 40000, LOOP_WIRE_BYTES = CONTEXT_BYTES;
+export const LOOP_MAX_INPUT = 24000, LOOP_MAX_OUTPUT = STEP_OUTPUT_MAX, LOOP_STEP_MS = 40000, LOOP_WIRE_BYTES = CONTEXT_BYTES;
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const fail = (code: BasicRagProviderError['code']): never => { throw new BasicRagProviderError(code); };
 
@@ -37,16 +37,16 @@ function toolCalls(value: unknown): ToolCall[] {
 export function createOpenRouterStep(options: Options): StepFn {
   const m = profiles[options.model], fetcher = options.fetcher ?? fetch;
   // Receipt ceiling per step: this model's worst case for the declared token bounds.
-  const reservation = Math.ceil((LOOP_MAX_INPUT * m.nano2.prompt + LOOP_MAX_OUTPUT * m.nano2.completion) / 2) + 1;
+  const reservation = (maxOutput: number) => Math.ceil((LOOP_MAX_INPUT * m.nano2.prompt + maxOutput * m.nano2.completion) / 2) + 1;
   // Endpoint and privacy metadata are checked on the first step and reused for this turn; policy and journal checks still run every step.
   let claimed = false, approved: string | null = null;
-  return async (messages: readonly LoopMessage[], tools, signal) => {
+  return async (messages: readonly LoopMessage[], tools, signal, maxOutput) => {
     const started = performance.now(), observation: Observation = { observationId: randomUUID(), model: m.id, provider: m.tag, stage: 'unavailable', totalMs: 0 };
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(LOOP_STEP_MS)]);
     let sent = false;
     try {
-      if (!options.apiKey || /[\r\n]/.test(options.apiKey) || !messages.length || deadline.aborted) return fail('not_admitted');
-      const wire = (tokenParam: string) => JSON.stringify({ model: m.id, stream: false, [tokenParam]: LOOP_MAX_OUTPUT, reasoning: m.reasoning, include_reasoning: false,
+      if (!Number.isSafeInteger(maxOutput) || maxOutput < 1 || maxOutput > LOOP_MAX_OUTPUT || !options.apiKey || /[\r\n]/.test(options.apiKey) || !messages.length || deadline.aborted) return fail('not_admitted');
+      const wire = (tokenParam: string) => JSON.stringify({ model: m.id, stream: false, [tokenParam]: maxOutput, reasoning: m.reasoning, include_reasoning: false,
         tools, tool_choice: 'auto', usage: { include: true }, plugins: [],
         provider: { only: [m.tag], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: m.maxPrice.prompt, completion: m.maxPrice.completion, request: 0, image: 0 } },
         messages });
@@ -79,10 +79,10 @@ export function createOpenRouterStep(options: Options): StepFn {
       if (!record(item) || Object.hasOwn(item, 'error') || typeof item.id !== 'string' || !/^gen-[A-Za-z0-9_-]{1,160}$/.test(item.id)
         || !m.reported.includes(String(item.model)) || item.provider !== m.providerName || !Array.isArray(item.choices) || item.choices.length !== 1) return fail('outcome_unknown');
       observation.generationId = item.id;
-      const usage = receiptUsage(m, item.usage, LOOP_MAX_INPUT, LOOP_MAX_OUTPUT, reservation);
+      const usage = receiptUsage(m, item.usage, LOOP_MAX_INPUT, maxOutput, reservation(maxOutput));
       Object.assign(observation, usage.usage, { reasoningTokens: usage.reasoningTokens, cachedTokens: usage.cachedTokens });
       // The receipt is valid from here, so a malformed message still counts its usage; the loop treats it as an empty reply.
-      let calls: ToolCall[] = [], content: string | null = null;
+      let calls: ToolCall[] = [], content: string | null = null, finish: string | undefined;
       try {
         const choice = item.choices[0], message = record(choice) ? choice.message : undefined;
         if (!record(choice) || (choice.index !== undefined && choice.index !== 0) || !['stop', 'tool_calls'].includes(choice.finish_reason as string) || !record(message)
@@ -91,10 +91,10 @@ export function createOpenRouterStep(options: Options): StepFn {
           || (message.reasoning != null && message.reasoning !== '') || (message.reasoning_content != null && message.reasoning_content !== '')
           || (message.reasoning_details != null && (!Array.isArray(message.reasoning_details) || (message.reasoning_details.length > 0 && !(m.encryptedReasoning && encrypted(message.reasoning_details)))))
           || (message.content != null && (typeof message.content !== 'string' || message.content.length > 20000 || !message.content.isWellFormed()))) throw Error();
-        calls = toolCalls(message.tool_calls); content = typeof message.content === 'string' && message.content.trim() ? message.content : null;
+        finish = choice.finish_reason as string; calls = toolCalls(message.tool_calls); content = typeof message.content === 'string' && message.content.trim() ? message.content : null;
       } catch { calls = []; content = null; }
       observation.stage = calls.length || content ? 'validated' : 'response_rejected';
-      return { content, toolCalls: calls, usage: usage.usage };
+      return { content, toolCalls: calls, usage: usage.usage, ...(finish ? { finish } : {}) };
     } catch (error) {
       const safe = error instanceof BasicRagProviderError ? error : new BasicRagProviderError(sent ? 'outcome_unknown' : 'unavailable');
       observation.stage = safe.code; throw safe;

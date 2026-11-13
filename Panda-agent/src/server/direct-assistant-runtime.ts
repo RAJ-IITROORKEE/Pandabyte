@@ -12,7 +12,7 @@ import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {ChatStoreError} from './chat-store.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
 import {openScopeIntent} from '../retrieval/catalog-listing.ts';
-import {withAgentLoop} from '../agent-loop/chat.ts';
+import {withAgentLoop,loopModelAllowed} from '../agent-loop/chat.ts';
 import {agentLoopChatForActor} from '../agent-loop/runtime.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
 import {fastHostedModel,lunaHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
@@ -58,7 +58,7 @@ function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBrid
  };
  // Agent loop (off by default; needs the reviewed loop journal migration): new turns go to the model-driven loop instead of the fixed router.
  // Only an unmetered (Admin) session is eligible; every other user keeps the existing chat.
- const loopEligible=async()=>process.env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&await modelPolicy.enabled()&&'isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true;
+ const loopEligible=async()=>process.env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&loopModelAllowed(model)&&await modelPolicy.enabled()&&'isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true;
  return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(routed,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy}),loopEligible):routed;
 }
 

@@ -24,6 +24,10 @@ export const GENERAL_HEADING = '### General guidance (not from PandaByte sources
 const priceOrStock = /[₹$]\s?\d|\b(?:Rs\.?|INR|USD|rupees?)\s?\d|\d[\d,.]*\s?(?:rupees?|Rs\b|INR\b|USD\b|dollars?)|\b(?:in|out[\s-]of)[\s-]stock\b|\bstock (?:level|count|is)\b|\bsold out\b|\bavailable now\b|\bprice (?:is|of)\b|\bcosts\b|\bdiscount/i;
 const code = /(```[\s\S]*?```|`[^`\n]*`)/;
 const prose = (s: string) => s.split(code).filter((_, i) => i % 2 === 0).join(' ');
+const excerptId = String.raw`E\d{1,2}\.\d{1,3}`;
+const excerptIds = new RegExp(String.raw`\s?[(\[]\s*${excerptId}(?:\s*[,;]\s*${excerptId})*\s*[)\]]|\s?\b${excerptId}\b`, 'g');
+/** Some models copy excerpt ids ("(E1.2, E1.7)", "[E2.3]", "E1.1") into prose; the application adds the real citations, so they are removed outside code. */
+export const stripExcerptIds = (markdown: string) => markdown.split(code).map((part, i) => i % 2 ? part : part.replace(excerptIds, '')).join('');
 const otherLinks = /\b(?:http|javascript|data|vbscript|file|ftp):[^\s)<>\]]+|(?<!https:\/\/)\bwww\.[^\s)<>\]]+/gi;
 /** Outside code, only https links survive: any other Markdown link becomes its text, other autolinks and bare URLs are removed. */
 export function httpsOnlyLinks(markdown: string): string {
@@ -48,7 +52,7 @@ const specs = {
   ask_user: fn('ask_user', 'Ask the user one clarifying question and end your turn. Use only when the answer would change materially and a reasonable assumption is not possible.',
     { question: { type: 'string' }, options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 5, description: '2 to 5 short answers; the user can also type their own.' },
       recommended: { type: 'integer', description: 'Index of the recommended option, if any.' } }, ['question', 'options']),
-  final_answer: fn('final_answer', 'Needed only when citing read_product excerpts; otherwise reply in plain text, which is the normal way to answer. Ends your turn. `sourced` holds only facts from read_product excerpts this turn, cited by excerpt id; `general` holds general engineering guidance (plans, wiring, code, libraries), shown under a "not from PandaByte sources" heading.',
+  final_answer: fn('final_answer', 'Needed only when citing read_product excerpts; otherwise reply in plain text, which is the normal way to answer. Ends your turn. Put excerpt ids only in `citations`, never in the text. `sourced` holds only facts from read_product excerpts this turn, cited by excerpt id; `general` holds general engineering guidance (plans, wiring, code, libraries), shown under a "not from PandaByte sources" heading.',
     { sourced: { type: 'string', description: 'Markdown. PandaByte product facts only, no URLs or citation markers. Empty when nothing was cited.' },
       citations: { type: 'array', items: { type: 'string' }, maxItems: MAX_CITATIONS, description: 'Excerpt ids supporting `sourced`.' },
       general: { type: 'string', description: 'Markdown. General engineering guidance; never PandaByte product facts, prices or stock.' } }, ['sourced', 'citations', 'general']),
@@ -114,8 +118,8 @@ export function createToolHost(deps: ToolDeps) {
   }
 
   function finalAnswer(args: Record<string, unknown>): ToolOutcome {
-    const sourced = typeof args.sourced === 'string' ? args.sourced.trim() : args.sourced === undefined ? '' : null;
-    const general = typeof args.general === 'string' ? httpsOnlyLinks(args.general).trim() : args.general === undefined ? '' : null;
+    const sourced = typeof args.sourced === 'string' ? stripExcerptIds(args.sourced).trim() : args.sourced === undefined ? '' : null;
+    const general = typeof args.general === 'string' ? stripExcerptIds(httpsOnlyLinks(args.general)).trim() : args.general === undefined ? '' : null;
     const ids = args.citations === undefined ? [] : args.citations;
     if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
       return error('invalid_arguments', 'final_answer needs sourced and general strings and at most four excerpt ids.');
@@ -170,6 +174,8 @@ export function createToolHost(deps: ToolDeps) {
       if (name === 'ask_user') return askUser(args);
       return error('unknown_tool', 'Use only search_catalog, read_product, ask_user or final_answer.');
     },
+    /** Whether a product read returned citable excerpts this turn. */
+    hasExcerpts: () => excerpts.size > 0,
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */
     async prepare() { try { await rows(); } catch { catalog = undefined; } },
     /** A plain-text reply (no tool call) is accepted as general guidance only. */
