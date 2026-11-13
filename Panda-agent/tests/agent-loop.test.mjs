@@ -226,6 +226,11 @@ test('a request already held by another journal stays there; only eligible (Admi
   assert.deepEqual(log, ['base', 'loop', 'base', 'base', 'loop'], 'non-Admin users keep the existing chat; a retried loop turn stays in the loop');
   const broken = { ...bridge('loop', false), state: async () => { throw Object.assign(Error('no journal'), { code: 'unavailable' }); } };
   assert.equal((await withAgentLoop(bridge('base', true), broken, yes).status(turn, signal())).status, 'base', 'an unmigrated loop journal cannot break older turns');
+  log.length = 0;
+  const canSearch = async t => t.webSearch !== true;
+  await withAgentLoop(bridge('research', false), bridge('loop', false), canSearch).start({ ...turn, webSearch: true }, signal());
+  await withAgentLoop(bridge('research', false), bridge('loop', false), canSearch).start(turn, signal());
+  assert.deepEqual(log, ['research', 'loop'], 'eligibility sees the turn, so a web turn the loop cannot search stays with research');
 });
 
 test('history removes citation markers anywhere in an earlier answer', () => {

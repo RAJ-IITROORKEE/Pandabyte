@@ -1,6 +1,6 @@
 // Chat bridge for agent-loop turns: begin -> loop (claim before the first provider call) -> receipt -> finish,
 // on the same session/policy checks as the direct chat. A lost or unknown outcome is reported, never retried.
-import type { BasicRagChatBridge } from '../server/basic-rag-chat-contracts.ts';
+import type { BasicRagChatBridge, BasicRagTurn } from '../server/basic-rag-chat-contracts.ts';
 import { uuid, type ActivityStage } from '../server/chat-contracts.ts';
 import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
@@ -84,7 +84,7 @@ export const loopModelAllowed = (model: string) => model !== 'openai/gpt-oss-20b
 
 /** Loop turns keep their own journal for status and cancel; a request another journal already holds stays there.
  *  New requests go to the loop only for an eligible session (Admin, unmetered); everyone else keeps the existing chat. */
-export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge, eligible: () => Promise<boolean>): BasicRagChatBridge {
+export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge, eligible: (turn: BasicRagTurn) => Promise<boolean>): BasicRagChatBridge {
   const isLoop = async (thread: string, id: string) => { try { return await loop.state(thread, id); } catch (error) { if (error instanceof ChatStoreError && error.code === 'unauthenticated') throw error; return false; } };
   const owner = async (thread: string, id: string) => await isLoop(thread, id) ? loop : base;
   return {
@@ -94,7 +94,7 @@ export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge
     start: async (turn, signal, progress) => {
       if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress);
       if (await base.state(turn.thread, turn.request)) return base.start(turn, signal, progress);
-      let ok = false; try { ok = await eligible() === true; } catch { ok = false; }
+      let ok = false; try { ok = await eligible(turn) === true; } catch { ok = false; }
       return ok ? loop.start(turn, signal, progress) : base.start(turn, signal, progress);
     },
   };
