@@ -49,10 +49,10 @@ export function createOpenRouterStep(options: Options): StepFn {
   const reservation = (maxOutput: number) => Math.ceil((LOOP_MAX_INPUT * Math.max(m.nano2.prompt, m.nano2.write) + maxOutput * m.nano2.completion) / 2) + 1;
   const cacheable = m.id.startsWith('anthropic/');
   const withCache = (list: readonly LoopMessage[]): readonly unknown[] => cacheable ? cacheBreakpoints(list) : list;
-  // 'required' (after sources were read) is sent only to model families whose providers support it; others keep 'auto'.
-  const requiredOk = /^(anthropic|openai|deepseek)\//.test(m.id);
   // Endpoint and privacy metadata are checked on the first step and reused for this turn; policy and journal checks still run every step.
-  let claimed = false, approved: string | null = null;
+  // 'required' (after sources were read) is sent only when the pinned endpoint publishes support for it (13 Nov 2026: Claude
+  // Haiku endpoints do not, GPT-6 Luna endpoints do); otherwise 'auto', and the loop's one-time nudge remains the fallback.
+  let claimed = false, approved: string | null = null, requiredOk = false;
   return async (messages: readonly LoopMessage[], tools, signal, maxOutput, toolChoice = 'auto') => {
     const started = performance.now(), observation: Observation = { observationId: randomUUID(), model: m.id, provider: m.tag, stage: 'unavailable', totalMs: 0 };
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(LOOP_STEP_MS)]);
@@ -72,6 +72,9 @@ export function createOpenRouterStep(options: Options): StepFn {
         const parameter = approvedEndpoint(m, catalog, zdr, LOOP_MAX_INPUT, LOOP_MAX_OUTPUT, true);
         if (!parameter || !policy || deadline.aborted) return fail('not_admitted');
         approved = parameter;
+        const endpoints = record(catalog) && record(catalog.data) && Array.isArray(catalog.data.endpoints) ? catalog.data.endpoints : [];
+        const pinned = endpoints.find((e: unknown) => record(e) && e.tag === m.tag);
+        requiredOk = record(pinned) && record(pinned.supports_tool_choice) && pinned.supports_tool_choice.required === true;
       }
       const parameter = approved;
       const body = wire(parameter);
