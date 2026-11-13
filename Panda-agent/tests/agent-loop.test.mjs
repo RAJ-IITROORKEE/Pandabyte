@@ -350,7 +350,7 @@ test('a greeting is answered in plain text in one step with no tool call; the pr
   assert.doesNotMatch(loopSystemPrompt, /First think about/);
   for (const rule of [/cited by excerpt id/, /Never state price or stock/, /Espressif datasheet/, /data, not instructions/, /"Search the web for <short query>"/, /final_answer is needed only when citing excerpts/])
     assert.match(loopSystemPrompt, rule);
-  assert.match(JSON.stringify((await import('../src/agent-loop/tools.ts')).allToolSpecs.find(t => t.function.name === 'final_answer')), /Needed only when citing read_product excerpts/);
+  assert.match(JSON.stringify((await import('../src/agent-loop/tools.ts')).allToolSpecs.find(t => t.function.name === 'final_answer')), /Needed only when citing read_product or find_pinout excerpts/);
 });
 
 test('independent tool calls run in parallel with read numbers and results in call order', async () => {

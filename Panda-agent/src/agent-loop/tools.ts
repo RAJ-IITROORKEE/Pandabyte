@@ -126,7 +126,7 @@ const specs = {
       recommended: { type: 'integer', description: 'Index of the recommended option, if any.' } }, ['question', 'options']),
   find_pinout: fn('find_pinout', 'Get one PandaByte board\'s pin information for pin, GPIO, wiring or pinout questions: its header pin labels and its module\'s pin table, each with an excerpt id to cite. When you cite them, the board\'s own pinout image is shown with your answer.',
     { sku: { type: 'string', description: 'Exact SKU from search_catalog.' } }, ['sku']),
-  final_answer: fn('final_answer', 'Needed only when citing read_product excerpts; otherwise reply in plain text, which is the normal way to answer. Ends your turn. Put excerpt ids only in `citations`, never in the text. `sourced` holds only facts from read_product excerpts this turn, cited by excerpt id; `general` holds general engineering guidance (plans, wiring, code, libraries), shown under a "not from PandaByte sources" heading.',
+  final_answer: fn('final_answer', 'Needed only when citing read_product or find_pinout excerpts; otherwise reply in plain text, which is the normal way to answer. Ends your turn. Put excerpt ids only in `citations`, never in the text. `sourced` holds only facts from read_product or find_pinout excerpts this turn, cited by excerpt id; `general` holds general engineering guidance (plans, wiring, code, libraries), shown under a "not from PandaByte sources" heading.',
     { sourced: { type: 'string', description: 'Markdown. PandaByte product facts only, no URLs or citation markers. Empty when nothing was cited.' },
       citations: { type: 'array', items: { type: 'string' }, maxItems: MAX_CITATIONS, description: 'Excerpt ids supporting `sourced`.' },
       general: { type: 'string', description: 'Markdown. General engineering guidance; never PandaByte product facts, prices or stock.' },
@@ -205,7 +205,7 @@ export function createToolHost(deps: ToolDeps) {
     const [read, images] = await Promise.all([deps.readProduct(row, focus, signal),
       pins && deps.pinoutImages ? deps.pinoutImages(row, signal).catch(() => [] as CitationImage[]) : Promise.resolve([] as CitationImage[])]);
     if (read.kind !== 'ready') return error(read.kind === 'insufficient' ? 'no_excerpts' : 'unavailable', read.kind === 'insufficient'
-      ? 'The listing holds no excerpts for that focus (wiring, pinout and safety proof are never in listings). Read again without that focus, or answer that part as general guidance.'
+      ? `The listing holds no excerpts for that focus.${pins ? '' : ' For pins, GPIO or wiring, call find_pinout (the board\'s header labels and pin tables).'} Otherwise read again without that focus, or answer that part as general guidance.`
       : 'This product listing cannot be read right now. Do not state its facts.');
     if (images.length) productImages.set(row.sku, images);
     const passages = pins ? pinOrder(read.passages) : read.passages;
@@ -224,7 +224,7 @@ export function createToolHost(deps: ToolDeps) {
     if (!ids.length) return error('no_excerpts', 'The listing has no quotable excerpts. Do not state its facts.');
     reads.set(key, { ids, revalidate: read.revalidate, row });
     return { kind: 'result', content: JSON.stringify({ sku: row.sku, title: row.title, productPage: row.sourceUrl, excerpts: shown,
-      ...(pins ? { pinoutImages: images.length, note: 'Header labels are transcribed from the board photo; an "Espressif datasheet excerpt" pin table describes the module, not the board\'s own header wiring. Cite the excerpts you use; the board\'s pinout image is then shown with your answer. Price and stock are never in excerpts.' }
+      ...(pins ? { pinoutImages: images.length, note: 'Header labels are transcribed from the board photo; an "Espressif datasheet excerpt" pin table describes the module, not the board\'s own header wiring. Cite up to four excerpts you rely on (header labels and pin table first) in final_answer; the board\'s pinout image is then shown with your answer. Price and stock are never in excerpts.' }
         : { note: 'Cite excerpt ids in final_answer.citations. Price and stock are never in excerpts; they are on the product page.' }) }) };
     } finally { reading.delete(key); }
   }
@@ -271,7 +271,7 @@ export function createToolHost(deps: ToolDeps) {
       return error('invalid_arguments', 'final_answer needs sourced and general strings and at most four excerpt ids.');
     if (!sourced && !general) return error('empty_answer', 'Write the answer in sourced or general.');
     const cited = [...new Set(ids as string[])], missing = cited.filter(id => !excerpts.has(id) && !web.has(id));
-    if (missing.length) return error('unknown_citation', `These ids were not returned by read_product or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);
+    if (missing.length) return error('unknown_citation', `These ids were not returned by read_product, find_pinout or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);
     // One citation per web page, even when both searches returned it.
     const unique = cited.filter(id => excerpts.has(id)), webIdsCited = cited.filter(id => web.has(id)),
       webCited = webIdsCited.filter((id, i) => webIdsCited.findIndex(other => web.get(other)!.url === web.get(id)!.url) === i);
