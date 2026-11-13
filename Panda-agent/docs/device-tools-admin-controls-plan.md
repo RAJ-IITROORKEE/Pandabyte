@@ -74,3 +74,14 @@ AWS CLI 2 is set up but has no live session; deploying needs the owner to sign i
 - Subagents (Sonnet 5.5): compile service package (Dockerfile, handler, buildspec, CloudFormation, tests); Admin Tools tab +
   Tavily usage module; ai-elements Context component.
 - Root: migrations, loop/chat/stream integration, tool rows, firmware card, deploys, live tests, rollout.
+
+## Status (14 Nov 2026)
+- Live for every signed-in user: Admin tool switches (migration 20261114100000) read every turn; Tavily card in Admin with
+  credits from Tavily `/usage` (96 / 1,000 on the Researcher plan at first check); live tool-step rows in the thinking panel;
+  the context meter (largest single step + hover card with billed input/output, steps and cost); MCP tools for signed-in
+  users (migration 20261114110000); Device panel and compile tool for signed-in users (`PANDA_AGENT_DEVICE_MEMBERS=true`,
+  10 builds a day for non-Admins).
+- Verified live as Admin: Tools tab, a switch round trip (find_pinout off -> on, versions 2 -> 3), tool rows during a project
+  question, meter card (23k of 1M; 61k billed input over 5 steps). Not verified as a non-Admin user (no test sign-in).
+- Not live yet: the compile service. The code (services/compile) and the compile_sketch tool are deployed but inactive until
+  the AWS stack exists and PANDA_COMPILE_URL / PANDA_COMPILE_SECRET are set. Waiting on the owner's `aws login`.
