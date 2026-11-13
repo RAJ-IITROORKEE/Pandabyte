@@ -504,3 +504,25 @@ test('web_search reaches the model only on turns sent with web search on, and ea
   assert.equal(sent.length, 1);
   assert.equal(off.calls.at(-1)[1].text, 'There is no web search on this turn.');
 });
+
+test('follow-up suggestions: cleaned, at most three, from final_answer or a trailing Next line, and returned with the saved turn', async () => {
+  const { cleanSuggestions, splitNextLine } = await import('../src/agent-loop/tools.ts');
+  assert.deepEqual(cleanSuggestions(['  Give me the full Arduino code ', 'give me the full arduino code', 'See https://x.dev', 'It costs Rs 499', 'Cite [S1]',
+    'Make a step-by-step build plan', 'Add a wiring table', 'Fourth one']), ['Give me the full Arduino code', 'Make a step-by-step build plan', 'Add a wiring table']);
+  assert.deepEqual(cleanSuggestions('not an array'), []);
+  assert.deepEqual(splitNextLine('Here is the answer.\n\nNext: Give me the code | Make a plan'), { text: 'Here is the answer.', suggestions: ['Give me the code', 'Make a plan'] });
+  assert.deepEqual(splitNextLine('No follow-ups here.'), { text: 'No follow-ups here.', suggestions: [] });
+  assert.deepEqual(splitNextLine('Next: only a next line'), { text: 'Next: only a next line', suggestions: [] }, 'a reply that is only a Next line is kept as text');
+  // final_answer path
+  const viaTool = await run('Plan an air quality project with the xS3', scripted([() => reply(call('final_answer', { sourced: '', citations: [], general: 'A plan in general terms.', suggestions: ['Give me the full Arduino code', 'https://bad'] }))]));
+  assert.deepEqual(viaTool.suggestions, ['Give me the full Arduino code']);
+  // plain-text path: the Next line leaves the saved text
+  const viaPlain = await run('Explain I2C pull-up resistors to me please', scripted([() => ({ content: 'Pull-ups keep the lines high when idle, so devices can pull them low.\nNext: Which resistor value should I use? | Show an ESP32 I2C scan sketch', toolCalls: [], usage })]));
+  assert.equal(viaPlain.answer.text, 'Pull-ups keep the lines high when idle, so devices can pull them low.');
+  assert.deepEqual(viaPlain.suggestions, ['Which resistor value should I use?', 'Show an ESP32 I2C scan sketch']);
+  // the chat bridge returns them with the saved turn (not stored in the answer)
+  const h = harness({ script: scripted([() => reply(call('final_answer', { sourced: '', citations: [], general: 'Done.', suggestions: ['Make a step-by-step build plan'] }))]), read: { thread, messages: [], turns: [current] } });
+  const saved = await h.chat.start(turn, signal());
+  assert.equal(saved.status, 'saved'); assert.deepEqual(saved.suggestions, ['Make a step-by-step build plan']);
+  assert.equal(JSON.stringify(h.calls.at(-1)[1]).includes('suggestions'), false, 'suggestions are not saved into the answer');
+});

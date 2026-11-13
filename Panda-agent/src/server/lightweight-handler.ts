@@ -303,7 +303,7 @@ export function createLightweightHandler(deps:Dependencies) {
             const result=await llm.start({thread:id!,request:requestId,question,...(input.webSearch===true?{webSearch:true}:{})},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined));
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             const data=await releaseBasic(requestId,question);
-            return result.usage?{...data,usage:result.usage}:data;
+            return {...data,...(result.usage?{usage:result.usage}:{}),...(result.suggestions?.length?{suggestions:result.suggestions}:{})};
           };
           if(wantsStream(request))return streamWork(request,execute,requestStarted);
           return json(await execute(()=>{},request.signal));

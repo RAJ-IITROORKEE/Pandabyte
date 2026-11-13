@@ -74,7 +74,8 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         const recorded = await store.receiptUnmetered(turn.thread, turn.request, bodyHash, answer, { ...result.usage, steps: result.steps });
         if (!recorded || !await beforeSend()) return { status: 'unknown' };
         await store.finish(turn.thread, turn.request, answer); await current();
-        return { status: 'saved', usage: turnUsageFor(options.model, result.usage) };
+        // Follow-ups belong to the answer the model wrote; a replaced answer (sources changed) gets none. Not stored.
+        return { status: 'saved', usage: turnUsageFor(options.model, result.usage), ...(answer === result.answer && result.kind === 'final' && result.suggestions.length ? { suggestions: result.suggestions } : {}) };
       } catch { log('unknown'); return { status: 'unknown' }; }
     },
   };

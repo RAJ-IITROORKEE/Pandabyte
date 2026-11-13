@@ -20,12 +20,13 @@ export type ToolDeps = {
   webSearch?(query: string, signal: AbortSignal): Promise<WebSource[]>;
 };
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
-export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[] };
+export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
 export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4;
 // shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
 export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600;
 export const WEB_SOURCES_HEADING = '### Web sources';
+export const MAX_SUGGESTIONS = 3, SUGGESTION_CHARS = 120;
 export const GENERAL_HEADING = '### General guidance (not from PandaByte sources)';
 // shortcut: a wording heuristic over the model's own prose (code and cited quotes are not checked); a paraphrase can still pass.
 const priceOrStock = /[₹$]\s?\d|\b(?:Rs\.?|INR|USD|rupees?)\s?\d|\d[\d,.]*\s?(?:rupees?|Rs\b|INR\b|USD\b|dollars?)|\b(?:in|out[\s-]of)[\s-]stock\b|\bstock (?:level|count|is)\b|\bsold out\b|\bavailable now\b|\bprice (?:is|of)\b|\bcosts\b|\bdiscount/i;
@@ -44,6 +45,26 @@ export function httpsOnlyLinks(markdown: string): string {
     .replace(otherLinks, '')).join('');
 }
 const markers = /\[S\d{1,2}\]/;
+/** Follow-up prompts the user may send next. Presentation only: anything doubtful is dropped, never an error. */
+export function cleanSuggestions(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const out: string[] = [];
+  for (const item of value.slice(0, 8)) {
+    if (typeof item !== 'string' || !item.isWellFormed()) continue;
+    const s = item.replace(/[\p{Cc}\p{Cf}]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^["'`]+|["'`]+$/g, '').trim();
+    if (s.length < 3 || s.length > SUGGESTION_CHARS || /https?:|www\.|[<>`]|\[S\d|\b[EW]\d{1,2}\.\d/i.test(s) || priceOrStock.test(s)) continue;
+    if (!out.some(o => o.toLowerCase() === s.toLowerCase())) out.push(s);
+    if (out.length === MAX_SUGGESTIONS) break;
+  }
+  return out;
+}
+/** A plain reply may end with one line "Next: <request> | <request> | <request>"; it is removed from the text and becomes suggestions. */
+export function splitNextLine(text: string): { text: string; suggestions: string[] } {
+  const match = /\n[ \t]*(?:\*\*)?Next:(?:\*\*)?[ \t]*([^\n]+)\s*$/i.exec('\n' + text);
+  if (!match) return { text, suggestions: [] };
+  const body = ('\n' + text).slice(0, match.index).replace(/^\n/, '').trimEnd();
+  return body ? { text: body, suggestions: cleanSuggestions(match[1].split('|')) } : { text, suggestions: [] };
+}
 const bytes = (s: string) => Buffer.byteLength(s, 'utf8');
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max && v.isWellFormed();
@@ -62,7 +83,8 @@ const specs = {
   final_answer: fn('final_answer', 'Needed only when citing read_product excerpts; otherwise reply in plain text, which is the normal way to answer. Ends your turn. Put excerpt ids only in `citations`, never in the text. `sourced` holds only facts from read_product excerpts this turn, cited by excerpt id; `general` holds general engineering guidance (plans, wiring, code, libraries), shown under a "not from PandaByte sources" heading.',
     { sourced: { type: 'string', description: 'Markdown. PandaByte product facts only, no URLs or citation markers. Empty when nothing was cited.' },
       citations: { type: 'array', items: { type: 'string' }, maxItems: MAX_CITATIONS, description: 'Excerpt ids supporting `sourced`.' },
-      general: { type: 'string', description: 'Markdown. General engineering guidance; never PandaByte product facts, prices or stock.' } }, ['sourced', 'citations', 'general']),
+      general: { type: 'string', description: 'Markdown. General engineering guidance; never PandaByte product facts, prices or stock.' },
+      suggestions: { type: 'array', items: { type: 'string' }, maxItems: MAX_SUGGESTIONS, description: `Optional: ${MAX_SUGGESTIONS} or fewer short next requests the user is likely to send, written as the user (under ${SUGGESTION_CHARS} characters, no URLs or prices).` } }, ['sourced', 'citations', 'general']),
 };
 const webSearchSpec = fn('web_search', `Search the public web (maker docs, datasheets, tutorials). Returns up to 3 results, each with an id (W...) to cite in final_answer.citations; facts from them go in general. At most ${MAX_WEB_SEARCHES} searches per turn. Never use it for PandaByte products, prices or stock.`,
   { query: { type: 'string', description: 'A short search query in plain words, no URLs.' } }, ['query']);
@@ -179,7 +201,7 @@ export function createToolHost(deps: ToolDeps) {
     catch { return error('invalid_answer', 'The answer could not be accepted. Rewrite it in plain Markdown.'); }
     // The journal stores at most 24,000 bytes of answer JSON; Postgres jsonb text adds spaces, so keep a margin.
     if (bytes(JSON.stringify(answer)) > 23000) return error('too_long', 'The answer with its citations is over the 23,000-byte storage limit (non-English text and code count more). Shorten it.');
-    return { kind: 'final', answer, citedSkus: [...new Set(unique.map(id => excerpts.get(id)!.sku))] };
+    return { kind: 'final', answer, citedSkus: [...new Set(unique.map(id => excerpts.get(id)!.sku))], suggestions: cleanSuggestions(args.suggestions) };
   }
 
   function askUser(args: Record<string, unknown>): ToolOutcome {
@@ -223,7 +245,7 @@ export function createToolHost(deps: ToolDeps) {
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */
     async prepare() { try { await rows(); } catch { catalog = undefined; } },
     /** A plain-text reply (no tool call) is accepted as general guidance only; the web results it may rest on are listed. */
-    plain(content: string): ToolOutcome { return finalAnswer({ sourced: '', citations: [], general: content }, [...web.keys()]); },
+    plain(content: string): ToolOutcome { const next = splitNextLine(content); return finalAnswer({ sourced: '', citations: [], general: next.text, suggestions: next.suggestions }, [...web.keys()]); },
     /** Rechecks the source scope of every product an answer cites, immediately before saving. */
     async revalidate(skus: readonly string[]): Promise<boolean> {
       for (const sku of skus) { const read = reads.get(sku); if (!read || await read.revalidate() !== true) return false; }
