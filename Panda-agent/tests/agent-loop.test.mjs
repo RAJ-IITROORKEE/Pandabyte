@@ -653,12 +653,17 @@ test('find_pinout: pin-focused read with a larger budget and its own slot; the b
   const pinText = sku => `Board photo: header pin labels for ${sku}: 3V3 GND GPIO4 GPIO5 SDA SCL TX RX. ` + 'x'.repeat(2500);
   const host = createToolHost({ catalog: async () => catalog,
     readProduct: async (row, focus) => { focuses.push(focus); return { kind: 'ready', revalidate: async () => { revalidated.push([row.sku, focus.slice(0, 9)]); return true; },
-      passages: [pinText(row.sku), `Espressif datasheet excerpt. Pin definitions for ${row.sku}. ` + 'y'.repeat(2500)].map((text, i) => ({ text, title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath: ['Pins', `Part ${i + 1}`] })) }; },
+      // Ranked as the lexical reader does: long datasheet notes first, the board photo and pin tables after them.
+      passages: [[`UART and I2C notes for ${row.sku}. ` + 'u'.repeat(2500), 'Datasheet', 'UART and I2C peripheral notes'], [`Strapping pins. ` + 's'.repeat(1500), 'Datasheet', 'Strapping pins and default configuration'],
+        [`Espressif datasheet excerpt. Pin definitions part 2 for ${row.sku}. ` + 'z'.repeat(1500), 'Datasheet', 'Pin definitions (part 2/2)'], [`Espressif datasheet excerpt. Pin definitions for ${row.sku}. ` + 'y'.repeat(2500), 'Datasheet', 'Pin definitions (part 1/2)'],
+        [pinText(row.sku), 'Board photo: header pin labels']].map(([text, ...sectionPath]) => ({ text, title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath })) }; },
     pinoutImages: async () => [{ url: '/api/media/32cd920e-1111-4222-8333-444455556666', description: 'Color-coded xS3 pinout rendering' }] });
   const pins = JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
   const size = r => r.excerpts.reduce((n, e) => n + Buffer.byteLength(e.text), 0);
   assert.equal(focuses[0], PINOUT_FOCUS); assert.equal(pins.pinoutImages, 1);
-  assert.ok(size(pins) > 3000 && size(pins) <= 6000, 'pin reads use the larger 6,000-byte budget');
+  assert.ok(size(pins) > 6000 && size(pins) <= 8000, 'pin reads use the larger 8,000-byte budget');
+  assert.deepEqual([...new Set(pins.excerpts.map(e => e.section))].slice(0, 4), ['Board photo: header pin labels', 'Datasheet > Pin definitions (part 1/2)', 'Datasheet > Pin definitions (part 2/2)', 'Datasheet > Strapping pins and default configuration'],
+    'header labels, then pin tables in part order, then strapping, ahead of better-scoring notes');
   assert.match(pins.note, /describes the module, not the board/);
   const listingRead = JSON.parse((await host.call('read_product', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
   assert.ok(size(listingRead) <= 3000 && listingRead.excerpts.length > 0, 'read_product keeps its 3,000-byte budget and is a separate read');

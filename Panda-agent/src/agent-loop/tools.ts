@@ -51,9 +51,15 @@ export function mcpSpecs(tools: readonly McpAgentTool[]): ToolSpec[] {
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
-export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4, PINOUT_EXCERPT_BYTES = 6000;
-/** Ranking words for find_pinout: the board-photo header labels and the module pin-definition tables share them. */
-export const PINOUT_FOCUS = 'pin labels header GPIO pin definitions pinout strapping boot I2C SDA SCL UART TX RX ADC';
+export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4, PINOUT_EXCERPT_BYTES = 8000;
+/** Ranking words for find_pinout; "photo printed pad" keep the board-photo transcription among the passages read. */
+export const PINOUT_FOCUS = 'pin labels header GPIO pin definitions pinout strapping boot I2C SDA SCL UART TX RX ADC photo printed pad';
+/** Pin reads quote by section, not word overlap (long datasheet notes otherwise outrank them): the board's own header
+ *  labels, then module pin tables, then strapping pins, then the rest in ranked order. */
+const pinSection = (p: ProductPassage) => { const s = p.sectionPath.join(' > ');
+  return /board photo/i.test(s) ? 0 : /pin (definitions|layout)/i.test(s) ? 1 : /strapping/i.test(s) ? 2 : 3; };
+export const pinOrder = (passages: readonly ProductPassage[]) => [...passages].sort((a, b) => pinSection(a) - pinSection(b)
+  || (pinSection(a) < 3 ? a.sectionPath.join(' > ').localeCompare(b.sectionPath.join(' > '), 'en') : 0));
 // shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
 export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600;
 export const WEB_SOURCES_HEADING = '### Web sources';
@@ -201,11 +207,12 @@ export function createToolHost(deps: ToolDeps) {
     if (read.kind !== 'ready') return error(read.kind === 'insufficient' ? 'no_excerpts' : 'unavailable', read.kind === 'insufficient'
       ? 'The listing holds no excerpts for that focus (wiring, pinout and safety proof are never in listings). Read again without that focus, or answer that part as general guidance.'
       : 'This product listing cannot be read right now. Do not state its facts.');
-    const quotes = buildHostedSourceQuotes(read.passages.map((p, i) => ({ rank: i + 1, text: p.text }))).quotes;
+    const passages = pins ? pinOrder(read.passages) : read.passages;
+    const quotes = buildHostedSourceQuotes(passages.map((p, i) => ({ rank: i + 1, text: p.text }))).quotes;
     const ids: string[] = [], shown: Array<{ id: string; section: string; text: string }> = [];
     let used = 0;
     for (const q of quotes) {
-      const passage = read.passages[q.rank - 1];
+      const passage = passages[q.rank - 1];
       // Source-label lines prove nothing; whitespace-only slices cannot be quoted.
       if (!passage || !q.text.trim() || /^\s*source\s*:\s*https?:\/\/\S+\s*$/i.test(q.text) || used + bytes(q.text) > (pins ? PINOUT_EXCERPT_BYTES : PRODUCT_EXCERPT_BYTES)) continue;
       used += bytes(q.text);
