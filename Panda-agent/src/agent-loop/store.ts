@@ -44,6 +44,12 @@ export function createAgentLoopStore(actor: ChatActor, key: string) {
     },
     async finish(thread: string, request: string, answer: ChatAnswer) { return parseChatRead(await rpc('finish', thread, request, { answer: cleanAnswer(answer) })); },
     async cancel(thread: string, request: string) { return parseChatRead(await rpc('cancel', thread, request)); },
+    /** Reserves one web search for this claimed turn (non-Admins: 20 per India day); false when the daily limit is reached. */
+    async reserveSearch(thread: string, request: string) {
+      const v = await rpc('web_search', thread, request);
+      if (!object(v) || Object.keys(v).join(',') !== 'allowed' || typeof v.allowed !== 'boolean') throw new ChatStoreError('unavailable');
+      return v.allowed;
+    },
   };
 }
-export type AgentLoopStore = Pick<ReturnType<typeof createAgentLoopStore>, 'state' | 'begin' | 'claimUnmetered' | 'receiptUnmetered' | 'finish' | 'cancel'>;
+export type AgentLoopStore = Pick<ReturnType<typeof createAgentLoopStore>, 'state' | 'begin' | 'claimUnmetered' | 'receiptUnmetered' | 'finish' | 'cancel' | 'reserveSearch'>;

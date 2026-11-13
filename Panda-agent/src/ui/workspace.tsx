@@ -245,7 +245,7 @@ function Workspace({ user, nativeAssistant, directAssistant, previewReadOnly, gu
     attemptIsGuide.current = !("question" in input);
     let thread = selected;
     let attempt: ReturnType<ReturnType<typeof createAttemptGuard>["begin"]> | null = null;
-    let completed = false, chatLimit = false;
+    let completed = false, chatLimit = false, dailyLimit = false;
     try {
       if (!thread) {
         const created = await fetch("/api/panda-agent/chats", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}), cache: "no-store", signal: controller.signal });
@@ -265,13 +265,14 @@ function Workspace({ user, nativeAssistant, directAssistant, previewReadOnly, gu
           setError("guide" in input?"Project guides are disabled. You can continue with ordinary product chat.":"Diagnostics are disabled. Your error text is preserved; you can continue with ordinary product chat.");
           return;
         }
+        dailyLimit = response.status === 429;
         throw new Error("message");
       }
       let data: Detail;
       if (response.headers.get("content-type")?.toLowerCase().startsWith("text/event-stream")) {
         if (!response.body) throw new Error("Missing stream");
         const result = await readChatStream(response.body, stage => { if (active.current && attempt && attempts.current.current(attempt)) setActivity(previous => [...previous, stage]); setStepTimes(previous => [...previous, Date.now()]); }, summary => { if (active.current && attempt && attempts.current.current(attempt)) setContext(summary); }, tool => {if(active.current && attempt && attempts.current.current(attempt)) setToolActivity(previous=>[...previous,tool]);});
-        if (result.type !== "complete") throw new Error("Unconfirmed");
+        if (result.type !== "complete") { dailyLimit = result.type === "error" && result.error === "quota"; throw new Error("Unconfirmed"); }
         data = result.data as Detail;
       } else data = await readJson(response) as Detail;
       if (!data?.thread || !Array.isArray(data.messages)) throw new Error("Invalid response");
@@ -301,7 +302,7 @@ function Workspace({ user, nativeAssistant, directAssistant, previewReadOnly, gu
         }
         if (!thread) setMessages(previous => previous.filter(message => message.id !== optimisticId));
         if ("question" in input) setRestoreDraft({ text: question, id: Date.now() }); setContext(null);
-        setError(thread ? "The request could not be confirmed. Check the saved chat before sending again." : chatLimit ? "You have reached the saved chat limit. Delete a chat you no longer need, then send again." : "Could not create a chat. Your message is ready to try again.");
+        setError(dailyLimit ? "You've reached today's Panda Agent message limit. It resets at midnight India time." : thread ? "The request could not be confirmed. Check the saved chat before sending again." : chatLimit ? "You have reached the saved chat limit. Delete a chat you no longer need, then send again." : "Could not create a chat. Your message is ready to try again.");
         setUncertain(Boolean(thread));
       }
     } finally { if (!attempt || attempts.current.current(attempt)) { if (completed) currentAttempt.current = null; requestController.current = null; busyRef.current = false; if (!attempt) cancelBusy.current = false; if (active.current) { if (modelAssistant) setCapabilityLoading(true); setBusy(false); setActiveModel(null); setTiming(previous => ({ ...previous, end: Date.now() })); } } }

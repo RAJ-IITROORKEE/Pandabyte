@@ -54,3 +54,15 @@ test('revocation, profile or credential changes invalidate admitted policy',asyn
   const f=fixture(),p=f.make();assert.equal(await p.enabled(),true);change(f);assert.equal(await p.current(),false);assert.equal(p.dispatchCurrent(),false);assert.equal(p.budgetRefs(),null);
  }
 });
+
+test('signed-in chat admits a non-Admin client only while PANDA_AGENT_SIGNED_IN_CHAT is on, and reports them as non-Admin',async()=>{
+ const f=unmeteredFixture(),client='user_client_tester';
+ const actor={subject:client,client:{database:{rpc:async()=>({data:{subject:client,admin:false},error:null})}}};
+ const off=f.make({actor,budget:()=>{throw Error('no ledger');}});
+ assert.equal(await off.enabled(),false,'the reviewed profile stays owner-only without the flag');
+ f.env.PANDA_AGENT_SIGNED_IN_CHAT='true';
+ const on=f.make({actor,budget:()=>{throw Error('no ledger');}});
+ assert.equal(await on.enabled(),true);assert.equal(on.isUnmetered(),true);assert.equal(on.isAdmin(),false);
+ f.env.PANDA_AGENT_SIGNED_IN_CHAT='false';assert.equal(on.dispatchCurrent(),false,'turning the flag off stops dispatch at once');
+ assert.equal(await f.policy.enabled(),true);assert.equal(f.policy.isAdmin(),true,'the owner Admin is still Admin');
+});

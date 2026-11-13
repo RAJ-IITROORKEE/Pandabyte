@@ -18,7 +18,7 @@ type Claim = { request: string; surface: 'playground' | 'chat'; fingerprint: str
 export function readHostedRagProfile({ env, subject, requestOrigin }: Context) {
   const configKeys = ['VERCEL', 'VERCEL_ENV', 'NODE_ENV', 'VERCEL_URL', 'PANDA_AGENT_HOSTED_GROUNDED_ENABLED',
     'PANDA_AGENT_HOSTED_GROUNDED_PROFILE', 'PANDA_AGENT_OPENROUTER_OBSERVABILITY', 'OPENROUTER_API_KEY',
-    'PANDA_AGENT_LIGHTWEIGHT_DB_KEY', 'CLERK_SECRET_KEY', 'PANDA_AGENT_INSFORGE_BASE_URL', 'PANDA_AGENT_CLERK_JWT_TEMPLATE', 'PANDA_AGENT_HOSTED_MODEL'];
+    'PANDA_AGENT_LIGHTWEIGHT_DB_KEY', 'CLERK_SECRET_KEY', 'PANDA_AGENT_INSFORGE_BASE_URL', 'PANDA_AGENT_CLERK_JWT_TEMPLATE', 'PANDA_AGENT_HOSTED_MODEL', 'PANDA_AGENT_SIGNED_IN_CHAT'];
   const snapshot = configKeys.map(key => env[key]);
   const key = env.OPENROUTER_API_KEY, raw = env.PANDA_AGENT_HOSTED_GROUNDED_PROFILE;
   const model = hostedModelSelection(env);
@@ -33,7 +33,8 @@ export function readHostedRagProfile({ env, subject, requestOrigin }: Context) {
   try {
     const profile = strictJson(raw);
     if (!fields(profile, ['version', 'origin', 'ownerSubjectSha256', 'keySha256', 'workspaceSha256', 'privacy'])
-      || profile.version !== 1 || profile.origin !== stableOrigin || profile.ownerSubjectSha256 !== hash(subject)
+      // The profile records the owner's review of the provider privacy settings; with signed-in chat on, other signed-in users may use it.
+      || profile.version !== 1 || profile.origin !== stableOrigin || (profile.ownerSubjectSha256 !== hash(subject) && env.PANDA_AGENT_SIGNED_IN_CHAT !== 'true')
       || profile.keySha256 !== hash(key) || !hex(profile.workspaceSha256)
       || !fields(profile.privacy, ['logging', 'traces', 'dataDiscount', 'publicPrompts'])
       || profile.privacy.logging !== false || profile.privacy.traces !== true

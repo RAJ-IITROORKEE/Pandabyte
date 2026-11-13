@@ -132,7 +132,7 @@ export function createToolHost(deps: ToolDeps) {
     report('searching_sources');
     let sources: WebSource[];
     try { sources = await deps.webSearch!(query, signal); }
-    catch { signal.throwIfAborted(); return error('unavailable', 'Web search failed or the query was refused (no URLs, emails or keys). Try a plainer query, or answer without the web.'); }
+    catch { signal.throwIfAborted(); return error('unavailable', 'Web search failed, the query was refused (no URLs, emails or keys), or the daily web search limit is reached. Try a plainer query once, or answer without the web.'); }
     if (!sources.length) return { kind: 'result', content: JSON.stringify({ results: [], note: 'No usable results. Answer without the web or try other words.' }) };
     const results = sources.map((source, i) => { const id = `W${number}.${i + 1}`, content = source.content.slice(0, WEB_RESULT_CHARS);
       // The saved quote is the start of what the model read, cut at a word (citations hold at most 600 characters).

@@ -57,7 +57,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       // Web search is offered only on turns the user sent with web search on, and each search passes the same send check as a model step.
       const { webSearch, ...catalogTools } = options.tools;
       const webOn = turn.webSearch === true && !!webSearch;
-      const tools = createToolHost({ ...catalogTools, progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, beforeSend) } : {}) });
+      const tools = createToolHost({ ...catalogTools, progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
       const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
@@ -80,8 +80,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
   };
 }
 
-/** GPT-OSS 20B could not drive the tools live (13 Nov 2026: step limit on a simple question); its turns keep the existing path. */
-export const loopModelAllowed = (model: string) => model !== 'openai/gpt-oss-20b';
+export { loopModelAllowed } from '../hosted-model.ts';
 
 /** Loop turns keep their own journal for status and cancel; a request another journal already holds stays there.
  *  New requests go to the loop only for an eligible session (Admin, unmetered); everyone else keeps the existing chat. */

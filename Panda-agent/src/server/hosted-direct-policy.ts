@@ -17,12 +17,15 @@ type Refs = { budgetId:string; keySha256:string; workspaceSha256:string };
 export function createHostedDirectPolicy(input:{ env:NodeJS.ProcessEnv; actor:ChatActor; requestOrigin:string; current():Promise<boolean>; fetcher?:typeof fetch; budget?:typeof createPrototypeRagBudget }) {
   const {env,actor} = input;
   if(env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'){
-    let admitted=false;
+    let admitted=false,admin=false;
     const active=()=>env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&env.PANDA_AGENT_DIRECT_ASSISTANT_ENABLED==='true';
+    // Admins always; with PANDA_AGENT_SIGNED_IN_CHAT every signed-in user (the journal caps non-Admins per day).
     const adminCurrent=async()=>{
       if(!active()||!await input.current())return false;
       const {data,error}=await actor.client.database.rpc('panda_agent_control_room_admission');
-      return !error&&object(data)&&data.subject===actor.subject&&data.admin===true&&active()&&await input.current();
+      if(error||!object(data)||data.subject!==actor.subject||typeof data.admin!=='boolean')return false;
+      admin=data.admin;
+      return (admin||env.PANDA_AGENT_SIGNED_IN_CHAT==='true')&&active()&&await input.current();
     };
     const hosted=createHostedRagPolicy({env,actor,subject:actor.subject,requestOrigin:input.requestOrigin,current:adminCurrent,fetcher:input.fetcher});
     const current=()=>admitted&&active()&&hosted.dispatchCurrent();
@@ -30,7 +33,7 @@ export function createHostedDirectPolicy(input:{ env:NodeJS.ProcessEnv; actor:Ch
       async enabled(){admitted=false;admitted=active()&&await hosted.enabled();return current();},
       async current(){if(!current()||!await hosted.current()){admitted=false;return false;}return current();},
       dispatchCurrent:current,key:()=>current()?hosted.key():'',binding:()=>current()?hosted.binding():'',
-      isUnmetered:current,budgetRefs:():Refs|null=>null,allowance:():PrototypeRagBudgetStatus|null=>null,
+      isUnmetered:current,isAdmin:()=>current()&&admin,budgetRefs:():Refs|null=>null,allowance:():PrototypeRagBudgetStatus|null=>null,
     };
   }
   let snapshot:string|null=null, admittedKey='', refs:Refs|null=null, allowance:PrototypeRagBudgetStatus|null=null;

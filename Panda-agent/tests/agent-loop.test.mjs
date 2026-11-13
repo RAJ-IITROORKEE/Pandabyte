@@ -169,9 +169,10 @@ test('history compaction starts above 75% of the context budget, keeps recent tu
   assert.ok(tight.messages.length >= 2 && Buffer.byteLength(JSON.stringify(tight.messages), 'utf8') + Buffer.byteLength(tight.summary ?? '', 'utf8') <= 6000);
 });
 
-function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch } = {}) {
+function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true } = {}) {
   const calls = []; let state = null;
   const store = {
+    reserveSearch: async () => { calls.push('reserve'); return searchAllowed; },
     state: async () => state && { ...state },
     begin: async (_t, _r, question) => { calls.push('begin'); state = { question, status: 'pending', claimed: false, cancelled: false }; return { ...read, admitted: true }; },
     claimUnmetered: async (_t, _r, hash) => { calls.push(['claim', hash]); state.claimed = true; return true; },
@@ -490,6 +491,12 @@ test('web_search reaches the model only on turns sent with web search on, and ea
   const on = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });
   assert.equal((await on.chat.start({ ...turn, webSearch: true }, signal())).status, 'saved');
   assert.deepEqual(sent, [['AtomS3 grove', true]]);
+  assert.ok(on.calls.includes('reserve'), 'each search reserves a daily slot in the journal');
+  // Daily limit reached: the reservation refuses before Tavily is sent (a real search client checks beforeSend first).
+  const refused = harness({ script: scripted([() => reply(call('web_search', { query: 'AtomS3' })), m => { assert.equal(JSON.parse(m.at(-1).content).error, 'unavailable'); return reply(call('final_answer', { sourced: '', citations: [], general: 'Answered without the web.' })); }]),
+    read: { thread, messages: [], turns: [current] }, searchAllowed: false, webSearch: async (q, _s, beforeSend) => { if (!await beforeSend()) throw Error('not sent'); sent.push([q, true]); return []; } });
+  assert.equal((await refused.chat.start({ ...turn, webSearch: true }, signal())).status, 'saved');
+  assert.equal(sent.length, 1, 'no search was sent past a refused reservation');
   assert.equal(on.calls.at(-1)[1].outcome, 'evidence');
   assert.equal(on.calls.at(-1)[1].citations[0].sourceUrl, 'https://docs.example-maker.com/atoms3');
   const off = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });

@@ -42,6 +42,8 @@ function baseAssistantForActor(actor:ChatActor,request:Request,web:(routed:Basic
  const model=fast?requestedHostedModel(requested):lunaHostedModel.id;
  const modelPolicy={...policy,enabled:async()=>{
    if(!selected||requested!==null&&(fast?!hostedDirectModelIds.includes(requested):requested!=='openai/gpt-6-luna')||!await policy.enabled())return false;
+   // Non-Admins (signed-in chat) only use models the agent loop runs; the older direct journal is Admin-only.
+   if('isAdmin' in policy&&typeof policy.isAdmin==='function'&&policy.isAdmin()===false&&!loopModelAllowed(model))return false;
    return !fast||('isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true);
   }};
  const direct=createDirectAssistantChat({actor,key,current,budgetRefs:policy.budgetRefs,model,

@@ -1,5 +1,7 @@
 /** Public hosted selection metadata; native execution profiles are independent. */
 export const fastHostedModel = Object.freeze({ id: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B', provider: 'groq' } as const);
+/** GPT-OSS 20B could not drive the agent-loop tools live (13 Nov 2026: step limit on a simple question); its turns keep the older Admin-only path. */
+export const loopModelAllowed = (model: string) => model !== fastHostedModel.id;
 /** Selectable beside the fast model on the hosted chat; pinned to a zero-retention endpoint with strict JSON support. */
 export const haikuHostedModel = Object.freeze({ id: 'anthropic/claude-haiku-5.5', label: 'Claude Haiku 5.5', provider: 'google-vertex/global' } as const);
 export const lunaHostedModel = Object.freeze({ id: 'openai/gpt-6-luna', label: 'GPT-6 Luna', provider: 'azure/us' } as const);
