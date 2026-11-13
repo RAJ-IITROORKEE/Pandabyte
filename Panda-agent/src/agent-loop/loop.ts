@@ -39,7 +39,7 @@ const unsent = new Set(['not_admitted', 'unavailable', 'rate_limited']);
 export const shortNudge = 'Answer the question fully.';
 const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 const greeting = /^\s*(?:hi|hello|hey|thanks|thank you|good (?:morning|afternoon|evening))\b/i;
-export const readNudge = 'You read PandaByte excerpts this turn: deliver the answer with final_answer, citing them; put plans, wiring and code in general.';
+export const readNudge = 'You read PandaByte excerpts or web results this turn: deliver the answer with final_answer, citing their ids; put plans, wiring, code and web facts in general.';
 
 export const webOnNote = "The user turned web search on for this message: when the answer needs facts that PandaByte listings do not hold (other makers' boards, pinouts, libraries, current versions), call web_search instead of offering to search.";
 export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false): LoopMessage[] {

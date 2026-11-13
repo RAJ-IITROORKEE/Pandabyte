@@ -445,10 +445,11 @@ test('a few-word reply to a real question is sent back once; greetings and short
   assert.equal((await run(q, twice)).answer.text, 'Yes.', 'only one reminder');
 });
 
-test('web_search is offered only with a web search dep, caps searches per turn and lists cited pages as links, not citations', async () => {
+test('web_search is offered only with a web search dep, caps searches per turn and cites pages with their images', async () => {
   assert.ok(!createToolHost(deps().tools).specs(false).some(t => t.function.name === 'web_search'));
   const queries = [];
-  const sources = [{ handle: 'web:a', url: 'https://docs.example-maker.com/atom(s3)', title: 'AtomS3 [docs]', content: 'G1 and G2 are on the Grove port.', capturedAt: '2026-11-13T00:00:00.000Z' }];
+  const images = [{ url: 'https://docs.example-maker.com/img/atoms3-pins.png', description: 'AtomS3 pin diagram' }];
+  const sources = [{ handle: 'web:a', url: 'https://docs.example-maker.com/atom(s3)', title: 'AtomS3 [docs]', content: 'G1 and G2 are on the Grove port.', capturedAt: '2026-11-13T00:00:00.000Z', images }];
   const host = createToolHost({ ...deps().tools, webSearch: async q => { queries.push(q); return sources; } });
   assert.ok(host.specs(false).some(t => t.function.name === 'web_search'));
   assert.ok(!host.specs(true).some(t => t.function.name === 'web_search'));
@@ -458,12 +459,22 @@ test('web_search is offered only with a web search dep, caps searches per turn a
   assert.equal(JSON.parse((await host.call('web_search', JSON.stringify({ query: 'third' }), signal())).content).error, 'search_limit');
   assert.deepEqual(queries, ['AtomS3 grove pins', 'second']);
   assert.equal(JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: '', citations: ['W1.1'], general: '' }), signal())).content).error, 'empty_answer');
-  const done = await host.call('final_answer', JSON.stringify({ sourced: '', citations: ['W1.1'], general: 'The maker docs say G1 and G2 are on the Grove port (W1.1).' }), signal());
+  // The same page from both searches is cited once.
+  const done = await host.call('final_answer', JSON.stringify({ sourced: '', citations: ['W1.1', 'W2.1'], general: 'The maker docs say G1 and G2 are on the Grove port (W1.1).' }), signal());
   assert.equal(done.kind, 'final');
-  assert.equal(done.answer.outcome, 'conversation');
-  assert.deepEqual(done.answer.citations, []);
-  assert.doesNotMatch(done.answer.text, /W1\.1/);
-  assert.match(done.answer.text, /### Web sources\n\n1\. \[AtomS3 docs\]\(https:\/\/docs\.example-maker\.com\/atom%28s3%29\)/);
+  assert.equal(done.answer.outcome, 'evidence');
+  assert.deepEqual(done.answer.citations, [{ id: 'S1', title: 'AtomS3 [docs]', sourceUrl: 'https://docs.example-maker.com/atom(s3)', capturedAt: '2026-11-13T00:00:00.000Z',
+    quote: 'G1 and G2 are on the Grove port.', sectionPath: ['Web search excerpt (Tavily)'], images }]);
+  assert.equal(done.answer.text, 'The maker docs say G1 and G2 are on the Grove port.\n\n[S1]');
+  assert.deepEqual(done.citedSkus, [], 'web pages are not revalidated as PandaByte products');
+  // Listing excerpts come first; web marks follow the general guidance under its heading.
+  const mixed = createToolHost({ ...deps().tools, webSearch: async () => sources });
+  const read = JSON.parse((await mixed.call('read_product', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
+  await mixed.call('web_search', JSON.stringify({ query: 'AtomS3' }), signal());
+  const both = await mixed.call('final_answer', JSON.stringify({ sourced: 'Listing fact.', citations: [read.excerpts[0].id, 'W1.1'], general: 'Web fact.' }), signal());
+  assert.deepEqual(both.answer.citations.map(c => [c.id, c.sectionPath[0]]), [['S1', 'Overview'], ['S2', 'Web search excerpt (Tavily)']]);
+  assert.equal(both.answer.text, `Listing fact.\n\n[S1]\n\n${GENERAL_HEADING}\n\nWeb fact.\n\n[S2]`);
+  assert.deepEqual(both.citedSkus, ['ESPXS3']);
   const plain = host.plain('G1 and G2 are on the Grove port.');
   // The same page found by both searches is listed once.
   assert.match(plain.answer.text, /### Web sources\n\n1\. [^\n]+$/);
@@ -478,7 +489,8 @@ test('web_search reaches the model only on turns sent with web search on, and ea
   const on = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });
   assert.equal((await on.chat.start({ ...turn, webSearch: true }, signal())).status, 'saved');
   assert.deepEqual(sent, [['AtomS3 grove', true]]);
-  assert.match(on.calls.at(-1)[1].text, /### Web sources/);
+  assert.equal(on.calls.at(-1)[1].outcome, 'evidence');
+  assert.equal(on.calls.at(-1)[1].citations[0].sourceUrl, 'https://docs.example-maker.com/atoms3');
   const off = harness({ script: script(), read: { thread, messages: [], turns: [current] }, webSearch });
   assert.equal((await off.chat.start(turn, signal())).status, 'saved');
   assert.equal(sent.length, 1);

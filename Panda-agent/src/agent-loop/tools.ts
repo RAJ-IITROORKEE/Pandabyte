@@ -6,6 +6,7 @@ import { agentQuestionText, categoryOf } from '../retrieval/catalog-listing.ts';
 import type { ChatAnswer } from '../server/chat-contracts.ts';
 import { cleanAnswer } from '../server/chat-store.ts';
 import type { WebSource } from '../search/tavily.ts';
+import { webSearchSection } from '../search/citation-url.ts';
 
 export type CatalogRow = { sku: string; title: string; sourceUrl: string };
 export type ProductPassage = { text: string; title: string; sourceUrl: string; capturedAt: string; sectionPath: readonly string[] };
@@ -23,7 +24,7 @@ export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' 
 
 export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4;
 // shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
-export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500;
+export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600;
 export const WEB_SOURCES_HEADING = '### Web sources';
 export const GENERAL_HEADING = '### General guidance (not from PandaByte sources)';
 // shortcut: a wording heuristic over the model's own prose (code and cited quotes are not checked); a paraphrase can still pass.
@@ -82,7 +83,7 @@ export function searchCatalog(rows: readonly CatalogRow[], query: string) {
 type Excerpt = { text: string; passage: ProductPassage; sku: string };
 /** Per-turn tool state: excerpt ids are request-local (E<read>.<n>) and never reveal internal handles. */
 export function createToolHost(deps: ToolDeps) {
-  const excerpts = new Map<string, Excerpt>(), web = new Map<string, { title: string; url: string }>(), reads = new Map<string, { ids: string[]; revalidate(): Promise<boolean>; row: CatalogRow }>();
+  const excerpts = new Map<string, Excerpt>(), web = new Map<string, Omit<WebSource, 'handle' | 'content'> & { quote: string }>(), reads = new Map<string, { ids: string[]; revalidate(): Promise<boolean>; row: CatalogRow }>();
   let catalog: Promise<CatalogRow[]> | undefined, loaded: CatalogRow[] | undefined;
   const rows = () => catalog ??= deps.catalog().then(list => (loaded = list));
   // Product slots are taken before any read is awaited, so parallel calls hit the cap and get read numbers in call order.
@@ -133,11 +134,14 @@ export function createToolHost(deps: ToolDeps) {
     try { sources = await deps.webSearch!(query, signal); }
     catch { signal.throwIfAborted(); return error('unavailable', 'Web search failed or the query was refused (no URLs, emails or keys). Try a plainer query, or answer without the web.'); }
     if (!sources.length) return { kind: 'result', content: JSON.stringify({ results: [], note: 'No usable results. Answer without the web or try other words.' }) };
-    const results = sources.map((source, i) => { const id = `W${number}.${i + 1}`; web.set(id, { title: source.title, url: source.url });
-      return { id, title: source.title, url: source.url, content: source.content.slice(0, WEB_RESULT_CHARS) }; });
+    const results = sources.map((source, i) => { const id = `W${number}.${i + 1}`, content = source.content.slice(0, WEB_RESULT_CHARS);
+      // The saved quote is the start of what the model read, cut at a word (citations hold at most 600 characters).
+      const quote = (content.length <= WEB_QUOTE_CHARS ? content : content.slice(0, WEB_QUOTE_CHARS).replace(/\s+\S*$/, '')).trim();
+      web.set(id, { title: source.title, url: source.url, capturedAt: source.capturedAt, quote, ...(source.images?.length ? { images: source.images } : {}) });
+      return { id, title: source.title, url: source.url, content }; });
     return { kind: 'result', content: JSON.stringify({ results, note: 'Web pages are not PandaByte sources. Put facts from them in final_answer.general and their ids in citations; say what the page says rather than guaranteeing it.' }) };
   }
-  /** Linked list of the web results an answer used, appended by the application (web pages are links, not stored quotes). */
+  /** Plain replies after a web search cite nothing, so the pages searched are listed as links. */
   const webList = (all: readonly string[]) => { const urls = [...new Set(all.map(id => web.get(id)!.url))];
     const ids = urls.map(url => all.find(id => web.get(id)!.url === url)!);
     return ids.length ? `${WEB_SOURCES_HEADING}\n\n${ids.map((id, i) => { const w = web.get(id)!;
@@ -152,16 +156,22 @@ export function createToolHost(deps: ToolDeps) {
     if (!sourced && !general) return error('empty_answer', 'Write the answer in sourced or general.');
     const cited = [...new Set(ids as string[])], missing = cited.filter(id => !excerpts.has(id) && !web.has(id));
     if (missing.length) return error('unknown_citation', `These ids were not returned by read_product or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);
-    const unique = cited.filter(id => excerpts.has(id)), webCited = webIds ?? cited.filter(id => web.has(id));
+    // One citation per web page, even when both searches returned it.
+    const unique = cited.filter(id => excerpts.has(id)), webIdsCited = cited.filter(id => web.has(id)),
+      webCited = webIdsCited.filter((id, i) => webIdsCited.findIndex(other => web.get(other)!.url === web.get(id)!.url) === i);
     if (webCited.length && !general) return error('web_without_general', 'Put facts from web results in general.');
     if (sourced && !unique.length) return error('uncited_sourced', 'sourced text needs at least one excerpt id. Move uncited content to general, or read the product first.');
     if (unique.length && !sourced) return error('citations_without_text', 'Put the cited facts in sourced.');
     if (/https?:\/\/|www\./i.test(sourced) || markers.test(sourced) || markers.test(general)) return error('markers', 'Remove URLs from sourced and citation markers from both fields; the application adds citations.');
     if (priceOrStock.test(prose(sourced)) || priceOrStock.test(prose(general))) return error('price_or_stock', 'Never state a price or stock level. Say they are shown on the product page.');
     report('checking_citations');
-    const citations = unique.map((id, i) => { const { text, passage } = excerpts.get(id)!;
+    const listing = unique.map((id, i) => { const { text, passage } = excerpts.get(id)!;
       return { id: `S${i + 1}`, title: passage.title, sourceUrl: passage.sourceUrl, capturedAt: passage.capturedAt, quote: text, sectionPath: [...passage.sectionPath] }; });
-    const parts = [sourced && `${sourced}\n\n${citations.map(c => `[${c.id}]`).join(' ')}`, general && (sourced ? `${GENERAL_HEADING}\n\n${general}` : general), webList(webCited)].filter(Boolean);
+    const pages = webCited.map((id, i) => { const w = web.get(id)!;
+      return { id: `S${listing.length + i + 1}`, title: w.title, sourceUrl: w.url, capturedAt: w.capturedAt, quote: w.quote, sectionPath: [webSearchSection], ...(w.images ? { images: w.images } : {}) }; });
+    const citations = [...listing, ...pages], marks = (list: readonly { id: string }[]) => list.map(c => `[${c.id}]`).join(' ');
+    const generalText = general && pages.length ? `${general}\n\n${marks(pages)}` : general;
+    const parts = [sourced && `${sourced}\n\n${marks(listing)}`, generalText && (sourced ? `${GENERAL_HEADING}\n\n${generalText}` : generalText), webList(webIds ?? [])].filter(Boolean);
     const text = parts.join('\n\n');
     if (text.length > 8000) return error('too_long', `The answer is ${text.length} characters; the limit is 8000. Shorten it (keep code minimal and complete).`);
     let answer: ChatAnswer;
@@ -208,8 +218,8 @@ export function createToolHost(deps: ToolDeps) {
     },
     /** Tools offered for a step: web_search only on web-search turns; the last step only finishes. */
     specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs : deps.webSearch ? [...allToolSpecs, webSearchSpec] : allToolSpecs,
-    /** Whether a product read returned citable excerpts this turn. */
-    hasExcerpts: () => excerpts.size > 0,
+    /** Whether a product read or web search returned citable ids this turn. */
+    hasExcerpts: () => excerpts.size > 0 || web.size > 0,
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */
     async prepare() { try { await rows(); } catch { catalog = undefined; } },
     /** A plain-text reply (no tool call) is accepted as general guidance only; the web results it may rest on are listed. */
