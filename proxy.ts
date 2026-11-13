@@ -14,7 +14,9 @@ export default clerkMiddleware(() => {}, (request) => {
         "script-src-attr": ["'none'"],
         // GLTFLoader decodes validated embedded textures through local Blob URLs.
         "connect-src": ["blob:", ...razorpayFrames],
-        "img-src": ["blob:"],
+        // Panda Agent shows reference images from cited web pages (same site as the page, checked in citation-image.ts);
+        // its Markdown never renders images, so model text cannot load one.
+        "img-src": ["blob:", ...(request.nextUrl.pathname === "/panda-agent" || request.nextUrl.pathname.startsWith("/panda-agent/") ? ["https:"] : [])],
         "frame-src": ["'self'", "https://www.youtube-nocookie.com", ...razorpayFrames],
         ...(razorpayTest ? { "script-src": ["https://checkout.razorpay.com"] } : {}),
       },
