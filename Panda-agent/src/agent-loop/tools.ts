@@ -5,6 +5,7 @@ import { buildHostedSourceQuotes } from '../control-room/hosted-source-quotes.ts
 import { agentQuestionText, categoryOf } from '../retrieval/catalog-listing.ts';
 import type { ChatAnswer } from '../server/chat-contracts.ts';
 import { cleanAnswer } from '../server/chat-store.ts';
+import type { WebSource } from '../search/tavily.ts';
 
 export type CatalogRow = { sku: string; title: string; sourceUrl: string };
 export type ProductPassage = { text: string; title: string; sourceUrl: string; capturedAt: string; sectionPath: readonly string[] };
@@ -14,17 +15,22 @@ export type ToolDeps = {
   /** Eligible listing passages for one catalog product, ranked by `focus`; revalidate() rechecks the same source scope before saving. */
   readProduct(row: CatalogRow, focus: string, signal: AbortSignal): Promise<ProductRead>;
   progress?(stage: 'searching_sources' | 'reading_sources' | 'checking_citations'): void;
+  /** Public web search; present only on turns where the user turned web search on. */
+  webSearch?(query: string, signal: AbortSignal): Promise<WebSource[]>;
 };
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[] };
 
 export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4;
+// shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
+export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500;
+export const WEB_SOURCES_HEADING = '### Web sources';
 export const GENERAL_HEADING = '### General guidance (not from PandaByte sources)';
 // shortcut: a wording heuristic over the model's own prose (code and cited quotes are not checked); a paraphrase can still pass.
 const priceOrStock = /[₹$]\s?\d|\b(?:Rs\.?|INR|USD|rupees?)\s?\d|\d[\d,.]*\s?(?:rupees?|Rs\b|INR\b|USD\b|dollars?)|\b(?:in|out[\s-]of)[\s-]stock\b|\bstock (?:level|count|is)\b|\bsold out\b|\bavailable now\b|\bprice (?:is|of)\b|\bcosts\b|\bdiscount/i;
 const code = /(```[\s\S]*?```|`[^`\n]*`)/;
 const prose = (s: string) => s.split(code).filter((_, i) => i % 2 === 0).join(' ');
-const excerptId = String.raw`E\d{1,2}\.\d{1,3}`;
+const excerptId = String.raw`[EW]\d{1,2}\.\d{1,3}`;
 const excerptIds = new RegExp(String.raw`\s?[(\[]\s*${excerptId}(?:\s*[,;]\s*${excerptId})*\s*[)\]]|\s?\b${excerptId}\b`, 'g');
 /** Some models copy excerpt ids ("(E1.2, E1.7)", "[E2.3]", "E1.1") into prose; the application adds the real citations, so they are removed outside code. */
 export const stripExcerptIds = (markdown: string) => markdown.split(code).map((part, i) => i % 2 ? part : part.replace(excerptIds, '')).join('');
@@ -57,6 +63,8 @@ const specs = {
       citations: { type: 'array', items: { type: 'string' }, maxItems: MAX_CITATIONS, description: 'Excerpt ids supporting `sourced`.' },
       general: { type: 'string', description: 'Markdown. General engineering guidance; never PandaByte product facts, prices or stock.' } }, ['sourced', 'citations', 'general']),
 };
+const webSearchSpec = fn('web_search', `Search the public web (maker docs, datasheets, tutorials). Returns up to 3 results, each with an id (W...) to cite in final_answer.citations; facts from them go in general. At most ${MAX_WEB_SEARCHES} searches per turn. Never use it for PandaByte products, prices or stock.`,
+  { query: { type: 'string', description: 'A short search query in plain words, no URLs.' } }, ['query']);
 export const allToolSpecs: readonly ToolSpec[] = Object.values(specs);
 export const finishingToolSpecs: readonly ToolSpec[] = [specs.ask_user, specs.final_answer];
 
@@ -74,12 +82,12 @@ export function searchCatalog(rows: readonly CatalogRow[], query: string) {
 type Excerpt = { text: string; passage: ProductPassage; sku: string };
 /** Per-turn tool state: excerpt ids are request-local (E<read>.<n>) and never reveal internal handles. */
 export function createToolHost(deps: ToolDeps) {
-  const excerpts = new Map<string, Excerpt>(), reads = new Map<string, { ids: string[]; revalidate(): Promise<boolean>; row: CatalogRow }>();
+  const excerpts = new Map<string, Excerpt>(), web = new Map<string, { title: string; url: string }>(), reads = new Map<string, { ids: string[]; revalidate(): Promise<boolean>; row: CatalogRow }>();
   let catalog: Promise<CatalogRow[]> | undefined, loaded: CatalogRow[] | undefined;
   const rows = () => catalog ??= deps.catalog().then(list => (loaded = list));
   // Product slots are taken before any read is awaited, so parallel calls hit the cap and get read numbers in call order.
   const reading = new Set<string>();
-  let readNumber = 0;
+  let readNumber = 0, searches = 0;
   const report = (stage: Parameters<NonNullable<ToolDeps['progress']>>[0]) => { try { deps.progress?.(stage); } catch { /* Presentation only. */ } };
 
   async function readProduct(args: Record<string, unknown>, signal: AbortSignal): Promise<ToolOutcome> {
@@ -117,15 +125,35 @@ export function createToolHost(deps: ToolDeps) {
     } finally { reading.delete(row.sku); }
   }
 
-  function finalAnswer(args: Record<string, unknown>): ToolOutcome {
+  async function webSearch(query: string, signal: AbortSignal): Promise<ToolOutcome> {
+    if (searches >= MAX_WEB_SEARCHES) return error('search_limit', `At most ${MAX_WEB_SEARCHES} web searches per turn. Answer with what you have.`);
+    const number = ++searches;
+    report('searching_sources');
+    let sources: WebSource[];
+    try { sources = await deps.webSearch!(query, signal); }
+    catch { signal.throwIfAborted(); return error('unavailable', 'Web search failed or the query was refused (no URLs, emails or keys). Try a plainer query, or answer without the web.'); }
+    if (!sources.length) return { kind: 'result', content: JSON.stringify({ results: [], note: 'No usable results. Answer without the web or try other words.' }) };
+    const results = sources.map((source, i) => { const id = `W${number}.${i + 1}`; web.set(id, { title: source.title, url: source.url });
+      return { id, title: source.title, url: source.url, content: source.content.slice(0, WEB_RESULT_CHARS) }; });
+    return { kind: 'result', content: JSON.stringify({ results, note: 'Web pages are not PandaByte sources. Put facts from them in final_answer.general and their ids in citations; say what the page says rather than guaranteeing it.' }) };
+  }
+  /** Linked list of the web results an answer used, appended by the application (web pages are links, not stored quotes). */
+  const webList = (all: readonly string[]) => { const urls = [...new Set(all.map(id => web.get(id)!.url))];
+    const ids = urls.map(url => all.find(id => web.get(id)!.url === url)!);
+    return ids.length ? `${WEB_SOURCES_HEADING}\n\n${ids.map((id, i) => { const w = web.get(id)!;
+    return `${i + 1}. [${w.title.replace(/[[\]\\]/g, ' ').replace(/\s+/g, ' ').trim()}](${w.url.replace(/\(/g, '%28').replace(/\)/g, '%29')})`; }).join('\n')}` : ''; };
+
+  function finalAnswer(args: Record<string, unknown>, webIds?: readonly string[]): ToolOutcome {
     const sourced = typeof args.sourced === 'string' ? stripExcerptIds(args.sourced).trim() : args.sourced === undefined ? '' : null;
     const general = typeof args.general === 'string' ? stripExcerptIds(httpsOnlyLinks(args.general)).trim() : args.general === undefined ? '' : null;
     const ids = args.citations === undefined ? [] : args.citations;
     if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
       return error('invalid_arguments', 'final_answer needs sourced and general strings and at most four excerpt ids.');
     if (!sourced && !general) return error('empty_answer', 'Write the answer in sourced or general.');
-    const unique = [...new Set(ids as string[])], missing = unique.filter(id => !excerpts.has(id));
-    if (missing.length) return error('unknown_citation', `These ids were not returned by read_product this turn: ${missing.join(', ')}. Cite only excerpt ids you read.`);
+    const cited = [...new Set(ids as string[])], missing = cited.filter(id => !excerpts.has(id) && !web.has(id));
+    if (missing.length) return error('unknown_citation', `These ids were not returned by read_product or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);
+    const unique = cited.filter(id => excerpts.has(id)), webCited = webIds ?? cited.filter(id => web.has(id));
+    if (webCited.length && !general) return error('web_without_general', 'Put facts from web results in general.');
     if (sourced && !unique.length) return error('uncited_sourced', 'sourced text needs at least one excerpt id. Move uncited content to general, or read the product first.');
     if (unique.length && !sourced) return error('citations_without_text', 'Put the cited facts in sourced.');
     if (/https?:\/\/|www\./i.test(sourced) || markers.test(sourced) || markers.test(general)) return error('markers', 'Remove URLs from sourced and citation markers from both fields; the application adds citations.');
@@ -133,7 +161,7 @@ export function createToolHost(deps: ToolDeps) {
     report('checking_citations');
     const citations = unique.map((id, i) => { const { text, passage } = excerpts.get(id)!;
       return { id: `S${i + 1}`, title: passage.title, sourceUrl: passage.sourceUrl, capturedAt: passage.capturedAt, quote: text, sectionPath: [...passage.sectionPath] }; });
-    const parts = [sourced && `${sourced}\n\n${citations.map(c => `[${c.id}]`).join(' ')}`, general && (sourced ? `${GENERAL_HEADING}\n\n${general}` : general)].filter(Boolean);
+    const parts = [sourced && `${sourced}\n\n${citations.map(c => `[${c.id}]`).join(' ')}`, general && (sourced ? `${GENERAL_HEADING}\n\n${general}` : general), webList(webCited)].filter(Boolean);
     const text = parts.join('\n\n');
     if (text.length > 8000) return error('too_long', `The answer is ${text.length} characters; the limit is 8000. Shorten it (keep code minimal and complete).`);
     let answer: ChatAnswer;
@@ -170,16 +198,22 @@ export function createToolHost(deps: ToolDeps) {
         try { return await readProduct(args, signal); }
         catch { catalog = undefined; signal.throwIfAborted(); return error('unavailable', 'This product listing cannot be read right now. Do not state its facts.'); }
       }
+      if (name === 'web_search' && deps.webSearch) {
+        if (!str(args.query, 400) || !args.query.trim()) return error('invalid_arguments', 'web_search needs a short query string.');
+        return webSearch(args.query.trim(), signal);
+      }
       if (name === 'final_answer') return finalAnswer(args);
       if (name === 'ask_user') return askUser(args);
-      return error('unknown_tool', 'Use only search_catalog, read_product, ask_user or final_answer.');
+      return error('unknown_tool', `Use only ${deps.webSearch ? 'search_catalog, read_product, web_search' : 'search_catalog, read_product'}, ask_user or final_answer.`);
     },
+    /** Tools offered for a step: web_search only on web-search turns; the last step only finishes. */
+    specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs : deps.webSearch ? [...allToolSpecs, webSearchSpec] : allToolSpecs,
     /** Whether a product read returned citable excerpts this turn. */
     hasExcerpts: () => excerpts.size > 0,
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */
     async prepare() { try { await rows(); } catch { catalog = undefined; } },
-    /** A plain-text reply (no tool call) is accepted as general guidance only. */
-    plain(content: string): ToolOutcome { return finalAnswer({ sourced: '', citations: [], general: content }); },
+    /** A plain-text reply (no tool call) is accepted as general guidance only; the web results it may rest on are listed. */
+    plain(content: string): ToolOutcome { return finalAnswer({ sourced: '', citations: [], general: content }, [...web.keys()]); },
     /** Rechecks the source scope of every product an answer cites, immediately before saving. */
     async revalidate(skus: readonly string[]): Promise<boolean> {
       for (const sku of skus) { const read = reads.get(sku); if (!read || await read.revalidate() !== true) return false; }

@@ -226,6 +226,11 @@ test('a request already held by another journal stays there; only eligible (Admi
   assert.deepEqual(log, ['base', 'loop', 'base', 'base', 'loop'], 'non-Admin users keep the existing chat; a retried loop turn stays in the loop');
   const broken = { ...bridge('loop', false), state: async () => { throw Object.assign(Error('no journal'), { code: 'unavailable' }); } };
   assert.equal((await withAgentLoop(bridge('base', true), broken, yes).status(turn, signal())).status, 'base', 'an unmigrated loop journal cannot break older turns');
+  log.length = 0;
+  const canSearch = async t => t.webSearch !== true;
+  await withAgentLoop(bridge('research', false), bridge('loop', false), canSearch).start({ ...turn, webSearch: true }, signal());
+  await withAgentLoop(bridge('research', false), bridge('loop', false), canSearch).start(turn, signal());
+  assert.deepEqual(log, ['research', 'loop'], 'eligibility sees the turn, so a web turn the loop cannot search stays with research');
 });
 
 test('history removes citation markers anywhere in an earlier answer', () => {
@@ -438,4 +443,29 @@ test('a few-word reply to a real question is sent back once; greetings and short
   }
   const twice = scripted([() => ({ content: 'Yes.', toolCalls: [], usage }), () => ({ content: 'Yes.', toolCalls: [], usage })]);
   assert.equal((await run(q, twice)).answer.text, 'Yes.', 'only one reminder');
+});
+
+test('web_search is offered only with a web search dep, caps searches per turn and lists cited pages as links, not citations', async () => {
+  assert.ok(!createToolHost(deps().tools).specs(false).some(t => t.function.name === 'web_search'));
+  const queries = [];
+  const sources = [{ handle: 'web:a', url: 'https://docs.example-maker.com/atom(s3)', title: 'AtomS3 [docs]', content: 'G1 and G2 are on the Grove port.', capturedAt: '2026-11-13T00:00:00.000Z' }];
+  const host = createToolHost({ ...deps().tools, webSearch: async q => { queries.push(q); return sources; } });
+  assert.ok(host.specs(false).some(t => t.function.name === 'web_search'));
+  assert.ok(!host.specs(true).some(t => t.function.name === 'web_search'));
+  const first = JSON.parse((await host.call('web_search', JSON.stringify({ query: 'AtomS3 grove pins' }), signal())).content);
+  assert.equal(first.results[0].id, 'W1.1');
+  await host.call('web_search', JSON.stringify({ query: 'second' }), signal());
+  assert.equal(JSON.parse((await host.call('web_search', JSON.stringify({ query: 'third' }), signal())).content).error, 'search_limit');
+  assert.deepEqual(queries, ['AtomS3 grove pins', 'second']);
+  assert.equal(JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: '', citations: ['W1.1'], general: '' }), signal())).content).error, 'empty_answer');
+  const done = await host.call('final_answer', JSON.stringify({ sourced: '', citations: ['W1.1'], general: 'The maker docs say G1 and G2 are on the Grove port (W1.1).' }), signal());
+  assert.equal(done.kind, 'final');
+  assert.equal(done.answer.outcome, 'conversation');
+  assert.deepEqual(done.answer.citations, []);
+  assert.doesNotMatch(done.answer.text, /W1\.1/);
+  assert.match(done.answer.text, /### Web sources\n\n1\. \[AtomS3 docs\]\(https:\/\/docs\.example-maker\.com\/atom%28s3%29\)/);
+  const plain = host.plain('G1 and G2 are on the Grove port.');
+  // The same page found by both searches is listed once.
+  assert.match(plain.answer.text, /### Web sources\n\n1\. [^\n]+$/);
+  assert.equal(JSON.parse((await createToolHost(deps().tools).call('web_search', JSON.stringify({ query: 'x' }), signal())).content).error, 'unknown_tool');
 });

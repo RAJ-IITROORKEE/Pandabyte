@@ -1,18 +1,20 @@
 // Chat bridge for agent-loop turns: begin -> loop (claim before the first provider call) -> receipt -> finish,
 // on the same session/policy checks as the direct chat. A lost or unknown outcome is reported, never retried.
-import type { BasicRagChatBridge } from '../server/basic-rag-chat-contracts.ts';
+import type { BasicRagChatBridge, BasicRagTurn } from '../server/basic-rag-chat-contracts.ts';
 import { uuid, type ActivityStage } from '../server/chat-contracts.ts';
 import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
 import { loopHistory } from './history.ts';
 import { loopMessages, newLoopTrace, runAgentLoop, type StepFn } from './loop.ts';
-import { allToolSpecs, createToolHost, type ToolDeps } from './tools.ts';
+import { createToolHost, type ToolDeps } from './tools.ts';
+import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 
 type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean };
 export type StepFactory = (options: { model: HostedDirectModelId; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   claim(bodyHash: string): Promise<boolean>; beforeSend(): Promise<boolean> }) => StepFn;
-type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Omit<ToolDeps, 'progress'>; step: StepFactory; turnMs?: number };
+type Tools = Omit<ToolDeps, 'progress' | 'webSearch'> & { webSearch?(query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>): Promise<WebSource[]> };
+type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Tools; step: StepFactory; turnMs?: number };
 
 /** The whole turn ends before the route's 300 s limit, so a late step cannot outlive its request. */
 export const LOOP_TURN_MS = 230000;
@@ -44,8 +46,6 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       const begun = await store.begin(turn.thread, turn.request, turn.question);
       if (!begun.admitted) { const old = await read(turn.thread, turn.request); return old ? status(old) : { status: 'unknown' }; }
       const report = (stage: ActivityStage) => { try { progress?.(stage); } catch { /* Presentation only. */ } };
-      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null), allToolSpecs]), 'utf8');
-      const history = loopHistory(begun, turn.request, fixed);
       let bodyHash: string | undefined, attempted = false;
       const beforeSend = async () => {
         if (signal.aborted || !policy.dispatchCurrent()) return false;
@@ -54,7 +54,11 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       };
       const step = options.step({ model: options.model, apiKey: policy.key(), policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend,
         claim: async hash => { if (attempted || signal.aborted) return false; attempted = true; await current(); bodyHash = hash; return store.claimUnmetered(turn.thread, turn.request, hash); } });
-      const tools = createToolHost({ ...options.tools, progress: report });
+      // Web search is offered only on turns the user sent with web search on, and each search passes the same send check as a model step.
+      const { webSearch, ...catalogTools } = options.tools;
+      const tools = createToolHost({ ...catalogTools, progress: report, ...(turn.webSearch === true && webSearch ? { webSearch: (q: string, s: AbortSignal) => webSearch(q, s, beforeSend) } : {}) });
+      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null), tools.specs(false)]), 'utf8');
+      const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
       // One safe line per turn for the hosting logs: model, step shape, error codes and output tokens; never user text, answers, excerpts or ids.
       const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
@@ -80,7 +84,7 @@ export const loopModelAllowed = (model: string) => model !== 'openai/gpt-oss-20b
 
 /** Loop turns keep their own journal for status and cancel; a request another journal already holds stays there.
  *  New requests go to the loop only for an eligible session (Admin, unmetered); everyone else keeps the existing chat. */
-export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge, eligible: () => Promise<boolean>): BasicRagChatBridge {
+export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge, eligible: (turn: BasicRagTurn) => Promise<boolean>): BasicRagChatBridge {
   const isLoop = async (thread: string, id: string) => { try { return await loop.state(thread, id); } catch (error) { if (error instanceof ChatStoreError && error.code === 'unauthenticated') throw error; return false; } };
   const owner = async (thread: string, id: string) => await isLoop(thread, id) ? loop : base;
   return {
@@ -90,7 +94,7 @@ export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge
     start: async (turn, signal, progress) => {
       if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress);
       if (await base.state(turn.thread, turn.request)) return base.start(turn, signal, progress);
-      let ok = false; try { ok = await eligible() === true; } catch { ok = false; }
+      let ok = false; try { ok = await eligible(turn) === true; } catch { ok = false; }
       return ok ? loop.start(turn, signal, progress) : base.start(turn, signal, progress);
     },
   };

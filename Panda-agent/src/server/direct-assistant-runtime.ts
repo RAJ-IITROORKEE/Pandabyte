@@ -34,7 +34,7 @@ export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.
 }
 
 /** New turns are direct; historical native turns retain status/cancel support without spawning OpenCode. */
-function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBridge {
+function baseAssistantForActor(actor:ChatActor,request:Request,web:(routed:BasicRagChatBridge)=>BasicRagChatBridge):BasicRagChatBridge {
  const key=process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'';
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
@@ -58,13 +58,17 @@ function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBrid
  };
  // Agent loop (off by default; needs the reviewed loop journal migration): new turns go to the model-driven loop instead of the fixed router.
  // Only an unmetered (Admin) session is eligible; every other user keeps the existing chat.
- const loopEligible=async()=>process.env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&loopModelAllowed(model)&&await modelPolicy.enabled()&&'isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true;
- return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(routed,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy}),loopEligible):routed;
+ // A web-search turn goes to the loop only when it can search (Tavily key); otherwise the research journal keeps it.
+ const loopEligible=async(turn:{webSearch?:boolean})=>(turn.webSearch!==true||!!process.env.TAVILY_API_KEY?.trim())&&process.env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&loopModelAllowed(model)&&await modelPolicy.enabled()&&'isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true;
+ const withWeb=web(routed);
+ return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(withWeb,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy}),loopEligible):withWeb;
 }
 
-/** Chat turns with web search go to the research journal; its turns keep status/cancel there. Everything else is unchanged. */
+/** Chat turns with web search go to the research journal (below the agent loop, which takes eligible web turns itself); its turns keep status/cancel there. */
 export function directAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBridge {
- const base=baseAssistantForActor(actor,request);
+ return baseAssistantForActor(actor,request,base=>researchFor(actor,request,base));
+}
+function researchFor(actor:ChatActor,request:Request,base:BasicRagChatBridge):BasicRagChatBridge {
  if(!researchWebSearchEnabled())return {...base,start:(turn,signal,progress)=>turn.webSearch?Promise.reject(new ChatStoreError('unavailable')):base.start(turn,signal,progress)};
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
  const limit=Number(process.env.PANDA_AGENT_WEB_SEARCH_DAILY_LIMIT??'20');
