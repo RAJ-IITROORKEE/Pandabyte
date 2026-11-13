@@ -1,4 +1,4 @@
--- DRAFT FOR OWNER REVIEW. NOT APPLIED. Do not copy into migrations/ or run until reviewed.
+-- Owner-approved 13 Nov 2026 after independent review; dry run passed (16 statements, rolled back) before apply.
 -- Agent-loop journal (13 Nov 2026): one turn = up to 6 model calls (one claim before the first call, one summed
 -- receipt), an answer whose citations may span up to 3 PandaByte products, plus uncited general guidance.
 -- Why a new journal: panda_agent_direct_chat accepts only outcome 'conversation' with zero citations and per-call

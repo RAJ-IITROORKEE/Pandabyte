@@ -3,8 +3,8 @@ import { createHmac } from 'node:crypto';
 import type { ChatActor, ChatAnswer } from '../server/chat-contracts.ts';
 import { ChatStoreError, cleanAnswer, parseChatRead } from '../server/chat-store.ts';
 
-// Journal for agent-loop turns. Its database functions are proposed in docs/agent-loop-journal.sql and are NOT applied:
-// keep PANDA_AGENT_LOOP_ENABLED off until the owner reviews and applies that migration.
+// Journal for agent-loop turns. Its database functions are in migrations/20261113130000_panda-agent-loop-journal.sql (applied 13 Nov 2026):
+// The loop only runs for eligible Admin sessions when PANDA_AGENT_LOOP_ENABLED is true.
 export type LoopState = { question: string; status: 'pending' | 'complete'; claimed: boolean; cancelled: boolean };
 export type LoopUsage = { inputTokens: number; outputTokens: number; costNanoUsd: number; steps: number };
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
