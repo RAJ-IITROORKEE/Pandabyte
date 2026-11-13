@@ -26,7 +26,11 @@ Status: **plan only** (13 Nov 2026). Nothing here is built until the owner start
 - Cost work: Claude prompt-cache breakpoints (system prompt + latest user message) live; tool_choice 'required' only where the pinned endpoint publishes support (not Claude Haiku).
 - Done 13 Nov: condensed system prompt, skills listed by trigger only, MCP servers one line each with tools on demand (open_mcp_server),
   per-step trimming (history first, then older tool results) under the 48 KB cap. Same test question: $0.0076 (before) -> $0.010 (skills+MCP) -> $0.0059.
-- Open cost items: repair-instead-of-reject in final_answer, read_product by name, regional Vertex endpoint for cache hits (profile owned by the control room session).
+- Phase 4 (pinout retrieval): live; migration 20261113200000. `find_pinout` quotes by section (board-photo header labels, then module
+  pin tables, then strapping pins; 8,000 bytes) and attaches the board's own published pinout image. Its fixed focus avoids the words the
+  evidence reader refuses (GPIO, pinout, wiring). Live xS3 check: header table + datasheet UART defaults, 4 citations, image shown, $0.0056.
+  Pin tables exist for xS3, xC5, xC6, xC3, xC3m, x32, xLoRa; board-photo labels for x8266, xC5, xC6, xS3, xC3, xC3m.
+- Open cost items: repair-instead-of-reject in final_answer (pin answers often try more than 4 ids), read_product by name, regional Vertex endpoint for cache hits (profile owned by the control room session).
 
 ## Phases (each: tests, deploy, live check before the next)
 
