@@ -19,6 +19,14 @@ Status: **plan only** (13 Nov 2026). Nothing here is built until the owner start
 - Retrieval: lexical ranking over 282 listing chunks; embeddings code (`pgvector-adapter.ts`, `config/hybrid-v1.json`) present but not wired; `panda_agent_document_pages` unused; no stored product/pinout images.
 - Composer: six static start chips (`QuickActions`); no follow-up suggestions.
 
+## Status (13 Nov 2026)
+- Phase 1 (follow-up suggestions): live.
+- Phase 2 (skills): live; migrations 20261113180000/1; 10 skills (5 built-in, 5 custom incl. 4 adapted MIT community skills).
+- Phase 3 (MCP): live; migration 20261113190000; built-in Streamable HTTP client (no SDK); Context7 registered, both tools allowed; Admin chats only.
+- Cost work: Claude prompt-cache breakpoints (system prompt + latest user message) live; tool_choice 'required' only where the pinned endpoint publishes support (not Claude Haiku).
+- Open cost items from the 13 Nov review: lean the fixed prefix (skills list + MCP specs ~2k tokens per step on Admin chats), offer MCP tools only when relevant,
+  wire-cap headroom in loopHistory, repair-instead-of-reject in final_answer, read_product by name, regional Vertex endpoint for cache hits (profile owned by the control room session).
+
 ## Phases (each: tests, deploy, live check before the next)
 
 ### 1. Follow-up suggestions
