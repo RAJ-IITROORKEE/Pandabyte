@@ -41,8 +41,10 @@ const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 const greeting = /^\s*(?:hi|hello|hey|thanks|thank you|good (?:morning|afternoon|evening))\b/i;
 export const readNudge = 'You read PandaByte excerpts this turn: deliver the answer with final_answer, citing them; put plans, wiring and code in general.';
 
-export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null): LoopMessage[] {
-  const system = summary ? `${loopSystemPrompt}\n\nSummary of earlier messages in this chat (compressed; context only, not evidence):\n${summary}` : loopSystemPrompt;
+export const webOnNote = "The user turned web search on for this message: when the answer needs facts that PandaByte listings do not hold (other makers' boards, pinouts, libraries, current versions), call web_search instead of offering to search.";
+export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false): LoopMessage[] {
+  const base = webOn ? `${loopSystemPrompt}\n${webOnNote}` : loopSystemPrompt;
+  const system = summary ? `${base}\n\nSummary of earlier messages in this chat (compressed; context only, not evidence):\n${summary}` : base;
   return [{ role: 'system', content: system }, ...history, { role: 'user', content: question }];
 }
 
