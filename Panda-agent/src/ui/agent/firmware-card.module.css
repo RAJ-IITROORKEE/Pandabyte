@@ -1,0 +1,13 @@
+.card { box-sizing: border-box; max-width: 100%; display: grid; gap: 10px; padding: 10px 12px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); color: var(--muted); font-size: 13px; line-height: 20px; }
+.title { margin: 0; font-size: 13px; font-weight: 600; color: var(--foreground); }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; }
+.facts div { display: flex; gap: 6px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; color: var(--foreground); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.button, .primary { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 12px; border: 1px solid var(--divider); border-radius: 8px; background: transparent; color: var(--foreground); font: inherit; cursor: pointer; }
+.primary { border-color: var(--accent-ink); background: var(--accent-ink); color: var(--surface); }
+.button:hover { background: var(--status-soft); }
+.button:focus-visible, .primary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.error { margin: 0; color: #e5484d; }
+.note { margin: 0; font-size: 12px; }

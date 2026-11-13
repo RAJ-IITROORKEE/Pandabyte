@@ -4,6 +4,7 @@ import type { ChatAnswer } from '../server/chat-contracts.ts';
 import type { HistoryMessage } from './history.ts';
 import { MAX_PRODUCTS, MAX_SKILL_LOADS, MAX_SUGGESTIONS, MAX_WEB_SEARCHES, type McpAgentTool, type SkillEntry, type ToolHost, type ToolSpec } from './tools.ts';
 import { CONTEXT_BYTES } from './history.ts';
+import { toolStepLabel, type ToolStep } from './turn-events.ts';
 
 /** Request budget before the provider cap (48 KB), leaving room for request parameters and cache markers. */
 export const WIRE_BUDGET = CONTEXT_BYTES - 2000;
@@ -40,7 +41,8 @@ export type StepFn = (messages: readonly LoopMessage[], tools: readonly ToolSpec
 /** Safe diagnostics only: tool names, finish reasons, error codes and output tokens per step; never user text, answers, excerpts or ids. */
 export type LoopTrace = { tools: string[][]; finish: string[]; errors: string[]; output: number[] };
 export const newLoopTrace = (): LoopTrace => ({ tools: [], finish: [], errors: [], output: [] });
-export type LoopResult = { kind: 'final' | 'ask' | 'stopped'; answer: ChatAnswer; citedSkus: string[]; usage: Usage; steps: number; toolCalls: string[]; suggestions: string[] };
+/** contextTokens: the largest single step (prompt + reply), i.e. how full the context window got; usage sums every step. */
+export type LoopResult = { kind: 'final' | 'ask' | 'stopped'; answer: ChatAnswer; citedSkus: string[]; usage: Usage; steps: number; toolCalls: string[]; suggestions: string[]; contextTokens: number };
 
 export const loopSystemPrompt = [
   "You are Panda Agent, PandaByte's assistant for electronics, embedded systems and IoT. PandaByte (pandabyte.in) sells development boards, sensors, modules and kits.",
@@ -87,13 +89,26 @@ export function loopMessages(question: string, history: readonly HistoryMessage[
   return [{ role: 'system', content: system }, ...history, { role: 'user', content: question }];
 }
 
-export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { step: StepFn; tools: ToolHost; signal: AbortSignal; maxSteps?: number; trace?: LoopTrace }): Promise<LoopResult> {
+export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { step: StepFn; tools: ToolHost; signal: AbortSignal; maxSteps?: number; trace?: LoopTrace;
+  /** Tool calls as they start and finish, for the thinking panel (presentation only). */ onTool?(step: ToolStep): void }): Promise<LoopResult> {
   const messages = [...input.messages], maxSteps = deps.maxSteps ?? MAX_STEPS, toolCalls: string[] = [];
   let questionAt = input.messages.length - 1;
   const trace = deps.trace ?? newLoopTrace();
   let usage = zero(), steps = 0, nudged = false, shortNudged = false;
   const question = input.messages.at(-1)?.content ?? '';
-  const end = (kind: LoopResult['kind'], answer: ChatAnswer, citedSkus: string[] = [], suggestions: string[] = []): LoopResult => ({ kind, answer, citedSkus, usage, steps, toolCalls, suggestions });
+  let contextTokens = 0;
+  const end = (kind: LoopResult['kind'], answer: ChatAnswer, citedSkus: string[] = [], suggestions: string[] = []): LoopResult => ({ kind, answer, citedSkus, usage, steps, toolCalls, suggestions, contextTokens });
+  const show = (s: ToolStep) => { try { deps.onTool?.(s); } catch { /* Presentation only. */ } };
+  // A listed tool call: shown running, then done or failed (an error result) with its duration.
+  const tracked = async (call: { id: string; name: string; arguments: string }, run: () => Promise<Awaited<ReturnType<ToolHost['call']>>>) => {
+    let args: Record<string, unknown> = {}; try { const v = JSON.parse(call.arguments); if (v && typeof v === 'object' && !Array.isArray(v)) args = v; } catch { /* label without arguments */ }
+    const label = toolStepLabel(call.name, args), id = call.id.replace(/[^A-Za-z0-9_-]/g, '').slice(-40) || 'tool', started = Date.now();
+    if (label) show({ id, name: call.name, label, state: 'running' });
+    const outcome = await run();
+    if (label) { let failed = false; if (outcome.kind === 'result') { try { failed = typeof JSON.parse(outcome.content).error === 'string'; } catch { /* plain result */ } }
+      show({ id, name: call.name, label, state: failed ? 'error' : 'done', ms: Math.min(600000, Date.now() - started) }); }
+    return outcome;
+  };
   const codeOf = (content: string) => { try { const e = JSON.parse(content).error; return typeof e === 'string' ? e : null; } catch { return null; } };
   while (steps < maxSteps) {
     deps.signal.throwIfAborted();
@@ -115,7 +130,7 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
       if (steps > 0 && typeof code === 'string' && unsent.has(code)) return end('stopped', stopped(providerStopText));
       throw error;
     }
-    steps++; usage = add(usage, result.usage);
+    steps++; usage = add(usage, result.usage); contextTokens = Math.max(contextTokens, result.usage.inputTokens + result.usage.outputTokens);
     // A checklist update sent next to an answer written as text: show the checklist, then handle the text as the reply.
     if (result.content?.trim() && result.toolCalls.length && result.toolCalls.every(c => c.name === 'plan')) {
       for (const c of result.toolCalls) { toolCalls.push(c.name); await deps.tools.call(c.name, c.arguments, deps.signal); }
@@ -153,7 +168,7 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
       toolCalls.push(call.name);
       if (finishing.includes(call) && result.toolCalls.filter(c => c.name !== 'plan').length > 1) return refuse('call_alone', `${call.name} must be the only tool call in its step besides plan.`);
       if (last && !finishing.includes(call) && call.name !== 'plan') return refuse('step_limit', 'No steps left for this tool.');
-      return deps.tools.call(call.name, call.arguments, deps.signal);
+      return tracked(call, () => deps.tools.call(call.name, call.arguments, deps.signal));
     }));
     // Helper model calls made by tools this step (web-research helper) count toward the turn's usage and output room.
     usage = add(usage, deps.tools.drainUsage?.() ?? zero());

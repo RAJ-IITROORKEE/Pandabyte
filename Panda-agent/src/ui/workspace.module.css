@@ -478,4 +478,5 @@
 .pricePointer { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
 .pricePointer a { color: var(--accent-ink); text-decoration: underline; }
 
-.tokenMeter { min-width: 0; padding: 0 6px; overflow: hidden; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; cursor: default; }
+.composerActions .meter button { display: inline-flex; width: auto; height: auto; min-width: 0; min-height: 32px; padding: 0 6px; border-radius: 6px; background: transparent; color: var(--muted); opacity: 1; }
+.meter { display: inline-flex; min-width: 0; }

@@ -170,7 +170,7 @@ test('history compaction starts above 75% of the context budget, keeps recent tu
   assert.ok(tight.messages.length >= 2 && Buffer.byteLength(JSON.stringify(tight.messages), 'utf8') + Buffer.byteLength(tight.summary ?? '', 'utf8') <= 6000);
 });
 
-function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills, mcp } = {}) {
+function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills, mcp, settings, compile } = {}) {
   const calls = []; let state = null;
   const store = {
     reserveSearch: async () => { calls.push('reserve'); return searchAllowed; },
@@ -188,7 +188,7 @@ function harness({ script, read, unmetered = true, revalidate = true, turnMs, we
     assert.equal(await o.beforeSend(), true, 'every provider call is gated on the journal');
     return script.step(messages, tools);
   };
-  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}), ...(mcp ? { mcp: async () => mcp } : {}) }, step, turnMs });
+  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}), ...(mcp ? { mcp: async () => mcp } : {}), ...(settings ? { settings } : {}), ...(compile ? { compile } : {}) }, step, turnMs });
   return { chat, calls, d };
 }
 const turn = { thread: thread.id, request: current.requestId, question: q2 };
@@ -197,7 +197,7 @@ test('the chat bridge claims once, records summed usage and step count, then sav
   const script = scripted([() => reply(call('read_product', { sku: 'PB-BMV080' })), m => reply(call('final_answer', { sourced: 'Fact.', citations: [idsFor(m, 'PB-BMV080')[0]], general: 'Plan.' }))]);
   const h = harness({ script, read: { thread, messages: [], turns: [...priorTurns, current] } });
   const result = await h.chat.start(turn, signal());
-  assert.equal(result.status, 'saved'); assert.deepEqual(result.usage, { inputTokens: 2000, outputTokens: 400, contextWindow: 131072, model: fastHostedModel.id });
+  assert.equal(result.status, 'saved'); assert.deepEqual(result.usage, { inputTokens: 2000, outputTokens: 400, contextWindow: 131072, model: fastHostedModel.id, contextTokens: 1200, steps: 2, costNanoUsd: 600 });
   assert.deepEqual(h.calls.map(c => Array.isArray(c) ? c[0] : c), ['begin', 'claim', 'receipt', 'finish']);
   assert.deepEqual(h.calls[2][3], { inputTokens: 2000, outputTokens: 400, costNanoUsd: 600, steps: 2 });
   assert.equal(h.calls[2][2].outcome, 'evidence'); assert.deepEqual(h.calls[3][1], h.calls[2][2]); assert.deepEqual(h.d.revalidated, ['PB-BMV080']);
@@ -856,4 +856,53 @@ test('approval cards: an Ask tool ends the turn with a card; "Allow once" next r
   assert.equal((await host.call(name, JSON.stringify({ q: 'I2C pull-ups' }), signal())).kind, 'result');
   assert.equal((await host.call(name, JSON.stringify({ q: 'I2C pull-ups' }), signal())).kind, 'ask');
   assert.equal(ran.length, 2);
+});
+
+test('compile_sketch: firmware goes to the browser, errors go back to the model, two builds per turn; find_pinout can be switched off', async () => {
+  const bin = Buffer.from('fw-image-bytes');
+  const ok = { ok: true, board: 'ESPXS3', fqbn: 'esp32:esp32:esp32s3', address: 0, size: bin.length, sha256: 'b'.repeat(64), binBase64: bin.toString('base64'), warnings: '', durationMs: 32000 };
+  const sent = [], builds = [];
+  const host = createToolHost({ catalog: async () => catalog, compile: async (board, sketch) => { builds.push(board); return builds.length === 1 ? { ok: false, errors: 'sketch.ino:2:1: error: x was not declared' } : ok; }, firmware: fw => sent.push(fw) });
+  assert.ok(host.specs(false).some(s => s.function.name === 'compile_sketch'));
+  const first = JSON.parse((await host.call('compile_sketch', JSON.stringify({ board: 'ESPXS3', sketch: 'void setup(){x;}' }), signal())).content);
+  assert.equal(first.ok, false); assert.match(first.errors, /not declared/); assert.equal(sent.length, 0);
+  const second = JSON.parse((await host.call('compile_sketch', JSON.stringify({ board: 'ESPXS3', sketch: 'void setup(){} void loop(){}' }), signal())).content);
+  assert.equal(second.ok, true); assert.match(second.note, /firmware card/);
+  assert.equal(sent.length, 1); assert.equal(sent[0].binBase64, bin.toString('base64')); assert.equal(sent[0].board, 'ESPXS3');
+  assert.equal(JSON.parse((await host.call('compile_sketch', JSON.stringify({ board: 'ESPXS3', sketch: 'x' }), signal())).content).error, 'compile_limit');
+  assert.equal(JSON.parse((await createToolHost({ catalog: async () => catalog, compile: async () => ok }).call('compile_sketch', JSON.stringify({ board: 'ARDUINO_UNO', sketch: 'x' }), signal())).content).error, 'invalid_arguments');
+  assert.ok(!createToolHost({ catalog: async () => catalog }).specs(false).some(s => s.function.name === 'compile_sketch'), 'no compile service, no tool');
+  const off = createToolHost({ catalog: async () => catalog, pinout: false });
+  assert.ok(!off.specs(false).some(s => s.function.name === 'find_pinout'));
+  assert.equal(JSON.parse((await off.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).error, 'unknown_tool');
+});
+
+test('loop: tool steps run then finish (failed on an error result); the answer itself is not listed; context = the largest step', async () => {
+  const steps = [];
+  const script = scripted([() => ({ ...reply(call('read_product', { sku: 'ESPXS3' }), call('read_product', { sku: 'NOPE' })), usage: { inputTokens: 5000, outputTokens: 100, costNanoUsd: 1 } }),
+    m => ({ ...reply(call('final_answer', { sourced: 'The board has I2C.', citations: [idsFor(m, 'ESPXS3')[0]], general: '' })), usage: { inputTokens: 9000, outputTokens: 400, costNanoUsd: 1 } })]);
+  const result = await runAgentLoop({ messages: loopMessages('xS3 interfaces?', [], null) }, { step: script.step, tools: createToolHost(deps().tools), signal: signal(), onTool: s => steps.push(s) });
+  assert.equal(result.kind, 'final'); assert.equal(result.contextTokens, 9400); assert.equal(result.usage.inputTokens, 14000);
+  // Parallel calls start in call order and finish in any order.
+  assert.deepEqual(steps.slice(0, 2).map(s => [s.label, s.state]), [['Reading the ESPXS3 listing', 'running'], ['Reading the NOPE listing', 'running']]);
+  assert.deepEqual(steps.slice(2).map(s => [s.label, s.state]).sort(), [['Reading the ESPXS3 listing', 'done'], ['Reading the NOPE listing', 'error']]);
+  assert.ok(steps.filter(s => s.state !== 'running').every(s => Number.isInteger(s.ms)));
+});
+
+test('chat: Admin switches gate web search, the checklist and compile; usage carries context tokens', async () => {
+  const offAll = [{ name: 'web_search', enabled: false, version: 2 }, { name: 'plan', enabled: false, version: 2 }];
+  const seen = [];
+  const script = { step: async (_m, tools) => { seen.push(tools.map(t => t.function.name)); return reply(call('final_answer', { sourced: '', citations: [], general: 'Use GPIO8 and GPIO9.' })); } };
+  const h = harness({ script, read: { thread, messages: [], turns: [current] }, webSearch: async () => [] });
+  h.d.tools.settings = async () => offAll; h.d.tools.compile = async () => { throw Error('not called'); };
+  const events = [];
+  const r = await h.chat.start({ ...turn, webSearch: true }, signal(), undefined, { plan: s => events.push(s) });
+  assert.equal(r.status, 'saved');
+  // harness passes tools at creation; re-create with settings/compile through a fresh harness below
+  assert.ok(r.usage.contextTokens > 0 && r.usage.steps === 1);
+  const h2 = harness({ script, read: { thread, messages: [], turns: [current] }, webSearch: async () => [], settings: async () => offAll, compile: async () => { throw Error('x'); } });
+  await h2.chat.start({ ...turn, webSearch: true }, signal(), undefined, { plan: () => {} });
+  const tools = seen.at(-1);
+  assert.ok(!tools.includes('web_search'), 'web search switched off'); assert.ok(!tools.includes('plan'), 'checklist switched off');
+  assert.ok(!tools.includes('compile_sketch'), 'compile is Admin-only and this policy is not Admin');
 });

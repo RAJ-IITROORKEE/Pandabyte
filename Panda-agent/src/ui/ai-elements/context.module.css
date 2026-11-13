@@ -1,0 +1,19 @@
+.root { position: relative; display: inline-flex; min-width: 0; }
+.trigger { display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding: 0 6px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: default; }
+.trigger:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.ring { flex: none; width: 14px; height: 14px; transform: rotate(-90deg); }
+.track { stroke: var(--divider); }
+.bar { stroke: var(--accent-ink); transition: stroke-dashoffset 0.3s ease; }
+.warn .bar { stroke: #d97706; }
+.full .bar { stroke: #dc2626; }
+.card { position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 20; display: grid; gap: 6px; width: max-content; min-width: 220px; max-width: min(300px, 80vw); padding: 10px 12px; border: 1px solid var(--divider); border-radius: 8px; background: var(--surface); color: var(--foreground); font-size: 12px; box-shadow: 0 6px 20px rgb(0 0 0 / 0.14); visibility: hidden; opacity: 0; transition: opacity 0.12s ease; pointer-events: none; }
+.root:hover .card, .root:focus-within .card { visibility: visible; opacity: 1; }
+.root[data-dismissed] .card { visibility: hidden; opacity: 0; }
+.heading { margin: 0; font-size: 12px; font-weight: 600; }
+.summary { margin: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rows { display: grid; gap: 4px; margin: 0; padding: 6px 0 0; border-top: 1px solid var(--divider); }
+.row { display: flex; justify-content: space-between; gap: 12px; }
+.row dt { color: var(--muted); }
+.row dd { margin: 0; font-variant-numeric: tabular-nums; }
+.note { margin: 0; padding-top: 6px; border-top: 1px solid var(--divider); color: var(--muted); font-size: 11px; line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) { .card, .bar { transition: none; } }

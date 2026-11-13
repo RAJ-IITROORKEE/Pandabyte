@@ -9,18 +9,24 @@ import { loopMessages, newLoopTrace, runAgentLoop, type LoopMessage, type StepFn
 import { createToolHost, webHelperMessages, webPicksSpec, approvalOf, mcpToolName, MCP_ALLOW_LABEL, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
 import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
+import { parseToolSettings } from './tool-catalog.ts';
+import type { TurnSink } from './turn-events.ts';
 
-type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean };
+type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean; isAdmin?(): boolean };
 export type StepFactory = (options: { model: HostedDirectModelId; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   claim(bodyHash: string): Promise<boolean>; beforeSend(): Promise<boolean> }) => StepFn;
-type Tools = Omit<ToolDeps, 'progress' | 'webSearch' | 'skills'> & { webSearch?(query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>): Promise<WebSource[]>;
+type Tools = Omit<ToolDeps, 'progress' | 'webSearch' | 'skills' | 'plan' | 'pinout' | 'firmware'> & {
+  /** Admin tool switches (panda_agent_tool_settings); a failure means the defaults. */
+  settings?(): Promise<unknown>; webSearch?(query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>): Promise<WebSource[]>;
   /** Enabled skills for this turn; a failure means no skills (the turn still runs). */
   skills?(): Promise<readonly SkillEntry[]>;
   /** Admin-approved MCP tools for this turn (Admin chats only); a failure means no MCP tools. */
   mcp?(): Promise<{ tools: readonly McpAgentTool[]; call: NonNullable<ToolDeps['callMcp']> } | null> };
 type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Tools; step: StepFactory; turnMs?: number;
   /** Web-research helper on web turns (off by default: in 14 Nov replays it was cost-neutral but dropped facts, e.g. which release is latest). */
-  webHelper?: boolean };
+  webHelper?: boolean;
+  /** Compile tool for signed-in users who are not Admin (otherwise Admin only). */
+  deviceMembers?: boolean };
 
 /** The whole turn ends before the route's 300 s limit, so a late step cannot outlive its request. */
 export const LOOP_TURN_MS = 230000;
@@ -39,7 +45,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       if (signal.aborted) throw new ChatStoreError('unavailable'); const s = await read(ref.thread, ref.request); if (!s) throw new ChatStoreError('not_found');
       if (s.status === 'complete') return { status: 'saved' }; await store.cancel(ref.thread, ref.request); await current(); return { status: 'saved' };
     },
-    async start(turn, requestSignal, progress, plan) {
+    async start(turn, requestSignal, progress, sink) {
       const signal = AbortSignal.any([requestSignal, AbortSignal.timeout(options.turnMs ?? LOOP_TURN_MS)]);
       valid(turn.thread, turn.request);
       if (typeof turn.question !== 'string' || !turn.question || turn.question !== turn.question.trim() || turn.question.length > 2000 || !turn.question.isWellFormed()) throw new ChatStoreError('invalid');
@@ -61,12 +67,19 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       const step = options.step({ model: options.model, apiKey: policy.key(), policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend,
         claim: async hash => { if (attempted || signal.aborted) return false; attempted = true; await current(); bodyHash = hash; return store.claimUnmetered(turn.thread, turn.request, hash); } });
       // Web search is offered only on turns the user sent with web search on, and each search passes the same send check as a model step.
-      const { webSearch, skills: readSkills, mcp: readMcp, ...catalogTools } = options.tools;
+      const { webSearch, skills: readSkills, mcp: readMcp, settings: readSettings, compile, ...catalogTools } = options.tools;
+      // Admin switches decide which optional tools this turn offers (defaults when they cannot be read).
+      let on = parseToolSettings(null);
+      try { on = parseToolSettings(readSettings ? await readSettings() : null); } catch { on = parseToolSettings(null); }
       let skills: readonly SkillEntry[] = [];
-      try { skills = readSkills ? await readSkills() : []; } catch { skills = []; }
+      try { skills = readSkills && on.load_skill.enabled ? await readSkills() : []; } catch { skills = []; }
       let mcp: Awaited<ReturnType<NonNullable<Tools['mcp']>>> = null;
-      try { mcp = readMcp ? await readMcp() : null; } catch { mcp = null; }
-      const webOn = turn.webSearch === true && !!webSearch;
+      try { mcp = readMcp && on.mcp_tools.enabled ? await readMcp() : null; } catch { mcp = null; }
+      const webOn = turn.webSearch === true && !!webSearch && on.web_search.enabled;
+      const plan = on.plan.enabled ? sink?.plan : undefined;
+      const compileOn = !!compile && on.compile_sketch.enabled && (policy.isAdmin?.() === true || options.deviceMembers === true);
+      const firmware = (fw: Parameters<NonNullable<TurnSink['firmware']>>[0]) => { try { sink?.firmware?.(fw); } catch { /* Presentation only. */ } };
+      const onTool = (s: Parameters<NonNullable<TurnSink['tool']>>[0]) => { try { sink?.tool?.(s); } catch { /* Presentation only. */ } };
       // The web-research helper: one guarded call of the same model and endpoint, in its own short context.
       const condenseWeb = async (query: string, results: readonly { id: string; title: string; content: string }[], s: AbortSignal) => {
         const r = await step(webHelperMessages(turn.question, query, results), [webPicksSpec], s, 400);
@@ -79,7 +92,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       // "Allow once" answering the previous turn's approval card approves exactly the call that card showed.
       const before = begun.turns.slice(0, Math.max(0, begun.turns.findIndex(t => t.requestId === turn.request))).filter(t => t.status === 'complete').at(-1);
       const approved = turn.question.trim() === MCP_ALLOW_LABEL && before?.response?.outcome === 'clarification' ? approvalOf(before.response.text) : null;
-      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen: approved && mcpTools.some(t => t.server === approved.server) ? [...new Set([...mcpOpen, approved.server])] : mcpOpen, ...(approved ? { mcpApprovedRef: approved.ref } : {}) } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), ...(options.webHelper ? { condenseWeb } : {}) } : {}) });
+      const tools = createToolHost({ ...catalogTools, skills, pinout: on.find_pinout.enabled, ...(plan ? { plan } : {}), ...(compileOn ? { compile, firmware } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen: approved && mcpTools.some(t => t.server === approved.server) ? [...new Set([...mcpOpen, approved.server])] : mcpOpen, ...(approved ? { mcpApprovedRef: approved.ref } : {}) } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), ...(options.webHelper || on.web_helper.enabled ? { condenseWeb } : {}) } : {}) });
       const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools, !!plan), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
@@ -92,10 +105,13 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         const shown = approved && mcpTools.find(t => t.server === approved.server && t.tool === approved.tool);
         if (approved && shown) {
           const id = `approved-${approved.ref}`, name = mcpToolName(shown), args = JSON.stringify(approved.args);
+          const label = `Running the approved ${approved.server} ${approved.tool} call`, started = Date.now();
+          onTool({ id: `approved${approved.ref}`, name, label, state: 'running' });
           const out = await tools.call(name, args, signal);
+          onTool({ id: `approved${approved.ref}`, name, label, state: out.kind === 'result' ? 'done' : 'error', ms: Date.now() - started });
           if (out.kind === 'result') seeded.push({ role: 'assistant', content: null, tool_calls: [{ id, type: 'function', function: { name, arguments: args } }] }, { role: 'tool', tool_call_id: id, content: out.content });
         }
-        const result = await runAgentLoop({ messages: [...loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools, !!plan), ...seeded] }, { step, tools, signal, trace });
+        const result = await runAgentLoop({ messages: [...loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools, !!plan), ...seeded] }, { step, tools, signal, trace, onTool });
         log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.
@@ -105,7 +121,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         if (!recorded || !await beforeSend()) return { status: 'unknown' };
         await store.finish(turn.thread, turn.request, answer); await current();
         // Follow-ups belong to the answer the model wrote; a replaced answer (sources changed) gets none. Not stored.
-        return { status: 'saved', usage: turnUsageFor(options.model, result.usage), ...(answer === result.answer && result.kind === 'final' && result.suggestions.length ? { suggestions: result.suggestions } : {}) };
+        return { status: 'saved', usage: turnUsageFor(options.model, { ...result.usage, contextTokens: result.contextTokens, steps: result.steps }), ...(answer === result.answer && result.kind === 'final' && result.suggestions.length ? { suggestions: result.suggestions } : {}) };
       } catch { log('unknown'); return { status: 'unknown' }; }
     },
   };
@@ -122,11 +138,11 @@ export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge
     state: async (thread, id) => await isLoop(thread, id) || await base.state(thread, id),
     status: async (ref, signal) => (await owner(ref.thread, ref.request)).status(ref, signal),
     cancel: async (ref, signal) => (await owner(ref.thread, ref.request)).cancel(ref, signal),
-    start: async (turn, signal, progress, plan) => {
-      if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress, plan);
+    start: async (turn, signal, progress, sink) => {
+      if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress, sink);
       if (await base.state(turn.thread, turn.request)) return base.start(turn, signal, progress);
       let ok = false; try { ok = await eligible(turn) === true; } catch { ok = false; }
-      return ok ? loop.start(turn, signal, progress, plan) : base.start(turn, signal, progress);
+      return ok ? loop.start(turn, signal, progress, sink) : base.start(turn, signal, progress);
     },
   };
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { BookOpen, Check, ChevronDown, Circle, Globe, Layers, ListChecks, ListFilter, Package, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { BookOpen, Check, ChevronDown, Circle, Cpu, Globe, Hammer, Layers, ListChecks, ListFilter, Package, Plug, Search, ShieldCheck, Sparkles, Wrench, X, type LucideIcon } from "lucide-react";
 import type { PlanStep } from "../../agent-loop/plan";
+import type { ToolStep } from "../../agent-loop/turn-events";
 import { useEffect, useId, useState } from "react";
 import { formatElapsed, panelSummary, stepDurations } from "./elapsed";
 import { stepKind, type StepKind } from "./step-icons";
@@ -19,6 +20,10 @@ const ICONS: Record<StepKind, LucideIcon> = {
   product: Package,
   other: Circle,
 };
+
+const TOOL_ICONS: Record<string, LucideIcon> = { search_catalog: Search, read_product: BookOpen, find_pinout: Cpu, web_search: Globe, load_skill: Sparkles, open_mcp_server: Plug, compile_sketch: Hammer };
+const toolIcon = (name: string) => TOOL_ICONS[name] ?? (name.startsWith("mcp_") ? Plug : Wrench);
+const STATE_WORD = { running: "running", done: "done", error: "failed" } as const;
 
 const MAX_CHIPS = 4;
 
@@ -57,6 +62,7 @@ export function ThinkingPanel({
   stepTimes,
   webSearch,
   plan,
+  toolSteps,
 }: {
   steps: string[];
   busy: boolean;
@@ -71,6 +77,8 @@ export function ThinkingPanel({
   webSearch?: boolean;
   /** The agent's checklist for a multi-step request (latest update), ticked off live. */
   plan?: PlanStep[];
+  /** Tool calls of this turn (search, read, compile...), upserted by id as they start and finish. */
+  toolSteps?: ToolStep[];
 }) {
   const [now, setNow] = useState(() => Date.now());
   const [open, setOpen] = useState(false);
@@ -91,6 +99,7 @@ export function ThinkingPanel({
   const shown = sources?.slice(0, MAX_CHIPS) ?? [];
   const more = (sources?.length ?? 0) - shown.length;
   const SrcIcon = webSearch ? Globe : BookOpen;
+  const toolCount = toolSteps?.length ?? 0;
   const planDone = plan?.filter((s) => s.done).length ?? 0;
   const srcLabel = busy
     ? "Searching"
@@ -115,6 +124,7 @@ export function ThinkingPanel({
         >
           {complete ? <Layers className={styles.check} size={14} aria-hidden="true" /> : null}
           <span>{panelSummary({ busy, complete, elapsedMs })}</span>
+          {toolCount ? <span className={styles.planCount}>{toolCount} {toolCount === 1 ? "tool" : "tools"}</span> : null}
           {plan?.length ? <span className={styles.planCount}>{planDone}/{plan.length} planned steps</span> : null}
           <ChevronDown className={styles.chev} size={14} aria-hidden="true" />
         </button>
@@ -137,6 +147,30 @@ export function ThinkingPanel({
                     <span className={styles.sr}>{s.done ? " (done)" : " (to do)"}</span>
                   </li>
                 ))}
+              </ul>
+            </div>
+          ) : null}
+          {toolCount ? (
+            <div className={styles.plan}>
+              <span className={styles.srcLabel}>
+                <Wrench size={14} aria-hidden="true" />
+                Tools
+              </span>
+              <ul className={styles.planList}>
+                {toolSteps!.map((t) => {
+                  const Icon = toolIcon(t.name);
+                  return (
+                    <li key={t.id} className={styles.toolRow}>
+                      <Icon className={styles.icon} size={14} aria-hidden="true" />
+                      <span className={t.state === "running" ? styles.toolNow : t.state === "error" ? styles.toolError : styles.past}>{t.label}</span>
+                      <span className={styles.toolState} aria-hidden="true">
+                        {t.state === "running" ? <span className={styles.spin} /> : t.state === "done" ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} className={styles.errorMark} />}
+                      </span>
+                      {t.ms != null && t.state !== "running" ? <span className={styles.dur}>{formatElapsed(t.ms)}</span> : null}
+                      <span className={styles.sr}> ({STATE_WORD[t.state]})</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ) : null}

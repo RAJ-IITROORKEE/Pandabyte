@@ -27,6 +27,14 @@ async function pinoutImages(actor: ChatActor, sourceUrl: string): Promise<Citati
 }
 import { createMcpConnection, MCP_SERVER_NAME, MCP_TOOL_NAME, mcpErrorText, publicHttpsUrl } from '../mcp/client.ts';
 import { openSecret } from '../mcp/secret.ts';
+import { compileOnService, type CompileOutcome } from '../device/compile-client.ts';
+
+/** Builds a sketch on the compile service after reserving one of the caller's builds for today (Admins are uncapped). */
+async function compile(actor: ChatActor, board: string, sketch: string, signal: AbortSignal): Promise<CompileOutcome> {
+  const { data, error } = await actor.client.database.rpc('panda_agent_compile_reserve');
+  if (error || !data || typeof data !== 'object' || (data as { allowed?: unknown }).allowed !== true) throw new Error(error ? 'build quota unavailable' : 'daily build limit reached');
+  return compileOnService({ url: process.env.PANDA_COMPILE_URL!.trim(), secret: process.env.PANDA_COMPILE_SECRET!.trim(), board, sketch, signal });
+}
 
 type McpServerRow = { name: string; url: string; headers: Record<string, string>; tools: McpAgentTool[] };
 /** Approved tools of enabled MCP servers. The catalog function requires Admin, so other users get none.
@@ -97,10 +105,12 @@ export function agentLoopChatForActor(options: { actor: ChatActor; key: string; 
   policy: Parameters<typeof createAgentLoopChat>[0]['policy'] }): BasicRagChatBridge {
   const { actor } = options;
   return createAgentLoopChat({ store: createAgentLoopStore(actor, options.key), current: options.current, policy: options.policy, model: options.model, step: createOpenRouterStep,
-    webHelper: process.env.PANDA_AGENT_WEB_HELPER === 'true',
+    webHelper: process.env.PANDA_AGENT_WEB_HELPER === 'true', deviceMembers: process.env.PANDA_AGENT_DEVICE_MEMBERS === 'true',
     tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal),
       skills: () => readSkillCatalog(actor), loadSkill: name => loadSkill(actor, name), mcp: () => readMcp(actor),
       pinoutImages: row => pinoutImages(actor, row.sourceUrl),
+      settings: async () => { const { data, error } = await actor.client.database.rpc('panda_agent_tool_settings'); if (error) throw new Error('settings unavailable'); return data; },
+      ...(process.env.PANDA_COMPILE_URL?.trim() && process.env.PANDA_COMPILE_SECRET?.trim() ? { compile: (board: string, sketch: string, signal: AbortSignal) => compile(actor, board, sketch, signal) } : {}),
       ...(process.env.TAVILY_API_KEY?.trim() ? { webSearch: async (query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>) =>
         (await searchHostedPublicWeb(query, { apiKey: process.env.TAVILY_API_KEY!.trim(), signal, beforeSend })).sources } : {}) } });
 }

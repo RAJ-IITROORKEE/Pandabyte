@@ -18,6 +18,7 @@ import {validAgenticCatalog,type createAgenticAnswer} from './agentic-answer.ts'
 import type {createAgenticStore,CompositeExecution} from './agentic-store.ts';
 import {parseToolActivity} from '../agentic/tool-activity.ts';
 import {parsePlan,type PlanStep} from '../agent-loop/plan.ts';
+import {parseToolStep,parseFirmware,type TurnSink} from '../agent-loop/turn-events.ts';
 import type {NativeChatBridge} from './native-chat-service.ts';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {isContextSummary} from '../retrieval/context-summary.ts';
@@ -66,7 +67,7 @@ async function body(request:Request) {
 }
 
 const wantsStream = (request:Request) => !!request.headers.get('accept')?.split(',').some(x=>x.trim().split(';')[0]==='text/event-stream');
-function streamWork(request:Request, execute:(progress:ActivityReporter,signal:AbortSignal,plan:(steps:readonly PlanStep[])=>void)=>Promise<unknown>, requestStarted=performance.now()):Response {
+function streamWork(request:Request, execute:(progress:ActivityReporter,signal:AbortSignal,sink:TurnSink)=>Promise<unknown>, requestStarted=performance.now()):Response {
   let closed=false; const encoder=new TextEncoder(); const seen=new Set<string>(); let contextSent=false;
   const workController=new AbortController();
   const abort=()=>workController.abort(); request.signal.addEventListener('abort',abort,{once:true}); if(request.signal.aborted)abort();
@@ -75,7 +76,10 @@ function streamWork(request:Request, execute:(progress:ActivityReporter,signal:A
     const progress:ActivityReporter=(stage,context,tool)=>{if(tool){const checked=parseToolActivity(tool);if(!checked)throw new ChatStoreError('unavailable');send({type:'tool',tool:checked});}if(context && !contextSent){contextSent=true;send({type:'context',...context,...(context.retrievalMs===undefined?{}:{requestElapsedMs:Math.round(performance.now()-requestStarted)})});}if(!seen.has(stage)){seen.add(stage);send({type:'activity',stage});}};
     // The agent's checklist: every update is sent (not deduplicated); the plan tool caps updates per turn.
     const plan=(steps:readonly PlanStep[])=>{const checked=parsePlan(steps);if(checked)send({type:'plan',steps:checked});};
-    void execute(progress,workController.signal,plan).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
+    // Tool steps for the thinking panel and at most two compiled firmware images per turn; both are validated like plans.
+    let images=0;
+    const sink:TurnSink={plan,tool:step=>{const checked=parseToolStep(step);if(checked)send({type:'step',step:checked});},firmware:fw=>{const checked=parseFirmware(fw);if(checked&&images++<2)send({type:'firmware',firmware:checked});}};
+    void execute(progress,workController.signal,sink).then(data=>send({type:'complete',data})).catch(e=>send({type:'error',error:error(status(e))})).finally(()=>{request.signal.removeEventListener('abort',abort);if(!closed){closed=true;controller.close();}});
   },cancel(){closed=true;workController.abort();}});
   return new Response(stream,{headers:{'content-type':'text/event-stream; charset=utf-8','cache-control':'private, no-store'}});
 }
@@ -302,8 +306,8 @@ export function createLightweightHandler(deps:Dependencies) {
       if(native || basicRag || llm) {
         const before=await safeRead(), existing=before.turns.find(t=>t.requestId===requestId);
         if(llm && deps.llmNewMessages?.() && !existing && !guideInput && !diagnosticInput && !agenticInput) {
-          const execute=async(progress:ActivityReporter,signal:AbortSignal,plan?:(steps:readonly PlanStep[])=>void)=>{
-            const result=await llm.start({thread:id!,request:requestId,question,...(input.webSearch===true?{webSearch:true}:{})},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined),plan);
+          const execute=async(progress:ActivityReporter,signal:AbortSignal,sink?:TurnSink)=>{
+            const result=await llm.start({thread:id!,request:requestId,question,...(input.webSearch===true?{webSearch:true}:{})},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined),sink);
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
             const data=await releaseBasic(requestId,question);
             return {...data,...(result.usage?{usage:result.usage}:{}),...(result.suggestions?.length?{suggestions:result.suggestions}:{})};

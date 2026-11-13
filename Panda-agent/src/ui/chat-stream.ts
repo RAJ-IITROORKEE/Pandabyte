@@ -1,18 +1,19 @@
 import {parseToolActivity} from '../agentic/tool-activity.ts';
 import type {ToolActivity} from '../agentic/contracts.ts';
 import {parsePlan, type PlanStep} from '../agent-loop/plan.ts';
+import {parseToolStep, parseFirmware, type ToolStep, type Firmware} from '../agent-loop/turn-events.ts';
 export type {PlanStep} from '../agent-loop/plan.ts';
 export const stages = ['routing_question', 'resolving_product', 'reading_sources', 'searching_sources', 'searching_web', 'selecting_evidence', 'checking_citations', 'saving_answer'] as const;
 export type Stage = typeof stages[number];
-const limit = 4 * 1024 * 1024;
+const limit = 6 * 1024 * 1024; // firmware events carry up to 2 MiB raw as base64
 type Final = { type: 'complete'; data: unknown } | { type: 'error'; error: string };
 
 // A malformed or incomplete stream has an unknown outcome; callers must not resend it.
-export async function readChatStream(body: ReadableStream<Uint8Array>, onActivity: (stage: Stage) => void, onContext?: (context: ContextSummary) => void, onTool?: (tool: ToolActivity) => void, onPlan?: (steps: PlanStep[]) => void): Promise<Final> {
+export async function readChatStream(body: ReadableStream<Uint8Array>, onActivity: (stage: Stage) => void, onContext?: (context: ContextSummary) => void, onTool?: (tool: ToolActivity) => void, onPlan?: (steps: PlanStep[]) => void, onStep?: (step: ToolStep) => void, onFirmware?: (fw: Firmware) => void): Promise<Final> {
   const reader = body.getReader();
   const decoder = new TextDecoder('utf-8', { fatal: true });
   let buffer = '', size = 0, count = 0, final: Final | undefined;
-  let contextSeen = false;
+  let contextSeen = false, firmwareCount = 0;
   const frame = (raw: string) => {
     const data: string[] = [];
     for (const line of raw.split(/\r\n|\r|\n/)) {
@@ -40,6 +41,14 @@ export async function readChatStream(body: ReadableStream<Uint8Array>, onActivit
       const steps = Object.keys(value).length === 2 ? parsePlan(value.steps) : null;
       if (!steps || ++count > 64) throw new Error('Invalid plan event');
       onPlan?.(steps);
+    } else if (value.type === 'step') {
+      const step = Object.keys(value).length === 2 ? parseToolStep(value.step) : null;
+      if (!step || ++count > 64) throw new Error('Invalid step event');
+      onStep?.(step);
+    } else if (value.type === 'firmware') {
+      const fw = Object.keys(value).length === 2 ? parseFirmware(value.firmware) : null;
+      if (!fw || ++firmwareCount > 2) throw new Error('Invalid firmware event');
+      onFirmware?.(fw);
     } else if (value.type === 'context') {
       const summary = { ...value };
       delete summary.type;

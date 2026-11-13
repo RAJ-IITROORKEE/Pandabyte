@@ -11,6 +11,8 @@ import { parseSkillMd } from './skill-md.ts';
 import type { CitationImage } from '../search/citation-image.ts';
 import { parsePlan, MAX_PLAN_STEPS, PLAN_STEP_CHARS, type PlanStep } from './plan.ts';
 import type { Usage } from './loop.ts';
+import { COMPILE_BOARDS, COMPILE_LIBRARIES, type CompileOutcome } from '../device/compile-client.ts';
+import { MAX_STREAM_FIRMWARE_BYTES, type Firmware } from './turn-events.ts';
 import { createHash } from 'node:crypto';
 
 export const MCP_ALLOW_LABEL = 'Allow once', MCP_DENY_LABEL = "Don't allow";
@@ -118,6 +120,11 @@ export type ToolDeps = {
   loadSkill?(name: string, signal: AbortSignal): Promise<string | null>;
   /** Shows the agent's checklist to the user (thinking panel); the plan tool is offered only when this is set. */
   plan?(steps: readonly PlanStep[]): void;
+  /** false when Admin switched find_pinout off. */
+  pinout?: boolean;
+  /** Compiles a sketch on the build service (offered only when set); a success is streamed to the browser through `firmware`. */
+  compile?(board: string, sketch: string, signal: AbortSignal): Promise<CompileOutcome>;
+  firmware?(firmware: Firmware): void;
 };
 export type SkillEntry = { name: string; description: string };
 /** mode 'ask': the user approves each call on an approval card first (the turn ends with the card; "Allow once" runs it). */
@@ -233,7 +240,9 @@ const loadSkillSpec = fn('load_skill', `Read the full instructions of one listed
   { name: { type: 'string', description: 'Exact skill name from the Skills list.' } }, ['name']);
 const openMcpSpec = fn('open_mcp_server', `Get the tools of one listed external MCP server; they are offered from your next step. At most ${MAX_MCP_OPEN} servers per turn.`,
   { server: { type: 'string', description: 'Exact server name from the External MCP servers list.' } }, ['server']);
-export const MAX_PLAN_UPDATES = 6;
+export const MAX_PLAN_UPDATES = 6, MAX_COMPILES = 2, MAX_SKETCH_BYTES = 65536;
+const compileSpec = fn('compile_sketch', `Compile a complete Arduino sketch for one PandaByte board on the build server (30-90 s). On success the user gets a firmware card and flashes it from their browser after confirming; you never flash. On errors, fix the sketch and compile again (at most ${MAX_COMPILES} builds per turn). Installed libraries: ${COMPILE_LIBRARIES.join(', ')}; nothing else can be downloaded. Use it when the user asks to build, compile or flash code for a PandaByte board.`,
+  { board: { type: 'string', enum: Object.keys(COMPILE_BOARDS), description: 'PandaByte board SKU.' }, sketch: { type: 'string', description: 'The whole .ino sketch.' } }, ['board', 'sketch']);
 const planSpec = fn('plan', `The user sees this checklist live. For a project, build or wiring-plus-code request, include plan in your first tool calls with 2 to ${MAX_PLAN_STEPS} short steps you will take in this turn (each under ${PLAN_STEP_CHARS} characters), then resend it with finished steps marked done alongside your later calls, including final_answer. Never call it on its own; skip it for simple questions.`,
   { steps: { type: 'array', minItems: 2, maxItems: MAX_PLAN_STEPS, items: { type: 'object', additionalProperties: false,
     properties: { text: { type: 'string' }, done: { type: 'boolean' } }, required: ['text', 'done'] } } }, ['steps']);
@@ -264,7 +273,22 @@ export function createToolHost(deps: ToolDeps) {
   let readNumber = 0, searches = 0;
   const skillsLoaded = new Set<string>();
   const productImages = new Map<string, CitationImage[]>();
-  let approvalUsed = false;
+  let approvalUsed = false, compiles = 0;
+  async function compileSketch(args: Record<string, unknown>, signal: AbortSignal): Promise<ToolOutcome> {
+    if (typeof args.board !== 'string' || !(args.board in COMPILE_BOARDS) || typeof args.sketch !== 'string' || !args.sketch.trim() || bytes(args.sketch) > MAX_SKETCH_BYTES || !args.sketch.isWellFormed())
+      return error('invalid_arguments', `compile_sketch needs a board (${Object.keys(COMPILE_BOARDS).join(', ')}) and the whole sketch (under 64 KB).`);
+    if (compiles >= MAX_COMPILES) return error('compile_limit', `At most ${MAX_COMPILES} builds per turn. Give the user the sketch and the remaining errors.`);
+    compiles++;
+    let result: CompileOutcome;
+    try { result = await deps.compile!(args.board, args.sketch, signal); }
+    catch (e) { signal.throwIfAborted(); return error('compile_unavailable', `The build server could not compile it right now (${e instanceof Error ? e.message.slice(0, 80) : 'error'}). Give the user the sketch to build in the Arduino IDE.`); }
+    if (!result.ok) return { kind: 'result', content: JSON.stringify({ ok: false, board: args.board, errors: result.errors.slice(0, 3000), note: 'Fix these compile errors and call compile_sketch again with the whole sketch.' }) };
+    const sent = result.size <= MAX_STREAM_FIRMWARE_BYTES && !!deps.firmware;
+    if (sent) { try { deps.firmware!({ id: `fw${compiles}${result.sha256.slice(0, 8)}`, board: result.board, fqbn: result.fqbn, address: result.address, size: result.size, sha256: result.sha256, binBase64: result.binBase64, durationMs: result.durationMs }); } catch { /* Presentation only. */ } }
+    return { kind: 'result', content: JSON.stringify({ ok: true, board: result.board, sizeKB: Math.ceil(result.size / 1024), seconds: Math.round(result.durationMs / 1000), ...(result.warnings ? { warnings: result.warnings.slice(0, 1000) } : {}),
+      note: sent ? 'Compiled. A firmware card is shown with your answer; the user connects the board in the Device panel and confirms before flashing. Include the full sketch in final_answer.general.'
+        : 'Compiled, but the image is too large to send to the browser. Give the user the sketch to build and flash in the Arduino IDE.' }) };
+  }
   let planUpdates = 0, lastPlan: PlanStep[] | null = null, helperUsage: Usage = { inputTokens: 0, outputTokens: 0, costNanoUsd: 0 };
   const servers = new Set(deps.callMcp ? (deps.mcpTools ?? []).map(t => t.server) : []);
   const opened = new Set((deps.mcpOpen ?? []).filter(s => servers.has(s)));
@@ -457,6 +481,8 @@ export function createToolHost(deps: ToolDeps) {
         try { return { kind: 'result', content: JSON.stringify(searchCatalog(await rows(), args.query)) }; }
         catch { catalog = undefined; signal.throwIfAborted(); return error('unavailable', 'The catalog cannot be read right now. Do not name PandaByte products from memory.'); }
       }
+      if (name === 'find_pinout' && deps.pinout === false) return error('unknown_tool', 'find_pinout is switched off. Use read_product instead.');
+      if (name === 'compile_sketch' && deps.compile) return compileSketch(args, signal);
       if (name === 'read_product' || name === 'find_pinout') {
         try { return await readProduct(args, signal, name === 'find_pinout'); }
         catch { catalog = undefined; signal.throwIfAborted(); return error('unavailable', 'This product listing cannot be read right now. Do not state its facts.'); }
@@ -489,7 +515,7 @@ export function createToolHost(deps: ToolDeps) {
     /** Tools offered for a step: web_search only on web-search turns; the last step only finishes. */
     specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs
       : [...allToolSpecs, ...(deps.webSearch ? [webSearchSpec] : []), ...(deps.skills?.length && deps.loadSkill ? [loadSkillSpec] : []),
-        ...(servers.size > opened.size ? [openMcpSpec] : []), ...mcpOffered(), ...(deps.plan ? [planSpec] : [])],
+        ...(servers.size > opened.size ? [openMcpSpec] : []), ...mcpOffered(), ...(deps.plan ? [planSpec] : []), ...(deps.compile ? [compileSpec] : [])].filter(s => deps.pinout !== false || s.function.name !== 'find_pinout'),
     /** Usage of helper model calls made by tools since the last drain (the loop adds it to the turn). */
     drainUsage(): Usage { const u = helperUsage; helperUsage = { inputTokens: 0, outputTokens: 0, costNanoUsd: 0 }; return u; },
     /** Whether a product read or web search returned citable ids this turn. */

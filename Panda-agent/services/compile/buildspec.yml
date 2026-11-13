@@ -1,0 +1,16 @@
+version: 0.2
+# Env (set by the CodeBuild project): REPO_URI (account.dkr.ecr.region.amazonaws.com/name), AWS_REGION.
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "${REPO_URI%%/*}"
+      - TAG=$(echo "$CODEBUILD_RESOLVED_SOURCE_VERSION" | cut -c1-12)
+  build:
+    commands:
+      # --provenance=false keeps a plain Docker manifest, which Lambda requires.
+      - docker build --platform linux/amd64 --provenance=false -t "$REPO_URI:$TAG" -t "$REPO_URI:latest" Panda-agent/services/compile
+  post_build:
+    commands:
+      - docker push "$REPO_URI:$TAG"
+      - docker push "$REPO_URI:latest"
+      - echo "Pushed $REPO_URI:$TAG"

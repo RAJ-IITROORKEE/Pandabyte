@@ -76,3 +76,18 @@ test('plan events: the bounded checklist reaches onPlan; malformed plans end the
     await assert.rejects(readChatStream(stream([plan(bad), complete]), () => {}, undefined, undefined, () => {}));
   await assert.rejects(readChatStream(stream([`data: ${JSON.stringify({ type: 'plan', steps: [{ text: 'a', done: true }, { text: 'b', done: true }], extra: 1 })}\n\n`, complete]), () => {}));
 });
+
+test('step and firmware events reach their callbacks; malformed, extra-key and excess events end the stream', async () => {
+  const ev = (type, key, v, extra = {}) => `data: ${JSON.stringify({ type, [key]: v, ...extra })}\n\n`;
+  const step = { id: 't1', name: 'compile_sketch', label: 'Compiling the sketch', state: 'running' };
+  const bytes = Uint8Array.from({ length: 6 }, (_, i) => i + 1);
+  const fw = { id: 'f1', board: 'ESPXS3', fqbn: 'esp32:esp32:esp32s3', address: 0, size: 6, sha256: 'a'.repeat(64), binBase64: btoa(String.fromCharCode(...bytes)), durationMs: 1200 };
+  const steps = [], fws = [];
+  const result = await readChatStream(stream([ev('step', 'step', step), ev('step', 'step', { ...step, state: 'done', ms: 900 }), ev('firmware', 'firmware', fw), complete]),
+    () => {}, undefined, undefined, undefined, s => steps.push(s), f => fws.push(f));
+  assert.equal(result.type, 'complete'); assert.deepEqual(steps.map(s => s.state), ['running', 'done']); assert.equal(fws.length, 1);
+  for (const bad of [ev('step', 'step', { ...step, state: 'weird' }), ev('step', 'step', step, { extra: 1 }), ev('firmware', 'firmware', { ...fw, size: 7 }), ev('firmware', 'firmware', fw, { extra: 1 }), ev('firmware', 'firmware', { ...fw, sha256: 'xyz' })])
+    await assert.rejects(readChatStream(stream([bad, complete]), () => {}));
+  await assert.rejects(readChatStream(stream([ev('firmware', 'firmware', fw).repeat(3), complete]), () => {}));
+  await assert.rejects(readChatStream(stream([ev('step', 'step', step).repeat(65), complete]), () => {}));
+});

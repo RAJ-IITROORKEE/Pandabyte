@@ -43,3 +43,14 @@
 .boxDone { background: var(--accent-ink); color: var(--surface); }
 .planTodo { color: var(--foreground); }
 .planDone { color: var(--muted); text-decoration: line-through; }
+.toolRow { display: flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.toolNow { color: var(--foreground); }
+.toolError { color: #e5484d; }
+.errorMark { color: #e5484d; }
+.toolState { flex: none; display: inline-grid; place-items: center; width: 14px; height: 14px; margin-left: auto; color: var(--accent-ink); }
+.toolRow .dur { margin-left: 0; padding-left: 0; }
+.spin { width: 10px; height: 10px; border: 2px solid var(--divider); border-top-color: var(--accent-ink); border-radius: 999px; animation: toolspin 800ms linear infinite; }
+@keyframes toolspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .spin { animation: none; border-top-color: var(--divider); background: var(--accent-ink); }
+}

@@ -16,7 +16,7 @@ const sizeText = (n: number) => n >= 1048576 ? `${(n / 1048576).toFixed(2)} MB` 
 
 /** Admin device panel (phase 6): connect an ESP32 board over USB, identify it, watch its serial output, ask the agent about
  *  that output, and flash a .bin the user picks — only after a confirmation that names the chip, file, size and address. */
-export function DevicePanel({ onClose, onAsk, askDisabled }: { onClose: () => void; onAsk: (text: string) => void; askDisabled: boolean }) {
+export function DevicePanel({ onClose, onAsk, askDisabled, firmware: fromAgent }: { onClose: () => void; onAsk: (text: string) => void; askDisabled: boolean; firmware?: { name: string; data: Uint8Array; address: number } | null }) {
   const [supported, setSupported] = useState<boolean | null>(null);
   const [port, setPort] = useState<Port | null>(null);
   const [chip, setChip] = useState<Chip | null>(null);
@@ -37,6 +37,11 @@ export function DevicePanel({ onClose, onAsk, askDisabled }: { onClose: () => vo
 
   useEffect(() => { queueMicrotask(() => setSupported(typeof navigator !== "undefined" && !!serialApi())); }, []);
   useEffect(() => { portRef.current = port; }, [port]);
+  // A firmware the agent built arrives as the chosen file; identifying the board and the confirmation dialog still apply.
+  useEffect(() => {
+    if (!fromAgent) return;
+    queueMicrotask(() => { setFirmware({ name: fromAgent.name, data: fromAgent.data }); setAddress(`0x${fromAgent.address.toString(16)}`); setStatus("Firmware from the agent is ready to flash. Identify the board, then review and flash."); });
+  }, [fromAgent]);
   // Unplugging the board, or closing the panel, ends the session cleanly.
   useEffect(() => {
     const serial = typeof navigator === "undefined" ? undefined : serialApi();

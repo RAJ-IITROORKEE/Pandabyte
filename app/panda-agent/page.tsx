@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PandaAgentWorkspace } from "@/Panda-agent/src/ui/workspace";
 import {guideAdminAccess} from '@/Panda-agent/src/server/guide-admin';
 import {researchWebSearchEnabled} from '@/Panda-agent/src/server/direct-assistant-runtime';
+import {pageToolSettings} from '@/Panda-agent/src/server/tool-settings-page';
 
 export default async function PandaAgentPage() {
   const { isAuthenticated, sessionStatus, userId } = await auth();
@@ -14,6 +15,8 @@ export default async function PandaAgentPage() {
   // Signed-in chat: every signed-in user gets the same agent as Admin (daily caps in the journal); Admin panels stay Admin-only.
   const chatAccess = admin.allowed || process.env.PANDA_AGENT_SIGNED_IN_CHAT === "true";
   const agentLoop = directAssistant && chatAccess && process.env.PANDA_AGENT_LOOP_ENABLED === "true";
-  const loopSearch = agentLoop && !!process.env.TAVILY_API_KEY?.trim();
-  return <PandaAgentWorkspace directAssistant={directAssistant} nativeTools={!directAssistant && process.env.PANDA_AGENT_NATIVE_TOOLS === "true"} nativeAssistant={!directAssistant && process.env.PANDA_AGENT_ASSISTANT_NEW_MESSAGES === "true"} previewReadOnly={process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED !== "true"} guidesEnabled={!directAssistant && process.env.PANDA_AGENT_GUIDES_ENABLED === "true"} diagnosticsEnabled={!directAssistant && process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED === "true"} agenticEnabled={!directAssistant && process.env.PANDA_AGENT_AGENTIC_ENABLED === "true"} canManageSkills={admin.allowed} deviceTools={admin.allowed} webSearchAvailable={directAssistant && (loopSearch || (admin.allowed && researchWebSearchEnabled()))} agentLoop={agentLoop} />;
+  // Admin tool switches: web search and the Device panel follow them (the loop re-checks every turn).
+  const tools = await pageToolSettings();
+  const loopSearch = agentLoop && !!process.env.TAVILY_API_KEY?.trim() && tools.web_search.enabled;
+  return <PandaAgentWorkspace directAssistant={directAssistant} nativeTools={!directAssistant && process.env.PANDA_AGENT_NATIVE_TOOLS === "true"} nativeAssistant={!directAssistant && process.env.PANDA_AGENT_ASSISTANT_NEW_MESSAGES === "true"} previewReadOnly={process.env.PANDA_AGENT_LIGHTWEIGHT_ENABLED !== "true"} guidesEnabled={!directAssistant && process.env.PANDA_AGENT_GUIDES_ENABLED === "true"} diagnosticsEnabled={!directAssistant && process.env.PANDA_AGENT_DIAGNOSTICS_ENABLED === "true"} agenticEnabled={!directAssistant && process.env.PANDA_AGENT_AGENTIC_ENABLED === "true"} canManageSkills={admin.allowed} deviceTools={tools.device_panel.enabled && (admin.allowed || (chatAccess && process.env.PANDA_AGENT_DEVICE_MEMBERS === "true"))} webSearchAvailable={directAssistant && (loopSearch || (admin.allowed && researchWebSearchEnabled()))} agentLoop={agentLoop} />;
 }
