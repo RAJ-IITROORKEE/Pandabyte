@@ -17,7 +17,7 @@ export type LoopMessage =
   | { role: 'tool'; tool_call_id: string; content: string };
 export type StepResult = { content: string | null; toolCalls: ToolCall[]; usage: Usage; finish?: string };
 /** One provider call. It throws an error with `code` (`not_admitted`, `unavailable`, `rate_limited`, `outcome_unknown`, `response_rejected`). */
-export type StepFn = (messages: readonly LoopMessage[], tools: readonly ToolSpec[], signal: AbortSignal, maxOutput: number) => Promise<StepResult>;
+export type StepFn = (messages: readonly LoopMessage[], tools: readonly ToolSpec[], signal: AbortSignal, maxOutput: number, toolChoice?: 'auto' | 'required') => Promise<StepResult>;
 /** Safe diagnostics only: tool names, finish reasons, error codes and output tokens per step; never user text, answers, excerpts or ids. */
 export type LoopTrace = { tools: string[][]; finish: string[]; errors: string[]; output: number[] };
 export const newLoopTrace = (): LoopTrace => ({ tools: [], finish: [], errors: [], output: [] });
@@ -67,7 +67,9 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
     if (maxOutput < STEP_OUTPUT_MIN) break;
     const last = steps === maxSteps - 1 || room < 2 * STEP_OUTPUT_MAX;
     let result: StepResult;
-    try { result = await deps.step(messages, deps.tools.specs(last), deps.signal, maxOutput); }
+    // Once sources were read the answer must go through a tool (final_answer cites them), so the model cannot write a plain
+    // answer that would be discarded and written again; models that ignore 'required' still get the one-time nudge below.
+    try { result = await deps.step(messages, deps.tools.specs(last), deps.signal, maxOutput, deps.tools.hasExcerpts() ? 'required' : 'auto'); }
     catch (error) {
       // A refused or unsent later step ends the turn honestly with the usage already spent; an unknown outcome is not guessed.
       const code = (error as { code?: unknown } | null)?.code;

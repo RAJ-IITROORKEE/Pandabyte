@@ -33,23 +33,36 @@ function toolCalls(value: unknown): ToolCall[] {
   });
 }
 
+/** Claude caches only at explicit breakpoints: the system prompt (with the tool list before it) and the latest user message
+ *  (history and question before it). Both stay identical across a turn's steps, so steps 2+ read them at the cached price. */
+export function cacheBreakpoints(list: readonly LoopMessage[]): readonly unknown[] {
+  let question = -1; list.forEach((msg, i) => { if (msg.role === 'user') question = i; });
+  return list.map((msg, i) => ((i === 0 && msg.role === 'system') || i === question) && typeof msg.content === 'string' && msg.content
+    ? { ...msg, content: [{ type: 'text', text: msg.content, cache_control: { type: 'ephemeral' } }] } : msg);
+}
+
 /** One non-streamed tool-calling request per step on the same pinned zero-retention endpoint and receipt checks as the hosted chat. */
 export function createOpenRouterStep(options: Options): StepFn {
   const m = profiles[options.model], fetcher = options.fetcher ?? fetch;
   // Receipt ceiling per step: this model's worst case for the declared token bounds.
-  const reservation = (maxOutput: number) => Math.ceil((LOOP_MAX_INPUT * m.nano2.prompt + maxOutput * m.nano2.completion) / 2) + 1;
+  // Cache writes can cost more than plain input (Claude: 1.25x), so the ceiling uses the higher input price.
+  const reservation = (maxOutput: number) => Math.ceil((LOOP_MAX_INPUT * Math.max(m.nano2.prompt, m.nano2.write) + maxOutput * m.nano2.completion) / 2) + 1;
+  const cacheable = m.id.startsWith('anthropic/');
+  const withCache = (list: readonly LoopMessage[]): readonly unknown[] => cacheable ? cacheBreakpoints(list) : list;
+  // 'required' (after sources were read) is sent only to model families whose providers support it; others keep 'auto'.
+  const requiredOk = /^(anthropic|openai|deepseek)\//.test(m.id);
   // Endpoint and privacy metadata are checked on the first step and reused for this turn; policy and journal checks still run every step.
   let claimed = false, approved: string | null = null;
-  return async (messages: readonly LoopMessage[], tools, signal, maxOutput) => {
+  return async (messages: readonly LoopMessage[], tools, signal, maxOutput, toolChoice = 'auto') => {
     const started = performance.now(), observation: Observation = { observationId: randomUUID(), model: m.id, provider: m.tag, stage: 'unavailable', totalMs: 0 };
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(LOOP_STEP_MS)]);
     let sent = false;
     try {
       if (!Number.isSafeInteger(maxOutput) || maxOutput < 1 || maxOutput > LOOP_MAX_OUTPUT || !options.apiKey || /[\r\n]/.test(options.apiKey) || !messages.length || deadline.aborted) return fail('not_admitted');
       const wire = (tokenParam: string) => JSON.stringify({ model: m.id, stream: false, [tokenParam]: maxOutput, reasoning: m.reasoning, include_reasoning: false,
-        tools, tool_choice: 'auto', usage: { include: true }, plugins: [],
+        tools, tool_choice: toolChoice === 'required' && requiredOk ? 'required' : 'auto', usage: { include: true }, plugins: [],
         provider: { only: [m.tag], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: m.maxPrice.prompt, completion: m.maxPrice.completion, request: 0, image: 0 } },
-        messages });
+        messages: withCache(messages) });
       if (Buffer.byteLength(wire('max_tokens'), 'utf8') > LOOP_WIRE_BYTES || options.dispatchCurrent() !== true) return fail('not_admitted');
       if (!approved) {
         const get = async (path: string) => { const response = await fetcher(api + path, { method: 'GET', redirect: 'error', cache: 'no-store', credentials: 'omit', signal: deadline });

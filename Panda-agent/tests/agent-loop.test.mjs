@@ -581,3 +581,34 @@ test('a short opening paragraph narrating the agent process is dropped from plai
   const plain = await run('Review my ESP32 code that keeps crashing after hours', scripted([() => ({ content: "No PandaByte product facts are needed, so I'll answer in plain text.\n\n" + body, toolCalls: [], usage })]));
   assert.equal(plain.answer.text, body);
 });
+
+test('cost: tool calls are required once sources were read; Claude requests mark two cache breakpoints; the step ceiling covers cache writes', async () => {
+  const choices = [];
+  const script = scripted([() => reply(call('read_product', { sku: 'ESPXS3' })), m => reply(call('final_answer', { sourced: 'Fact.', citations: [idsFor(m, 'ESPXS3')[0]], general: '' }))]);
+  const result = await runAgentLoop({ messages: loopMessages('Tell me about the xS3', [], null) }, { step: (m, t, s, max, choice) => { choices.push(choice); return script.step(m, t, s, max); }, tools: createToolHost(deps().tools), signal: signal() });
+  assert.equal(result.kind, 'final'); assert.deepEqual(choices, ['auto', 'required'], 'auto until a product was read, then required');
+  const { cacheBreakpoints } = await import('../src/agent-loop/openrouter-step.ts');
+  const msgs = [{ role: 'system', content: 'S' }, { role: 'user', content: 'old q' }, { role: 'assistant', content: 'old a' }, { role: 'user', content: 'Q' },
+    { role: 'assistant', content: null, tool_calls: [] }, { role: 'tool', tool_call_id: 'x', content: '{}' }];
+  const marked = cacheBreakpoints(msgs);
+  assert.deepEqual(marked[0].content, [{ type: 'text', text: 'S', cache_control: { type: 'ephemeral' } }]);
+  assert.deepEqual(marked[3].content, [{ type: 'text', text: 'Q', cache_control: { type: 'ephemeral' } }], 'the latest user message');
+  assert.equal(marked[1].content, 'old q'); assert.equal(marked[5].content, '{}'); assert.equal(marked.length, msgs.length);
+  // The fixture model (GPT-OSS) is not Claude: no cache markers, and 'required' reaches the wire for OpenAI-family models.
+  const wires = [];
+  const endpoint = { tag: 'groq', model_id: fastHostedModel.id, name: 'Groq | openai/gpt-oss-20b', provider_name: 'Groq', status: 0,
+    pricing: { prompt: '0.000000075', completion: '0.0000003', input_cache_read: '0.0000000375', discount: 0 }, context_length: 131072, max_completion_tokens: 65536, max_prompt_tokens: null,
+    supports_implicit_caching: true, supports_tool_choice: { none: true, auto: true }, supported_parameters: ['reasoning', 'include_reasoning', 'max_tokens', 'response_format', 'tool_choice', 'tools'] };
+  const fetcher = async (url, init) => {
+    if (url.endsWith('/endpoints/zdr')) return Response.json({ data: [{ model_id: fastHostedModel.id, tag: 'groq', safety_retention: false }] });
+    if (url.endsWith('/endpoints')) return Response.json({ data: { id: fastHostedModel.id, architecture: { tokenizer: 'GPT' }, endpoints: [endpoint] } });
+    wires.push(JSON.parse(init.body));
+    return Response.json({ id: 'gen-SYNTHETIC', model: fastHostedModel.id, provider: 'Groq', choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: 'ok' } }], usage: { prompt_tokens: 10, completion_tokens: 2, total_tokens: 12, cost: 0.000001 } });
+  };
+  const original = console.info; console.info = () => {};
+  try {
+    const step = createOpenRouterStep({ model: fastHostedModel.id, apiKey: 'synthetic-secret-never-live', fetcher, policyCurrent: async () => true, dispatchCurrent: () => true, claim: async () => true, beforeSend: async () => true, observe: () => {} });
+    await step(loopMessages('hi', [], null), [], signal(), 1000, 'required');
+    assert.equal(wires[0].tool_choice, 'required'); assert.equal(typeof wires[0].messages[0].content, 'string', 'no cache markers for non-Claude models');
+  } finally { console.info = original; }
+});
