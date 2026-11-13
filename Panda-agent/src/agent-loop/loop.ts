@@ -4,10 +4,11 @@ import type { ChatAnswer } from '../server/chat-contracts.ts';
 import type { HistoryMessage } from './history.ts';
 import { MAX_PRODUCTS, MAX_WEB_SEARCHES, type ToolHost, type ToolSpec } from './tools.ts';
 
-export const MAX_STEPS = 6;
-/** Summed output bound of the loop journal (6 x 3,000); one answer step may use up to 6,000. Input stays <= 24,000 per step (144,000 summed),
- *  so for every profile the summed receipt is <= (144,000 x prompt + 18,000 x completion) / 2 nano-USD: Qwen, the costliest, is 55.35M < 56M. */
-export const LOOP_OUTPUT_TOTAL = 18000, STEP_OUTPUT_MAX = 6000, STEP_OUTPUT_MIN = 1000;
+// Raised from 6 at the owner's request (13 Nov 2026); the journal bounds come from migration 20261113160000.
+export const MAX_STEPS = 10;
+/** Summed output bound of the loop journal (10 x 3,000); one answer step may use up to 6,000. Input stays <= 24,000 per step (240,000 summed),
+ *  so for every profile the summed receipt is <= (240,000 x prompt + 30,000 x completion) / 2 nano-USD: Qwen, the costliest, is 92.25M < 93M. */
+export const LOOP_OUTPUT_TOTAL = 30000, STEP_OUTPUT_MAX = 6000, STEP_OUTPUT_MIN = 1000;
 export type Usage = { inputTokens: number; outputTokens: number; costNanoUsd: number };
 export type ToolCall = { id: string; name: string; arguments: string };
 export type LoopMessage =

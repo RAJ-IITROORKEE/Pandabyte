@@ -125,7 +125,7 @@ test('invalid tool calls and citation ids are rejected back to the model, which 
       return reply(call('final_answer', { sourced: 'xS3 fact.', citations: [idsFor(m, 'ESPXS3')[0]], general: '' })); },
   ]);
   const result = await run('Tell me about the xS3', script);
-  assert.equal(result.kind, 'final'); assert.equal(result.steps, MAX_STEPS); assert.equal(result.answer.citations.length, 1);
+  assert.equal(result.kind, 'final'); assert.equal(result.steps, 6); assert.equal(result.answer.citations.length, 1);
   assert.doesNotMatch(result.answer.text, new RegExp(GENERAL_HEADING.replace(/[()]/g, '\\$&')), 'no general part when general is empty');
 });
 
@@ -378,21 +378,22 @@ test('a plain-text reply after a product read is sent back once for a cited fina
   assert.equal(noRead.steps, 1, 'no nudge without a read');
 });
 
-test('output room: an answer step may use 6000 tokens, the summed output never passes 18000 and tools stop when a full step cannot follow', async () => {
+test('output room: an answer step may use 6000 tokens, the summed output never passes 30000 and tools stop when a full step cannot follow', async () => {
   const caps = [], big = { inputTokens: 1000, outputTokens: 6000, costNanoUsd: 1 };
-  const script = scripted([() => ({ ...reply(call('search_catalog', { query: 'a' })), usage: big }), () => ({ ...reply(call('search_catalog', { query: 'b' })), usage: big }),
+  const script = scripted([...['a', 'b', 'c', 'd'].map(query => () => ({ ...reply(call('search_catalog', { query })), usage: big })),
     () => ({ content: null, toolCalls: [], usage: big })]);
   const step = (m, t, sig, max) => { caps.push(max); return script.step(m, t, sig, max); };
   const result = await runAgentLoop({ messages: loopMessages('q', [], null) }, { step, tools: createToolHost(deps().tools), signal: signal() });
-  assert.deepEqual(caps, [6000, 6000, 6000]); assert.deepEqual(script.seen.map(x => x.tools.length), [4, 4, 2]);
+  assert.deepEqual(caps, [6000, 6000, 6000, 6000, 6000]); assert.deepEqual(script.seen.map(x => x.tools.length), [4, 4, 4, 4, 2]);
   assert.equal(result.kind, 'stopped'); assert.equal(result.usage.outputTokens, LOOP_OUTPUT_TOTAL);
-  const after = { inputTokens: 1, outputTokens: 13500, costNanoUsd: 1 }, seen = [];
+  const after = { inputTokens: 1, outputTokens: 25500, costNanoUsd: 1 }, seen = [];
   const partial = scripted([() => ({ ...reply(call('search_catalog', { query: 'a' })), usage: after }), () => reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' }))]);
   await runAgentLoop({ messages: loopMessages('q', [], null) }, { step: (m, t, sig, max) => { seen.push(max); return partial.step(m, t, sig, max); }, tools: createToolHost(deps().tools), signal: signal() });
   assert.deepEqual(seen, [6000, 4500], 'the last step gets only the room left');
-  // Summed receipt bound for every reviewed profile: 6 steps x 24k input and 18k output stay under the journal's 56M nano-USD.
+  // Summed receipt bound for every reviewed profile: MAX_STEPS x 24k input and the summed output stay under the journal's 93M nano-USD.
   const { profiles } = await import('../src/server/hosted-model-openrouter.ts');
-  for (const m of Object.values(profiles)) assert.ok(Math.ceil((144000 * Math.max(m.nano2.prompt, m.nano2.write) + LOOP_OUTPUT_TOTAL * m.nano2.completion) / 2) + 6 <= 56000000, m.id);
+  assert.equal(MAX_STEPS, 10, 'migration 20261113160000 admits 1-10 steps, 240k input and 30k output');
+  for (const m of Object.values(profiles)) assert.ok(Math.ceil((MAX_STEPS * 24000 * Math.max(m.nano2.prompt, m.nano2.write) + LOOP_OUTPUT_TOTAL * m.nano2.completion) / 2) + MAX_STEPS <= 93000000, m.id);
 });
 
 test('one safe diagnostics line per turn: model, steps, tool names, finish reasons, error codes and output tokens only', async () => {
