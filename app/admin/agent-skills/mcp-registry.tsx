@@ -32,7 +32,8 @@ function failure(result: Result): string {
 
 const when = (value: string | null) => value ? new Date(value).toLocaleString() : "Never";
 const host = (url: string) => { try { return new URL(url).host; } catch { return url; } };
-const allowed = (server: McpServerView) => server.tools.filter(tool => tool.mode === "allow").length;
+const allowed = (server: McpServerView) => server.tools.filter(tool => tool.mode !== "never").length;
+const modeLabel = { allow: "Allow", ask: "Ask", never: "Never" } as const;
 function status(server: McpServerView) {
   if (server.enabled) return "Enabled";
   if (server.lastTestOk === false) return "Test failed";
@@ -94,14 +95,14 @@ function Editor({ server, onSaved, onClose }: { server: McpServerView | null; on
   </form>;
 }
 
-function ToolRow({ tool, busy, onMode }: { tool: McpTool; busy: boolean; onMode: (tool: McpTool, mode: "allow" | "never") => void }) {
+function ToolRow({ tool, busy, onMode }: { tool: McpTool; busy: boolean; onMode: (tool: McpTool, mode: "allow" | "ask" | "never") => void }) {
   return <li className={styles.tool}>
     <div className={styles.toolText}>
       <span className={`${styles.mono} ${styles.name}`}>{tool.name}</span>
       {tool.description && <details className={styles.toolDesc}><summary><span>{tool.description}</span></summary><p>{tool.description}</p></details>}
     </div>
     <div className={styles.segment} role="group" aria-label={`Access for ${tool.name}`}>
-      {(["allow", "never"] as const).map(mode => <button key={mode} type="button" aria-pressed={tool.mode === mode} disabled={busy} onClick={() => tool.mode !== mode && onMode(tool, mode)}>{mode === "allow" ? "Allow" : "Never"}</button>)}
+      {(["allow", "ask", "never"] as const).map(mode => <button key={mode} type="button" aria-pressed={tool.mode === mode} disabled={busy} title={mode === "ask" ? "The user approves each call first" : undefined} onClick={() => tool.mode !== mode && onMode(tool, mode)}>{modeLabel[mode]}</button>)}
     </div>
   </li>;
 }
@@ -170,7 +171,7 @@ export function McpRegistry() {
     </div>
     {testResult?.name === current.name && <p className={styles.result}>{testResult.ok ? "Passed" : "Failed"}: {testResult.message}</p>}
     <h4>Tools ({current.tools.length})</h4>
-    {current.tools.length === 0 ? <p>No tools yet. Run Test connection to list them.</p> : <ul className={styles.tools}>{current.tools.map(tool => <ToolRow key={tool.name} tool={tool} busy={busy === `${current.name}:${tool.name}`} onMode={(t, mode) => void patch(current, { action: "tool", tool: t.name, mode }, `${t.name}: ${mode === "allow" ? "Allow" : "Never"}`, `${current.name}:${t.name}`)} />)}</ul>}
+    {current.tools.length === 0 ? <p>No tools yet. Run Test connection to list them.</p> : <ul className={styles.tools}>{current.tools.map(tool => <ToolRow key={tool.name} tool={tool} busy={busy === `${current.name}:${tool.name}`} onMode={(t, mode) => void patch(current, { action: "tool", tool: t.name, mode }, `${t.name}: ${modeLabel[mode]}`, `${current.name}:${t.name}`)} />)}</ul>}
     <p className={styles.note}>New or changed tools start as Never. Allowed tools are offered to the agent on Admin chats.</p>
   </aside>;
 

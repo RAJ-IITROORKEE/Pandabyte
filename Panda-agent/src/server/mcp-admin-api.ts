@@ -7,7 +7,7 @@ import {openSecret,sealSecret} from '../mcp/secret.ts';
 // Admin API for the MCP registry (migration 20261113190000). The database enforces Admin access, versions and limits;
 // this layer authenticates, bounds requests, checks the URL is public https, seals API keys and runs connection tests.
 // GET: servers. POST {action:'save', name, url, authHeader, secret, keepSecret, expectedVersion} | {action:'test', name, expectedVersion}.
-// PATCH {action:'enable'|'disable'|'remove', name, expectedVersion} | {action:'tool', name, tool, mode:'allow'|'never', expectedVersion}.
+// PATCH {action:'enable'|'disable'|'remove', name, expectedVersion} | {action:'tool', name, tool, mode:'allow'|'ask'|'never', expectedVersion}.
 export type McpServerView = { name: string; url: string; authHeader: string | null; hasSecret: boolean; tools: McpTool[]; enabled: boolean; version: number;
   lastTestAt: string | null; lastTestOk: boolean | null; lastError: string | null; calls: number; lastCalledAt: string | null; updatedAt: string };
 const json=(v:unknown,status=200)=>Response.json(v,{status,headers:{'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
@@ -66,7 +66,7 @@ async function handle(request:Request){
     if(!keys(v,'action,expectedVersion,name'))throw new Refused(400,'invalid');
     result={server:await rpc('panda_agent_mcp_server_set',{p_name:v.name,p_action:v.action,p_expected:v.expectedVersion})};
    }else if(request.method==='PATCH'&&v.action==='tool'){
-    if(!keys(v,'action,expectedVersion,mode,name,tool')||typeof v.tool!=='string'||!MCP_TOOL_NAME.test(v.tool)||(v.mode!=='allow'&&v.mode!=='never'))throw new Refused(400,'invalid');
+    if(!keys(v,'action,expectedVersion,mode,name,tool')||typeof v.tool!=='string'||!MCP_TOOL_NAME.test(v.tool)||(v.mode!=='allow'&&v.mode!=='ask'&&v.mode!=='never'))throw new Refused(400,'invalid');
     const c=await rpc('panda_agent_mcp_server_connection',{p_name:v.name}) as {tools:McpTool[];version:number};
     if(c.version!==v.expectedVersion)throw new Refused(409,'conflict');
     if(!Array.isArray(c.tools)||!c.tools.some(t=>t.name===v.tool))throw new Refused(404,'not_found');

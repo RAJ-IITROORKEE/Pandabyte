@@ -170,7 +170,7 @@ test('history compaction starts above 75% of the context budget, keeps recent tu
   assert.ok(tight.messages.length >= 2 && Buffer.byteLength(JSON.stringify(tight.messages), 'utf8') + Buffer.byteLength(tight.summary ?? '', 'utf8') <= 6000);
 });
 
-function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills } = {}) {
+function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills, mcp } = {}) {
   const calls = []; let state = null;
   const store = {
     reserveSearch: async () => { calls.push('reserve'); return searchAllowed; },
@@ -188,7 +188,7 @@ function harness({ script, read, unmetered = true, revalidate = true, turnMs, we
     assert.equal(await o.beforeSend(), true, 'every provider call is gated on the journal');
     return script.step(messages, tools);
   };
-  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}) }, step, turnMs });
+  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}), ...(mcp ? { mcp: async () => mcp } : {}) }, step, turnMs });
   return { chat, calls, d };
 }
 const turn = { thread: thread.id, request: current.requestId, question: q2 };
@@ -810,4 +810,40 @@ test('final_answer: filler in sourced is dropped instead of rejected; real uncit
   const host = createToolHost(deps().tools);
   for (const real of ['The xS3 has 8 MB PSRAM.', 'एक्सएस3 में आठ एमबी पीएसरैम है।', 'No pull-ups are fitted on the xS3 I2C lines, so add 4.7 kOhm resistors to 3.3 V on both SDA and SCL before connecting sensors.'])
     assert.equal(JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: real, citations: [], general: '' }), signal())).content).error, 'uncited_sourced', real);
+});
+
+test('approval cards: an Ask tool ends the turn with a card; "Allow once" next runs exactly that call, once', async () => {
+  const { mcpApprovalRef, approvalOf, mcpToolName } = await import('../src/agent-loop/tools.ts');
+  const { parseClarificationOptions } = await import('../src/retrieval/catalog-listing.ts');
+  const ran = [];
+  const tool = { server: 'ctx', tool: 'query-docs', description: 'Library docs.', inputSchema: { type: 'object', properties: { q: { type: 'string' } } }, mode: 'ask' };
+  const mcp = { tools: [tool], call: async (_s, _t, a) => { ran.push(a); return { text: 'Use 4.7 kOhm pull-ups.', isError: false }; } };
+  const name = mcpToolName(tool), ref = mcpApprovalRef('ctx', 'query-docs', { q: 'I2C pull-ups' });
+  assert.equal(mcpApprovalRef('ctx', 'query-docs', { q: 'I2C pull-ups' }), ref); assert.notEqual(mcpApprovalRef('ctx', 'query-docs', { q: 'I2C' }), ref);
+  // Turn 1: the model calls the Ask tool; nothing runs and the saved answer is the card.
+  const h1 = harness({ script: scripted([() => reply(call(name, { q: 'I2C pull-ups' }))]), read: { thread, messages: [], turns: [current] }, mcp });
+  await h1.chat.start({ ...turn, question: 'Check the ctx docs for I2C pull-ups' }, signal());
+  const card = h1.calls.find(c => c[0] === 'finish')[1];
+  assert.equal(card.outcome, 'clarification'); assert.deepEqual(approvalOf(card.text), { server: 'ctx', ref }); assert.deepEqual(ran, []);
+  assert.deepEqual(parseClarificationOptions(card.text).options.map(o => o.label), ['Allow once', "Don't allow"]);
+  assert.match(card.text, /^Run the ctx tool query-docs with q: I2C pull-ups\? \(ref [0-9a-f]{8}\)$/m);
+  // Turn 2: "Allow once" after that card; the server opens up front and the same call runs once.
+  const prev = { requestId: '55555555-5555-4555-8555-555555555555', question: 'Check the ctx docs for I2C pull-ups', status: 'complete', createdAt: now, response: card };
+  const next = { ...current, question: 'Allow once' };
+  const go = scripted([(_m, tools) => { assert.ok(tools.includes(name), 'approved server opened'); return reply(call(name, { q: 'I2C pull-ups' })); },
+    () => reply(call('final_answer', { sourced: '', citations: [], general: 'The ctx docs say to use 4.7 kOhm pull-ups.' }))]);
+  const h2 = harness({ script: go, read: { thread, messages: [], turns: [prev, next] }, mcp });
+  await h2.chat.start({ ...turn, question: 'Allow once' }, signal());
+  assert.deepEqual(ran, [{ q: 'I2C pull-ups' }]); assert.equal(h2.calls.find(c => c[0] === 'finish')[1].outcome, 'conversation');
+  // "Allow once" with no card before it approves nothing.
+  const h3 = harness({ script: scripted([() => reply(call('open_mcp_server', { server: 'ctx' })), () => reply(call(name, { q: 'I2C pull-ups' }))]),
+    read: { thread, messages: [], turns: [{ ...prev, response: { outcome: 'conversation', text: card.text, citations: [] } }, next] }, mcp });
+  await h3.chat.start({ ...turn, question: 'Allow once' }, signal());
+  assert.equal(ran.length, 1); assert.equal(h3.calls.find(c => c[0] === 'finish')[1].outcome, 'clarification');
+  // Tool host: other arguments, or a second identical call, get a new card.
+  const host = createToolHost({ catalog: async () => catalog, mcpTools: [tool], callMcp: mcp.call, mcpOpen: ['ctx'], mcpApprovedRef: ref });
+  assert.equal((await host.call(name, JSON.stringify({ q: 'SPI' }), signal())).kind, 'ask');
+  assert.equal((await host.call(name, JSON.stringify({ q: 'I2C pull-ups' }), signal())).kind, 'result');
+  assert.equal((await host.call(name, JSON.stringify({ q: 'I2C pull-ups' }), signal())).kind, 'ask');
+  assert.equal(ran.length, 2);
 });

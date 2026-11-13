@@ -42,7 +42,7 @@ async function readMcp(actor: ChatActor) {
     const tools = s.tools.filter((t: unknown): t is { name: string; description: string; inputSchema: Record<string, unknown> } => !!t && typeof t === 'object'
       && typeof (t as { name?: unknown }).name === 'string' && MCP_TOOL_NAME.test((t as { name: string }).name) && typeof (t as { description?: unknown }).description === 'string'
       && !!(t as { inputSchema?: unknown }).inputSchema && typeof (t as { inputSchema?: unknown }).inputSchema === 'object')
-      .map((t: { name: string; description: string; inputSchema: Record<string, unknown> }) => ({ server: s.name, tool: t.name, description: t.description, inputSchema: t.inputSchema }));
+      .map((t: { name: string; description: string; inputSchema: Record<string, unknown>; mode?: unknown }) => ({ server: s.name, tool: t.name, description: t.description, inputSchema: t.inputSchema, mode: t.mode === 'ask' ? 'ask' as const : 'allow' as const }));
     if (tools.length) servers.push({ name: s.name, url: s.url, headers, tools });
   }
   if (!servers.length) return null;

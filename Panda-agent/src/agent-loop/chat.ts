@@ -6,7 +6,7 @@ import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
 import { loopHistory } from './history.ts';
 import { loopMessages, newLoopTrace, runAgentLoop, type StepFn } from './loop.ts';
-import { createToolHost, webHelperMessages, webPicksSpec, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
+import { createToolHost, webHelperMessages, webPicksSpec, approvalOf, MCP_ALLOW_LABEL, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
 import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 
@@ -76,7 +76,10 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       };
       // A server named in the question is opened up front; others are listed in one line each and opened on demand.
       const mcpTools = mcp?.tools ?? [], mcpOpen = [...new Set(mcpTools.map(t => t.server))].filter(s => new RegExp(`\\b${s}\\b`, 'i').test(turn.question));
-      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), ...(options.webHelper ? { condenseWeb } : {}) } : {}) });
+      // "Allow once" answering the previous turn's approval card approves exactly the call that card showed.
+      const before = begun.turns.slice(0, Math.max(0, begun.turns.findIndex(t => t.requestId === turn.request))).filter(t => t.status === 'complete').at(-1);
+      const approved = turn.question.trim() === MCP_ALLOW_LABEL && before?.response?.outcome === 'clarification' ? approvalOf(before.response.text) : null;
+      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen: approved && mcpTools.some(t => t.server === approved.server) ? [...new Set([...mcpOpen, approved.server])] : mcpOpen, ...(approved ? { mcpApprovedRef: approved.ref } : {}) } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), ...(options.webHelper ? { condenseWeb } : {}) } : {}) });
       const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools, !!plan), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;

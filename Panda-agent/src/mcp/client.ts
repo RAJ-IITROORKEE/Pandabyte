@@ -8,7 +8,7 @@ import { BlockList, isIP } from 'node:net';
 export const MCP_SERVER_NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/, MCP_TOOL_NAME = /^[A-Za-z0-9_-]{1,38}$/;
 export const MCP_DESCRIPTION_CHARS = 1000, MCP_SCHEMA_BYTES = 4000, MCP_RESULT_CHARS = 2500, MCP_MAX_TOOLS = 40;
 const PROTOCOL = '2025-06-18', RESPONSE_BYTES = 512 * 1024, REQUEST_MS = 15000;
-export type McpTool = { name: string; description: string; inputSchema: Record<string, unknown>; hash: string; mode: 'allow' | 'never' };
+export type McpTool = { name: string; description: string; inputSchema: Record<string, unknown>; hash: string; mode: 'allow' | 'ask' | 'never' };
 export class McpError extends Error { constructor(message: string) { super(message); this.name = 'McpError'; } }
 
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);

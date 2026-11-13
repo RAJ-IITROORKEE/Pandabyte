@@ -11,7 +11,25 @@ import { parseSkillMd } from './skill-md.ts';
 import type { CitationImage } from '../search/citation-image.ts';
 import { parsePlan, MAX_PLAN_STEPS, PLAN_STEP_CHARS, type PlanStep } from './plan.ts';
 import type { Usage } from './loop.ts';
+import { createHash } from 'node:crypto';
 
+export const MCP_ALLOW_LABEL = 'Allow once', MCP_DENY_LABEL = "Don't allow";
+const canonical = (v: unknown): unknown => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
+  ? Object.fromEntries(Object.keys(v as object).sort().map(k => [k, canonical((v as Record<string, unknown>)[k])])) : v;
+/** Reference shown on an approval card: the call's server, tool and exact arguments (key order ignored). */
+export const mcpApprovalRef = (server: string, tool: string, args: Record<string, unknown>) =>
+  createHash('sha256').update(JSON.stringify([server, tool, canonical(args)])).digest('hex').slice(0, 8);
+/** The card's question: what will run, readable (the card keeps letters, digits and basic punctuation) and its reference. */
+export function mcpApprovalQuestion(server: string, tool: string, args: Record<string, unknown>, ref: string): string {
+  const suffix = ` (ref ${ref})`, head = `Run the ${server} tool ${tool} with `;
+  const shown = Object.entries(args).map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`).join('; ') || 'no arguments';
+  return `${head}${shown.slice(0, 290 - head.length - suffix.length)}?${suffix}`;
+}
+/** The server and reference of an approval card answer (its first line), or null. */
+export function approvalOf(text: string): { server: string; ref: string } | null {
+  const m = /^Run the ([a-z0-9]+(?:-[a-z0-9]+)*) tool .*\(ref ([0-9a-f]{8})\)$/.exec(text.split('\n')[0] ?? '');
+  return m ? { server: m[1], ref: m[2] } : null;
+}
 const addUsage = (a: Usage, b: Usage): Usage => ({ inputTokens: a.inputTokens + b.inputTokens, outputTokens: a.outputTokens + b.outputTokens, costNanoUsd: a.costNanoUsd + b.costNanoUsd });
 /** A page's text split into sentences or lines (offsets into the text), so the web helper can name a passage by number. */
 export function webSegments(content: string): { start: number; end: number }[] {
@@ -74,6 +92,8 @@ export type ToolDeps = {
   /** Admin-approved tools of enabled MCP servers (Admin chats only); callMcp runs one and returns its capped text. */
   mcpTools?: readonly McpAgentTool[];
   callMcp?(server: string, tool: string, args: Record<string, unknown>, signal: AbortSignal): Promise<{ text: string; isError: boolean }>;
+  /** Reference of an 'ask' tool call the user approved with "Allow once" in this message (from the previous approval card). */
+  mcpApprovedRef?: string;
   /** Servers whose tools are offered from the first step (the question names them); others wait for open_mcp_server. */
   mcpOpen?: readonly string[];
   loadSkill?(name: string, signal: AbortSignal): Promise<string | null>;
@@ -81,7 +101,8 @@ export type ToolDeps = {
   plan?(steps: readonly PlanStep[]): void;
 };
 export type SkillEntry = { name: string; description: string };
-export type McpAgentTool = { server: string; tool: string; description: string; inputSchema: Record<string, unknown> };
+/** mode 'ask': the user approves each call on an approval card first (the turn ends with the card; "Allow once" runs it). */
+export type McpAgentTool = { server: string; tool: string; description: string; inputSchema: Record<string, unknown>; mode?: 'allow' | 'ask' };
 export const MAX_MCP_CALLS = 2, MCP_SPEC_BYTES = 8000, MCP_TOOL_DESCRIPTION = 500, MAX_MCP_OPEN = 2;
 /** Function name the model sees for one MCP tool (<= 64 chars: 4 + 20 + 2 + 38). */
 export const mcpToolName = (t: Pick<McpAgentTool, 'server' | 'tool'>) => `mcp_${t.server}__${t.tool}`;
@@ -90,7 +111,7 @@ export function mcpSpecs(tools: readonly McpAgentTool[]): ToolSpec[] {
   const out: ToolSpec[] = []; let used = 0;
   for (const t of tools) {
     const spec: ToolSpec = { type: 'function', function: { name: mcpToolName(t),
-      description: `[External tool from the ${t.server} MCP server] ${t.description.slice(0, MCP_TOOL_DESCRIPTION)}`, parameters: t.inputSchema } };
+      description: `[External tool from the ${t.server} MCP server${t.mode === 'ask' ? '; the user approves each call first' : ''}] ${t.description.slice(0, MCP_TOOL_DESCRIPTION)}`, parameters: t.inputSchema } };
     const size = Buffer.byteLength(JSON.stringify(spec));
     if (used + size > MCP_SPEC_BYTES) continue;
     used += size; out.push(spec);
@@ -224,6 +245,7 @@ export function createToolHost(deps: ToolDeps) {
   let readNumber = 0, searches = 0;
   const skillsLoaded = new Set<string>();
   const productImages = new Map<string, CitationImage[]>();
+  let approvalUsed = false;
   let planUpdates = 0, lastPlan: PlanStep[] | null = null, helperUsage: Usage = { inputTokens: 0, outputTokens: 0, costNanoUsd: 0 };
   const servers = new Set(deps.callMcp ? (deps.mcpTools ?? []).map(t => t.server) : []);
   const opened = new Set((deps.mcpOpen ?? []).filter(s => servers.has(s)));
@@ -240,6 +262,16 @@ export function createToolHost(deps: ToolDeps) {
     const t = deps.mcpTools!.find(x => mcpToolName(x) === spec)!;
     if (mcpCalls >= MAX_MCP_CALLS) return error('mcp_limit', `At most ${MAX_MCP_CALLS} external tool calls per turn. Answer with what you have.`);
     if (bytes(JSON.stringify(args)) > 4000) return error('invalid_arguments', 'Tool arguments are too large.');
+    if (t.mode === 'ask') {
+      // One approval runs exactly the call shown on the card (same server, tool and arguments), once.
+      const ref = mcpApprovalRef(t.server, t.tool, args);
+      if (deps.mcpApprovedRef !== ref || approvalUsed) {
+        const text = agentQuestionText(mcpApprovalQuestion(t.server, t.tool, args, ref), [MCP_ALLOW_LABEL, MCP_DENY_LABEL]);
+        if (!text) return error('unavailable', `The ${t.server} tool cannot be shown for approval. Continue without it.`);
+        return { kind: 'ask', answer: { outcome: 'clarification', text, citations: [] }, citedSkus: [] };
+      }
+      approvalUsed = true;
+    }
     mcpCalls++; report('searching_sources');
     let result: { text: string; isError: boolean };
     try { result = await deps.callMcp!(t.server, t.tool, args, signal); }
