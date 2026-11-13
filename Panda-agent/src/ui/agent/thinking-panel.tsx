@@ -1,6 +1,7 @@
 "use client";
 
-import { BookOpen, Check, ChevronDown, Circle, Globe, Layers, ListFilter, Package, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { BookOpen, Check, ChevronDown, Circle, Globe, Layers, ListChecks, ListFilter, Package, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import type { PlanStep } from "../../agent-loop/plan";
 import { useEffect, useId, useState } from "react";
 import { formatElapsed, panelSummary, stepDurations } from "./elapsed";
 import { stepKind, type StepKind } from "./step-icons";
@@ -55,6 +56,7 @@ export function ThinkingPanel({
   note,
   stepTimes,
   webSearch,
+  plan,
 }: {
   steps: string[];
   busy: boolean;
@@ -67,6 +69,8 @@ export function ThinkingPanel({
   stepTimes?: number[];
   /** Label the sources row "Searched the web" instead of "Read N sources". */
   webSearch?: boolean;
+  /** The agent's checklist for a multi-step request (latest update), ticked off live. */
+  plan?: PlanStep[];
 }) {
   const [now, setNow] = useState(() => Date.now());
   const [open, setOpen] = useState(false);
@@ -87,6 +91,7 @@ export function ThinkingPanel({
   const shown = sources?.slice(0, MAX_CHIPS) ?? [];
   const more = (sources?.length ?? 0) - shown.length;
   const SrcIcon = webSearch ? Globe : BookOpen;
+  const planDone = plan?.filter((s) => s.done).length ?? 0;
   const srcLabel = busy
     ? "Searching"
     : webSearch
@@ -110,11 +115,31 @@ export function ThinkingPanel({
         >
           {complete ? <Layers className={styles.check} size={14} aria-hidden="true" /> : null}
           <span>{panelSummary({ busy, complete, elapsedMs })}</span>
+          {plan?.length ? <span className={styles.planCount}>{planDone}/{plan.length} planned steps</span> : null}
           <ChevronDown className={styles.chev} size={14} aria-hidden="true" />
         </button>
       )}
       {showBody ? (
         <div className={styles.body} id={bodyId}>
+          {plan?.length ? (
+            <div className={styles.plan}>
+              <span className={styles.srcLabel}>
+                <ListChecks size={14} aria-hidden="true" />
+                Plan {planDone}/{plan.length}
+              </span>
+              <ul className={styles.planList}>
+                {plan.map((s, i) => (
+                  <li key={`${i}-${s.text}`} className={styles.planItem}>
+                    <span className={s.done ? styles.boxDone : styles.box} aria-hidden="true">
+                      {s.done ? <Check size={10} strokeWidth={3} /> : null}
+                    </span>
+                    <span className={s.done ? styles.planDone : styles.planTodo}>{s.text}</span>
+                    <span className={styles.sr}>{s.done ? " (done)" : " (to do)"}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <ol className={styles.steps}>
             {steps.map((label, i) => {
               const current = busy && i === steps.length - 1;

@@ -1,12 +1,14 @@
 import {parseToolActivity} from '../agentic/tool-activity.ts';
 import type {ToolActivity} from '../agentic/contracts.ts';
+import {parsePlan, type PlanStep} from '../agent-loop/plan.ts';
+export type {PlanStep} from '../agent-loop/plan.ts';
 export const stages = ['routing_question', 'resolving_product', 'reading_sources', 'searching_sources', 'searching_web', 'selecting_evidence', 'checking_citations', 'saving_answer'] as const;
 export type Stage = typeof stages[number];
 const limit = 4 * 1024 * 1024;
 type Final = { type: 'complete'; data: unknown } | { type: 'error'; error: string };
 
 // A malformed or incomplete stream has an unknown outcome; callers must not resend it.
-export async function readChatStream(body: ReadableStream<Uint8Array>, onActivity: (stage: Stage) => void, onContext?: (context: ContextSummary) => void, onTool?: (tool: ToolActivity) => void): Promise<Final> {
+export async function readChatStream(body: ReadableStream<Uint8Array>, onActivity: (stage: Stage) => void, onContext?: (context: ContextSummary) => void, onTool?: (tool: ToolActivity) => void, onPlan?: (steps: PlanStep[]) => void): Promise<Final> {
   const reader = body.getReader();
   const decoder = new TextDecoder('utf-8', { fatal: true });
   let buffer = '', size = 0, count = 0, final: Final | undefined;
@@ -34,6 +36,10 @@ export async function readChatStream(body: ReadableStream<Uint8Array>, onActivit
       const tool = Object.keys(value).length === 2 ? parseToolActivity(value.tool) : null;
       if (!tool || ++count > 64) throw new Error('Invalid tool event');
       onTool?.(tool);
+    } else if (value.type === 'plan') {
+      const steps = Object.keys(value).length === 2 ? parsePlan(value.steps) : null;
+      if (!steps || ++count > 64) throw new Error('Invalid plan event');
+      onPlan?.(steps);
     } else if (value.type === 'context') {
       const summary = { ...value };
       delete summary.type;

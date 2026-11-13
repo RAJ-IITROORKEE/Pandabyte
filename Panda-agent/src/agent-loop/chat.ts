@@ -37,7 +37,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       if (signal.aborted) throw new ChatStoreError('unavailable'); const s = await read(ref.thread, ref.request); if (!s) throw new ChatStoreError('not_found');
       if (s.status === 'complete') return { status: 'saved' }; await store.cancel(ref.thread, ref.request); await current(); return { status: 'saved' };
     },
-    async start(turn, requestSignal, progress) {
+    async start(turn, requestSignal, progress, plan) {
       const signal = AbortSignal.any([requestSignal, AbortSignal.timeout(options.turnMs ?? LOOP_TURN_MS)]);
       valid(turn.thread, turn.request);
       if (typeof turn.question !== 'string' || !turn.question || turn.question !== turn.question.trim() || turn.question.length > 2000 || !turn.question.isWellFormed()) throw new ChatStoreError('invalid');
@@ -67,15 +67,15 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       const webOn = turn.webSearch === true && !!webSearch;
       // A server named in the question is opened up front; others are listed in one line each and opened on demand.
       const mcpTools = mcp?.tools ?? [], mcpOpen = [...new Set(mcpTools.map(t => t.server))].filter(s => new RegExp(`\\b${s}\\b`, 'i').test(turn.question));
-      const tools = createToolHost({ ...catalogTools, skills, ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
-      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools), tools.specs(false)]), 'utf8');
+      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
+      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools, !!plan), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
       // One safe line per turn for the hosting logs: model, step shape, error codes and output tokens; never user text, answers, excerpts or ids.
       const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
       try {
         report('routing_question');
-        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools) }, { step, tools, signal, trace });
+        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools, !!plan) }, { step, tools, signal, trace });
         log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.
@@ -102,11 +102,11 @@ export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge
     state: async (thread, id) => await isLoop(thread, id) || await base.state(thread, id),
     status: async (ref, signal) => (await owner(ref.thread, ref.request)).status(ref, signal),
     cancel: async (ref, signal) => (await owner(ref.thread, ref.request)).cancel(ref, signal),
-    start: async (turn, signal, progress) => {
-      if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress);
+    start: async (turn, signal, progress, plan) => {
+      if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress, plan);
       if (await base.state(turn.thread, turn.request)) return base.start(turn, signal, progress);
       let ok = false; try { ok = await eligible(turn) === true; } catch { ok = false; }
-      return ok ? loop.start(turn, signal, progress) : base.start(turn, signal, progress);
+      return ok ? loop.start(turn, signal, progress, plan) : base.start(turn, signal, progress);
     },
   };
 }

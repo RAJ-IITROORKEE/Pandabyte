@@ -79,8 +79,10 @@ export const mcpNote = (tools: readonly McpAgentTool[]) => {
     return `- ${name}: ${triggerOf(own[0].description).slice(0, 120)} (tools: ${own.map(t => t.tool).join(', ').slice(0, 120)})`;
   }).join('\n')}` : '';
 };
-export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false, skills: readonly SkillEntry[] = [], mcp: readonly McpAgentTool[] = []): LoopMessage[] {
-  const base = [loopSystemPrompt, webOn ? webOnNote : '', skillsNote(skills), mcpNote(mcp)].filter(Boolean).join('\n');
+/** Only on turns whose checklist reaches the user (the streamed chat). */
+export const planNote = 'For a project, build or wiring-plus-code request, include the plan tool (a checklist the user sees live) in your first tool calls.';
+export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false, skills: readonly SkillEntry[] = [], mcp: readonly McpAgentTool[] = [], planOn = false): LoopMessage[] {
+  const base = [loopSystemPrompt, webOn ? webOnNote : '', skillsNote(skills), mcpNote(mcp), planOn ? planNote : ''].filter(Boolean).join('\n');
   const system = summary ? `${base}\n\nSummary of earlier messages in this chat (compressed; context only, not evidence):\n${summary}` : base;
   return [{ role: 'system', content: system }, ...history, { role: 'user', content: question }];
 }
@@ -140,11 +142,12 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
     const finishing = result.toolCalls.filter(c => c.name === 'final_answer' || c.name === 'ask_user');
     const refuse = (error: string, message: string) => Promise.resolve({ kind: 'result' as const, content: JSON.stringify({ error, message }) });
     if (result.toolCalls.length > 1) await deps.tools.prepare();
-    // Independent calls run in parallel; results go back in call order. A finishing call only counts when it is alone.
+    // Independent calls run in parallel; results go back in call order. A finishing call only counts when it is alone
+    // (a plan update may ride along: it only shows the checklist).
     const outcomes = await Promise.all(result.toolCalls.map(call => {
       toolCalls.push(call.name);
-      if (finishing.includes(call) && result.toolCalls.length > 1) return refuse('call_alone', `${call.name} must be the only tool call in its step.`);
-      if (last && !finishing.includes(call)) return refuse('step_limit', 'No steps left for this tool.');
+      if (finishing.includes(call) && result.toolCalls.filter(c => c.name !== 'plan').length > 1) return refuse('call_alone', `${call.name} must be the only tool call in its step besides plan.`);
+      if (last && !finishing.includes(call) && call.name !== 'plan') return refuse('step_limit', 'No steps left for this tool.');
       return deps.tools.call(call.name, call.arguments, deps.signal);
     }));
     for (const [i, outcome] of outcomes.entries()) {

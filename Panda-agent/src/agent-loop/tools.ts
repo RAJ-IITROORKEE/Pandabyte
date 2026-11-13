@@ -9,6 +9,7 @@ import type { WebSource } from '../search/tavily.ts';
 import { webSearchSection } from '../search/citation-url.ts';
 import { parseSkillMd } from './skill-md.ts';
 import type { CitationImage } from '../search/citation-image.ts';
+import { parsePlan, MAX_PLAN_STEPS, PLAN_STEP_CHARS, type PlanStep } from './plan.ts';
 
 export type CatalogRow = { sku: string; title: string; sourceUrl: string };
 export type ProductPassage = { text: string; title: string; sourceUrl: string; capturedAt: string; sectionPath: readonly string[] };
@@ -30,6 +31,8 @@ export type ToolDeps = {
   /** Servers whose tools are offered from the first step (the question names them); others wait for open_mcp_server. */
   mcpOpen?: readonly string[];
   loadSkill?(name: string, signal: AbortSignal): Promise<string | null>;
+  /** Shows the agent's checklist to the user (thinking panel); the plan tool is offered only when this is set. */
+  plan?(steps: readonly PlanStep[]): void;
 };
 export type SkillEntry = { name: string; description: string };
 export type McpAgentTool = { server: string; tool: string; description: string; inputSchema: Record<string, unknown> };
@@ -136,6 +139,10 @@ const loadSkillSpec = fn('load_skill', `Read the full instructions of one listed
   { name: { type: 'string', description: 'Exact skill name from the Skills list.' } }, ['name']);
 const openMcpSpec = fn('open_mcp_server', `Get the tools of one listed external MCP server; they are offered from your next step. At most ${MAX_MCP_OPEN} servers per turn.`,
   { server: { type: 'string', description: 'Exact server name from the External MCP servers list.' } }, ['server']);
+export const MAX_PLAN_UPDATES = 6;
+const planSpec = fn('plan', `The user sees this checklist live. For a project, build or wiring-plus-code request, include plan in your first tool calls with 2 to ${MAX_PLAN_STEPS} short steps you will take in this turn (each under ${PLAN_STEP_CHARS} characters), then resend it with finished steps marked done alongside your later calls, including final_answer. Never call it on its own; skip it for simple questions.`,
+  { steps: { type: 'array', minItems: 2, maxItems: MAX_PLAN_STEPS, items: { type: 'object', additionalProperties: false,
+    properties: { text: { type: 'string' }, done: { type: 'boolean' } }, required: ['text', 'done'] } } }, ['steps']);
 const webSearchSpec = fn('web_search', `Search the public web (maker docs, datasheets, tutorials). Returns up to 3 results, each with an id (W...) to cite in final_answer.citations; facts from them go in general. At most ${MAX_WEB_SEARCHES} searches per turn. Never use it for PandaByte products, prices or stock.`,
   { query: { type: 'string', description: 'A short search query in plain words, no URLs.' } }, ['query']);
 export const allToolSpecs: readonly ToolSpec[] = Object.values(specs);
@@ -163,6 +170,7 @@ export function createToolHost(deps: ToolDeps) {
   let readNumber = 0, searches = 0;
   const skillsLoaded = new Set<string>();
   const productImages = new Map<string, CitationImage[]>();
+  let planUpdates = 0, lastPlan: PlanStep[] | null = null;
   const servers = new Set(deps.callMcp ? (deps.mcpTools ?? []).map(t => t.server) : []);
   const opened = new Set((deps.mcpOpen ?? []).filter(s => servers.has(s)));
   const mcpOffered = () => mcpSpecs((deps.mcpTools ?? []).filter(t => opened.has(t.server)));
@@ -298,6 +306,8 @@ export function createToolHost(deps: ToolDeps) {
     catch { return error('invalid_answer', 'The answer could not be accepted. Rewrite it in plain Markdown.'); }
     // The journal stores at most 24,000 bytes of answer JSON; Postgres jsonb text adds spaces, so keep a margin.
     if (bytes(JSON.stringify(answer)) > 23000) return error('too_long', 'The answer with its citations is over the 23,000-byte storage limit (non-English text and code count more). Shorten it.');
+    // The checklist names the steps of this answer, so delivering it finishes them (models rarely tick the last ones).
+    if (lastPlan?.some(s => !s.done)) { lastPlan = lastPlan.map(s => ({ ...s, done: true })); try { deps.plan?.(lastPlan); } catch { /* Presentation only. */ } }
     return { kind: 'final', answer, citedSkus: [...new Set(unique.map(id => excerpts.get(id)!.sku))], suggestions: cleanSuggestions(args.suggestions) };
   }
 
@@ -340,6 +350,14 @@ export function createToolHost(deps: ToolDeps) {
         if (!str(args.name, 64) || !args.name.trim()) return error('invalid_arguments', 'load_skill needs a skill name.');
         return loadSkill(args.name.trim(), signal);
       }
+      if (name === 'plan' && deps.plan) {
+        if (planUpdates >= MAX_PLAN_UPDATES) return error('plan_limit', 'The checklist was updated enough this turn; continue without it.');
+        const steps = parsePlan(args.steps);
+        if (!steps) return error('invalid_arguments', `plan needs 2 to ${MAX_PLAN_STEPS} steps, each {text under ${PLAN_STEP_CHARS} characters, done true or false}, no links.`);
+        planUpdates++; lastPlan = steps;
+        try { deps.plan(steps); } catch { /* Presentation only. */ }
+        return { kind: 'result', content: JSON.stringify({ shown: true }) };
+      }
       if (name === 'final_answer') return finalAnswer(args);
       if (name === 'ask_user') return askUser(args);
       return error('unknown_tool', `Use only ${deps.webSearch ? 'search_catalog, read_product, web_search' : 'search_catalog, read_product'}, ask_user or final_answer.`);
@@ -347,7 +365,7 @@ export function createToolHost(deps: ToolDeps) {
     /** Tools offered for a step: web_search only on web-search turns; the last step only finishes. */
     specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs
       : [...allToolSpecs, ...(deps.webSearch ? [webSearchSpec] : []), ...(deps.skills?.length && deps.loadSkill ? [loadSkillSpec] : []),
-        ...(servers.size > opened.size ? [openMcpSpec] : []), ...mcpOffered()],
+        ...(servers.size > opened.size ? [openMcpSpec] : []), ...mcpOffered(), ...(deps.plan ? [planSpec] : [])],
     /** Whether a product read or web search returned citable ids this turn. */
     hasExcerpts: () => excerpts.size > 0 || web.size > 0,
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */

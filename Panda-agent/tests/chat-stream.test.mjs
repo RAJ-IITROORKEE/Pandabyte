@@ -64,3 +64,15 @@ test('bounds total text across resets and independently bounds tool events', asy
   const tool = sse({ type: 'tool_activity', tool: 'web_search', status: 'started' });
   await assert.rejects(readChatStream(stream([tool.repeat(65) + complete]), () => {}));
 });
+
+test('plan events: the bounded checklist reaches onPlan; malformed plans end the stream', async () => {
+  const plans = [];
+  const plan = steps => `data: ${JSON.stringify({ type: 'plan', steps })}\n\n`;
+  const result = await readChatStream(stream([plan([{ text: 'Pick a board', done: false }, { text: 'Write the sketch', done: false }]),
+    plan([{ text: 'Pick a board', done: true }, { text: 'Write the sketch', done: false }]), complete]), () => {}, undefined, undefined, steps => plans.push(steps));
+  assert.equal(result.type, 'complete'); assert.deepEqual(plans.map(p => p.filter(s => s.done).length), [0, 1]);
+  for (const bad of [[{ text: 'Only one', done: false }], [{ text: 'See https://x.io', done: false }, { text: 'b', done: true }],
+    [{ text: 'a'.repeat(81), done: false }, { text: 'b', done: true }], [{ text: 'a', done: 'yes' }, { text: 'b', done: true }]])
+    await assert.rejects(readChatStream(stream([plan(bad), complete]), () => {}, undefined, undefined, () => {}));
+  await assert.rejects(readChatStream(stream([`data: ${JSON.stringify({ type: 'plan', steps: [{ text: 'a', done: true }, { text: 'b', done: true }], extra: 1 })}\n\n`, complete]), () => {}));
+});

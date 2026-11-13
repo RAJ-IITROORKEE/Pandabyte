@@ -34,3 +34,12 @@
   .step { animation: none; }
   .chev { transition: none; }
 }
+.planCount { flex: none; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.plan { display: grid; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--divider); }
+.planList { display: grid; gap: 6px; margin: 0; padding: 0 0 0 22px; list-style: none; }
+.planItem { display: flex; align-items: flex-start; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.box, .boxDone { flex: none; display: inline-grid; place-items: center; width: 14px; height: 14px; margin-top: 3px; border-radius: 4px; }
+.box { border: 1px solid var(--muted); }
+.boxDone { background: var(--accent-ink); color: var(--surface); }
+.planTodo { color: var(--foreground); }
+.planDone { color: var(--muted); text-decoration: line-through; }

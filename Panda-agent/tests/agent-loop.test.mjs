@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runAgentLoop, loopMessages, loopSystemPrompt, MAX_STEPS, stepLimitText, readNudge, shortNudge, LOOP_OUTPUT_TOTAL, STEP_OUTPUT_MAX } from '../src/agent-loop/loop.ts';
-import { createToolHost, searchCatalog, GENERAL_HEADING, MAX_PRODUCTS, PINOUT_FOCUS } from '../src/agent-loop/tools.ts';
+import { createToolHost, searchCatalog, GENERAL_HEADING, MAX_PRODUCTS, PINOUT_FOCUS, MAX_PLAN_UPDATES } from '../src/agent-loop/tools.ts';
 import { loopHistory, CONTEXT_BYTES, COMPACT_AT } from '../src/agent-loop/history.ts';
 import { createAgentLoopChat, withAgentLoop, sourcesChangedText, loopModelAllowed } from '../src/agent-loop/chat.ts';
 import { createAgentLoopStore } from '../src/agent-loop/store.ts';
@@ -703,4 +703,35 @@ test('find_pinout: its focus passes the evidence reader wiring-proof guard; a fa
   const read = JSON.parse((await host.call('read_product', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
   const done = await host.call('final_answer', JSON.stringify({ sourced: 'It has an RGB LED.', citations: [read.excerpts[0].id], general: '' }), signal());
   assert.equal(done.answer.citations[0].images, undefined);
+});
+
+test('plan: offered only with a checklist sink; validated, reported, capped; rides along with final_answer', async () => {
+  const steps = [{ text: 'Pick a board', done: true }, { text: 'Write the sketch', done: false }];
+  assert.ok(!createToolHost({ catalog: async () => catalog }).specs(false).some(s => s.function.name === 'plan'), 'no sink, no tool');
+  const shown = [];
+  const host = createToolHost({ catalog: async () => catalog, plan: s => shown.push(s) });
+  assert.ok(host.specs(false).some(s => s.function.name === 'plan'));
+  assert.deepEqual(JSON.parse((await host.call('plan', JSON.stringify({ steps }), signal())).content), { shown: true });
+  assert.deepEqual(shown, [steps]);
+  for (const bad of [[steps[0]], [{ text: 'See www.x.io', done: false }, steps[1]], [{ text: 'x', done: 1 }, steps[1]]])
+    assert.equal(JSON.parse((await host.call('plan', JSON.stringify({ steps: bad }), signal())).content).error, 'invalid_arguments');
+  for (let i = 1; i < MAX_PLAN_UPDATES; i++) await host.call('plan', JSON.stringify({ steps }), signal());
+  assert.equal(JSON.parse((await host.call('plan', JSON.stringify({ steps }), signal())).content).error, 'plan_limit');
+  assert.equal(shown.length, MAX_PLAN_UPDATES);
+  // In the loop: plan + final_answer in one step finishes the turn; another tool beside final_answer still refuses it.
+  const seen = [];
+  const d = deps(); d.tools.plan = s => seen.push(s);
+  const done = steps.map(s => ({ ...s, done: true }));
+  const script = scripted([() => reply(call('final_answer', { sourced: '', citations: [], general: 'Use any free GPIO.' }), call('search_catalog', { query: 'x' })),
+    () => reply(call('plan', { steps: done }), call('final_answer', { sourced: '', citations: [], general: 'Use any free GPIO.' }))]);
+  const result = await runAgentLoop({ messages: loopMessages('Plan a weather station', [], null) }, { step: script.step, tools: createToolHost(d.tools), signal: signal() });
+  assert.equal(result.kind, 'final'); assert.equal(result.steps, 2); assert.deepEqual(seen, [done]);
+  assert.match(JSON.stringify(script.seen[1].messages), /call_alone/);
+  // A delivered answer ticks the steps the model left open; the prompt asks for plan only where a sink exists.
+  const open = [];
+  const host2 = createToolHost({ catalog: async () => catalog, plan: s => open.push(s) });
+  await host2.call('plan', JSON.stringify({ steps }), signal());
+  assert.equal((await host2.call('final_answer', JSON.stringify({ sourced: '', citations: [], general: 'Done.' }), signal())).kind, 'final');
+  assert.deepEqual(open.at(-1), done);
+  assert.match(loopMessages('q', [], null, false, [], [], true)[0].content, /plan tool/); assert.doesNotMatch(loopMessages('q', [], null)[0].content, /plan tool/);
 });
