@@ -1,3 +1,4 @@
+-- Owner-approved and applied 13 Nov 2026 after a rolled-back dry run (web/no-image pass; query URL, http image, extra key, uncited outcome refused; saved answers 7/7 unchanged).
 -- Agent-loop web citations (13 Nov 2026): loop answers may cite web_search results (Tavily) next to PandaByte listing
 -- quotes, with up to two reference images per web page. Replaces one function; table, ops, grants and reads are unchanged.
 -- A web citation is labelled with the fixed section 'Web search excerpt (Tavily)' (src/search/citation-url.ts) and is
