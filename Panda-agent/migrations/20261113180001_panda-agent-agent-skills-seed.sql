@@ -1,3 +1,4 @@
+-- Owner-approved and applied 13 Nov 2026 together with its pair after a rolled-back dry run (5 skills seeded and enabled; anon no execute; tables closed).
 -- Seed: the five built-in starter skills (source files Panda-agent/skills/agent/*/SKILL.md), enabled. Generated from those files.
 -- Admins can edit or disable them in Admin > Agent Skills; built-in skills cannot be removed.
 -- Rollback: DELETE FROM public.panda_agent_agent_skill_versions WHERE created_by='migration'; DELETE FROM public.panda_agent_agent_skills WHERE source='built-in';

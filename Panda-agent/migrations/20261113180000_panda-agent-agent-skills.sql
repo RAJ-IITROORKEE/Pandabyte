@@ -1,3 +1,4 @@
+-- Owner-approved and applied 13 Nov 2026 together with its pair after a rolled-back dry run (5 skills seeded and enabled; anon no execute; tables closed).
 -- Agent skills registry (phase 2, owner request 13 Nov 2026; plan: Panda-agent/docs/agent-skills-mcp-plan.md).
 -- Admin-managed SKILL.md skills (Agent Skills format: name + description frontmatter, Markdown body) that the agent loop lists by
 -- name and description and loads on demand. Separate from the older fixed guide bundles (panda_agent_skills), which stay unchanged.
