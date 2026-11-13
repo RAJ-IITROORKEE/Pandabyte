@@ -6,7 +6,7 @@ import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
 import { loopHistory } from './history.ts';
 import { loopMessages, newLoopTrace, runAgentLoop, type StepFn } from './loop.ts';
-import { createToolHost, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
+import { createToolHost, webHelperMessages, webPicksSpec, type McpAgentTool, type SkillEntry, type ToolDeps } from './tools.ts';
 import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 
@@ -65,9 +65,16 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       let mcp: Awaited<ReturnType<NonNullable<Tools['mcp']>>> = null;
       try { mcp = readMcp ? await readMcp() : null; } catch { mcp = null; }
       const webOn = turn.webSearch === true && !!webSearch;
+      // The web-research helper: one guarded call of the same model and endpoint, in its own short context.
+      const condenseWeb = async (query: string, results: readonly { id: string; title: string; content: string }[], s: AbortSignal) => {
+        const r = await step(webHelperMessages(turn.question, query, results), [webPicksSpec], s, 400);
+        const call = r.toolCalls.find(c => c.name === 'web_picks');
+        let args: unknown = null; try { args = call ? JSON.parse(call.arguments) : null; } catch { args = null; }
+        return { args, usage: r.usage };
+      };
       // A server named in the question is opened up front; others are listed in one line each and opened on demand.
       const mcpTools = mcp?.tools ?? [], mcpOpen = [...new Set(mcpTools.map(t => t.server))].filter(s => new RegExp(`\\b${s}\\b`, 'i').test(turn.question));
-      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
+      const tools = createToolHost({ ...catalogTools, skills, ...(plan ? { plan } : {}), ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)), condenseWeb } : {}) });
       const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools, !!plan), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;

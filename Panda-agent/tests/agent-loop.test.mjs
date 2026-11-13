@@ -757,3 +757,53 @@ test('plan sent beside an answer written as text: the checklist is shown and the
   const result = await runAgentLoop({ messages: loopMessages('Explain I2C wiring basics', [], null) }, { step: script.step, tools: createToolHost(d.tools), signal: signal() });
   assert.equal(result.kind, 'final'); assert.equal(result.steps, 1); assert.match(result.answer.text, /SDA and SCL/); assert.deepEqual(shown, [steps]);
 });
+
+test('web-research helper: sentence-range picks replace long page text with the exact page span, and count toward usage', async () => {
+  const { pickWebQuotes, webSegments, webHelperMessages } = await import('../src/agent-loop/tools.ts');
+  const page = 'Intro text about the board. ' + 'Filler sentence here. '.repeat(40) + 'The Grove port uses G1 for SDA and G2 for SCL.\nIt runs at 3.3 V logic. More filler follows. ' + 'Tail. '.repeat(30);
+  const pages = [{ id: 'W1.1', content: page }];
+  const segs = webSegments(page), at = text => segs.findIndex(g => page.slice(g.start, g.end).trim() === text) + 1;
+  const from = at('The Grove port uses G1 for SDA and G2 for SCL.'), to = at('It runs at 3.3 V logic.');
+  assert.ok(from > 1 && to === from + 1);
+  assert.match(webHelperMessages('Q?', 'grove pins', [{ id: 'W1.1', title: 'T', content: page }])[1].content, new RegExp(`${from}\\| The Grove port`));
+  assert.equal(pickWebQuotes({ picks: [{ id: 'W1.1', from, to }] }, pages).get('W1.1'), 'The Grove port uses G1 for SDA and G2 for SCL.\nIt runs at 3.3 V logic.');
+  assert.ok(pickWebQuotes({ picks: [{ id: 'W1.1', from: 1, to: segs.length }] }, pages).get('W1.1').length <= 600, 'long spans are cut to fit a citation');
+  for (const bad of [{ picks: [{ id: 'W1.1', from: to, to: from }] }, { picks: [{ id: 'W9.9', from, to }] }, { picks: [{ id: 'W1.1', from: 0, to: 1 }] },
+    { picks: [{ id: 'W1.1', from, to: segs.length + 1 }] }, { picks: [{ id: 'W1.1', from: '3', to: 4 }] }, null, { picks: 'x' }])
+    assert.equal(pickWebQuotes(bad, pages).size, 0);
+  const sources = [{ handle: 'web:a', url: 'https://docs.example-maker.com/atoms3', title: 'AtomS3 docs', content: page, capturedAt: '2026-11-13T00:00:00.000Z' }];
+  const helperUsage = { inputTokens: 900, outputTokens: 30, costNanoUsd: 50 };
+  const quote = 'The Grove port uses G1 for SDA and G2 for SCL.\nIt runs at 3.3 V logic.';
+  const helped = createToolHost({ ...deps().tools, webSearch: async () => sources,
+    condenseWeb: async (q, results) => { assert.equal(results[0].content, page.slice(0, 1500)); return { args: { picks: [{ id: 'W1.1', from, to }] }, usage: helperUsage }; } });
+  const seen = JSON.parse((await helped.call('web_search', JSON.stringify({ query: 'AtomS3 grove pins' }), signal())).content);
+  assert.equal(seen.results[0].content, quote); assert.match(seen.note, /passage of that page/);
+  assert.deepEqual(helped.drainUsage(), helperUsage); assert.deepEqual(helped.drainUsage(), { inputTokens: 0, outputTokens: 0, costNanoUsd: 0 });
+  const done = await helped.call('final_answer', JSON.stringify({ sourced: '', citations: ['W1.1'], general: 'The page says G1 is SDA.' }), signal());
+  assert.equal(done.answer.citations[0].quote, quote);
+  // Helper failure or no usable pick: the agent reads the page text as before.
+  for (const condenseWeb of [async () => { throw Error('down'); }, async () => ({ args: { picks: [] }, usage: helperUsage })]) {
+    const raw = createToolHost({ ...deps().tools, webSearch: async () => sources, condenseWeb });
+    assert.equal(JSON.parse((await raw.call('web_search', JSON.stringify({ query: 'q' }), signal())).content).results[0].content, page.slice(0, 1500));
+  }
+  // Short pages skip the helper.
+  let called = 0;
+  const short = createToolHost({ ...deps().tools, webSearch: async () => [{ ...sources[0], content: 'G1 is SDA.' }], condenseWeb: async () => { called++; return { args: null, usage: helperUsage }; } });
+  await short.call('web_search', JSON.stringify({ query: 'q' }), signal()); assert.equal(called, 0);
+  // In the loop, the helper's usage is added to the turn.
+  const d = deps(); Object.assign(d.tools, { webSearch: async () => sources, condenseWeb: async () => ({ args: { picks: [{ id: 'W1.1', from, to }] }, usage: helperUsage }) });
+  const script = scripted([() => reply(call('web_search', { query: 'AtomS3 grove pins' })), () => reply(call('final_answer', { sourced: '', citations: ['W1.1'], general: 'G1 is SDA per the page.' }))]);
+  const result = await runAgentLoop({ messages: loopMessages('AtomS3 Grove pins?', [], null, true) }, { step: script.step, tools: createToolHost(d.tools), signal: signal() });
+  assert.equal(result.kind, 'final'); assert.equal(result.usage.inputTokens, 2 * usage.inputTokens + helperUsage.inputTokens); assert.equal(result.steps, 2);
+});
+
+test('final_answer: filler in sourced is dropped instead of rejected; real uncited facts are still refused', async () => {
+  for (const filler of ['` `', '" "', 'None. This answer uses only web results.', 'No PandaByte product facts were used in this answer.', 'Empty. No PandaByte product facts are used here.']) {
+    const host = createToolHost(deps().tools);
+    const done = await host.call('final_answer', JSON.stringify({ sourced: filler, citations: [], general: 'Use GPIO8 for SDA on most ESP32-S3 boards.' }), signal());
+    assert.equal(done.kind, 'final', filler); assert.doesNotMatch(done.answer.text, /No PandaByte|None\./);
+  }
+  const host = createToolHost(deps().tools);
+  for (const real of ['The xS3 has 8 MB PSRAM.', 'एक्सएस3 में आठ एमबी पीएसरैम है।', 'No pull-ups are fitted on the xS3 I2C lines, so add 4.7 kOhm resistors to 3.3 V on both SDA and SCL before connecting sensors.'])
+    assert.equal(JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: real, citations: [], general: '' }), signal())).content).error, 'uncited_sourced', real);
+});

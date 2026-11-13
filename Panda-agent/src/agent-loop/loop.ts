@@ -155,6 +155,8 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
       if (last && !finishing.includes(call) && call.name !== 'plan') return refuse('step_limit', 'No steps left for this tool.');
       return deps.tools.call(call.name, call.arguments, deps.signal);
     }));
+    // Helper model calls made by tools this step (web-research helper) count toward the turn's usage and output room.
+    usage = add(usage, deps.tools.drainUsage?.() ?? zero());
     for (const [i, outcome] of outcomes.entries()) {
       if (outcome.kind !== 'result') return end(outcome.kind, outcome.answer, outcome.citedSkus, outcome.suggestions);
       const code = codeOf(outcome.content); if (code) trace.errors.push(code);
