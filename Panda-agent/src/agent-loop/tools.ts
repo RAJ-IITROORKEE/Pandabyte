@@ -8,6 +8,7 @@ import { cleanAnswer } from '../server/chat-store.ts';
 import type { WebSource } from '../search/tavily.ts';
 import { webSearchSection } from '../search/citation-url.ts';
 import { parseSkillMd } from './skill-md.ts';
+import type { CitationImage } from '../search/citation-image.ts';
 
 export type CatalogRow = { sku: string; title: string; sourceUrl: string };
 export type ProductPassage = { text: string; title: string; sourceUrl: string; capturedAt: string; sectionPath: readonly string[] };
@@ -16,6 +17,8 @@ export type ToolDeps = {
   catalog(): Promise<CatalogRow[]>;
   /** Eligible listing passages for one catalog product, ranked by `focus`; revalidate() rechecks the same source scope before saving. */
   readProduct(row: CatalogRow, focus: string, signal: AbortSignal): Promise<ProductRead>;
+  /** Up to two of the board's own published images that show pins (pinout drawing first, then a labelled photo). */
+  pinoutImages?(row: CatalogRow, signal: AbortSignal): Promise<CitationImage[]>;
   progress?(stage: 'searching_sources' | 'reading_sources' | 'checking_citations'): void;
   /** Public web search; present only on turns where the user turned web search on. */
   webSearch?(query: string, signal: AbortSignal): Promise<WebSource[]>;
@@ -48,7 +51,9 @@ export function mcpSpecs(tools: readonly McpAgentTool[]): ToolSpec[] {
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
-export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4;
+export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4, PINOUT_EXCERPT_BYTES = 6000;
+/** Ranking words for find_pinout: the board-photo header labels and the module pin-definition tables share them. */
+export const PINOUT_FOCUS = 'pin labels header GPIO pin definitions pinout strapping boot I2C SDA SCL UART TX RX ADC';
 // shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
 export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600;
 export const WEB_SOURCES_HEADING = '### Web sources';
@@ -112,6 +117,8 @@ const specs = {
   ask_user: fn('ask_user', 'Ask the user one clarifying question and end your turn. Use only when the answer would change materially and a reasonable assumption is not possible.',
     { question: { type: 'string' }, options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 5, description: '2 to 5 short answers; the user can also type their own.' },
       recommended: { type: 'integer', description: 'Index of the recommended option, if any.' } }, ['question', 'options']),
+  find_pinout: fn('find_pinout', 'Get one PandaByte board\'s pin information for pin, GPIO, wiring or pinout questions: its header pin labels and its module\'s pin table, each with an excerpt id to cite. When you cite them, the board\'s own pinout image is shown with your answer.',
+    { sku: { type: 'string', description: 'Exact SKU from search_catalog.' } }, ['sku']),
   final_answer: fn('final_answer', 'Needed only when citing read_product excerpts; otherwise reply in plain text, which is the normal way to answer. Ends your turn. Put excerpt ids only in `citations`, never in the text. `sourced` holds only facts from read_product excerpts this turn, cited by excerpt id; `general` holds general engineering guidance (plans, wiring, code, libraries), shown under a "not from PandaByte sources" heading.',
     { sourced: { type: 'string', description: 'Markdown. PandaByte product facts only, no URLs or citation markers. Empty when nothing was cited.' },
       citations: { type: 'array', items: { type: 'string' }, maxItems: MAX_CITATIONS, description: 'Excerpt ids supporting `sourced`.' },
@@ -148,6 +155,7 @@ export function createToolHost(deps: ToolDeps) {
   const reading = new Set<string>();
   let readNumber = 0, searches = 0;
   const skillsLoaded = new Set<string>();
+  const productImages = new Map<string, CitationImage[]>();
   const servers = new Set(deps.callMcp ? (deps.mcpTools ?? []).map(t => t.server) : []);
   const opened = new Set((deps.mcpOpen ?? []).filter(s => servers.has(s)));
   const mcpOffered = () => mcpSpecs((deps.mcpTools ?? []).filter(t => opened.has(t.server)));
@@ -172,19 +180,24 @@ export function createToolHost(deps: ToolDeps) {
   }
   const report = (stage: Parameters<NonNullable<ToolDeps['progress']>>[0]) => { try { deps.progress?.(stage); } catch { /* Presentation only. */ } };
 
-  async function readProduct(args: Record<string, unknown>, signal: AbortSignal): Promise<ToolOutcome> {
-    if (!str(args.sku, 128) || !args.sku.trim() || (args.focus !== undefined && !str(args.focus, 300))) return error('invalid_arguments', 'read_product needs a sku string and an optional short focus string.');
+  async function readProduct(args: Record<string, unknown>, signal: AbortSignal, pins = false): Promise<ToolOutcome> {
+    const tool = pins ? 'find_pinout' : 'read_product';
+    if (!str(args.sku, 128) || !args.sku.trim() || (args.focus !== undefined && (pins || !str(args.focus, 300)))) return error('invalid_arguments', `${tool} needs a sku string${pins ? '' : ' and an optional short focus string'}.`);
     const row = (loaded ?? await rows()).find(r => r.sku.toLowerCase() === (args.sku as string).trim().toLowerCase());
     if (!row) return error('unknown_sku', 'No PandaByte product has that SKU. Use search_catalog to find the exact SKU.');
-    const known = reads.get(row.sku);
+    // A pin read is its own read of the same product (different ranking and budget) and takes its own product slot.
+    const key = pins ? `${row.sku}#pins` : row.sku;
+    const known = reads.get(key);
     if (known) return { kind: 'result', content: JSON.stringify({ sku: row.sku, alreadyRead: true, excerptIds: known.ids }) };
-    if (reading.has(row.sku)) return error('already_reading', 'That product is already being read in this step; use the excerpt ids from that result.');
+    if (reading.has(key)) return error('already_reading', 'That product is already being read in this step; use the excerpt ids from that result.');
     if (reads.size + reading.size >= MAX_PRODUCTS) return error('product_limit', `At most ${MAX_PRODUCTS} products can be read per turn. Answer with what you have.`);
-    reading.add(row.sku); const number = ++readNumber;
+    reading.add(key); const number = ++readNumber;
     try {
     report('reading_sources');
-    const focus = typeof args.focus === 'string' ? args.focus.replace(/[^A-Za-z0-9 .,+-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) : '';
-    const read = await deps.readProduct(row, focus, signal);
+    const focus = pins ? PINOUT_FOCUS : typeof args.focus === 'string' ? args.focus.replace(/[^A-Za-z0-9 .,+-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) : '';
+    const [read, images] = await Promise.all([deps.readProduct(row, focus, signal),
+      pins && deps.pinoutImages ? deps.pinoutImages(row, signal).catch(() => [] as CitationImage[]) : Promise.resolve([] as CitationImage[])]);
+    if (images.length) productImages.set(row.sku, images);
     if (read.kind !== 'ready') return error(read.kind === 'insufficient' ? 'no_excerpts' : 'unavailable', read.kind === 'insufficient'
       ? 'The listing holds no excerpts for that focus (wiring, pinout and safety proof are never in listings). Read again without that focus, or answer that part as general guidance.'
       : 'This product listing cannot be read right now. Do not state its facts.');
@@ -194,17 +207,18 @@ export function createToolHost(deps: ToolDeps) {
     for (const q of quotes) {
       const passage = read.passages[q.rank - 1];
       // Source-label lines prove nothing; whitespace-only slices cannot be quoted.
-      if (!passage || !q.text.trim() || /^\s*source\s*:\s*https?:\/\/\S+\s*$/i.test(q.text) || used + bytes(q.text) > PRODUCT_EXCERPT_BYTES) continue;
+      if (!passage || !q.text.trim() || /^\s*source\s*:\s*https?:\/\/\S+\s*$/i.test(q.text) || used + bytes(q.text) > (pins ? PINOUT_EXCERPT_BYTES : PRODUCT_EXCERPT_BYTES)) continue;
       used += bytes(q.text);
       const id = `E${number}.${ids.length + 1}`;
       excerpts.set(id, { text: q.text, passage, sku: row.sku }); ids.push(id);
       shown.push({ id, section: passage.sectionPath.join(' > '), text: q.text });
     }
     if (!ids.length) return error('no_excerpts', 'The listing has no quotable excerpts. Do not state its facts.');
-    reads.set(row.sku, { ids, revalidate: read.revalidate, row });
+    reads.set(key, { ids, revalidate: read.revalidate, row });
     return { kind: 'result', content: JSON.stringify({ sku: row.sku, title: row.title, productPage: row.sourceUrl, excerpts: shown,
-      note: 'Cite excerpt ids in final_answer.citations. Price and stock are never in excerpts; they are on the product page.' }) };
-    } finally { reading.delete(row.sku); }
+      ...(pins ? { pinoutImages: images.length, note: 'Header labels are transcribed from the board photo; an "Espressif datasheet excerpt" pin table describes the module, not the board\'s own header wiring. Cite the excerpts you use; the board\'s pinout image is then shown with your answer. Price and stock are never in excerpts.' }
+        : { note: 'Cite excerpt ids in final_answer.citations. Price and stock are never in excerpts; they are on the product page.' }) }) };
+    } finally { reading.delete(key); }
   }
 
   async function loadSkill(name: string, signal: AbortSignal): Promise<ToolOutcome> {
@@ -259,8 +273,11 @@ export function createToolHost(deps: ToolDeps) {
     if (/https?:\/\/|www\./i.test(sourced) || markers.test(sourced) || markers.test(general)) return error('markers', 'Remove URLs from sourced and citation markers from both fields; the application adds citations.');
     if (priceOrStock.test(prose(sourced)) || priceOrStock.test(prose(general))) return error('price_or_stock', 'Never state a price or stock level. Say they are shown on the product page.');
     report('checking_citations');
-    const listing = unique.map((id, i) => { const { text, passage } = excerpts.get(id)!;
-      return { id: `S${i + 1}`, title: passage.title, sourceUrl: passage.sourceUrl, capturedAt: passage.capturedAt, quote: text, sectionPath: [...passage.sectionPath] }; });
+    // A board's own pinout images (from find_pinout) ride on its first citation.
+    const pictured = new Set<string>();
+    const listing = unique.map((id, i) => { const { text, passage, sku } = excerpts.get(id)!;
+      const images = !pictured.has(sku) ? productImages.get(sku) : undefined; if (images) pictured.add(sku);
+      return { id: `S${i + 1}`, title: passage.title, sourceUrl: passage.sourceUrl, capturedAt: passage.capturedAt, quote: text, sectionPath: [...passage.sectionPath], ...(images ? { images } : {}) }; });
     const pages = webCited.map((id, i) => { const w = web.get(id)!;
       return { id: `S${listing.length + i + 1}`, title: w.title, sourceUrl: w.url, capturedAt: w.capturedAt, quote: w.quote, sectionPath: [webSearchSection], ...(w.images ? { images: w.images } : {}) }; });
     const citations = [...listing, ...pages], marks = (list: readonly { id: string }[]) => list.map(c => `[${c.id}]`).join(' ');
@@ -298,8 +315,8 @@ export function createToolHost(deps: ToolDeps) {
         try { return { kind: 'result', content: JSON.stringify(searchCatalog(await rows(), args.query)) }; }
         catch { catalog = undefined; signal.throwIfAborted(); return error('unavailable', 'The catalog cannot be read right now. Do not name PandaByte products from memory.'); }
       }
-      if (name === 'read_product') {
-        try { return await readProduct(args, signal); }
+      if (name === 'read_product' || name === 'find_pinout') {
+        try { return await readProduct(args, signal, name === 'find_pinout'); }
         catch { catalog = undefined; signal.throwIfAborted(); return error('unavailable', 'This product listing cannot be read right now. Do not state its facts.'); }
       }
       if (name === 'web_search' && deps.webSearch) {
@@ -331,7 +348,12 @@ export function createToolHost(deps: ToolDeps) {
     plain(content: string): ToolOutcome { const next = splitNextLine(content); return finalAnswer({ sourced: '', citations: [], general: next.text, suggestions: next.suggestions }, [...web.keys()]); },
     /** Rechecks the source scope of every product an answer cites, immediately before saving. */
     async revalidate(skus: readonly string[]): Promise<boolean> {
-      for (const sku of skus) { const read = reads.get(sku); if (!read || await read.revalidate() !== true) return false; }
+      // Every read of a cited product (listing and pin read) is rechecked.
+      for (const sku of skus) {
+        const own = [...reads.values()].filter(r => r.row.sku === sku);
+        if (!own.length) return false;
+        for (const read of own) if (await read.revalidate() !== true) return false;
+      }
       return true;
     },
   };

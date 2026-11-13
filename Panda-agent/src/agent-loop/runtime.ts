@@ -11,6 +11,20 @@ import type { ProductRead } from './tools.ts';
 import { searchHostedPublicWeb } from '../search/tavily.ts';
 import { SKILL_DESCRIPTION_CHARS, SKILL_MAX_CHARS, SKILL_NAME } from './skill-md.ts';
 import type { McpAgentTool, SkillEntry } from './tools.ts';
+import { getPublishedRecord } from '../../../lib/editorial/published';
+import { pickPinoutImages, type CitationImage } from '../search/citation-image.ts';
+
+async function pinoutImages(actor: ChatActor, sourceUrl: string): Promise<CitationImage[]> {
+  const slug = new URL(sourceUrl).pathname.split('/').filter(Boolean).pop() ?? '';
+  let record = await getPublishedRecord('products', slug);
+  if (record && 'redirectTo' in record) record = await getPublishedRecord('products', record.redirectTo);
+  if (!record || 'redirectTo' in record) return [];
+  const ids = record.document.mediaIds.filter(id => /^[0-9a-f-]{36}$/.test(id)).slice(0, 12);
+  if (!ids.length) return [];
+  const { data, error } = await actor.client.database.rpc('panda_agent_media_alts', { p_ids: ids });
+  if (error || !Array.isArray(data)) return [];
+  return pickPinoutImages(data.filter((m: unknown): m is { id: string; alt: string } => !!m && typeof m === 'object' && typeof (m as { id?: unknown }).id === 'string' && typeof (m as { alt?: unknown }).alt === 'string'));
+}
 import { createMcpConnection, MCP_SERVER_NAME, MCP_TOOL_NAME, mcpErrorText, publicHttpsUrl } from '../mcp/client.ts';
 import { openSecret } from '../mcp/secret.ts';
 
@@ -85,6 +99,7 @@ export function agentLoopChatForActor(options: { actor: ChatActor; key: string; 
   return createAgentLoopChat({ store: createAgentLoopStore(actor, options.key), current: options.current, policy: options.policy, model: options.model, step: createOpenRouterStep,
     tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal),
       skills: () => readSkillCatalog(actor), loadSkill: name => loadSkill(actor, name), mcp: () => readMcp(actor),
+      pinoutImages: row => pinoutImages(actor, row.sourceUrl),
       ...(process.env.TAVILY_API_KEY?.trim() ? { webSearch: async (query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>) =>
         (await searchHostedPublicWeb(query, { apiKey: process.env.TAVILY_API_KEY!.trim(), signal, beforeSend })).sources } : {}) } });
 }

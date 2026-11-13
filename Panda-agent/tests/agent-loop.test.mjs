@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runAgentLoop, loopMessages, loopSystemPrompt, MAX_STEPS, stepLimitText, readNudge, shortNudge, LOOP_OUTPUT_TOTAL, STEP_OUTPUT_MAX } from '../src/agent-loop/loop.ts';
-import { createToolHost, searchCatalog, GENERAL_HEADING, MAX_PRODUCTS } from '../src/agent-loop/tools.ts';
+import { createToolHost, searchCatalog, GENERAL_HEADING, MAX_PRODUCTS, PINOUT_FOCUS } from '../src/agent-loop/tools.ts';
 import { loopHistory, CONTEXT_BYTES, COMPACT_AT } from '../src/agent-loop/history.ts';
 import { createAgentLoopChat, withAgentLoop, sourcesChangedText, loopModelAllowed } from '../src/agent-loop/chat.ts';
 import { createAgentLoopStore } from '../src/agent-loop/store.ts';
@@ -50,7 +50,7 @@ const q3 = 'tell me about using some pandabyte dev boards and air quality monito
 test('live conversation 1: an open project question is planned with catalog search and product reads, not a product menu', async () => {
   const d = deps();
   const script = scripted([
-    (_m, tools) => { assert.deepEqual(tools, ['search_catalog', 'read_product', 'ask_user', 'final_answer']); return reply(call('search_catalog', { query: 'air quality sensor' }), call('search_catalog', { query: 'ESP32 development board' })); },
+    (_m, tools) => { assert.deepEqual(tools, ['search_catalog', 'read_product', 'ask_user', 'find_pinout', 'final_answer']); return reply(call('search_catalog', { query: 'air quality sensor' }), call('search_catalog', { query: 'ESP32 development board' })); },
     m => { const found = m.filter(x => x.role === 'tool').map(x => JSON.parse(x.content));
       assert.ok(found[0].products.some(p => p.sku === 'PB-BMV080')); assert.ok(found[1].products.some(p => p.sku === 'ESPXS3'));
       return reply(call('read_product', { sku: 'PB-BMV080', focus: 'particulate interface' }), call('read_product', { sku: 'ESPXS3' })); },
@@ -388,7 +388,7 @@ test('output room: an answer step may use 6000 tokens, the summed output never p
     () => ({ content: null, toolCalls: [], usage: big })]);
   const step = (m, t, sig, max) => { caps.push(max); return script.step(m, t, sig, max); };
   const result = await runAgentLoop({ messages: loopMessages('q', [], null) }, { step, tools: createToolHost(deps().tools), signal: signal() });
-  assert.deepEqual(caps, [6000, 6000, 6000, 6000, 6000]); assert.deepEqual(script.seen.map(x => x.tools.length), [4, 4, 4, 4, 2]);
+  assert.deepEqual(caps, [6000, 6000, 6000, 6000, 6000]); assert.deepEqual(script.seen.map(x => x.tools.length), [5, 5, 5, 5, 2]);
   assert.equal(result.kind, 'stopped'); assert.equal(result.usage.outputTokens, LOOP_OUTPUT_TOTAL);
   const after = { inputTokens: 1, outputTokens: 25500, costNanoUsd: 1 }, seen = [];
   const partial = scripted([() => ({ ...reply(call('search_catalog', { query: 'a' })), usage: after }), () => reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' }))]);
@@ -646,4 +646,27 @@ test('lean prompt: skills listed by their trigger clause; MCP servers one line e
   assert.match(turn[3].content, /"cleared":true/, 'oldest result cleared'); assert.equal(turn[7].content.length, 18000, 'newest result kept');
   const small = [{ role: 'system', content: 'S' }, { role: 'user', content: 'Q' }];
   assert.deepEqual(fitToWire(small, [], 1), { trimmed: 0, question: 1 }); assert.equal(small.length, 2);
+});
+
+test('find_pinout: pin-focused read with a larger budget and its own slot; the board image rides on its first citation; both reads are rechecked', async () => {
+  const focuses = [], revalidated = [];
+  const pinText = sku => `Board photo: header pin labels for ${sku}: 3V3 GND GPIO4 GPIO5 SDA SCL TX RX. ` + 'x'.repeat(2500);
+  const host = createToolHost({ catalog: async () => catalog,
+    readProduct: async (row, focus) => { focuses.push(focus); return { kind: 'ready', revalidate: async () => { revalidated.push([row.sku, focus.slice(0, 9)]); return true; },
+      passages: [pinText(row.sku), `Espressif datasheet excerpt. Pin definitions for ${row.sku}. ` + 'y'.repeat(2500)].map((text, i) => ({ text, title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath: ['Pins', `Part ${i + 1}`] })) }; },
+    pinoutImages: async () => [{ url: '/api/media/32cd920e-1111-4222-8333-444455556666', description: 'Color-coded xS3 pinout rendering' }] });
+  const pins = JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
+  const size = r => r.excerpts.reduce((n, e) => n + Buffer.byteLength(e.text), 0);
+  assert.equal(focuses[0], PINOUT_FOCUS); assert.equal(pins.pinoutImages, 1);
+  assert.ok(size(pins) > 3000 && size(pins) <= 6000, 'pin reads use the larger 6,000-byte budget');
+  assert.match(pins.note, /describes the module, not the board/);
+  const listingRead = JSON.parse((await host.call('read_product', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
+  assert.ok(size(listingRead) <= 3000 && listingRead.excerpts.length > 0, 'read_product keeps its 3,000-byte budget and is a separate read');
+  assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).alreadyRead, true);
+  const done = await host.call('final_answer', JSON.stringify({ sourced: 'The header has SDA and SCL labels.', citations: [pins.excerpts[0].id, pins.excerpts.at(-1).id], general: '' }), signal());
+  assert.deepEqual(done.answer.citations[0].images, [{ url: '/api/media/32cd920e-1111-4222-8333-444455556666', description: 'Color-coded xS3 pinout rendering' }]);
+  assert.equal(done.answer.citations[1].images, undefined, 'one picture per product');
+  assert.equal(await host.revalidate(['ESPXS3']), true); assert.equal(revalidated.length, 2, 'the listing read and the pin read are both rechecked');
+  assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'NOPE' }), signal())).content).error, 'unknown_sku');
+  assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3', focus: 'x' }), signal())).content).error, 'invalid_arguments');
 });

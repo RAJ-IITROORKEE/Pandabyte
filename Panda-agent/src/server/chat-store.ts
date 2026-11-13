@@ -1,7 +1,7 @@
 import type { InsForgeClient } from '@insforge/sdk';
 import {parseVendorCitation,parseCompositeVendorCitation} from '../diagnostics/contracts.ts';
 import { publicSearchCitationUrl, webSearchSection } from '../search/citation-url.ts';
-import { citationImages, type CitationImage } from '../search/citation-image.ts';
+import { citationImages, ownMediaImages, type CitationImage } from '../search/citation-image.ts';
 import {parseProjectMemory} from '../guide/contracts.ts';
 import { uuid, type ChatAnswer, type ChatCitation, type ChatMessage, type ChatRead, type ChatThread, type ChatTurn } from './chat-contracts.ts';
 
@@ -28,6 +28,7 @@ function citations(value: unknown): ChatCitation[] {
       const web = (c.sectionPath.length === 0 || (c.sectionPath.length === 1 && c.sectionPath[0] === webSearchSection)) && publicSearchCitationUrl(c.sourceUrl);
       if (u.protocol !== 'https:' || u.port || u.username || u.password || u.search || u.hash || !(product || manufacturer || web)) return bad();
       if (web) images = citationImages(c.sourceUrl, c.images);
+      else if (product) images = ownMediaImages(c.images);
     } catch { return bad(); }
     return { id: c.id, title: c.title, sourceUrl: c.sourceUrl, capturedAt: c.capturedAt, quote: c.quote, sectionPath: c.sectionPath as string[], ...(images.length ? { images } : {}) };
   });
