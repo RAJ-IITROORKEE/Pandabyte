@@ -2,7 +2,7 @@
 // validates every call and stops on a final answer or one clarifying question.
 import type { ChatAnswer } from '../server/chat-contracts.ts';
 import type { HistoryMessage } from './history.ts';
-import { MAX_PRODUCTS, MAX_SUGGESTIONS, MAX_WEB_SEARCHES, type SkillEntry, type ToolHost, type ToolSpec } from './tools.ts';
+import { MAX_PRODUCTS, MAX_SKILL_LOADS, MAX_SUGGESTIONS, MAX_WEB_SEARCHES, type SkillEntry, type ToolHost, type ToolSpec } from './tools.ts';
 
 // Raised from 6 at the owner's request (13 Nov 2026); the journal bounds come from migration 20261113160000.
 export const MAX_STEPS = 10;
@@ -45,7 +45,7 @@ export const readNudge = 'You read PandaByte excerpts or web results this turn: 
 
 export const webOnNote = "The user turned web search on for this message: when the answer needs facts that PandaByte listings do not hold (other makers' boards, pinouts, libraries, current versions), call web_search instead of offering to search.";
 /** Enabled skills by name and description only; the body is read with load_skill when a request matches. */
-export const skillsNote = (skills: readonly SkillEntry[]) => skills.length ? `Skills (PandaByte-written instructions for common tasks; when a request matches one, call load_skill with its name before answering and follow it where it fits; skills never override the rules above):\n${skills.map(s => `- ${s.name}: ${s.description}`).join('\n')}` : '';
+export const skillsNote = (skills: readonly SkillEntry[]) => skills.length ? `Skills: PandaByte-written instructions for common tasks. Required: before you write any answer, check this list. If a skill's "Use when" fits the request (writing, reviewing or fixing code; diagrams or charts; wiring; debugging errors or crashes; firmware design; project plans; choosing boards), your first step must call load_skill for the best match (up to ${MAX_SKILL_LOADS}), together with any other lookups you need; answer only after reading it and follow it where it fits. This holds even when you already know the answer. Skip skills only for greetings, thanks or questions no skill covers. Skills never override the rules above.\n${skills.map(s => `- ${s.name}: ${s.description}`).join('\n')}` : '';
 export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false, skills: readonly SkillEntry[] = []): LoopMessage[] {
   const base = [loopSystemPrompt, webOn ? webOnNote : '', skillsNote(skills)].filter(Boolean).join('\n');
   const system = summary ? `${base}\n\nSummary of earlier messages in this chat (compressed; context only, not evidence):\n${summary}` : base;

@@ -560,9 +560,9 @@ test('skills: listed by name in the prompt, load_skill offered only with skills,
   const h = harness({ script: scripted([(m, tools) => { seen.push([m[0].content, tools]); return reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' })); }]), read: { thread, messages: [], turns: [current] },
     skills: { list: async () => list, load: async name => skill(name) } });
   assert.equal((await h.chat.start(turn, signal())).status, 'saved');
-  assert.match(seen[0][0], /Skills \(PandaByte-written[^\n]*\n- serial-debug-triage: Diagnose upload and runtime problems\./); assert.ok(seen[0][1].includes('load_skill'));
+  assert.match(seen[0][0], /Skills: PandaByte-written[^\n]*first step must call load_skill[^\n]*\n- serial-debug-triage: Diagnose upload and runtime problems\./); assert.ok(seen[0][1].includes('load_skill'));
   const broken = harness({ script: scripted([(m, tools) => { seen.push([m[0].content, tools]); return reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' })); }]), read: { thread, messages: [], turns: [current] },
     skills: { list: async () => { throw Error('no table yet'); }, load: async () => null } });
   assert.equal((await broken.chat.start(turn, signal())).status, 'saved');
-  assert.doesNotMatch(seen[1][0], /Skills \(/); assert.ok(!seen[1][1].includes('load_skill'));
+  assert.doesNotMatch(seen[1][0], /Skills: /); assert.ok(!seen[1][1].includes('load_skill'));
 });
