@@ -63,6 +63,12 @@ export function cleanSuggestions(value: unknown): string[] {
   }
   return out;
 }
+/** Drops a short first paragraph in which the model narrates its own process (tools, skills, answer mode); the rest is kept as written. */
+const processNote = /\b(?:plain text|final_answer|load_skill|read_product|search_catalog|web_search|product facts (?:are|aren't|are not) needed|(?:the|a|this)(?: [a-z0-9-]+)? skill\b)/i;
+export function stripProcessNote(text: string): string {
+  const match = /^([^\n]{1,240})\n\s*\n/.exec(text);
+  return match && processNote.test(match[1]) && text.length - match[0].length > 40 ? text.slice(match[0].length) : text;
+}
 /** A plain reply may end with one line "Next: <request> | <request> | <request>"; it is removed from the text and becomes suggestions. */
 export function splitNextLine(text: string): { text: string; suggestions: string[] } {
   const match = /\n[ \t]*(?:\*\*)?Next:(?:\*\*)?[ \t]*([^\n]+)\s*$/i.exec('\n' + text);
@@ -192,7 +198,7 @@ export function createToolHost(deps: ToolDeps) {
 
   function finalAnswer(args: Record<string, unknown>, webIds?: readonly string[]): ToolOutcome {
     const sourced = typeof args.sourced === 'string' ? stripExcerptIds(args.sourced).trim() : args.sourced === undefined ? '' : null;
-    const general = typeof args.general === 'string' ? stripExcerptIds(httpsOnlyLinks(args.general)).trim() : args.general === undefined ? '' : null;
+    const general = typeof args.general === 'string' ? stripProcessNote(stripExcerptIds(httpsOnlyLinks(args.general)).trim()) : args.general === undefined ? '' : null;
     const ids = args.citations === undefined ? [] : args.citations;
     if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
       return error('invalid_arguments', 'final_answer needs sourced and general strings and at most four excerpt ids.');

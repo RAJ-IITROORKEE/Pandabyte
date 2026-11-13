@@ -566,3 +566,15 @@ test('skills: listed by name in the prompt, load_skill offered only with skills,
   assert.equal((await broken.chat.start(turn, signal())).status, 'saved');
   assert.doesNotMatch(seen[1][0], /Skills: /); assert.ok(!seen[1][1].includes('load_skill'));
 });
+
+test('a short opening paragraph narrating the agent process is dropped from plain replies; ordinary openings stay', async () => {
+  const { stripProcessNote } = await import('../src/agent-loop/tools.ts');
+  const body = 'Likely cause of the crash\n\nThe String grows without limit and fragments the heap.';
+  assert.equal(stripProcessNote("This is a review of pasted code, so no PandaByte product facts are needed. I'll answer in plain text.\n\n" + body), body);
+  assert.equal(stripProcessNote('I loaded the embedded-cpp-guidelines skill.\n\n' + body), body);
+  const ordinary = 'Use a 10k pull-up on the data line.\n\nThe DHT11 needs it when the module has no resistor.';
+  assert.equal(stripProcessNote(ordinary), ordinary);
+  assert.equal(stripProcessNote('Answer in plain text.\n\nOk.'), 'Answer in plain text.\n\nOk.', 'never strips down to almost nothing');
+  const plain = await run('Review my ESP32 code that keeps crashing after hours', scripted([() => ({ content: "No PandaByte product facts are needed, so I'll answer in plain text.\n\n" + body, toolCalls: [], usage })]));
+  assert.equal(plain.answer.text, body);
+});
