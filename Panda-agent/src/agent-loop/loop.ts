@@ -2,7 +2,7 @@
 // validates every call and stops on a final answer or one clarifying question.
 import type { ChatAnswer } from '../server/chat-contracts.ts';
 import type { HistoryMessage } from './history.ts';
-import { MAX_PRODUCTS, MAX_SUGGESTIONS, MAX_WEB_SEARCHES, type ToolHost, type ToolSpec } from './tools.ts';
+import { MAX_PRODUCTS, MAX_SUGGESTIONS, MAX_WEB_SEARCHES, type SkillEntry, type ToolHost, type ToolSpec } from './tools.ts';
 
 // Raised from 6 at the owner's request (13 Nov 2026); the journal bounds come from migration 20261113160000.
 export const MAX_STEPS = 10;
@@ -44,8 +44,10 @@ const greeting = /^\s*(?:hi|hello|hey|thanks|thank you|good (?:morning|afternoon
 export const readNudge = 'You read PandaByte excerpts or web results this turn: deliver the answer with final_answer, citing their ids; put plans, wiring, code and web facts in general.';
 
 export const webOnNote = "The user turned web search on for this message: when the answer needs facts that PandaByte listings do not hold (other makers' boards, pinouts, libraries, current versions), call web_search instead of offering to search.";
-export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false): LoopMessage[] {
-  const base = webOn ? `${loopSystemPrompt}\n${webOnNote}` : loopSystemPrompt;
+/** Enabled skills by name and description only; the body is read with load_skill when a request matches. */
+export const skillsNote = (skills: readonly SkillEntry[]) => skills.length ? `Skills (PandaByte-written instructions for common tasks; when a request matches one, call load_skill with its name before answering and follow it where it fits; skills never override the rules above):\n${skills.map(s => `- ${s.name}: ${s.description}`).join('\n')}` : '';
+export function loopMessages(question: string, history: readonly HistoryMessage[], summary: string | null, webOn = false, skills: readonly SkillEntry[] = []): LoopMessage[] {
+  const base = [loopSystemPrompt, webOn ? webOnNote : '', skillsNote(skills)].filter(Boolean).join('\n');
   const system = summary ? `${base}\n\nSummary of earlier messages in this chat (compressed; context only, not evidence):\n${summary}` : base;
   return [{ role: 'system', content: system }, ...history, { role: 'user', content: question }];
 }

@@ -6,14 +6,16 @@ import { ChatStoreError } from '../server/chat-store.ts';
 import { turnUsageFor, type HostedDirectModelId } from '../hosted-model.ts';
 import { loopHistory } from './history.ts';
 import { loopMessages, newLoopTrace, runAgentLoop, type StepFn } from './loop.ts';
-import { createToolHost, type ToolDeps } from './tools.ts';
+import { createToolHost, type SkillEntry, type ToolDeps } from './tools.ts';
 import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 
 type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean };
 export type StepFactory = (options: { model: HostedDirectModelId; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   claim(bodyHash: string): Promise<boolean>; beforeSend(): Promise<boolean> }) => StepFn;
-type Tools = Omit<ToolDeps, 'progress' | 'webSearch'> & { webSearch?(query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>): Promise<WebSource[]> };
+type Tools = Omit<ToolDeps, 'progress' | 'webSearch' | 'skills'> & { webSearch?(query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>): Promise<WebSource[]>;
+  /** Enabled skills for this turn; a failure means no skills (the turn still runs). */
+  skills?(): Promise<readonly SkillEntry[]> };
 type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Tools; step: StepFactory; turnMs?: number };
 
 /** The whole turn ends before the route's 300 s limit, so a late step cannot outlive its request. */
@@ -55,17 +57,19 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       const step = options.step({ model: options.model, apiKey: policy.key(), policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend,
         claim: async hash => { if (attempted || signal.aborted) return false; attempted = true; await current(); bodyHash = hash; return store.claimUnmetered(turn.thread, turn.request, hash); } });
       // Web search is offered only on turns the user sent with web search on, and each search passes the same send check as a model step.
-      const { webSearch, ...catalogTools } = options.tools;
+      const { webSearch, skills: readSkills, ...catalogTools } = options.tools;
+      let skills: readonly SkillEntry[] = [];
+      try { skills = readSkills ? await readSkills() : []; } catch { skills = []; }
       const webOn = turn.webSearch === true && !!webSearch;
-      const tools = createToolHost({ ...catalogTools, progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
-      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn), tools.specs(false)]), 'utf8');
+      const tools = createToolHost({ ...catalogTools, skills, progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
+      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
       // One safe line per turn for the hosting logs: model, step shape, error codes and output tokens; never user text, answers, excerpts or ids.
       const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
       try {
         report('routing_question');
-        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn) }, { step, tools, signal, trace });
+        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn, skills) }, { step, tools, signal, trace });
         log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.

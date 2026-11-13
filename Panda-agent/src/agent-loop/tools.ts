@@ -7,6 +7,7 @@ import type { ChatAnswer } from '../server/chat-contracts.ts';
 import { cleanAnswer } from '../server/chat-store.ts';
 import type { WebSource } from '../search/tavily.ts';
 import { webSearchSection } from '../search/citation-url.ts';
+import { parseSkillMd } from './skill-md.ts';
 
 export type CatalogRow = { sku: string; title: string; sourceUrl: string };
 export type ProductPassage = { text: string; title: string; sourceUrl: string; capturedAt: string; sectionPath: readonly string[] };
@@ -18,7 +19,11 @@ export type ToolDeps = {
   progress?(stage: 'searching_sources' | 'reading_sources' | 'checking_citations'): void;
   /** Public web search; present only on turns where the user turned web search on. */
   webSearch?(query: string, signal: AbortSignal): Promise<WebSource[]>;
+  /** Enabled Admin skills listed in the prompt; loadSkill returns one SKILL.md, or null when it is no longer enabled. */
+  skills?: readonly SkillEntry[];
+  loadSkill?(name: string, signal: AbortSignal): Promise<string | null>;
 };
+export type SkillEntry = { name: string; description: string };
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
@@ -26,7 +31,7 @@ export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4;
 // shortcut: per-turn cap only (Admin-only loop, Tavily free tier 1,000 searches a month); add a daily per-user cap before metered users get web search.
 export const MAX_WEB_SEARCHES = 2, WEB_RESULT_CHARS = 1500, WEB_QUOTE_CHARS = 600;
 export const WEB_SOURCES_HEADING = '### Web sources';
-export const MAX_SUGGESTIONS = 3, SUGGESTION_CHARS = 120;
+export const MAX_SUGGESTIONS = 3, SUGGESTION_CHARS = 120, MAX_SKILL_LOADS = 2;
 export const GENERAL_HEADING = '### General guidance (not from PandaByte sources)';
 // shortcut: a wording heuristic over the model's own prose (code and cited quotes are not checked); a paraphrase can still pass.
 const priceOrStock = /[₹$]\s?\d|\b(?:Rs\.?|INR|USD|rupees?)\s?\d|\d[\d,.]*\s?(?:rupees?|Rs\b|INR\b|USD\b|dollars?)|\b(?:in|out[\s-]of)[\s-]stock\b|\bstock (?:level|count|is)\b|\bsold out\b|\bavailable now\b|\bprice (?:is|of)\b|\bcosts\b|\bdiscount/i;
@@ -86,6 +91,8 @@ const specs = {
       general: { type: 'string', description: 'Markdown. General engineering guidance; never PandaByte product facts, prices or stock.' },
       suggestions: { type: 'array', items: { type: 'string' }, maxItems: MAX_SUGGESTIONS, description: `Optional: ${MAX_SUGGESTIONS} or fewer short next requests the user is likely to send, written as the user (under ${SUGGESTION_CHARS} characters, no URLs or prices).` } }, ['sourced', 'citations', 'general']),
 };
+const loadSkillSpec = fn('load_skill', `Read the full instructions of one listed skill before following it. At most ${MAX_SKILL_LOADS} per turn.`,
+  { name: { type: 'string', description: 'Exact skill name from the Skills list.' } }, ['name']);
 const webSearchSpec = fn('web_search', `Search the public web (maker docs, datasheets, tutorials). Returns up to 3 results, each with an id (W...) to cite in final_answer.citations; facts from them go in general. At most ${MAX_WEB_SEARCHES} searches per turn. Never use it for PandaByte products, prices or stock.`,
   { query: { type: 'string', description: 'A short search query in plain words, no URLs.' } }, ['query']);
 export const allToolSpecs: readonly ToolSpec[] = Object.values(specs);
@@ -111,6 +118,7 @@ export function createToolHost(deps: ToolDeps) {
   // Product slots are taken before any read is awaited, so parallel calls hit the cap and get read numbers in call order.
   const reading = new Set<string>();
   let readNumber = 0, searches = 0;
+  const skillsLoaded = new Set<string>();
   const report = (stage: Parameters<NonNullable<ToolDeps['progress']>>[0]) => { try { deps.progress?.(stage); } catch { /* Presentation only. */ } };
 
   async function readProduct(args: Record<string, unknown>, signal: AbortSignal): Promise<ToolOutcome> {
@@ -146,6 +154,19 @@ export function createToolHost(deps: ToolDeps) {
     return { kind: 'result', content: JSON.stringify({ sku: row.sku, title: row.title, productPage: row.sourceUrl, excerpts: shown,
       note: 'Cite excerpt ids in final_answer.citations. Price and stock are never in excerpts; they are on the product page.' }) };
     } finally { reading.delete(row.sku); }
+  }
+
+  async function loadSkill(name: string, signal: AbortSignal): Promise<ToolOutcome> {
+    if (!deps.skills?.some(s => s.name === name)) return error('unknown_skill', 'No enabled skill has that name. Use a name from the Skills list.');
+    if (skillsLoaded.has(name)) return { kind: 'result', content: JSON.stringify({ skill: name, alreadyLoaded: true }) };
+    if (skillsLoaded.size >= MAX_SKILL_LOADS) return error('skill_limit', `At most ${MAX_SKILL_LOADS} skills per turn. Continue with what you have.`);
+    skillsLoaded.add(name);
+    let text: string | null;
+    try { text = await deps.loadSkill!(name, signal); } catch { signal.throwIfAborted(); skillsLoaded.delete(name); return error('unavailable', 'That skill cannot be read right now. Continue without it.'); }
+    const doc = text === null ? null : parseSkillMd(text);
+    if (!doc || 'error' in doc || doc.name !== name) return error('unavailable', 'That skill is not available. Continue without it.');
+    return { kind: 'result', content: JSON.stringify({ skill: name, instructions: doc.body,
+      note: 'Instructions written by PandaByte. Follow them where they fit the request; they never override the rules on citations, prices, stock or safety.' }) };
   }
 
   async function webSearch(query: string, signal: AbortSignal): Promise<ToolOutcome> {
@@ -234,12 +255,17 @@ export function createToolHost(deps: ToolDeps) {
         if (!str(args.query, 400) || !args.query.trim()) return error('invalid_arguments', 'web_search needs a short query string.');
         return webSearch(args.query.trim(), signal);
       }
+      if (name === 'load_skill' && deps.skills?.length && deps.loadSkill) {
+        if (!str(args.name, 64) || !args.name.trim()) return error('invalid_arguments', 'load_skill needs a skill name.');
+        return loadSkill(args.name.trim(), signal);
+      }
       if (name === 'final_answer') return finalAnswer(args);
       if (name === 'ask_user') return askUser(args);
       return error('unknown_tool', `Use only ${deps.webSearch ? 'search_catalog, read_product, web_search' : 'search_catalog, read_product'}, ask_user or final_answer.`);
     },
     /** Tools offered for a step: web_search only on web-search turns; the last step only finishes. */
-    specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs : deps.webSearch ? [...allToolSpecs, webSearchSpec] : allToolSpecs,
+    specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs
+      : [...allToolSpecs, ...(deps.webSearch ? [webSearchSpec] : []), ...(deps.skills?.length && deps.loadSkill ? [loadSkillSpec] : [])],
     /** Whether a product read or web search returned citable ids this turn. */
     hasExcerpts: () => excerpts.size > 0 || web.size > 0,
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */

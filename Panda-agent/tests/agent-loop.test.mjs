@@ -169,7 +169,7 @@ test('history compaction starts above 75% of the context budget, keeps recent tu
   assert.ok(tight.messages.length >= 2 && Buffer.byteLength(JSON.stringify(tight.messages), 'utf8') + Buffer.byteLength(tight.summary ?? '', 'utf8') <= 6000);
 });
 
-function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true } = {}) {
+function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills } = {}) {
   const calls = []; let state = null;
   const store = {
     reserveSearch: async () => { calls.push('reserve'); return searchAllowed; },
@@ -187,7 +187,7 @@ function harness({ script, read, unmetered = true, revalidate = true, turnMs, we
     assert.equal(await o.beforeSend(), true, 'every provider call is gated on the journal');
     return script.step(messages, tools);
   };
-  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}) }, step, turnMs });
+  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}) }, step, turnMs });
   return { chat, calls, d };
 }
 const turn = { thread: thread.id, request: current.requestId, question: q2 };
@@ -525,4 +525,44 @@ test('follow-up suggestions: cleaned, at most three, from final_answer or a trai
   const saved = await h.chat.start(turn, signal());
   assert.equal(saved.status, 'saved'); assert.deepEqual(saved.suggestions, ['Make a step-by-step build plan']);
   assert.equal(JSON.stringify(h.calls.at(-1)[1]).includes('suggestions'), false, 'suggestions are not saved into the answer');
+});
+
+test('SKILL.md parsing: name and description frontmatter required, limits enforced, unknown and nested keys ignored', async () => {
+  const { parseSkillMd } = await import('../src/agent-loop/skill-md.ts');
+  const ok = parseSkillMd('---\r\nname: wiring-check\r\ndescription: "Check wiring before power-up."\r\nlicense: MIT\r\nmetadata:\r\n  author: pandabyte\r\n---\r\n# Steps\r\nDo it.\r\n');
+  assert.deepEqual(ok, { name: 'wiring-check', description: 'Check wiring before power-up.', body: '# Steps\nDo it.' });
+  for (const [text, why] of [['name: x\n---\nbody', 'no opening fence'], ['---\nname: Bad_Name\ndescription: d\n---\nbody', 'bad name'], ['---\nname: a\n---\nbody', 'no description'],
+    ['---\nname: a\ndescription: d\n---\n   ', 'empty body'], ['---\nname: a\nname: b\ndescription: d\n---\nbody', 'duplicate key'], ['---\nname: a\ndescription: ' + 'x'.repeat(501) + '\n---\nbody', 'long description'],
+    ['---\nname: a\ndescription: d\n---\n' + 'x'.repeat(6000), 'too long'], [42, 'not text']])
+    assert.ok('error' in parseSkillMd(text), why);
+});
+
+test('skills: listed by name in the prompt, load_skill offered only with skills, returns the body, unknown names and over-limit loads refused', async () => {
+  const skill = name => `---\nname: ${name}\ndescription: Steps for ${name}.\n---\n# ${name}\nFollow these steps.`;
+  const list = [{ name: 'serial-debug-triage', description: 'Diagnose upload and runtime problems.' }, { name: 'arduino-library-picker', description: 'Pick libraries.' }, { name: 'esp32-project-planner', description: 'Plan builds.' }];
+  const loads = [];
+  const host = createToolHost({ ...deps().tools, skills: list, loadSkill: async name => { loads.push(name); return skill(name); } });
+  assert.ok(host.specs(false).some(t => t.function.name === 'load_skill'));
+  assert.ok(!createToolHost(deps().tools).specs(false).some(t => t.function.name === 'load_skill'), 'no skills, no tool');
+  assert.ok(!host.specs(true).some(t => t.function.name === 'load_skill'), 'the last step only finishes');
+  const first = JSON.parse((await host.call('load_skill', JSON.stringify({ name: 'serial-debug-triage' }), signal())).content);
+  assert.equal(first.skill, 'serial-debug-triage'); assert.equal(first.instructions, '# serial-debug-triage\nFollow these steps.'); assert.doesNotMatch(first.instructions, /^---/);
+  assert.equal(JSON.parse((await host.call('load_skill', JSON.stringify({ name: 'serial-debug-triage' }), signal())).content).alreadyLoaded, true);
+  assert.equal(JSON.parse((await host.call('load_skill', JSON.stringify({ name: 'not-listed' }), signal())).content).error, 'unknown_skill');
+  await host.call('load_skill', JSON.stringify({ name: 'arduino-library-picker' }), signal());
+  assert.equal(JSON.parse((await host.call('load_skill', JSON.stringify({ name: 'esp32-project-planner' }), signal())).content).error, 'skill_limit');
+  assert.deepEqual(loads, ['serial-debug-triage', 'arduino-library-picker']);
+  // A skill whose stored name no longer matches, or that was disabled meanwhile, is not followed.
+  const stale = createToolHost({ ...deps().tools, skills: list, loadSkill: async () => null });
+  assert.equal(JSON.parse((await stale.call('load_skill', JSON.stringify({ name: 'serial-debug-triage' }), signal())).content).error, 'unavailable');
+  // The chat lists enabled skills in the system prompt; a broken catalog means a turn without skills.
+  const seen = [];
+  const h = harness({ script: scripted([(m, tools) => { seen.push([m[0].content, tools]); return reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' })); }]), read: { thread, messages: [], turns: [current] },
+    skills: { list: async () => list, load: async name => skill(name) } });
+  assert.equal((await h.chat.start(turn, signal())).status, 'saved');
+  assert.match(seen[0][0], /Skills \(PandaByte-written[^\n]*\n- serial-debug-triage: Diagnose upload and runtime problems\./); assert.ok(seen[0][1].includes('load_skill'));
+  const broken = harness({ script: scripted([(m, tools) => { seen.push([m[0].content, tools]); return reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' })); }]), read: { thread, messages: [], turns: [current] },
+    skills: { list: async () => { throw Error('no table yet'); }, load: async () => null } });
+  assert.equal((await broken.chat.start(turn, signal())).status, 'saved');
+  assert.doesNotMatch(seen[1][0], /Skills \(/); assert.ok(!seen[1][1].includes('load_skill'));
 });

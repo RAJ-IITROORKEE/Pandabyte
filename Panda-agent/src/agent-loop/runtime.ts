@@ -9,6 +9,21 @@ import { createOpenRouterStep } from './openrouter-step.ts';
 import { createAgentLoopStore } from './store.ts';
 import type { ProductRead } from './tools.ts';
 import { searchHostedPublicWeb } from '../search/tavily.ts';
+import { SKILL_DESCRIPTION_CHARS, SKILL_MAX_CHARS, SKILL_NAME } from './skill-md.ts';
+import type { SkillEntry } from './tools.ts';
+
+/** Enabled skills (name + description) from migration 20261113180000; anything malformed is dropped. */
+async function readSkillCatalog(actor: ChatActor): Promise<SkillEntry[]> {
+  const { data, error } = await actor.client.database.rpc('panda_agent_agent_skill_catalog');
+  if (error || !Array.isArray(data)) return [];
+  return data.filter((s): s is SkillEntry => !!s && typeof s === 'object' && typeof s.name === 'string' && SKILL_NAME.test(s.name) && s.name.length <= 64
+    && typeof s.description === 'string' && !!s.description.trim() && s.description.length <= SKILL_DESCRIPTION_CHARS && !/[\r\n]/.test(s.description)).slice(0, 12);
+}
+async function loadSkill(actor: ChatActor, name: string): Promise<string | null> {
+  const { data, error } = await actor.client.database.rpc('panda_agent_agent_skill_load', { p_name: name });
+  if (error) throw new Error('unavailable');
+  return data && typeof data === 'object' && typeof data.content === 'string' && data.content.length <= SKILL_MAX_CHARS && data.name === name ? data.content : null;
+}
 
 type Row = Awaited<ReturnType<typeof readRuntimeCatalog>>[number];
 /** One product's eligible listing passages through the same scoped, proof-checked reader as cited answers, bound to that product. */
@@ -29,6 +44,7 @@ export function agentLoopChatForActor(options: { actor: ChatActor; key: string; 
   const { actor } = options;
   return createAgentLoopChat({ store: createAgentLoopStore(actor, options.key), current: options.current, policy: options.policy, model: options.model, step: createOpenRouterStep,
     tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal),
+      skills: () => readSkillCatalog(actor), loadSkill: name => loadSkill(actor, name),
       ...(process.env.TAVILY_API_KEY?.trim() ? { webSearch: async (query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>) =>
         (await searchHostedPublicWeb(query, { apiKey: process.env.TAVILY_API_KEY!.trim(), signal, beforeSend })).sources } : {}) } });
 }
