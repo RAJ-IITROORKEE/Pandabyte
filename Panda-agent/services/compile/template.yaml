@@ -12,7 +12,7 @@ Parameters:
     Description: HMAC shared secret (same value as the Vercel env var).
   GitHubUrl:
     Type: String
-    Default: https://github.com/OWNER/Pandabyte.git
+    Default: https://github.com/RAJ-IITROORKEE/Pandabyte.git
     Description: Public GitHub repository URL containing Panda-agent/services/compile.
   GitHubBranch:
     Type: String
@@ -60,13 +60,13 @@ Resources:
       SourceVersion: !Ref GitHubBranch
       Environment:
         Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_SMALL
+        ComputeType: BUILD_GENERAL1_MEDIUM # 4 vCPU: core install + 7 pre-warm builds finish well inside the limit
         Image: aws/codebuild/standard:7.0
         PrivilegedMode: true
         EnvironmentVariables:
           - { Name: REPO_URI, Value: !GetAtt Repo.RepositoryUri }
           - { Name: AWS_REGION, Value: !Ref "AWS::Region" }
-      TimeoutInMinutes: 30
+      TimeoutInMinutes: 60
 
   LogGroup:
     Type: AWS::Logs::LogGroup

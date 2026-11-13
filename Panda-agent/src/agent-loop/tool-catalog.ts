@@ -32,8 +32,8 @@ export function parseToolPatch(v: unknown): { name: ToolSettingName; enabled: bo
 export type ToolEntry = { name: string; label: string; description: string; group: 'Core' | 'Product data' | 'Web' | 'Skills and MCP' | 'Device' | 'Display';
  runsOn: string; required: boolean; setting: ToolSettingName | null };
 export const TOOL_CATALOG: readonly ToolEntry[] = [
- { name: 'search_catalog', label: 'Search catalog', description: 'Searches the PandaByte product catalog and documentation for matching items.', group: 'Core', runsOn: 'Server', required: true, setting: null },
- { name: 'read_product', label: 'Read product', description: 'Reads one product page with its specifications, price and datasheet text.', group: 'Core', runsOn: 'Server', required: true, setting: null },
+ { name: 'search_catalog', label: 'Search catalog', description: 'Finds PandaByte products by words in their titles (SKU, title and category only).', group: 'Core', runsOn: 'Server', required: true, setting: null },
+ { name: 'read_product', label: 'Read product', description: 'Reads cited excerpts of one PandaByte listing and its attached datasheet; never price or stock.', group: 'Core', runsOn: 'Server', required: true, setting: null },
  { name: 'ask_user', label: 'Ask the user', description: 'Asks the user a clarifying question and waits for the answer.', group: 'Core', runsOn: 'Server', required: true, setting: null },
  { name: 'final_answer', label: 'Final answer', description: 'Ends the turn with the cited answer shown to the user.', group: 'Core', runsOn: 'Server', required: true, setting: null },
  { name: 'find_pinout', label: 'Find pinout', description: 'Looks up the pin map of a PandaByte board so wiring and code use real GPIO numbers.', group: 'Product data', runsOn: 'Server', required: false, setting: 'find_pinout' },
