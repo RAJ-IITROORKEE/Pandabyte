@@ -37,7 +37,7 @@ async function compile(actor: ChatActor, board: string, sketch: string, signal: 
 }
 
 type McpServerRow = { name: string; url: string; headers: Record<string, string>; tools: McpAgentTool[] };
-/** Approved tools of enabled MCP servers. The catalog function requires Admin, so other users get none.
+/** Approved tools of enabled MCP servers (any signed-in user since migration 20261114110000; Admin can switch MCP off).
  *  Connections open on the first call to a server and are reused for the rest of the turn. */
 async function readMcp(actor: ChatActor) {
   const { data, error } = await actor.client.database.rpc('panda_agent_mcp_agent_catalog');
