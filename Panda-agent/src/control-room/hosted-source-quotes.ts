@@ -70,6 +70,9 @@ export function resolveHostedSourceEvaluation(raw: unknown, quotes: readonly Hos
   }
   // Some models copy the supplied excerpt ids ("[<request>:q6]") into the answer despite the instruction; they are internal, so they are removed.
   const ids = new Set(quotes.map(q => q.id));
-  const answer = raw.answer.replace(/ ?\[([^\[\]]{1,400}:q\d{1,3})\]/g, (all: string, list: string) => list.split(/\s*[,;]\s*|\s+/).every(id => ids.has(id)) ? '' : all);
+  const copied = raw.answer.replace(/ ?\[([^\[\]]{1,400}:q\d{1,3})\]/g, (all: string, list: string) => list.split(/\s*[,;]\s*|\s+/).every(id => ids.has(id)) ? '' : all);
+  // Qwen also invents "[S1]"-style source markers; the application adds the real citations.
+  const marked = copied.replace(/ ?(?<=^|\s)\[S\d{1,2}(?:\s*,\s*S\d{1,2})*\](?=$|[\s.,;:!?)])/g, '');
+  const answer = marked === copied ? copied : marked.trimEnd();
   return { answer: evidence.length ? answer : '', evidence };
 }

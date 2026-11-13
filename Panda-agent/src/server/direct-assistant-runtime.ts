@@ -12,7 +12,7 @@ import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {ChatStoreError} from './chat-store.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
-import {fastHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
+import {fastHostedModel,lunaHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
 import {createResearchChat,researchProfileFor,withResearch,researchWebSearchEnabled,researchKey32 as key32} from './research-chat.ts';
 export {researchWebSearchEnabled};
 import {createResearchGatewayClient} from './research-gateway-client.ts';
@@ -37,6 +37,7 @@ function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBrid
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
  const selected=hostedModelSelection(process.env),fast=process.env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
  const direct=createDirectAssistantChat({actor,key,current,budgetRefs:policy.budgetRefs,
+  model:fast?requestedHostedModel(requested):lunaHostedModel.id,
   ...(fast?{completion:(o:Parameters<typeof createHostedDirectCompletion>[0])=>createHostedDirectCompletion({...o,model:requestedHostedModel(requested)})}:{}),
   policy:{...policy,enabled:async()=>{
    if(!selected||requested!==null&&(fast?!hostedDirectModelIds.includes(requested):requested!=='openai/gpt-6-luna')||!await policy.enabled())return false;

@@ -9,6 +9,22 @@ export const qwenHostedModel = Object.freeze({ id: 'qwen/qwen3.8-27b', label: 'Q
 /** Every model the hosted chat may run, each pinned to a reviewed zero-retention endpoint. */
 export const hostedDirectModels = Object.freeze([haikuHostedModel, lunaHostedModel, flashHostedModel, qwenHostedModel, fastHostedModel]);
 export const hostedDirectModelIds: readonly string[] = Object.freeze(hostedDirectModels.map(model => model.id));
+/** OpenRouter catalog context_length per model id (read 2026-11-13 from openrouter.ai/api/v1/models); display only, never a limit. */
+export const hostedContextWindows: Readonly<Record<string, number>> = Object.freeze({
+  'openai/gpt-oss-20b': 131072, 'anthropic/claude-haiku-5.5': 1000000, 'openai/gpt-6-luna': 1050000,
+  'deepseek/deepseek-v4-flash': 1048576, 'qwen/qwen3.8-27b': 1048575,
+});
+/** One finished turn's token use for the composer meter; lives in the response only, never stored. */
+export type TurnUsage = { inputTokens: number; outputTokens: number; contextWindow: number | null; model: string };
+export const turnUsageFor = (model: string, usage: { inputTokens: number; outputTokens: number }): TurnUsage =>
+  ({ inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, contextWindow: hostedContextWindows[model] ?? null, model });
+/** 950 -> "950", 5200 -> "5.2k", 131072 -> "131k", 1050000 -> "1.05M". */
+export function formatTokens(n: number): string {
+  if (!Number.isFinite(n) || n < 0) return '0';
+  if (n < 1000) return String(Math.round(n));
+  if (n < 1e6) { const k = n / 1000; return (k < 10 ? k.toFixed(1).replace(/\.0$/, '') : String(Math.round(k))) + 'k'; }
+  return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+}
 export type HostedModelId = typeof fastHostedModel.id;
 export type HostedDirectModelId = typeof hostedDirectModels[number]['id'];
 /** The hosted model the request header asks for, defaulting to the fast model. */

@@ -6,10 +6,11 @@ import { ChatStoreError } from './chat-store.ts';
 import { createDirectAssistantStore, type DirectBudgetRefs, type DirectState } from './direct-assistant-store.ts';
 import { directHistory } from './direct-conversation-history.ts';
 import { createDirectLunaCompletion, directDiagnostic } from './direct-luna-openrouter.ts';
+import { turnUsageFor } from '../hosted-model.ts';
 
 type DirectPolicy = { enabled():Promise<boolean>; current():Promise<boolean>; dispatchCurrent():boolean; key():string; binding():string; isUnmetered?():boolean };
 type Options = { actor:ChatActor; key:string; current():Promise<boolean>; policy:DirectPolicy; budgetRefs():DirectBudgetRefs|null;
-  store?:ReturnType<typeof createDirectAssistantStore>; completion?:typeof createDirectLunaCompletion };
+  store?:ReturnType<typeof createDirectAssistantStore>; completion?:typeof createDirectLunaCompletion; model?:string };
 
 /** No native admission or native receipt is created on this direct route. */
 export function createDirectAssistantChat(options:Options):BasicRagChatBridge {
@@ -49,7 +50,7 @@ export function createDirectAssistantChat(options:Options):BasicRagChatBridge {
         directDiagnostic('receipt-recorded');
         if(!await beforeSend()){directDiagnostic('finish-gate-denied');return {status:'unknown'};}
         try{progress?.('saving_answer');}catch{/* Presentation only. */}
-        await store.finish(turn.thread,turn.request,answer);directDiagnostic('finish-recorded');await current();return {status:'saved'};
+        await store.finish(turn.thread,turn.request,answer);directDiagnostic('finish-recorded');await current();return {status:'saved',...(options.model?{usage:turnUsageFor(options.model,result.usage)}:{})};
       } catch {directDiagnostic('chat-outcome-unknown');return {status:'unknown'};}
     },
   };

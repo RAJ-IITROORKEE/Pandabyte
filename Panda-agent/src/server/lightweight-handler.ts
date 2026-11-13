@@ -302,7 +302,8 @@ export function createLightweightHandler(deps:Dependencies) {
           const execute=async(progress:ActivityReporter,signal:AbortSignal)=>{
             const result=await llm.start({thread:id!,request:requestId,question,...(input.webSearch===true?{webSearch:true}:{})},signal,(stage,context)=>progress(stage,isContextSummary(context)?context:undefined));
             if(result.status!=='saved')throw new ChatStoreError('unavailable');
-            return releaseBasic(requestId,question);
+            const data=await releaseBasic(requestId,question);
+            return result.usage?{...data,usage:result.usage}:data;
           };
           if(wantsStream(request))return streamWork(request,execute,requestStarted);
           return json(await execute(()=>{},request.signal));

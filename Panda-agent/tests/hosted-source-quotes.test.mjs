@@ -125,3 +125,11 @@ test('sources over the byte budget keep whole top-ranked passages instead of fai
   for (const rank of ranks) assert.equal(quotes.filter(q => q.rank === rank).map(q => q.text).join(''), [...passages, small].find(p => p.rank === rank).text);
   assert.deepEqual(quotes.map(q => q.id), quotes.map((_, i) => `cap:q${i + 1}`));
 });
+
+test('invented [S1]-style source markers are removed, code indexing is kept', () => {
+  const quotes = [{ id: 'req:q1', rank: 1, text: 'Flash: 16 MB.' }];
+  const ev = [{ id: 'req:q1', reason: 'flash size' }];
+  assert.equal(resolveHostedSourceEvaluation({ answer: '16 MB\n\n[S1]', evidence: ev }, quotes).answer, '16 MB');
+  assert.equal(resolveHostedSourceEvaluation({ answer: 'It has 16 MB [S1, S2].', evidence: ev }, quotes).answer, 'It has 16 MB.');
+  assert.equal(resolveHostedSourceEvaluation({ answer: 'Use pins[S1] and x [1].', evidence: ev }, quotes).answer, 'Use pins[S1] and x [1].');
+});
