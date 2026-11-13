@@ -65,15 +65,17 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       let mcp: Awaited<ReturnType<NonNullable<Tools['mcp']>>> = null;
       try { mcp = readMcp ? await readMcp() : null; } catch { mcp = null; }
       const webOn = turn.webSearch === true && !!webSearch;
-      const tools = createToolHost({ ...catalogTools, skills, ...(mcp?.tools.length ? { mcpTools: mcp.tools, callMcp: mcp.call } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
-      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills), tools.specs(false)]), 'utf8');
+      // A server named in the question is opened up front; others are listed in one line each and opened on demand.
+      const mcpTools = mcp?.tools ?? [], mcpOpen = [...new Set(mcpTools.map(t => t.server))].filter(s => new RegExp(`\\b${s}\\b`, 'i').test(turn.question));
+      const tools = createToolHost({ ...catalogTools, skills, ...(mcp && mcpTools.length ? { mcpTools, callMcp: mcp.call, mcpOpen } : {}), progress: report, ...(webOn ? { webSearch: (q: string, s: AbortSignal) => webSearch!(q, s, async () => await beforeSend() && await store.reserveSearch(turn.thread, turn.request)) } : {}) });
+      const fixed = Buffer.byteLength(JSON.stringify([loopMessages(turn.question, [], null, webOn, skills, mcpTools), tools.specs(false)]), 'utf8');
       const history = loopHistory(begun, turn.request, fixed);
       const trace = newLoopTrace(); let logged = false;
       // One safe line per turn for the hosting logs: model, step shape, error codes and output tokens; never user text, answers, excerpts or ids.
       const log = (outcome: string, steps = trace.output.length) => { if (logged) return; logged = true; try { console.info('[agent-loop]', JSON.stringify({ model: options.model, outcome, steps, ...trace })); } catch { /* Logging cannot change a turn. */ } };
       try {
         report('routing_question');
-        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn, skills) }, { step, tools, signal, trace });
+        const result = await runAgentLoop({ messages: loopMessages(turn.question, history.messages, history.summary, webOn, skills, mcpTools) }, { step, tools, signal, trace });
         log(result.kind, result.steps);
         if (!bodyHash || !await beforeSend()) return { status: 'unknown' };
         // Cited products are rechecked against their live source scope immediately before the answer is saved.

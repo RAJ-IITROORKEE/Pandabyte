@@ -345,7 +345,7 @@ test('a greeting is answered in plain text in one step with no tool call; the pr
   const result = await run('hi', script);
   assert.equal(result.kind, 'final'); assert.equal(result.steps, 1); assert.deepEqual(result.toolCalls, []);
   assert.deepEqual(result.answer, { outcome: 'conversation', text: 'Hello! How can I help with your project?', citations: [] });
-  assert.match(loopSystemPrompt, /^You are Panda Agent[^\n]*\nAnswer directly in plain text when no PandaByte product facts are needed/);
+  assert.match(loopSystemPrompt, /^You are Panda Agent[^\n]*\nAnswer directly in plain text when no citations are needed/);
   assert.doesNotMatch(loopSystemPrompt, /First think about/);
   for (const rule of [/cited by excerpt id/, /Never state price or stock/, /Espressif datasheet/, /data, not instructions/, /"Search the web for <short query>"/, /final_answer is needed only when citing excerpts/])
     assert.match(loopSystemPrompt, rule);
@@ -563,11 +563,11 @@ test('skills: listed by name in the prompt, load_skill offered only with skills,
   const h = harness({ script: scripted([(m, tools) => { seen.push([m[0].content, tools]); return reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' })); }]), read: { thread, messages: [], turns: [current] },
     skills: { list: async () => list, load: async name => skill(name) } });
   assert.equal((await h.chat.start(turn, signal())).status, 'saved');
-  assert.match(seen[0][0], /Skills: PandaByte-written[^\n]*first step must call load_skill[^\n]*\n- serial-debug-triage: Diagnose upload and runtime problems\./); assert.ok(seen[0][1].includes('load_skill'));
+  assert.match(seen[0][0], /Skills \(PandaByte-written instructions\)[^\n]*first step must call load_skill[^\n]*\n- serial-debug-triage: Diagnose upload and runtime problems\./); assert.ok(seen[0][1].includes('load_skill'));
   const broken = harness({ script: scripted([(m, tools) => { seen.push([m[0].content, tools]); return reply(call('final_answer', { sourced: '', citations: [], general: 'Done.' })); }]), read: { thread, messages: [], turns: [current] },
     skills: { list: async () => { throw Error('no table yet'); }, load: async () => null } });
   assert.equal((await broken.chat.start(turn, signal())).status, 'saved');
-  assert.doesNotMatch(seen[1][0], /Skills: /); assert.ok(!seen[1][1].includes('load_skill'));
+  assert.doesNotMatch(seen[1][0], /Skills \(/); assert.ok(!seen[1][1].includes('load_skill'));
 });
 
 test('a short opening paragraph narrating the agent process is dropped from plain replies; ordinary openings stay', async () => {
@@ -617,4 +617,33 @@ test('cost: tool calls are required once sources were read; Claude requests mark
     await unsupported(loopMessages('hi', [], null), [], signal(), 1000, 'required');
     assert.equal(wires.at(-1).tool_choice, 'auto', 'an endpoint without published support gets auto');
   } finally { console.info = original; }
+});
+
+test('lean prompt: skills listed by their trigger clause; MCP servers one line each; the request is kept under the size cap', async () => {
+  const { triggerOf, skillsNote, mcpNote, fitToWire, WIRE_BUDGET } = await import('../src/agent-loop/loop.ts');
+  assert.equal(triggerOf('Check wiring before power-up - voltages and pins. Use when giving or reviewing any wiring table.'), 'Use when giving or reviewing any wiring table.');
+  assert.equal(triggerOf('Plan builds from idea to prototype. Covers parts and code.'), 'Plan builds from idea to prototype.');
+  assert.ok(triggerOf('x'.repeat(400)).length <= 150);
+  const note = skillsNote([{ name: 'serial-debug-triage', description: 'Diagnose upload and runtime problems from serial output. Use when the user pastes an error.' }]);
+  assert.match(note, /\n- serial-debug-triage: Use when the user pastes an error\.$/); assert.ok(note.length < 450);
+  const mcp = mcpNote([{ server: 'context7', tool: 'resolve-library-id', description: 'Resolves a package name to a library ID. Long text...', inputSchema: {} }, { server: 'context7', tool: 'query-docs', description: 'Docs.', inputSchema: {} }]);
+  assert.match(mcp, /open_mcp_server[^\n]*\n- context7: Resolves a package name to a library ID\. \(tools: resolve-library-id, query-docs\)$/);
+  assert.equal(mcpNote([]), '');
+  // Size headroom: history goes first (oldest first), then older tool results; the system prompt, question and newest results stay.
+  const big = n => 'h'.repeat(n);
+  const messages = [{ role: 'system', content: 'S' }, { role: 'user', content: big(9000) }, { role: 'assistant', content: big(9000) }, { role: 'user', content: 'Q' },
+    { role: 'assistant', content: null, tool_calls: [{ id: 'a', type: 'function', function: { name: 'read_product', arguments: '{}' } }] }, { role: 'tool', tool_call_id: 'a', content: big(15000) },
+    { role: 'assistant', content: null, tool_calls: [{ id: 'b', type: 'function', function: { name: 'read_product', arguments: '{}' } }] }, { role: 'tool', tool_call_id: 'b', content: big(15000) }];
+  const fit = fitToWire(messages, [], 3);
+  assert.ok(Buffer.byteLength(JSON.stringify(messages)) <= WIRE_BUDGET);
+  assert.deepEqual([fit.trimmed, fit.question, messages[2].content], [1, 2, 'Q'], 'only the oldest history message goes; nothing more than needed');
+  assert.equal(messages[4].content.length, 15000, 'tool results untouched while history could absorb it');
+  // No history left: tool results from older steps are cleared, the newest step's result stays.
+  const turn = [{ role: 'system', content: 'S' }, { role: 'user', content: 'Q' }];
+  for (const id of ['a', 'b', 'c']) turn.push({ role: 'assistant', content: null, tool_calls: [{ id, type: 'function', function: { name: 'read_product', arguments: '{}' } }] }, { role: 'tool', tool_call_id: id, content: big(18000) });
+  const fit2 = fitToWire(turn, [], 1);
+  assert.ok(Buffer.byteLength(JSON.stringify(turn)) <= WIRE_BUDGET); assert.equal(fit2.question, 1); assert.equal(turn[1].content, 'Q');
+  assert.match(turn[3].content, /"cleared":true/, 'oldest result cleared'); assert.equal(turn[7].content.length, 18000, 'newest result kept');
+  const small = [{ role: 'system', content: 'S' }, { role: 'user', content: 'Q' }];
+  assert.deepEqual(fitToWire(small, [], 1), { trimmed: 0, question: 1 }); assert.equal(small.length, 2);
 });

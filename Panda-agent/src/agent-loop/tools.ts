@@ -24,11 +24,13 @@ export type ToolDeps = {
   /** Admin-approved tools of enabled MCP servers (Admin chats only); callMcp runs one and returns its capped text. */
   mcpTools?: readonly McpAgentTool[];
   callMcp?(server: string, tool: string, args: Record<string, unknown>, signal: AbortSignal): Promise<{ text: string; isError: boolean }>;
+  /** Servers whose tools are offered from the first step (the question names them); others wait for open_mcp_server. */
+  mcpOpen?: readonly string[];
   loadSkill?(name: string, signal: AbortSignal): Promise<string | null>;
 };
 export type SkillEntry = { name: string; description: string };
 export type McpAgentTool = { server: string; tool: string; description: string; inputSchema: Record<string, unknown> };
-export const MAX_MCP_CALLS = 2, MCP_SPEC_BYTES = 8000, MCP_TOOL_DESCRIPTION = 500;
+export const MAX_MCP_CALLS = 2, MCP_SPEC_BYTES = 8000, MCP_TOOL_DESCRIPTION = 500, MAX_MCP_OPEN = 2;
 /** Function name the model sees for one MCP tool (<= 64 chars: 4 + 20 + 2 + 38). */
 export const mcpToolName = (t: Pick<McpAgentTool, 'server' | 'tool'>) => `mcp_${t.server}__${t.tool}`;
 /** Specs for approved MCP tools, in catalog order, until the size budget is used (the model request is capped at 48 KB). */
@@ -118,6 +120,8 @@ const specs = {
 };
 const loadSkillSpec = fn('load_skill', `Read the full instructions of one listed skill before following it. At most ${MAX_SKILL_LOADS} per turn.`,
   { name: { type: 'string', description: 'Exact skill name from the Skills list.' } }, ['name']);
+const openMcpSpec = fn('open_mcp_server', `Get the tools of one listed external MCP server; they are offered from your next step. At most ${MAX_MCP_OPEN} servers per turn.`,
+  { server: { type: 'string', description: 'Exact server name from the External MCP servers list.' } }, ['server']);
 const webSearchSpec = fn('web_search', `Search the public web (maker docs, datasheets, tutorials). Returns up to 3 results, each with an id (W...) to cite in final_answer.citations; facts from them go in general. At most ${MAX_WEB_SEARCHES} searches per turn. Never use it for PandaByte products, prices or stock.`,
   { query: { type: 'string', description: 'A short search query in plain words, no URLs.' } }, ['query']);
 export const allToolSpecs: readonly ToolSpec[] = Object.values(specs);
@@ -144,8 +148,17 @@ export function createToolHost(deps: ToolDeps) {
   const reading = new Set<string>();
   let readNumber = 0, searches = 0;
   const skillsLoaded = new Set<string>();
-  const mcp = deps.callMcp ? mcpSpecs(deps.mcpTools ?? []) : [];
+  const servers = new Set(deps.callMcp ? (deps.mcpTools ?? []).map(t => t.server) : []);
+  const opened = new Set((deps.mcpOpen ?? []).filter(s => servers.has(s)));
+  const mcpOffered = () => mcpSpecs((deps.mcpTools ?? []).filter(t => opened.has(t.server)));
   let mcpCalls = 0;
+  function openMcp(server: string): ToolOutcome {
+    if (!servers.has(server)) return error('unknown_server', 'No connected MCP server has that name. Use a name from the External MCP servers list.');
+    if (opened.has(server)) return { kind: 'result', content: JSON.stringify({ server, alreadyOpen: true }) };
+    if (opened.size >= MAX_MCP_OPEN) return error('mcp_open_limit', `At most ${MAX_MCP_OPEN} external servers per turn.`);
+    opened.add(server);
+    return { kind: 'result', content: JSON.stringify({ server, tools: (deps.mcpTools ?? []).filter(t => t.server === server).map(t => mcpToolName(t)), note: 'These tools are offered from your next step.' }) };
+  }
   async function callMcp(spec: string, args: Record<string, unknown>, signal: AbortSignal): Promise<ToolOutcome> {
     const t = deps.mcpTools!.find(x => mcpToolName(x) === spec)!;
     if (mcpCalls >= MAX_MCP_CALLS) return error('mcp_limit', `At most ${MAX_MCP_CALLS} external tool calls per turn. Answer with what you have.`);
@@ -293,7 +306,11 @@ export function createToolHost(deps: ToolDeps) {
         if (!str(args.query, 400) || !args.query.trim()) return error('invalid_arguments', 'web_search needs a short query string.');
         return webSearch(args.query.trim(), signal);
       }
-      if (mcp.some(s => s.function.name === name)) return callMcp(name, args, signal);
+      if (mcpOffered().some(s => s.function.name === name)) return callMcp(name, args, signal);
+      if (name === 'open_mcp_server' && servers.size) {
+        if (!str(args.server, 20) || !args.server.trim()) return error('invalid_arguments', 'open_mcp_server needs a server name.');
+        return openMcp(args.server.trim());
+      }
       if (name === 'load_skill' && deps.skills?.length && deps.loadSkill) {
         if (!str(args.name, 64) || !args.name.trim()) return error('invalid_arguments', 'load_skill needs a skill name.');
         return loadSkill(args.name.trim(), signal);
@@ -304,7 +321,8 @@ export function createToolHost(deps: ToolDeps) {
     },
     /** Tools offered for a step: web_search only on web-search turns; the last step only finishes. */
     specs: (last: boolean): readonly ToolSpec[] => last ? finishingToolSpecs
-      : [...allToolSpecs, ...(deps.webSearch ? [webSearchSpec] : []), ...(deps.skills?.length && deps.loadSkill ? [loadSkillSpec] : []), ...mcp],
+      : [...allToolSpecs, ...(deps.webSearch ? [webSearchSpec] : []), ...(deps.skills?.length && deps.loadSkill ? [loadSkillSpec] : []),
+        ...(servers.size > opened.size ? [openMcpSpec] : []), ...mcpOffered()],
     /** Whether a product read or web search returned citable ids this turn. */
     hasExcerpts: () => excerpts.size > 0 || web.size > 0,
     /** Loads the catalog once before parallel calls, so each read_product takes its slot synchronously, in call order. */
