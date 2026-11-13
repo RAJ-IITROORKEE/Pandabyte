@@ -5,8 +5,8 @@ import type { ChatRead } from '../server/chat-contracts.ts';
 
 export type HistoryMessage = { role: 'user' | 'assistant'; content: string };
 export type LoopHistory = { messages: HistoryMessage[]; summary: string | null; compacted: boolean };
-/** About 24k tokens at a conservative 3 bytes per token; every hosted endpoint offers at least 131k. */
-export const CONTEXT_BYTES = 72000, COMPACT_AT = 0.75, KEEP_VERBATIM = 3;
+/** Request wire cap: at 2 bytes per token (code, escaped JSON, Indic scripts) it stays under the 24k-token step bound; every hosted endpoint offers at least 131k. */
+export const CONTEXT_BYTES = 48000, COMPACT_AT = 0.75, KEEP_VERBATIM = 3;
 
 const bytes = (value: unknown) => Buffer.byteLength(JSON.stringify(value), 'utf8');
 const clip = (s: string, max: number) => { const t = s.replace(/\s+/g, ' ').trim(); return t.length <= max ? t : t.slice(0, max - 1).trimEnd() + '…'; };
@@ -19,7 +19,7 @@ function pairs(read: ChatRead, request: string): Pair[] {
     const r = t.response;
     if (t.status !== 'complete' || !r || !['conversation', 'evidence', 'clarification'].includes(r.outcome)) return [];
     const cited = [...new Set(r.citations.map(c => c.title))];
-    return [{ question: t.question, answer: r.text.replace(/\s*(?:\[S\d{1,2}\]\s*)+$/, '').trim(), cited }];
+    return [{ question: t.question, answer: r.text.replace(/ ?\[S\d{1,2}\]/g, '').trim(), cited }];
   });
 }
 const verbatim = (p: Pair): HistoryMessage[] => [{ role: 'user', content: p.question },

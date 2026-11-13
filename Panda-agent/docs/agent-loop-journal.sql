@@ -6,9 +6,20 @@
 -- for the turn. Neither can hold a multi-step, multi-product answer without lying about usage or provenance.
 -- Scope: Admin (unmetered) turns only, like PANDA_AGENT_MAIN_CHAT_UNCAPPED. Metered users need a budget reservation
 -- sized for six calls before this is opened to them.
--- Rollback: set PANDA_AGENT_LOOP_ENABLED off (code stops starting loop turns; saved loop turns still read through
--- the wrapper below). Full removal: drop the wrapper, rename panda_agent_lightweight_read_before_loop back, drop the
--- loop function/table. Existing direct, RAG and research journals are unchanged.
+-- Rollback, step 1: set PANDA_AGENT_LOOP_ENABLED off. Code stops starting loop turns; saved loop turns still read
+-- through the wrapper below. Existing direct, RAG and research journals are unchanged.
+-- Rollback, step 2 (full removal, one transaction; saved loop answers then read as unavailable, other turns unchanged):
+--   BEGIN;
+--   DROP TRIGGER panda_agent_loop_write_guard ON public.panda_agent_chat_turns;
+--   DROP FUNCTION public.panda_agent_loop_write_guard();
+--   DROP FUNCTION public.panda_agent_loop_chat_v1(text,text);
+--   DROP FUNCTION public.panda_agent_lightweight_read(uuid);
+--   ALTER FUNCTION public.panda_agent_lightweight_read_before_loop(uuid) RENAME TO panda_agent_lightweight_read;
+--   REVOKE ALL ON FUNCTION public.panda_agent_lightweight_read(uuid) FROM PUBLIC,anon;
+--   GRANT EXECUTE ON FUNCTION public.panda_agent_lightweight_read(uuid) TO authenticated;
+--   DROP FUNCTION public.panda_agent_loop_citations_current(jsonb);
+--   DROP TABLE public.panda_agent_loop_turns;
+--   COMMIT;
 
 CREATE TABLE public.panda_agent_loop_turns (
  thread_id uuid NOT NULL, request_id uuid NOT NULL, owner_subject text NOT NULL,
@@ -32,7 +43,14 @@ BEGIN
  IF jsonb_typeof(p_answer->'citations') IS DISTINCT FROM 'array' OR jsonb_array_length(p_answer->'citations')>4 THEN RETURN false; END IF;
  IF jsonb_array_length(p_answer->'citations')=0 THEN RETURN coalesce(p_answer->>'outcome' IN ('conversation','clarification','insufficient'),false); END IF;
  IF p_answer->>'outcome' IS DISTINCT FROM 'evidence' THEN RETURN false; END IF;
+ IF (SELECT count(DISTINCT x->>'id') FROM jsonb_array_elements(p_answer->'citations') x)<>jsonb_array_length(p_answer->'citations') THEN RETURN false; END IF;
  FOR c IN SELECT value FROM jsonb_array_elements(p_answer->'citations') LOOP
+  -- The exact shape the loop emits (src/agent-loop/tools.ts): S1..S4, string quote, no extra keys.
+  IF jsonb_typeof(c) IS DISTINCT FROM 'object' OR NOT c ?& ARRAY['id','title','sourceUrl','quote','sectionPath','capturedAt']
+  OR (SELECT count(*) FROM jsonb_object_keys(c))<>6 OR jsonb_typeof(c->'id') IS DISTINCT FROM 'string' OR coalesce(c->>'id','') !~ '^S[1-4]$'
+  OR jsonb_typeof(c->'title') IS DISTINCT FROM 'string' OR jsonb_typeof(c->'sourceUrl') IS DISTINCT FROM 'string'
+  OR jsonb_typeof(c->'sectionPath') IS DISTINCT FROM 'array' OR jsonb_typeof(c->'capturedAt') IS DISTINCT FROM 'string'
+  OR jsonb_typeof(c->'quote') IS DISTINCT FROM 'string' OR length(btrim(c->>'quote')) NOT BETWEEN 1 AND 600 THEN RETURN false; END IF;
   SELECT (p->>'id')::uuid INTO product FROM jsonb_array_elements(public.panda_agent_runtime_products()->'items') p
    WHERE p->>'sourceUrl'=c->>'sourceUrl' AND p->>'title'=c->>'title';
   IF product IS NULL OR public.panda_agent_lightweight_citations_current(jsonb_build_object('outcome','evidence','text','x','citations',jsonb_build_array(c)),product) IS NOT TRUE THEN RETURN false; END IF;
@@ -140,6 +158,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $
 DECLARE r jsonb; x record; ms jsonb; ts jsonb; valid boolean; answer jsonb;
 BEGIN
  r:=public.panda_agent_lightweight_read_before_loop(p_thread);ms:=r->'messages';ts:=r->'turns';
+ IF r IS NULL OR jsonb_typeof(ms) IS DISTINCT FROM 'array' OR jsonb_typeof(ts) IS DISTINCT FROM 'array' THEN RETURN r; END IF;
  FOR x IN SELECT t.*,d.owner_subject,d.terminal,d.cancelled,d.answer_hash,d.usage,d.response_hash,m.approved_response_hash
  FROM public.panda_agent_loop_turns d JOIN public.panda_agent_chat_turns t USING(thread_id,request_id)
  JOIN public.panda_agent_lightweight_turns m USING(thread_id,request_id)
@@ -151,7 +170,7 @@ BEGIN
   SELECT jsonb_agg(CASE WHEN z.item->>'id'=x.assistant_message_id::text THEN z.item||jsonb_build_object('text',answer->>'text','citations',answer->'citations') ELSE z.item END ORDER BY z.ord) INTO ms FROM jsonb_array_elements(ms) WITH ORDINALITY z(item,ord);
   SELECT jsonb_agg(CASE WHEN z.item->>'requestId'=x.request_id::text THEN z.item||jsonb_build_object('response',answer) ELSE z.item END ORDER BY z.ord) INTO ts FROM jsonb_array_elements(ts) WITH ORDINALITY z(item,ord);
  END LOOP;
- RETURN r||jsonb_build_object('messages',ms,'turns',ts);
+ RETURN r||jsonb_build_object('messages',coalesce(ms,'[]'::jsonb),'turns',coalesce(ts,'[]'::jsonb));
 END $$;
 REVOKE ALL ON FUNCTION public.panda_agent_lightweight_read(uuid) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.panda_agent_lightweight_read(uuid) TO authenticated;

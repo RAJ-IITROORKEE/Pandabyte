@@ -12,8 +12,10 @@ import type { AgentLoopStore, LoopState } from './store.ts';
 type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean };
 export type StepFactory = (options: { model: HostedDirectModelId; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   claim(bodyHash: string): Promise<boolean>; beforeSend(): Promise<boolean> }) => StepFn;
-type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Omit<ToolDeps, 'progress'>; step: StepFactory };
+type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Policy; model: HostedDirectModelId; tools: Omit<ToolDeps, 'progress'>; step: StepFactory; turnMs?: number };
 
+/** The whole turn ends before the route's 300 s limit, so a late step cannot outlive its request. */
+export const LOOP_TURN_MS = 230000;
 export const sourcesChangedText = 'The PandaByte sources for this answer changed while I was writing it, so it was not saved as cited. Please ask again.';
 
 export function createAgentLoopChat(options: Options): BasicRagChatBridge {
@@ -29,7 +31,8 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       if (signal.aborted) throw new ChatStoreError('unavailable'); const s = await read(ref.thread, ref.request); if (!s) throw new ChatStoreError('not_found');
       if (s.status === 'complete') return { status: 'saved' }; await store.cancel(ref.thread, ref.request); await current(); return { status: 'saved' };
     },
-    async start(turn, signal, progress) {
+    async start(turn, requestSignal, progress) {
+      const signal = AbortSignal.any([requestSignal, AbortSignal.timeout(options.turnMs ?? LOOP_TURN_MS)]);
       valid(turn.thread, turn.request);
       if (typeof turn.question !== 'string' || !turn.question || turn.question !== turn.question.trim() || turn.question.length > 2000 || !turn.question.isWellFormed()) throw new ChatStoreError('invalid');
       const previous = await read(turn.thread, turn.request);
@@ -68,14 +71,20 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
   };
 }
 
-/** Loop turns keep their own journal for status and cancel; a request another journal already holds stays there. */
-export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge): BasicRagChatBridge {
+/** Loop turns keep their own journal for status and cancel; a request another journal already holds stays there.
+ *  New requests go to the loop only for an eligible session (Admin, unmetered); everyone else keeps the existing chat. */
+export function withAgentLoop(base: BasicRagChatBridge, loop: BasicRagChatBridge, eligible: () => Promise<boolean>): BasicRagChatBridge {
   const isLoop = async (thread: string, id: string) => { try { return await loop.state(thread, id); } catch (error) { if (error instanceof ChatStoreError && error.code === 'unauthenticated') throw error; return false; } };
   const owner = async (thread: string, id: string) => await isLoop(thread, id) ? loop : base;
   return {
     state: async (thread, id) => await isLoop(thread, id) || await base.state(thread, id),
     status: async (ref, signal) => (await owner(ref.thread, ref.request)).status(ref, signal),
     cancel: async (ref, signal) => (await owner(ref.thread, ref.request)).cancel(ref, signal),
-    start: async (turn, signal, progress) => !await isLoop(turn.thread, turn.request) && await base.state(turn.thread, turn.request) ? base.start(turn, signal, progress) : loop.start(turn, signal, progress),
+    start: async (turn, signal, progress) => {
+      if (await isLoop(turn.thread, turn.request)) return loop.start(turn, signal, progress);
+      if (await base.state(turn.thread, turn.request)) return base.start(turn, signal, progress);
+      let ok = false; try { ok = await eligible() === true; } catch { ok = false; }
+      return ok ? loop.start(turn, signal, progress) : base.start(turn, signal, progress);
+    },
   };
 }

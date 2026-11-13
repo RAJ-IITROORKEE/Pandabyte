@@ -21,3 +21,6 @@ export function readPreferences(userId: string): AgentPreferences {
 export function writePreferences(userId: string, next: AgentPreferences): boolean {
   try { window.localStorage.setItem(key(userId), JSON.stringify(next)); return true; } catch { return false; }
 }
+
+// With the agent loop on, the agent offers web search itself, so new chats start with it off unless the user turned the default on.
+export const webSearchOn = (saved: boolean | undefined, agentLoop: boolean): boolean => agentLoop ? saved === true : saved !== false;

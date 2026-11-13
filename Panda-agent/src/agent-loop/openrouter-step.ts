@@ -38,7 +38,8 @@ export function createOpenRouterStep(options: Options): StepFn {
   const m = profiles[options.model], fetcher = options.fetcher ?? fetch;
   // Receipt ceiling per step: this model's worst case for the declared token bounds.
   const reservation = Math.ceil((LOOP_MAX_INPUT * m.nano2.prompt + LOOP_MAX_OUTPUT * m.nano2.completion) / 2) + 1;
-  let claimed = false;
+  // Endpoint and privacy metadata are checked on the first step and reused for this turn; policy and journal checks still run every step.
+  let claimed = false, approved: string | null = null;
   return async (messages: readonly LoopMessage[], tools, signal) => {
     const started = performance.now(), observation: Observation = { observationId: randomUUID(), model: m.id, provider: m.tag, stage: 'unavailable', totalMs: 0 };
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(LOOP_STEP_MS)]);
@@ -50,12 +51,16 @@ export function createOpenRouterStep(options: Options): StepFn {
         provider: { only: [m.tag], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: m.maxPrice.prompt, completion: m.maxPrice.completion, request: 0, image: 0 } },
         messages });
       if (Buffer.byteLength(wire('max_tokens'), 'utf8') > LOOP_WIRE_BYTES || options.dispatchCurrent() !== true) return fail('not_admitted');
-      const get = async (path: string) => { const response = await fetcher(api + path, { method: 'GET', redirect: 'error', cache: 'no-store', credentials: 'omit', signal: deadline });
-        if (!response.ok || response.redirected) { void response.body?.cancel().catch(() => {}); return fail('not_admitted'); } return readLunaJSON(response, 4000000); };
-      const [catalog, zdr, policy] = await Promise.all([get('/models/' + m.id + '/endpoints'), get('/endpoints/zdr'), options.policyCurrent()]);
-      observation.metadataMs = Math.round(performance.now() - started);
-      const parameter = approvedEndpoint(m, catalog, zdr, LOOP_MAX_INPUT, LOOP_MAX_OUTPUT, true);
-      if (!parameter || !policy || deadline.aborted) return fail('not_admitted');
+      if (!approved) {
+        const get = async (path: string) => { const response = await fetcher(api + path, { method: 'GET', redirect: 'error', cache: 'no-store', credentials: 'omit', signal: deadline });
+          if (!response.ok || response.redirected) { void response.body?.cancel().catch(() => {}); return fail('not_admitted'); } return readLunaJSON(response, 4000000); };
+        const [catalog, zdr, policy] = await Promise.all([get('/models/' + m.id + '/endpoints'), get('/endpoints/zdr'), options.policyCurrent()]);
+        observation.metadataMs = Math.round(performance.now() - started);
+        const parameter = approvedEndpoint(m, catalog, zdr, LOOP_MAX_INPUT, LOOP_MAX_OUTPUT, true);
+        if (!parameter || !policy || deadline.aborted) return fail('not_admitted');
+        approved = parameter;
+      }
+      const parameter = approved;
       const body = wire(parameter);
       if (Buffer.byteLength(body, 'utf8') > LOOP_WIRE_BYTES) return fail('not_admitted');
       if (!claimed) {

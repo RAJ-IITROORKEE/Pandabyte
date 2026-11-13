@@ -57,7 +57,9 @@ function baseAssistantForActor(actor:ChatActor,request:Request):BasicRagChatBrid
   start:(turn,signal,progress)=>direct.start(turn,signal,progress),
  };
  // Agent loop (off by default; needs the reviewed loop journal migration): new turns go to the model-driven loop instead of the fixed router.
- return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(routed,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy})):routed;
+ // Only an unmetered (Admin) session is eligible; every other user keeps the existing chat.
+ const loopEligible=async()=>process.env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&await modelPolicy.enabled()&&'isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true;
+ return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(routed,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy}),loopEligible):routed;
 }
 
 /** Chat turns with web search go to the research journal; its turns keep status/cancel there. Everything else is unchanged. */
