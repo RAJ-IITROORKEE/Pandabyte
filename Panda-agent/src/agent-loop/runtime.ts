@@ -8,6 +8,7 @@ import { createAgentLoopChat } from './chat.ts';
 import { createOpenRouterStep } from './openrouter-step.ts';
 import { createAgentLoopStore } from './store.ts';
 import type { ProductRead } from './tools.ts';
+import { searchHostedPublicWeb } from '../search/tavily.ts';
 
 type Row = Awaited<ReturnType<typeof readRuntimeCatalog>>[number];
 /** One product's eligible listing passages through the same scoped, proof-checked reader as cited answers, bound to that product. */
@@ -27,5 +28,7 @@ export function agentLoopChatForActor(options: { actor: ChatActor; key: string; 
   policy: Parameters<typeof createAgentLoopChat>[0]['policy'] }): BasicRagChatBridge {
   const { actor } = options;
   return createAgentLoopChat({ store: createAgentLoopStore(actor, options.key), current: options.current, policy: options.policy, model: options.model, step: createOpenRouterStep,
-    tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal) } });
+    tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal),
+      ...(process.env.TAVILY_API_KEY?.trim() ? { webSearch: async (query: string, signal: AbortSignal, beforeSend: () => Promise<boolean>) =>
+        (await searchHostedPublicWeb(query, { apiKey: process.env.TAVILY_API_KEY!.trim(), signal, beforeSend })).sources } : {}) } });
 }
