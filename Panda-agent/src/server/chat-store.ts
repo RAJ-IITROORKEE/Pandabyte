@@ -14,7 +14,7 @@ const string = (v: unknown, max: number): v is string => typeof v === 'string' &
 const date = (v: unknown): v is string => string(v, 50) && Number.isFinite(Date.parse(v));
 const bad = (): never => { throw new ChatStoreError('unavailable'); };
 function citations(value: unknown): ChatCitation[] {
-  if (!Array.isArray(value) || value.length > 4) return bad();
+  if (!Array.isArray(value) || value.length > 8) return bad();
   return value.map(c => {
     if(record(c) && Object.hasOwn(c,'kind')) { const vendor=parseVendorCitation(c)??parseCompositeVendorCitation(c);return vendor??bad(); }
     if (!record(c) || !string(c.id, 40) || !string(c.title, 300) || !string(c.sourceUrl, 500) || !date(c.capturedAt) || !string(c.quote, 600) || !Array.isArray(c.sectionPath) || c.sectionPath.length > 12 || c.sectionPath.some((p: unknown) => !string(p, 200))) return bad();

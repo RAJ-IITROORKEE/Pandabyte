@@ -51,7 +51,7 @@ export function mcpSpecs(tools: readonly McpAgentTool[]): ToolSpec[] {
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
-export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4, PINOUT_EXCERPT_BYTES = 8000;
+export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 8, PINOUT_EXCERPT_BYTES = 8000;
 /** Ranking words for find_pinout; "photo printed pad" keep the board-photo transcription among the passages read. No "GPIO",
  *  "pinout" or "wiring": the evidence reader refuses those words as wiring-proof questions (needsUnavailableProof). */
 export const PINOUT_FOCUS = 'pin labels header pin definitions layout strapping boot I2C SDA SCL UART TX RX ADC photo printed pad';
@@ -224,7 +224,7 @@ export function createToolHost(deps: ToolDeps) {
     if (!ids.length) return error('no_excerpts', 'The listing has no quotable excerpts. Do not state its facts.');
     reads.set(key, { ids, revalidate: read.revalidate, row });
     return { kind: 'result', content: JSON.stringify({ sku: row.sku, title: row.title, productPage: row.sourceUrl, excerpts: shown,
-      ...(pins ? { pinoutImages: images.length, note: 'Header labels are transcribed from the board photo; an "Espressif datasheet excerpt" pin table describes the module, not the board\'s own header wiring. Cite up to four excerpts you rely on (header labels and pin table first) in final_answer; the board\'s pinout image is then shown with your answer. Price and stock are never in excerpts.' }
+      ...(pins ? { pinoutImages: images.length, note: 'Header labels are transcribed from the board photo; an "Espressif datasheet excerpt" pin table describes the module, not the board\'s own header wiring. Cite the excerpts you rely on (header labels and pin table first) in final_answer; the board\'s pinout image is then shown with your answer. Price and stock are never in excerpts.' }
         : { note: 'Cite excerpt ids in final_answer.citations. Price and stock are never in excerpts; they are on the product page.' }) }) };
     } finally { reading.delete(key); }
   }
@@ -268,7 +268,7 @@ export function createToolHost(deps: ToolDeps) {
     const general = typeof args.general === 'string' ? stripProcessNote(stripExcerptIds(httpsOnlyLinks(args.general)).trim()) : args.general === undefined ? '' : null;
     const ids = args.citations === undefined ? [] : args.citations;
     if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
-      return error('invalid_arguments', 'final_answer needs sourced and general strings and at most four excerpt ids.');
+      return error('invalid_arguments', `final_answer needs sourced and general strings and at most ${MAX_CITATIONS} excerpt ids.`);
     if (!sourced && !general) return error('empty_answer', 'Write the answer in sourced or general.');
     const cited = [...new Set(ids as string[])], missing = cited.filter(id => !excerpts.has(id) && !web.has(id));
     if (missing.length) return error('unknown_citation', `These ids were not returned by read_product, find_pinout or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);

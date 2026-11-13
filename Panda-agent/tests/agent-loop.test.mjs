@@ -677,6 +677,18 @@ test('find_pinout: pin-focused read with a larger budget and its own slot; the b
   assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3', focus: 'x' }), signal())).content).error, 'invalid_arguments');
 });
 
+test('final_answer: up to eight excerpt ids (S1-S8), nine are refused', async () => {
+  const host = createToolHost({ catalog: async () => catalog,
+    readProduct: async row => ({ kind: 'ready', revalidate: async () => true,
+      passages: Array.from({ length: 9 }, (_, i) => ({ text: `Pin fact ${i + 1} for ${row.sku}.`, title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath: [`Part ${i + 1}`] })) }) });
+  const ids = JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).excerpts.map(e => e.id);
+  assert.ok(ids.length >= 9);
+  const nine = JSON.parse((await host.call('final_answer', JSON.stringify({ sourced: 'Pins.', citations: ids.slice(0, 9), general: '' }), signal())).content);
+  assert.equal(nine.error, 'invalid_arguments'); assert.match(nine.message, /at most 8 excerpt ids/);
+  const done = await host.call('final_answer', JSON.stringify({ sourced: 'Pins.', citations: ids.slice(0, 8), general: '' }), signal());
+  assert.equal(done.kind, 'final'); assert.deepEqual(done.answer.citations.map(c => c.id), ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8']);
+});
+
 test('find_pinout: its focus passes the evidence reader wiring-proof guard; a failed pin read shows no image', async () => {
   // The real reader, stopped right after the guard: 'unavailable' (no scope) means the guard let the question through.
   const reader = question => prepareQuestionEvidence({ subject: 'user_1' }, { question, productSku: 'ESPXS3' },
