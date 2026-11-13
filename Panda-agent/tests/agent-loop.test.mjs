@@ -10,6 +10,7 @@ import { createAgentLoopChat, withAgentLoop, sourcesChangedText, loopModelAllowe
 import { createAgentLoopStore } from '../src/agent-loop/store.ts';
 import { createOpenRouterStep } from '../src/agent-loop/openrouter-step.ts';
 import { parseClarificationOptions, agentQuestionText, clarificationText } from '../src/retrieval/catalog-listing.ts';
+import { prepareQuestionEvidence } from '../src/retrieval/answers.ts';
 import { fastHostedModel } from '../src/hosted-model.ts';
 
 const catalog = JSON.parse(readFileSync(new URL('./fixtures/catalog-42.json', import.meta.url), 'utf8'));
@@ -674,4 +675,20 @@ test('find_pinout: pin-focused read with a larger budget and its own slot; the b
   assert.equal(await host.revalidate(['ESPXS3']), true); assert.equal(revalidated.length, 2, 'the listing read and the pin read are both rechecked');
   assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'NOPE' }), signal())).content).error, 'unknown_sku');
   assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3', focus: 'x' }), signal())).content).error, 'invalid_arguments');
+});
+
+test('find_pinout: its focus passes the evidence reader wiring-proof guard; a failed pin read shows no image', async () => {
+  // The real reader, stopped right after the guard: 'unavailable' (no scope) means the guard let the question through.
+  const reader = question => prepareQuestionEvidence({ subject: 'user_1' }, { question, productSku: 'ESPXS3' },
+    { ranking: { mode: 'lexical' }, resolveIdentity: async () => ({ kind: 'resolved', product: { id: 'p1', sku: 'ESPXS3' } }), currentScope: async () => null });
+  assert.equal((await reader(`PandaByte xS3 ESP32-S3 Development Board ${PINOUT_FOCUS}`)).kind, 'unavailable');
+  assert.equal((await reader('PandaByte xS3 pinout')).kind, 'insufficient', 'control: the guard still refuses wiring-proof words');
+  const host = createToolHost({ catalog: async () => catalog,
+    readProduct: async (row, focus) => focus === PINOUT_FOCUS ? { kind: 'insufficient' } : { kind: 'ready', revalidate: async () => true,
+      passages: [{ text: 'The xS3 has an RGB LED.', title: row.title, sourceUrl: row.sourceUrl, capturedAt: '2026-11-01T00:00:00.000Z', sectionPath: ['Info'] }] },
+    pinoutImages: async () => [{ url: '/api/media/32cd920e-1111-4222-8333-444455556666', description: 'pinout' }] });
+  assert.equal(JSON.parse((await host.call('find_pinout', JSON.stringify({ sku: 'ESPXS3' }), signal())).content).error, 'no_excerpts');
+  const read = JSON.parse((await host.call('read_product', JSON.stringify({ sku: 'ESPXS3' }), signal())).content);
+  const done = await host.call('final_answer', JSON.stringify({ sourced: 'It has an RGB LED.', citations: [read.excerpts[0].id], general: '' }), signal());
+  assert.equal(done.answer.citations[0].images, undefined);
 });

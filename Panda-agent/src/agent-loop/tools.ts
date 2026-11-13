@@ -52,8 +52,9 @@ export type ToolSpec = { type: 'function'; function: { name: string; description
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
 export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 4, PINOUT_EXCERPT_BYTES = 8000;
-/** Ranking words for find_pinout; "photo printed pad" keep the board-photo transcription among the passages read. */
-export const PINOUT_FOCUS = 'pin labels header GPIO pin definitions pinout strapping boot I2C SDA SCL UART TX RX ADC photo printed pad';
+/** Ranking words for find_pinout; "photo printed pad" keep the board-photo transcription among the passages read. No "GPIO",
+ *  "pinout" or "wiring": the evidence reader refuses those words as wiring-proof questions (needsUnavailableProof). */
+export const PINOUT_FOCUS = 'pin labels header pin definitions layout strapping boot I2C SDA SCL UART TX RX ADC photo printed pad';
 /** Pin reads quote by section, not word overlap (long datasheet notes otherwise outrank them): the board's own header
  *  labels, then module pin tables, then strapping pins, then the rest in ranked order. */
 const pinSection = (p: ProductPassage) => { const s = p.sectionPath.join(' > ');
@@ -203,10 +204,10 @@ export function createToolHost(deps: ToolDeps) {
     const focus = pins ? PINOUT_FOCUS : typeof args.focus === 'string' ? args.focus.replace(/[^A-Za-z0-9 .,+-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) : '';
     const [read, images] = await Promise.all([deps.readProduct(row, focus, signal),
       pins && deps.pinoutImages ? deps.pinoutImages(row, signal).catch(() => [] as CitationImage[]) : Promise.resolve([] as CitationImage[])]);
-    if (images.length) productImages.set(row.sku, images);
     if (read.kind !== 'ready') return error(read.kind === 'insufficient' ? 'no_excerpts' : 'unavailable', read.kind === 'insufficient'
       ? 'The listing holds no excerpts for that focus (wiring, pinout and safety proof are never in listings). Read again without that focus, or answer that part as general guidance.'
       : 'This product listing cannot be read right now. Do not state its facts.');
+    if (images.length) productImages.set(row.sku, images);
     const passages = pins ? pinOrder(read.passages) : read.passages;
     const quotes = buildHostedSourceQuotes(passages.map((p, i) => ({ rank: i + 1, text: p.text }))).quotes;
     const ids: string[] = [], shown: Array<{ id: string; section: string; text: string }> = [];
