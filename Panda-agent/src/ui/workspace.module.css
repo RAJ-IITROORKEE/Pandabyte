@@ -124,6 +124,7 @@
 .composerActions .webSearchToggle[aria-pressed="true"] { border-color: var(--accent-ink); background: var(--status-soft); color: var(--accent-ink); }
 .composerActions .webSearchToggle:disabled { opacity: .6; cursor: not-allowed; }
 .searchNotice { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.composer textarea[data-ghost]::placeholder { font-style: italic; opacity: .6; }
 .followUps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .followUps button { border: 1px solid var(--divider); border-radius: 999px; background: transparent; color: var(--foreground); padding: 6px 12px; font: inherit; font-size: 13px; line-height: 1.35; text-align: left; cursor: pointer; max-width: 100%; }
 .followUps button:hover:not(:disabled) { border-color: var(--accent, var(--foreground)); }
