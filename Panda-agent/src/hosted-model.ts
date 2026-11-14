@@ -13,6 +13,9 @@ export const hostedDirectModels = Object.freeze([haikuHostedModel, lunaHostedMod
 export const hostedDirectModelIds: readonly string[] = Object.freeze(hostedDirectModels.map(model => model.id));
 /** The free pool choice: enabled free models from the Admin registry, tried in order when one is rate limited or unavailable. */
 export const freePoolModel = Object.freeze({ id: 'panda/free', label: 'Free models' } as const);
+/** Answers a free-pool turn after every free model failed, e.g. once OpenRouter's daily free quota is used (owner's pick, 14 Nov 2026).
+ *  Paid (about $0.0003 a turn) and zero-retention; switched off in Admin Models, there is no fallback. */
+export const freePoolFallbackId = 'deepseek/deepseek-v4.1-flash-1017';
 /** OpenRouter catalog context_length per model id (read 2026-11-13 from openrouter.ai/api/v1/models); display only, never a limit. */
 export const hostedContextWindows: Readonly<Record<string, number>> = Object.freeze({
   'openai/gpt-oss-20b': 131072, 'anthropic/claude-haiku-5.5': 1000000, 'openai/gpt-6-luna': 1050000,

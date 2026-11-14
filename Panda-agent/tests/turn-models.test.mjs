@@ -18,6 +18,11 @@ test('pool: the free choice is every enabled free model in pool order; one added
   assert.ok(poolFor('panda/free', rows).every(e => e.tier === 'free'));
   assert.deepEqual(poolFor('d/off:free', rows), [], 'switched off'); assert.deepEqual(poolFor('x/unknown', rows), []);
   assert.deepEqual(poolFor('panda/free', rows.filter(r => r.tier !== 'free')), [], 'no free models, no pool');
+  // The paid fallback answers last, only while it is switched on, and never alone.
+  const fb = row('deepseek/deepseek-v4.1-flash-1017', { tier: 'paid', profile: profile('zdr') });
+  assert.deepEqual(poolFor('panda/free', [...rows, fb]).map(e => [e.id, e.tier]).slice(-2), [['c/late:free', 'free'], [fb.id, 'paid']]);
+  assert.equal(poolFor('panda/free', [...rows, { ...fb, enabled: false }]).at(-1).id, 'c/late:free');
+  assert.deepEqual(poolFor('panda/free', [fb]), []);
   assert.ok(isTurnModelId('panda/free') && isTurnModelId('deepseek/deepseek-v4.1-flash-1017') && !isTurnModelId('bad id') && !isTurnModelId('x'.repeat(130) + '/y'));
 });
 

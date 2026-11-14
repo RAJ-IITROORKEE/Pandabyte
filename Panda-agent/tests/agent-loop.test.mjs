@@ -936,6 +936,12 @@ test('free pool: a rate-limited model hands the turn to the next; one claim; usa
   assert.equal((await allFail.chat.start(turn, signal())).status, 'unknown'); assert.deepEqual(recorded.at(-1).slice(2), [true, true]);
   const empty = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, pool: async () => [] });
   await assert.rejects(empty.chat.start(turn, signal()), e => e.code === 'unavailable'); assert.ok(!empty.calls.includes('begin'), 'nothing journaled');
+  // The free model is cooling (rate limited above), so the paid fallback answers first; the turn still counts as free.
+  used.length = 0;
+  const fallback = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, stepFactory,
+    pool: async () => [{ id: 'vendor/first:free', tier: 'free' }, { id: 'vendor/fallback', tier: 'paid' }] });
+  assert.equal((await fallback.chat.start(turn, signal())).usage.model, 'vendor/fallback');
+  assert.deepEqual(used, ['vendor/fallback']); assert.equal(beginTiers.at(-1), 'free');
 });
 
 test('free pool cooldown: a rate-limited model is tried last on later turns, longer on each repeat, and is ready again after it answers', async () => {

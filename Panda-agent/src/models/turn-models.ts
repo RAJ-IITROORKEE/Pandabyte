@@ -2,7 +2,7 @@
 import type { ChatActor } from '../server/chat-contracts.ts';
 import type { PoolEntry } from '../agent-loop/chat.ts';
 import type { Profile } from '../server/hosted-model-openrouter.ts';
-import { freePoolModel, hostedContextWindows, hostedDirectModelIds, type HostedDirectModelId } from '../hosted-model.ts';
+import { freePoolFallbackId, freePoolModel, hostedContextWindows, hostedDirectModelIds, type HostedDirectModelId } from '../hosted-model.ts';
 import { MODEL_ID, parseModelRows, type ModelRow } from './registry.ts';
 
 /** A choice the chat may send besides the built-ins: the free pool or an Admin-added model id. */
@@ -12,10 +12,14 @@ const entry = (r: ModelRow): PoolEntry => ({ id: r.id, contextWindow: r.contextW
   ...(r.profile ? { profile: { ...r.profile, id: r.id as HostedDirectModelId } as Profile } : {}) });
 
 /** The ordered models for a request from the rows this user may use (enabled and visible). Built-ins have no profile; added
- *  models must carry one. The free pool is every enabled free model in pool order (unordered ones last). */
+ *  models must carry one. The free pool is every enabled free model in pool order (unordered ones last), then the paid fallback. */
 export function poolFor(requested: string, rows: readonly ModelRow[]): PoolEntry[] {
-  if (requested === freePoolModel.id) return rows.filter(r => r.enabled && r.tier === 'free' && !r.builtin && r.profile)
-    .sort((a, b) => (a.poolOrder ?? 99) - (b.poolOrder ?? 99) || a.id.localeCompare(b.id)).map(entry);
+  if (requested === freePoolModel.id) {
+    const free = rows.filter(r => r.enabled && r.tier === 'free' && !r.builtin && r.profile)
+      .sort((a, b) => (a.poolOrder ?? 99) - (b.poolOrder ?? 99) || a.id.localeCompare(b.id)).map(entry);
+    const fallback = rows.find(r => r.id === freePoolFallbackId && r.enabled && r.profile);
+    return free.length && fallback ? [...free, entry(fallback)] : free;
+  }
   const row = rows.find(r => r.id === requested && r.enabled && (r.builtin ? hostedDirectModelIds.includes(r.id) : !!r.profile));
   return row ? [entry(row)] : [];
 }

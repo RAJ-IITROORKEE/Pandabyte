@@ -90,7 +90,7 @@ export function AgentModels() {
       <dl className={styles.stats}>{stats.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
       <section className={styles.card} aria-labelledby="pool-title">
         <h2 id="pool-title">Free pool</h2>
-        <p>Free models are tried in this order when a signed-in user picks the free pool. Free endpoints may log prompts, so they never see more than the user typed and the agent tool results.</p>
+        <p>Free models are tried in this order when a signed-in user picks the free pool. Free endpoints may log prompts, so they never see more than the user typed and the agent tool results. If every free model fails (for example the daily free quota is used up), DeepSeek V4.1 Flash answers while it is switched on; it is paid and still counts against the free daily limit.</p>
         {pool.length === 0 ? <div className={styles.state}><p>No free model is switched on. Add one with Add model and the Free filter.</p></div> : <ol className={styles.pool}>{pool.map((r, i) => <li key={r.id}>
           <span className={styles.rank}>{i + 1}.</span><span className={styles.poolName}><span className={styles.name}>{r.label}</span> <span className={styles.mono}>{r.id}</span></span>
           <button type="button" className={styles.button} aria-label={`Move ${r.label} up`} disabled={i === 0 || busy !== null} onClick={() => void move(r, -1)}><ArrowUp size={16} aria-hidden="true" /></button>

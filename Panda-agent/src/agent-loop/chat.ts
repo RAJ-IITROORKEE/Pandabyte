@@ -32,7 +32,7 @@ type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Pol
   /** Compile tool for signed-in users who are not Admin (otherwise Admin only). */
   deviceMembers?: boolean;
   /** The models this turn may use, in order (the free pool, or one Admin-added model); none means `model` alone. Failover moves
-   *  to the next only when a model is rate limited, unavailable or refused, so it is used for free models (no cost per call). */
+   *  to the next only when a model is rate limited, unavailable or refused: the free models, then the paid fallback. */
   pool?(): Promise<readonly PoolEntry[]>;
   /** Per-model usage for the Admin Models page (best effort). */
   recordUsage?(model: string, usage: { inputTokens: number; outputTokens: number; costNanoUsd: number }, failed: boolean, failover: boolean): Promise<void> };
@@ -66,9 +66,12 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       if (policy.isUnmetered?.() !== true) throw new ChatStoreError('unavailable');
       // The models this turn may use are known before the turn is journaled, so an empty pool refuses instead of hanging.
       let entries: readonly PoolEntry[] = [{ id: options.model }];
-      if (options.pool) { try { entries = await options.pool(); } catch { entries = []; } if (!entries.length) throw new ChatStoreError('unavailable'); entries = readyFirst(entries); }
+      if (options.pool) { try { entries = await options.pool(); } catch { entries = []; } if (!entries.length) throw new ChatStoreError('unavailable'); }
       // Free-pool turns count against the free daily limit, everything else against the paid one (migration 20261114130000).
-      const begun = await store.begin(turn.thread, turn.request, turn.question, entries[0].tier === 'free' ? 'free' : 'paid');
+      // Read before cooldown reordering, so a turn the paid fallback answers still counts as free.
+      const tier = entries[0].tier === 'free' ? 'free' : 'paid';
+      entries = readyFirst(entries);
+      const begun = await store.begin(turn.thread, turn.request, turn.question, tier);
       if (!begun.admitted) { const old = await read(turn.thread, turn.request); return old ? status(old) : { status: 'unknown' }; }
       const report = (stage: ActivityStage) => { try { progress?.(stage); } catch { /* Presentation only. */ } };
       let bodyHash: string | undefined, attempted = false, claimedOk = false;
