@@ -15,7 +15,8 @@ import {openScopeIntent} from '../retrieval/catalog-listing.ts';
 import {withAgentLoop,loopModelAllowed} from '../agent-loop/chat.ts';
 import {agentLoopChatForActor} from '../agent-loop/runtime.ts';
 import {createHostedDirectCompletion} from './hosted-model-openrouter.ts';
-import {fastHostedModel,lunaHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
+import {fastHostedModel,haikuHostedModel,lunaHostedModel,hostedDirectModelIds,hostedModelSelection,requestedHostedModel} from '../hosted-model.ts';
+import {isTurnModelId} from '../models/turn-models.ts';
 import {createResearchChat,researchProfileFor,withResearch,researchWebSearchEnabled,researchKey32 as key32} from './research-chat.ts';
 export {researchWebSearchEnabled};
 import {createResearchGatewayClient} from './research-gateway-client.ts';
@@ -39,9 +40,12 @@ function baseAssistantForActor(actor:ChatActor,request:Request,web:(routed:Basic
  const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
  const selected=hostedModelSelection(process.env),fast=process.env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
- const model=fast?requestedHostedModel(requested):lunaHostedModel.id;
+ // The free pool or an Admin-added model runs only in the agent loop; its built-in stand-in (Haiku) is never sent for it there.
+ const dynamic=fast&&requested!==null&&!hostedDirectModelIds.includes(requested)&&isTurnModelId(requested);
+ const model=fast?(dynamic?haikuHostedModel.id:requestedHostedModel(requested)):lunaHostedModel.id;
  const modelPolicy={...policy,enabled:async()=>{
-   if(!selected||requested!==null&&(fast?!hostedDirectModelIds.includes(requested):requested!=='openai/gpt-6-luna')||!await policy.enabled())return false;
+   if(!selected||requested!==null&&(fast?!(hostedDirectModelIds.includes(requested)||dynamic):requested!=='openai/gpt-6-luna')||!await policy.enabled())return false;
+   if(dynamic&&process.env.PANDA_AGENT_LOOP_ENABLED!=='true')return false;
    // Non-Admins (signed-in chat) only use models the agent loop runs; the older direct journal is Admin-only.
    if('isAdmin' in policy&&typeof policy.isAdmin==='function'&&policy.isAdmin()===false&&!loopModelAllowed(model))return false;
    return !fast||('isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true);
@@ -63,7 +67,7 @@ function baseAssistantForActor(actor:ChatActor,request:Request,web:(routed:Basic
  // A web-search turn goes to the loop only when it can search (Tavily key); otherwise the research journal keeps it.
  const loopEligible=async(turn:{webSearch?:boolean})=>(turn.webSearch!==true||!!process.env.TAVILY_API_KEY?.trim())&&process.env.PANDA_AGENT_MAIN_CHAT_UNCAPPED==='true'&&loopModelAllowed(model)&&await modelPolicy.enabled()&&'isUnmetered' in policy&&typeof policy.isUnmetered==='function'&&policy.isUnmetered()===true;
  const withWeb=web(routed);
- return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(withWeb,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy}),loopEligible):withWeb;
+ return process.env.PANDA_AGENT_LOOP_ENABLED==='true'?withAgentLoop(withWeb,agentLoopChatForActor({actor,key,current,model,policy:modelPolicy,requested:fast&&requested!==null?requested:model}),loopEligible):withWeb;
 }
 
 /** Chat turns with web search go to the research journal (below the agent loop, which takes eligible web turns itself); its turns keep status/cancel there. */

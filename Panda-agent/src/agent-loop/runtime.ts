@@ -28,6 +28,7 @@ async function pinoutImages(actor: ChatActor, sourceUrl: string): Promise<Citati
 import { createMcpConnection, MCP_SERVER_NAME, MCP_TOOL_NAME, mcpErrorText, publicHttpsUrl } from '../mcp/client.ts';
 import { openSecret } from '../mcp/secret.ts';
 import { compileOnService, type CompileOutcome } from '../device/compile-client.ts';
+import { recordModelUsage, turnModels } from '../models/turn-models.ts';
 
 /** Builds a sketch on the compile service after reserving one of the caller's builds for today (Admins are uncapped). */
 async function compile(actor: ChatActor, board: string, sketch: string, signal: AbortSignal): Promise<CompileOutcome> {
@@ -102,10 +103,13 @@ async function readProduct(actor: ChatActor, row: Row, focus: string, signal: Ab
 }
 
 export function agentLoopChatForActor(options: { actor: ChatActor; key: string; current(): Promise<boolean>; model: HostedDirectModelId;
-  policy: Parameters<typeof createAgentLoopChat>[0]['policy'] }): BasicRagChatBridge {
+  policy: Parameters<typeof createAgentLoopChat>[0]['policy'];
+  /** The chat's model choice (a built-in, the free pool or an Admin-added model); resolved against the registry each turn. */
+  requested?: string }): BasicRagChatBridge {
   const { actor } = options;
   return createAgentLoopChat({ store: createAgentLoopStore(actor, options.key), current: options.current, policy: options.policy, model: options.model, step: createOpenRouterStep,
     webHelper: process.env.PANDA_AGENT_WEB_HELPER === 'true', deviceMembers: process.env.PANDA_AGENT_DEVICE_MEMBERS === 'true',
+    pool: () => turnModels(actor, options.requested ?? options.model), recordUsage: (model, usage, failed, failover) => recordModelUsage(actor, model, usage, failed, failover),
     tools: { catalog: () => readRuntimeCatalog(actor.client), readProduct: (row, focus, signal) => readProduct(actor, row as Row, focus, signal),
       skills: () => readSkillCatalog(actor), loadSkill: name => loadSkill(actor, name), mcp: () => readMcp(actor),
       pinoutImages: row => pinoutImages(actor, row.sourceUrl),

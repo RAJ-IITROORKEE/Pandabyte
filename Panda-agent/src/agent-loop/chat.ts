@@ -11,9 +11,12 @@ import type { WebSource } from '../search/tavily.ts';
 import type { AgentLoopStore, LoopState } from './store.ts';
 import { parseToolSettings } from './tool-catalog.ts';
 import type { TurnSink } from './turn-events.ts';
+import type { Profile } from '../server/hosted-model-openrouter.ts';
 
 type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean; isAdmin?(): boolean };
-export type StepFactory = (options: { model: HostedDirectModelId; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
+/** One model a turn may run on: a built-in (no profile) or an Admin-added model with its validated profile. */
+export type PoolEntry = { id: string; profile?: Profile; contextWindow?: number | null };
+export type StepFactory = (options: { model: HostedDirectModelId; profile?: Profile; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   claim(bodyHash: string): Promise<boolean>; beforeSend(): Promise<boolean> }) => StepFn;
 type Tools = Omit<ToolDeps, 'progress' | 'webSearch' | 'skills' | 'plan' | 'pinout' | 'firmware'> & {
   /** Admin tool switches (panda_agent_tool_settings); a failure means the defaults. */
@@ -26,7 +29,12 @@ type Options = { store: AgentLoopStore; current(): Promise<boolean>; policy: Pol
   /** Web-research helper on web turns (off by default: in 14 Nov replays it was cost-neutral but dropped facts, e.g. which release is latest). */
   webHelper?: boolean;
   /** Compile tool for signed-in users who are not Admin (otherwise Admin only). */
-  deviceMembers?: boolean };
+  deviceMembers?: boolean;
+  /** The models this turn may use, in order (the free pool, or one Admin-added model); none means `model` alone. Failover moves
+   *  to the next only when a model is rate limited, unavailable or refused, so it is used for free models (no cost per call). */
+  pool?(): Promise<readonly PoolEntry[]>;
+  /** Per-model usage for the Admin Models page (best effort). */
+  recordUsage?(model: string, usage: { inputTokens: number; outputTokens: number; costNanoUsd: number }, failed: boolean, failover: boolean): Promise<void> };
 
 /** The whole turn ends before the route's 300 s limit, so a late step cannot outlive its request. */
 export const LOOP_TURN_MS = 230000;
@@ -55,17 +63,36 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       await current();
       // shortcut: Admin (unmetered) turns only, like the proposed journal; metered users need a budget reservation sized for every step.
       if (policy.isUnmetered?.() !== true) throw new ChatStoreError('unavailable');
+      // The models this turn may use are known before the turn is journaled, so an empty pool refuses instead of hanging.
+      let entries: readonly PoolEntry[] = [{ id: options.model }];
+      if (options.pool) { try { entries = await options.pool(); } catch { entries = []; } if (!entries.length) throw new ChatStoreError('unavailable'); }
       const begun = await store.begin(turn.thread, turn.request, turn.question);
       if (!begun.admitted) { const old = await read(turn.thread, turn.request); return old ? status(old) : { status: 'unknown' }; }
       const report = (stage: ActivityStage) => { try { progress?.(stage); } catch { /* Presentation only. */ } };
-      let bodyHash: string | undefined, attempted = false;
+      let bodyHash: string | undefined, attempted = false, claimedOk = false;
       const beforeSend = async () => {
         if (signal.aborted || !policy.dispatchCurrent()) return false;
         const s = await read(turn.thread, turn.request);
         return !!s && s.status === 'pending' && s.claimed && !s.cancelled && s.question === turn.question && !signal.aborted && policy.dispatchCurrent();
       };
-      const step = options.step({ model: options.model, apiKey: policy.key(), policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend,
-        claim: async hash => { if (attempted || signal.aborted) return false; attempted = true; await current(); bodyHash = hash; return store.claimUnmetered(turn.thread, turn.request, hash); } });
+      // The journal is claimed once per turn; a failover model reuses that claim (the receipt keeps the first body hash).
+      const claim = async (hash: string) => { if (signal.aborted) return false; if (attempted) return claimedOk; attempted = true; await current(); bodyHash = hash; claimedOk = await store.claimUnmetered(turn.thread, turn.request, hash); return claimedOk; };
+      let at = 0, failedOver = false;
+      const made: (StepFn | undefined)[] = [];
+      const make = (i: number) => made[i] ??= options.step({ model: entries[i].id as HostedDirectModelId, ...(entries[i].profile ? { profile: entries[i].profile } : {}), apiKey: policy.key(),
+        policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend, claim });
+      const step: StepFn = async (messages, specs, s, maxOutput, toolChoice) => {
+        for (;;) {
+          try { return await make(at)(messages, specs, s, maxOutput, toolChoice); }
+          catch (error) {
+            const code = (error as { code?: unknown } | null)?.code;
+            if (at + 1 < entries.length && !s.aborted && ['rate_limited', 'not_admitted', 'unavailable', 'outcome_unknown'].includes(String(code))) { at++; failedOver = true; continue; }
+            throw error;
+          }
+        }
+      };
+      const record = (usage: { inputTokens: number; outputTokens: number; costNanoUsd: number }, failed: boolean) => {
+        void options.recordUsage?.(entries[at].id, usage, failed, failedOver).catch(() => {}); };
       // Web search is offered only on turns the user sent with web search on, and each search passes the same send check as a model step.
       const { webSearch, skills: readSkills, mcp: readMcp, settings: readSettings, compile, ...catalogTools } = options.tools;
       // Admin switches decide which optional tools this turn offers (defaults when they cannot be read).
@@ -121,8 +148,9 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         if (!recorded || !await beforeSend()) return { status: 'unknown' };
         await store.finish(turn.thread, turn.request, answer); await current();
         // Follow-ups belong to the answer the model wrote; a replaced answer (sources changed) gets none. Not stored.
-        return { status: 'saved', usage: turnUsageFor(options.model, { ...result.usage, contextTokens: result.contextTokens, steps: result.steps }), ...(answer === result.answer && result.kind === 'final' && result.suggestions.length ? { suggestions: result.suggestions } : {}) };
-      } catch { log('unknown'); return { status: 'unknown' }; }
+        record(result.usage, false);
+        return { status: 'saved', usage: turnUsageFor(entries[at].id, { ...result.usage, contextTokens: result.contextTokens, steps: result.steps }, entries[at].contextWindow), ...(answer === result.answer && result.kind === 'final' && result.suggestions.length ? { suggestions: result.suggestions } : {}) };
+      } catch { log('unknown'); record({ inputTokens: 0, outputTokens: 0, costNanoUsd: 0 }, true); return { status: 'unknown' }; }
     },
   };
 }

@@ -1,7 +1,7 @@
 import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import type { HostedDirectModelId } from '../hosted-model.ts';
-import { approvedEndpoint, encrypted, observe, profiles, receiptUsage, type Observation } from '../server/hosted-model-openrouter.ts';
+import { approvedEndpoint, encrypted, observe, profiles, receiptUsage, type Observation, type Profile } from '../server/hosted-model-openrouter.ts';
 import { readLunaJSON } from '../server/luna-rag-openrouter.ts';
 import { BasicRagProviderError } from '../server/basic-rag-openrouter.ts';
 import { CONTEXT_BYTES } from './history.ts';
@@ -14,6 +14,8 @@ const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 const fail = (code: BasicRagProviderError['code']): never => { throw new BasicRagProviderError(code); };
 
 type Options = { model: HostedDirectModelId; apiKey: string; fetcher?: typeof fetch;
+  /** An Admin-added model's validated profile (model registry); built-in models use their code profile. */
+  profile?: Profile;
   policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   /** Called once, before the first provider call, with that request body's hash; the journal claim. */
   claim(bodyHash: string): Promise<boolean>;
@@ -43,7 +45,9 @@ export function cacheBreakpoints(list: readonly LoopMessage[]): readonly unknown
 
 /** One non-streamed tool-calling request per step on the same pinned zero-retention endpoint and receipt checks as the hosted chat. */
 export function createOpenRouterStep(options: Options): StepFn {
-  const m = profiles[options.model], fetcher = options.fetcher ?? fetch;
+  const m = options.profile ?? profiles[options.model], fetcher = options.fetcher ?? fetch;
+  // Zero data retention for every model except an Admin-added free one marked 'logged' (shown to users as such).
+  const zdr = m.privacy !== 'logged';
   // Receipt ceiling per step: this model's worst case for the declared token bounds.
   // Cache writes can cost more than plain input (Claude: 1.25x), so the ceiling uses the higher input price.
   const reservation = (maxOutput: number) => Math.ceil((LOOP_MAX_INPUT * Math.max(m.nano2.prompt, m.nano2.write) + maxOutput * m.nano2.completion) / 2) + 1;
@@ -61,7 +65,7 @@ export function createOpenRouterStep(options: Options): StepFn {
       if (!Number.isSafeInteger(maxOutput) || maxOutput < 1 || maxOutput > LOOP_MAX_OUTPUT || !options.apiKey || /[\r\n]/.test(options.apiKey) || !messages.length || deadline.aborted) return fail('not_admitted');
       const wire = (tokenParam: string) => JSON.stringify({ model: m.id, stream: false, [tokenParam]: maxOutput, reasoning: m.reasoning, include_reasoning: false,
         tools, tool_choice: toolChoice === 'required' && requiredOk ? 'required' : 'auto', usage: { include: true }, plugins: [],
-        provider: { only: [m.tag], allow_fallbacks: false, require_parameters: true, zdr: true, data_collection: 'deny', max_price: { prompt: m.maxPrice.prompt, completion: m.maxPrice.completion, request: 0, image: 0 } },
+        provider: { only: [m.tag], allow_fallbacks: false, require_parameters: true, zdr, data_collection: zdr ? 'deny' : 'allow', max_price: { prompt: m.maxPrice.prompt, completion: m.maxPrice.completion, request: 0, image: 0 } },
         messages: withCache(messages) });
       if (Buffer.byteLength(wire('max_tokens'), 'utf8') > LOOP_WIRE_BYTES || options.dispatchCurrent() !== true) return fail('not_admitted');
       if (!approved) {

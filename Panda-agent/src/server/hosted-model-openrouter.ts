@@ -13,7 +13,9 @@ const api='https://openrouter.ai/api/v1';
 export type Profile={id:HostedDirectModelId;tag:string;providerName:string;endpointName:string;tokenizer:string;reported:readonly string[];
  pricing:{prompt:string;completion:string;input_cache_read:string};pricingKeys:readonly string[];implicitCaching:boolean;params:readonly string[];
  maxPrice:{prompt:number;completion:number};nano2:{prompt:number;cached:number;write:number;completion:number};reasoning:Record<string,unknown>;
- discount?:number;tokenParam?:'max_tokens'|'max_completion_tokens';exactTag?:boolean;encryptedReasoning?:boolean};
+ discount?:number;tokenParam?:'max_tokens'|'max_completion_tokens';exactTag?:boolean;encryptedReasoning?:boolean;
+ /** 'logged': a free endpoint that may keep prompts (Admin-added free models only); every built-in is zero data retention. */
+ privacy?:'zdr'|'logged'};
 export const profiles:Record<HostedDirectModelId,Profile>={
  [fastHostedModel.id]:{id:fastHostedModel.id,tag:'groq',providerName:'Groq',endpointName:'Groq | openai/gpt-oss-20b',tokenizer:'GPT',reported:[fastHostedModel.id],
   pricing:{prompt:'0.000000075',completion:'0.0000003',input_cache_read:'0.0000000375'},pricingKeys:['prompt','completion','input_cache_read','discount'],implicitCaching:true,
@@ -66,10 +68,12 @@ export function approvedEndpoint(m:Profile,catalog:unknown,zdr:unknown,maxInput:
  const endpoints=catalog.data.endpoints.filter(e=>record(e)&&variant(e.tag));
  const privacy=zdr.data.filter(e=>record(e)&&e.model_id===m.id&&variant(e.tag));
  const e=endpoints[0],p=privacy[0];
- if(endpoints.length!==1||privacy.length!==1||!record(e)||!record(p)||p.tag!==m.tag||p.safety_retention!==false
+ // A free model ('logged') skips the zero-retention list but must cost exactly nothing; every other model must be on that list.
+ const logged=m.privacy==='logged';
+ if(endpoints.length!==1||!record(e)||(logged?(m.pricing.prompt!=='0'||m.pricing.completion!=='0'):(privacy.length!==1||!record(p)||p.tag!==m.tag||p.safety_retention!==false))
   ||e.tag!==m.tag||e.model_id!==m.id||e.name!==m.endpointName||e.provider_name!==m.providerName||e.status!==0
   ||e.supports_implicit_caching!==m.implicitCaching||!record(e.pricing)||e.pricing.prompt!==m.pricing.prompt||e.pricing.completion!==m.pricing.completion
-  ||e.pricing.input_cache_read!==m.pricing.input_cache_read||e.pricing.discount!==(m.discount??0)
+  ||e.pricing.input_cache_read!==m.pricing.input_cache_read||(e.pricing.discount??0)!==(m.discount??0)
   ||Object.keys(e.pricing).some(k=>!m.pricingKeys.includes(k))
   // Tiered prices may only start above anything this path can send.
   ||(e.pricing.overrides!==undefined&&(!Array.isArray(e.pricing.overrides)||e.pricing.overrides.some(o=>!record(o)||typeof o.min_prompt_tokens!=='number'||o.min_prompt_tokens<=maxInput+maxOutput)))

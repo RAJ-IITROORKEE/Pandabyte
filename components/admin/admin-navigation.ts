@@ -1,6 +1,7 @@
 import {
   IconBook2,
   IconBoxMultiple,
+  IconCpu,
   IconFileText,
   IconHelpCircle,
   IconLayoutDashboard,
@@ -42,6 +43,7 @@ export const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
     items: [
       { href: "/admin/rag-control-room", label: "RAG Control Room", icon: IconBook2, capability: "staff.manage", group: "Workspace" },
       { href: "/admin/agent-skills", label: "Agent Skills", icon: IconBoxMultiple, capability: "staff.manage", group: "Workspace" },
+      { href: "/admin/agent-models", label: "Models", icon: IconCpu, capability: "staff.manage", group: "Workspace" },
     ],
   },
   {

@@ -11,6 +11,8 @@ export const qwenHostedModel = Object.freeze({ id: 'qwen/qwen3.8-27b', label: 'Q
 /** Every model the hosted chat may run, each pinned to a reviewed zero-retention endpoint. */
 export const hostedDirectModels = Object.freeze([haikuHostedModel, lunaHostedModel, flashHostedModel, qwenHostedModel, fastHostedModel]);
 export const hostedDirectModelIds: readonly string[] = Object.freeze(hostedDirectModels.map(model => model.id));
+/** The free pool choice: enabled free models from the Admin registry, tried in order when one is rate limited or unavailable. */
+export const freePoolModel = Object.freeze({ id: 'panda/free', label: 'Free models' } as const);
 /** OpenRouter catalog context_length per model id (read 2026-11-13 from openrouter.ai/api/v1/models); display only, never a limit. */
 export const hostedContextWindows: Readonly<Record<string, number>> = Object.freeze({
   'openai/gpt-oss-20b': 131072, 'anthropic/claude-haiku-5.5': 1000000, 'openai/gpt-6-luna': 1050000,
@@ -20,8 +22,8 @@ export const hostedContextWindows: Readonly<Record<string, number>> = Object.fre
 /** inputTokens/outputTokens are billed totals over every agent step; contextTokens (agent loop) is the largest single step
  *  (prompt + reply), i.e. how full the context window got, which the meter shows. */
 export type TurnUsage = { inputTokens: number; outputTokens: number; contextWindow: number | null; model: string; contextTokens?: number; steps?: number; costNanoUsd?: number };
-export const turnUsageFor = (model: string, usage: { inputTokens: number; outputTokens: number; contextTokens?: number; steps?: number; costNanoUsd?: number }): TurnUsage =>
-  ({ inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, contextWindow: hostedContextWindows[model] ?? null, model,
+export const turnUsageFor = (model: string, usage: { inputTokens: number; outputTokens: number; contextTokens?: number; steps?: number; costNanoUsd?: number }, contextWindow?: number | null): TurnUsage =>
+  ({ inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, contextWindow: contextWindow ?? hostedContextWindows[model] ?? null, model,
     ...(usage.contextTokens ? { contextTokens: usage.contextTokens } : {}), ...(usage.steps ? { steps: usage.steps } : {}), ...(usage.costNanoUsd ? { costNanoUsd: usage.costNanoUsd } : {}) });
 /** 950 -> "950", 5200 -> "5.2k", 131072 -> "131k", 1050000 -> "1.05M". */
 export function formatTokens(n: number): string {

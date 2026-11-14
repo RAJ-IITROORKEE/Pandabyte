@@ -10,6 +10,7 @@ registerHooks({resolve(specifier,context,next){
  if(Object.hasOwn(modules,specifier))return {url:'data:text/javascript,'+encodeURIComponent(modules[specifier]),shortCircuit:true};
  if(specifier==='@/Panda-agent/src/ui/capabilities')return {url:new URL('../src/ui/capabilities.ts',import.meta.url).href,shortCircuit:true};
  if(specifier==='@/Panda-agent/src/hosted-model')return {url:new URL('../src/hosted-model.ts',import.meta.url).href,shortCircuit:true};
+ if(specifier==='@/Panda-agent/src/models/registry')return {url:new URL('../src/models/registry.ts',import.meta.url).href,shortCircuit:true};
  return next(specifier,context);
 }});
 const {GET}=await import('../../app/api/panda-agent/capabilities/route.ts');

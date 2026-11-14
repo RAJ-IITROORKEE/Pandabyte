@@ -49,7 +49,7 @@ export function SettingsView({ titleRef, models, defaultModel, onDefaultModel, s
               <span className={styles.modelText}><strong>{model.label}</strong>{facts && <span>{facts.summary}</span>}{facts && <span className={styles.meta}>{facts.speed} · {facts.provider} · {facts.price} per M tokens</span>}</span>
             </button>;
           })}</div>
-          <p className={styles.note}><Lock size={13} aria-hidden="true" /> Every model runs on a provider endpoint that keeps no copy of your prompts and does not train on them. Models that cannot meet this, including all Gemini and free models, are not offered.</p>
+          <p className={styles.note}><Lock size={13} aria-hidden="true" /> Every paid model runs on a provider endpoint that keeps no copy of your prompts and does not train on them; Gemini cannot meet this and is not offered. Free models are the exception: their providers may keep your prompts, so avoid private details when you choose them.</p>
         </section>
         <section id="settings-preferences" className={styles.card} aria-labelledby="settings-preferences-title">
           <h2 id="settings-preferences-title"><Palette size={15} aria-hidden="true" /> Preferences</h2>

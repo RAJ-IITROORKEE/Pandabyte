@@ -170,7 +170,7 @@ test('history compaction starts above 75% of the context budget, keeps recent tu
   assert.ok(tight.messages.length >= 2 && Buffer.byteLength(JSON.stringify(tight.messages), 'utf8') + Buffer.byteLength(tight.summary ?? '', 'utf8') <= 6000);
 });
 
-function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills, mcp, settings, compile } = {}) {
+function harness({ script, read, unmetered = true, revalidate = true, turnMs, webSearch, searchAllowed = true, skills, mcp, settings, compile, pool, recordUsage, stepFactory } = {}) {
   const calls = []; let state = null;
   const store = {
     reserveSearch: async () => { calls.push('reserve'); return searchAllowed; },
@@ -188,7 +188,7 @@ function harness({ script, read, unmetered = true, revalidate = true, turnMs, we
     assert.equal(await o.beforeSend(), true, 'every provider call is gated on the journal');
     return script.step(messages, tools);
   };
-  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}), ...(mcp ? { mcp: async () => mcp } : {}), ...(settings ? { settings } : {}), ...(compile ? { compile } : {}) }, step, turnMs });
+  const chat = createAgentLoopChat({ store, current: async () => true, policy, model: fastHostedModel.id, tools: { ...d.tools, ...(webSearch ? { webSearch } : {}), ...(skills ? { skills: skills.list, loadSkill: skills.load } : {}), ...(mcp ? { mcp: async () => mcp } : {}), ...(settings ? { settings } : {}), ...(compile ? { compile } : {}) }, step: stepFactory ?? step, turnMs, ...(pool ? { pool } : {}), ...(recordUsage ? { recordUsage } : {}) });
   return { chat, calls, d };
 }
 const turn = { thread: thread.id, request: current.requestId, question: q2 };
@@ -905,4 +905,28 @@ test('chat: Admin switches gate web search, the checklist and compile; usage car
   const tools = seen.at(-1);
   assert.ok(!tools.includes('web_search'), 'web search switched off'); assert.ok(!tools.includes('plan'), 'checklist switched off');
   assert.ok(!tools.includes('compile_sketch'), 'compile is Admin-only and this policy is not Admin');
+});
+
+test('free pool: a rate-limited model hands the turn to the next; one claim; usage goes to the model that answered', async () => {
+  const claims = [], used = [], recorded = [];
+  const stepFactory = o => async () => {
+    used.push(o.model);
+    claims.push(await o.claim('f'.repeat(64)));
+    if (o.model === 'vendor/first:free') throw Object.assign(Error('429'), { code: 'rate_limited' });
+    return { ...reply(call('final_answer', { sourced: '', citations: [], general: 'Use GPIO8 for SDA.' })), usage: { inputTokens: 900, outputTokens: 80, costNanoUsd: 0 } };
+  };
+  const pool = async () => [{ id: 'vendor/first:free', contextWindow: 131072 }, { id: 'vendor/second:free', contextWindow: 262144 }];
+  const h = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, stepFactory, pool, recordUsage: async (...a) => { recorded.push(a); } });
+  const r = await h.chat.start(turn, signal());
+  assert.equal(r.status, 'saved'); assert.deepEqual(used, ['vendor/first:free', 'vendor/second:free']);
+  assert.deepEqual(claims, [true, true], 'the second model reuses the one claim');
+  assert.equal(h.calls.filter(c => Array.isArray(c) && c[0] === 'claim').length, 1);
+  assert.equal(r.usage.model, 'vendor/second:free'); assert.equal(r.usage.contextWindow, 262144);
+  assert.deepEqual(recorded.map(a => [a[0], a[2], a[3]]), [['vendor/second:free', false, true]]);
+  // Every model exhausted: the turn ends unknown and a failure is recorded; an empty pool is refused before the turn starts.
+  const allFail = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, pool,
+    stepFactory: o => async () => { await o.claim('f'.repeat(64)); throw Object.assign(Error('429'), { code: 'rate_limited' }); }, recordUsage: async (...a) => { recorded.push(a); } });
+  assert.equal((await allFail.chat.start(turn, signal())).status, 'unknown'); assert.deepEqual(recorded.at(-1).slice(2), [true, true]);
+  const empty = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, pool: async () => [] });
+  await assert.rejects(empty.chat.start(turn, signal()), e => e.code === 'unavailable'); assert.ok(!empty.calls.includes('begin'), 'nothing journaled');
 });
