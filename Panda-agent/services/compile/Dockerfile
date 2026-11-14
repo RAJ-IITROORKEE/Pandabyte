@@ -27,7 +27,8 @@ COPY --from=esptool /opt/esptool /opt/esptool
 # in a later layer would still count (the first image was over the limit that way, 14 Nov 2026).
 # - Download the CLI with Node (no curl in the base image).
 # - The esp32 core's bundled esptool binary needs glibc 2.35 (this image has 2.34): run the same version from PyPI instead.
-# - Drop what a compile never uses: debuggers, OpenOCD, and the IDF libraries of chips PandaByte does not sell.
+# - Drop what a compile never uses: debuggers, OpenOCD (emptied; their version folders stay so the core still counts them
+#   as installed), and the IDF libraries of chips PandaByte does not sell.
 # - Libraries: keep in sync with ALLOWED_LIBRARIES in validate.mjs.
 # - Pre-warm one blank sketch per FQBN; the core objects land in the cache the handler copies to /tmp at cold start.
 RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/dl && \
@@ -42,7 +43,7 @@ RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/d
       [ "$(basename "$dir")" = "${ESPTOOL_VERSION}" ] || { echo "core wants esptool $(basename "$dir")"; exit 1; }; \
       printf '#!/bin/sh\nPYTHONPATH=/opt/esptool exec python3.11 -m esptool "$@"\n' > "$dir/esptool" && chmod +x "$dir/esptool" || exit 1; \
     done && PYTHONPATH=/opt/esptool python3.11 -m esptool version && \
-    rm -rf $T/openocd-esp32 $T/xtensa-esp-elf-gdb $T/riscv32-esp-elf-gdb && \
+    rm -rf $T/openocd-esp32/*/* $T/xtensa-esp-elf-gdb/*/* $T/riscv32-esp-elf-gdb/*/* && \
     for chip in esp32s2 esp32c2 esp32c61 esp32h2 esp32p4; do rm -rf $T/esp32-arduino-libs/*/$chip; done && \
     arduino-cli lib install \
       "Adafruit BME280 Library@2.2.4" "Adafruit SSD1306@2.5.13" "Adafruit GFX Library@1.11.11" \
