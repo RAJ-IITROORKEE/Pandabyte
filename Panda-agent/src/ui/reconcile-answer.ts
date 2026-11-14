@@ -7,7 +7,7 @@ type FreshReadOptions = {
 };
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const chatRead = new RegExp(`^/api/panda-agent/chats/${uuid}(?:\\?requestId=${uuid})?$`);
-const sessionReadAllowed = (path: string) => path === '/api/panda-agent/capabilities' || chatRead.test(path);
+const sessionReadAllowed = (path: string) => path === '/api/panda-agent/capabilities' || path === '/api/panda-agent/daily-usage' || chatRead.test(path);
 
 /** Bound fetch and body parsing together, even when an operation ignores abort. */
 export async function boundedOperation<T>(operation: (signal: AbortSignal) => Promise<T>, cleanupSignal: AbortSignal, timeoutMs = 8000): Promise<T> {

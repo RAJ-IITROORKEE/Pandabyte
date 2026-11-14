@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Plus } from "lucide-react";
 import type { ModelRowView } from "@/Panda-agent/src/server/models-admin-api";
+import { DailyLimits } from "./daily-limits";
 import { AddModelDialog } from "./add-model-dialog";
 import { Modal, Switch, call, failure, price, tokens } from "./model-ui";
 import styles from "./agent-models.module.css";
@@ -120,6 +121,7 @@ export function AgentModels() {
         </table></div>
         {rows.length === 0 && <div className={styles.state}><p>No models yet.</p></div>}
       </section>
+      <DailyLimits />
     </>}
     <Modal open={adding} onClose={() => setAdding(false)} label="Add model">
       {adding && <AddModelDialog onClose={() => setAdding(false)} onAdded={label => { setAdding(false); setNotice(`Added ${label}. It is off until you test and enable it.`); void refresh(); }} />}

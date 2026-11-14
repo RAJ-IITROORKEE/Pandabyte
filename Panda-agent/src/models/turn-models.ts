@@ -8,7 +8,7 @@ import { MODEL_ID, parseModelRows, type ModelRow } from './registry.ts';
 /** A choice the chat may send besides the built-ins: the free pool or an Admin-added model id. */
 export const isTurnModelId = (id: string) => id === freePoolModel.id || (MODEL_ID.test(id) && id.length <= 120);
 
-const entry = (r: ModelRow): PoolEntry => ({ id: r.id, contextWindow: r.contextWindow ?? hostedContextWindows[r.id] ?? null,
+const entry = (r: ModelRow): PoolEntry => ({ id: r.id, contextWindow: r.contextWindow ?? hostedContextWindows[r.id] ?? null, tier: r.tier,
   ...(r.profile ? { profile: { ...r.profile, id: r.id as HostedDirectModelId } as Profile } : {}) });
 
 /** The ordered models for a request from the rows this user may use (enabled and visible). Built-ins have no profile; added
@@ -26,7 +26,7 @@ export async function turnModels(actor: ChatActor, requested: string): Promise<P
     const { data, error } = await actor.client.database.rpc('panda_agent_models_catalog');
     if (error) throw new Error('catalog unavailable');
     return poolFor(requested, parseModelRows(data));
-  } catch { return hostedDirectModelIds.includes(requested) ? [{ id: requested, contextWindow: hostedContextWindows[requested] ?? null }] : []; }
+  } catch { return hostedDirectModelIds.includes(requested) ? [{ id: requested, contextWindow: hostedContextWindows[requested] ?? null, tier: 'paid' }] : []; }
 }
 
 /** Adds one finished turn to the per-model usage rows (best effort; never blocks or fails a turn). */

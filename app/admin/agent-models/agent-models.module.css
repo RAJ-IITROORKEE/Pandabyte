@@ -70,3 +70,6 @@
   .table td::before { content: attr(data-label); color: var(--muted); flex: none; }
   .table td > * { text-align: right; justify-items: end; }
 }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.limits li { padding: 10px; border: 1px solid var(--divider); }
+.limits form { display: grid; gap: 8px; }

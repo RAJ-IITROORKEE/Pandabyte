@@ -14,7 +14,8 @@ test('pool: the free choice is every enabled free model in pool order; one added
   assert.deepEqual(poolFor('panda/free', rows).map(e => e.id), ['a/one:free', 'b/two:free', 'c/late:free']);
   assert.equal(poolFor('panda/free', rows)[0].profile.id, 'a/one:free');
   assert.deepEqual(poolFor('e/paid', rows).map(e => e.id), ['e/paid']);
-  assert.deepEqual(poolFor('anthropic/claude-haiku-5.5', rows), [{ id: 'anthropic/claude-haiku-5.5', contextWindow: 131072 }]);
+  assert.deepEqual(poolFor('anthropic/claude-haiku-5.5', rows), [{ id: 'anthropic/claude-haiku-5.5', contextWindow: 131072, tier: 'paid' }]);
+  assert.ok(poolFor('panda/free', rows).every(e => e.tier === 'free'));
   assert.deepEqual(poolFor('d/off:free', rows), [], 'switched off'); assert.deepEqual(poolFor('x/unknown', rows), []);
   assert.deepEqual(poolFor('panda/free', rows.filter(r => r.tier !== 'free')), [], 'no free models, no pool');
   assert.ok(isTurnModelId('panda/free') && isTurnModelId('deepseek/deepseek-v4.1-flash-1017') && !isTurnModelId('bad id') && !isTurnModelId('x'.repeat(130) + '/y'));

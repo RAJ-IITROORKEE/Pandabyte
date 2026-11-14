@@ -33,8 +33,9 @@ export function createAgentLoopStore(actor: ChatActor, key: string) {
         || (v.cancelled && v.status !== 'complete')) throw new ChatStoreError('unavailable');
       return v as LoopState;
     },
-    async begin(thread: string, request: string, question: string) {
-      const v = await rpc('begin', thread, request, { question });
+    /** tier: which daily limit the turn counts against (the journal treats a missing tier as paid). */
+    async begin(thread: string, request: string, question: string, tier?: 'free' | 'paid') {
+      const v = await rpc('begin', thread, request, { question, ...(tier ? { tier } : {}) });
       if (!object(v) || typeof v.admitted !== 'boolean') throw new ChatStoreError('unavailable');
       return { ...parseChatRead(v), admitted: v.admitted };
     },

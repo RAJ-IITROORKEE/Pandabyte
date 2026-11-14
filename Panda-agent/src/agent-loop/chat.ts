@@ -16,7 +16,7 @@ import { noteAnswered, noteLimited, readyFirst } from '../models/cooldown.ts';
 
 type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean; isAdmin?(): boolean };
 /** One model a turn may run on: a built-in (no profile) or an Admin-added model with its validated profile. */
-export type PoolEntry = { id: string; profile?: Profile; contextWindow?: number | null };
+export type PoolEntry = { id: string; profile?: Profile; contextWindow?: number | null; tier?: 'free' | 'paid' };
 export type StepFactory = (options: { model: HostedDirectModelId; profile?: Profile; apiKey: string; policyCurrent(): Promise<boolean>; dispatchCurrent(): boolean;
   claim(bodyHash: string): Promise<boolean>; beforeSend(): Promise<boolean> }) => StepFn;
 type Tools = Omit<ToolDeps, 'progress' | 'webSearch' | 'skills' | 'plan' | 'pinout' | 'firmware'> & {
@@ -67,7 +67,8 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       // The models this turn may use are known before the turn is journaled, so an empty pool refuses instead of hanging.
       let entries: readonly PoolEntry[] = [{ id: options.model }];
       if (options.pool) { try { entries = await options.pool(); } catch { entries = []; } if (!entries.length) throw new ChatStoreError('unavailable'); entries = readyFirst(entries); }
-      const begun = await store.begin(turn.thread, turn.request, turn.question);
+      // Free-pool turns count against the free daily limit, everything else against the paid one (migration 20261114130000).
+      const begun = await store.begin(turn.thread, turn.request, turn.question, entries[0].tier === 'free' ? 'free' : 'paid');
       if (!begun.admitted) { const old = await read(turn.thread, turn.request); return old ? status(old) : { status: 'unknown' }; }
       const report = (stage: ActivityStage) => { try { progress?.(stage); } catch { /* Presentation only. */ } };
       let bodyHash: string | undefined, attempted = false, claimedOk = false;

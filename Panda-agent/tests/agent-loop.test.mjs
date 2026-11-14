@@ -15,6 +15,7 @@ import { fastHostedModel } from '../src/hosted-model.ts';
 
 const catalog = JSON.parse(readFileSync(new URL('./fixtures/catalog-42.json', import.meta.url), 'utf8'));
 const signal = () => new AbortController().signal;
+const beginTiers = [];
 const usage = { inputTokens: 1000, outputTokens: 200, costNanoUsd: 300 };
 // Synthetic listing passages (not real PandaByte copy).
 const listing = sku => {
@@ -175,7 +176,7 @@ function harness({ script, read, unmetered = true, revalidate = true, turnMs, we
   const store = {
     reserveSearch: async () => { calls.push('reserve'); return searchAllowed; },
     state: async () => state && { ...state },
-    begin: async (_t, _r, question) => { calls.push('begin'); state = { question, status: 'pending', claimed: false, cancelled: false }; return { ...read, admitted: true }; },
+    begin: async (_t, _r, question, tier) => { calls.push('begin'); beginTiers.push(tier); state = { question, status: 'pending', claimed: false, cancelled: false }; return { ...read, admitted: true }; },
     claimUnmetered: async (_t, _r, hash) => { calls.push(['claim', hash]); state.claimed = true; return true; },
     receiptUnmetered: async (_t, _r, hash, answer, u) => { calls.push(['receipt', hash, answer, u]); return true; },
     finish: async (_t, _r, answer) => { calls.push(['finish', answer]); state.status = 'complete'; return read; },
@@ -920,13 +921,14 @@ test('free pool: a rate-limited model hands the turn to the next; one claim; usa
     if (o.model === 'vendor/first:free') throw Object.assign(Error('429'), { code: 'rate_limited' });
     return { ...reply(call('final_answer', { sourced: '', citations: [], general: 'Use GPIO8 for SDA.' })), usage: { inputTokens: 900, outputTokens: 80, costNanoUsd: 0 } };
   };
-  const pool = async () => [{ id: 'vendor/first:free', contextWindow: 131072 }, { id: 'vendor/second:free', contextWindow: 262144 }];
+  const pool = async () => [{ id: 'vendor/first:free', contextWindow: 131072, tier: 'free' }, { id: 'vendor/second:free', contextWindow: 262144, tier: 'free' }];
   const h = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, stepFactory, pool, recordUsage: async (...a) => { recorded.push(a); } });
   const r = await h.chat.start(turn, signal());
   assert.equal(r.status, 'saved'); assert.deepEqual(used, ['vendor/first:free', 'vendor/second:free']);
   assert.deepEqual(claims, [true, true], 'the second model reuses the one claim');
   assert.equal(h.calls.filter(c => Array.isArray(c) && c[0] === 'claim').length, 1);
   assert.equal(r.usage.model, 'vendor/second:free'); assert.equal(r.usage.contextWindow, 262144);
+  assert.equal(beginTiers.at(-1), 'free', 'a free-pool turn counts against the free daily limit');
   assert.deepEqual(recorded.map(a => [a[0], a[2], a[3]]), [['vendor/second:free', false, true]]);
   // Every model exhausted: the turn ends unknown and a failure is recorded; an empty pool is refused before the turn starts.
   const allFail = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, pool,
