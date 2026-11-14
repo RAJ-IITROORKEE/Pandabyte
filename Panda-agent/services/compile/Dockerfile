@@ -6,8 +6,8 @@ ARG ARDUINO_CLI_VERSION=1.3.1
 ARG ESP32_CORE=3.3.0
 ARG ESP8266_CORE=3.1.2
 
-# python3 is needed by the esp8266 core tools; tar/gzip unpack the CLI release.
-RUN microdnf install -y python3 tar gzip && microdnf clean all
+# python3 is needed by the esp8266 core tools; python3.11 runs esptool for the esp32 core (see below); tar/gzip unpack the CLI release.
+RUN microdnf install -y python3 python3.11 python3.11-pip tar gzip && microdnf clean all
 
 ENV ARDUINO_DIRECTORIES_DATA=/opt/arduino/data \
     ARDUINO_DIRECTORIES_USER=/opt/arduino/user \
@@ -24,6 +24,13 @@ RUN arduino-cli config init --overwrite && \
     arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json && \
     arduino-cli core update-index && \
     arduino-cli core install esp32:esp32@${ESP32_CORE} esp8266:esp8266@${ESP8266_CORE}
+
+# The esp32 core's bundled esptool binary needs glibc 2.35; this image has 2.34 (build failed 14 Nov 2026).
+# Run the same esptool version from PyPI instead, behind the bundled file name.
+RUN for dir in /opt/arduino/data/packages/esp32/tools/esptool_py/*/; do \
+      python3.11 -m pip install --no-cache-dir "esptool==$(basename "$dir")" && \
+      printf '#!/bin/sh\nexec python3.11 -m esptool "$@"\n' > "$dir/esptool" && chmod +x "$dir/esptool" || exit 1; \
+    done && esptool version
 
 # Keep in sync with ALLOWED_LIBRARIES in validate.mjs.
 RUN arduino-cli lib install \
