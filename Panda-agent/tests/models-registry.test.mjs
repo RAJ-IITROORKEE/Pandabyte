@@ -53,7 +53,7 @@ test('parseDynamicProfile is strict', () => {
  assert.ok(parseDynamicProfile(good));
  assert.equal(parseDynamicProfile({ ...good, extra: 1 }), null);
  assert.equal(parseDynamicProfile({ ...good, tag: 'Bad Tag' }), null);
- assert.equal(parseDynamicProfile({ ...good, tag: 'a/b/c' }), null);
+ assert.equal(parseDynamicProfile({ ...good, tag: 'a/b/c/d' }), null); assert.ok(parseDynamicProfile({ ...good, tag: 'sail-research/fp4/us' }));
  assert.equal(parseDynamicProfile({ ...good, privacy: 'logged' }), null, 'logged with non-zero price');
  assert.equal(parseDynamicProfile({ ...good, params: ['tools'] }), null);
  assert.equal(parseDynamicProfile({ ...good, nano2: { ...good.nano2, prompt: 1.5 } }), null);

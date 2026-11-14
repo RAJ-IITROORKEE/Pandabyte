@@ -14,7 +14,8 @@ export type ModelRow = { id: string; label: string; tier: 'paid' | 'free'; enabl
 
 export const MODEL_ID = /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._:-]*$/;
 export const ALLOWED_PARAMS = ['response_format', 'structured_outputs', 'reasoning', 'include_reasoning', 'tool_choice'] as const;
-const TAG = /^[a-z0-9._-]+(\/[a-z0-9._-]+)?$/;
+// OpenRouter endpoint tags have up to three parts, e.g. sail-research/fp4/us.
+const TAG = /^[a-z0-9._-]+(\/[a-z0-9._-]+){0,2}$/;
 const PRICE = /^\d{1,3}(\.\d{1,20})?$/;
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const text = (v: unknown, max: number): v is string => typeof v === 'string' && v.length >= 1 && v.length <= max;
