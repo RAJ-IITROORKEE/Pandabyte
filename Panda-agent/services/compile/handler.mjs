@@ -7,8 +7,11 @@ import { validateRequest, verifySignature, scrubOutput, trimErased, BOARDS } fro
 const TIMEOUT_MS = 100_000;
 const MAX_OUTPUT = 1_000_000;
 const MAX_BIN = 4_000_000; // base64 must fit the 6 MB Lambda response
-const CACHE_SRC = "/opt/arduino/cache"; // read-only, pre-warmed at image build
-const CACHE = "/tmp/arduino-cache"; // writable copy, made once per container
+// One build folder per board type, compiled at image build at the same /tmp/work paths (arduino-cli rebuilds everything if
+// the sketch path or options differ). A container copies it once and reuses it, so later compiles rebuild only the sketch.
+const PREBUILT = "/opt/arduino/prebuilt";
+const WORK = "/tmp/work";
+export const slugOf = (fqbn) => fqbn.replace(/[^a-z0-9]+/gi, "_");
 
 const json = (statusCode, obj) => ({
   statusCode,
@@ -16,8 +19,12 @@ const json = (statusCode, obj) => ({
   body: JSON.stringify(obj),
 });
 
-let cacheReady;
-const ensureCache = () => (cacheReady ??= cp(CACHE_SRC, CACHE, { recursive: true }).catch(() => mkdir(CACHE, { recursive: true })));
+const copied = new Map();
+const workFor = (fqbn) => {
+  const s = slugOf(fqbn);
+  if (!copied.has(s)) copied.set(s, cp(`${PREBUILT}/${s}`, `${WORK}/${s}`, { recursive: true, preserveTimestamps: true }).catch(() => {}));
+  return copied.get(s).then(() => `${WORK}/${s}`);
+};
 
 function run(args, cwd) {
   // Cleared environment: nothing from the handler (secret, AWS credentials) reaches the compiler.
@@ -27,8 +34,6 @@ function run(args, cwd) {
     ARDUINO_DIRECTORIES_DATA: "/opt/arduino/data",
     ARDUINO_DIRECTORIES_USER: "/opt/arduino/user",
     ARDUINO_DIRECTORIES_DOWNLOADS: "/tmp/arduino-dl",
-    // arduino-cli 1.3 takes the core cache from build_cache.path (the --build-cache-path flag did not fill it at image build).
-    ARDUINO_BUILD_CACHE_PATH: CACHE,
     ARDUINO_UPDATER_ENABLE_NOTIFICATION: "false",
   };
   return new Promise((resolve) => {
@@ -56,18 +61,21 @@ export async function handler(event) {
   const v = validateRequest(parsed);
   if (!v.ok) return json(400, { ok: false, reason: v.reason });
 
-  const dir = `/tmp/build-${randomUUID()}`;
+  const dir = `/tmp/out-${randomUUID()}`;
   try {
-    await ensureCache();
-    await mkdir(`${dir}/sketch`, { recursive: true });
+    const work = await workFor(v.fqbn);
+    // The previous request's sketch objects and images are removed; core and library objects are kept.
+    await rm(`${work}/build/sketch`, { recursive: true, force: true });
+    await mkdir(`${work}/sketch`, { recursive: true });
     await mkdir("/tmp/home", { recursive: true });
-    await writeFile(`${dir}/sketch/sketch.ino`, v.sketch);
-    const r = await run(["compile", "--fqbn", v.fqbn, "--output-dir", `${dir}/out`, "--build-path", `${dir}/build`, "--build-cache-path", CACHE, "sketch"], dir);
-    if (r.timedOut) return json(200, { ok: false, errors: "compile timed out" });
+    await writeFile(`${work}/sketch/sketch.ino`, v.sketch);
+    const r = await run(["compile", "--fqbn", v.fqbn, "--output-dir", dir, "--build-path", `${work}/build`, "sketch"], work);
+    // A killed build may leave half-written objects: the next request starts this board from the prebuilt folder again.
+    if (r.timedOut) { copied.delete(slugOf(v.fqbn)); await rm(work, { recursive: true, force: true }); return json(200, { ok: false, errors: "compile timed out" }); }
     if (r.code !== 0) return json(200, { ok: false, errors: scrubOutput(r.out) });
 
     const esp32 = BOARDS[v.board].chip !== "esp8266";
-    const file = `${dir}/out/${esp32 ? "sketch.ino.merged.bin" : "sketch.ino.bin"}`;
+    const file = `${dir}/${esp32 ? "sketch.ino.merged.bin" : "sketch.ino.bin"}`;
     // merged.bin is padded with 0xFF (erased flash) to the full flash size; trimming it keeps the image small and leaves
     // the board's other partitions (e.g. saved Wi-Fi in NVS) as they are, like an Arduino IDE upload.
     const bin = trimErased(await readFile(file)), size = bin.length;

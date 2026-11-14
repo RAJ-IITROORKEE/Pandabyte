@@ -30,9 +30,8 @@ COPY --from=esptool /opt/esptool /opt/esptool
 # - Drop what a compile never uses: debuggers, OpenOCD (emptied; their version folders stay so the core still counts them
 #   as installed), and the IDF libraries of chips PandaByte does not sell.
 # - Libraries: keep in sync with ALLOWED_LIBRARIES in validate.mjs.
-# - Pre-warm one blank sketch per FQBN; the core objects land in the cache the handler copies to /tmp at cold start.
-#   shortcut: arduino-cli 1.3 ignored both --build-cache-path and ARDUINO_BUILD_CACHE_PATH here, so the core cache is found
-#   wherever it was written and copied in; without it a cold compile rebuilds the core (slower, still inside the timeout).
+# - Pre-build one blank sketch per FQBN at the /tmp/work/<fqbn> paths the handler uses, then keep those build folders in
+#   /opt/arduino/prebuilt: a compile then rebuilds only the sketch (arduino-cli 1.3 never filled its core cache here).
 RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/dl && \
     node -e "fetch('https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(b=>require('fs').writeFileSync('/tmp/cli.tgz',Buffer.from(b)))" && \
     tar -xzf /tmp/cli.tgz -C /opt/arduino/bin arduino-cli && rm /tmp/cli.tgz && \
@@ -51,15 +50,13 @@ RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/d
       "Adafruit BME280 Library@2.2.4" "Adafruit SSD1306@2.5.13" "Adafruit GFX Library@1.11.11" \
       "Adafruit NeoPixel@1.12.3" "Adafruit Unified Sensor@1.1.14" "Adafruit BusIO@1.16.1" \
       "DHT sensor library@1.4.6" "PubSubClient@2.8" "ArduinoJson@7.2.0" && \
-    mkdir -p /tmp/blank/sketch && echo 'void setup(){} void loop(){}' > /tmp/blank/sketch/sketch.ino && \
-    cd /tmp/blank && \
     for f in esp32:esp32:esp32s3 esp32:esp32:esp32c3 esp32:esp32:esp32c5 esp32:esp32:esp32c6 esp32:esp32:esp32 esp8266:esp8266:nodemcuv2; do \
-      ARDUINO_BUILD_CACHE_PATH=/opt/arduino/cache arduino-cli compile --fqbn $f --build-path /tmp/blank/build --output-dir /tmp/blank/out sketch || exit 1; \
+      w=/tmp/work/$(echo $f | sed 's/[^A-Za-z0-9]\{1,\}/_/g'); mkdir -p $w/sketch && echo 'void setup(){} void loop(){}' > $w/sketch/sketch.ino && \
+      (cd $w && arduino-cli compile --fqbn $f --build-path $w/build --output-dir /tmp/blank-out sketch) && rm -rf $w/build/sketch || exit 1; \
     done && \
-    C=$(find / -xdev -type d -name cores -path '*cache*' -not -path '/proc/*' 2>/dev/null | head -1); echo "core cache: ${C:-none}"; \
-    mkdir -p /opt/arduino/cache && { [ -z "$C" ] || cp -a "$C" /opt/arduino/cache/; } && \
-    cd / && rm -rf /tmp/blank /tmp/arduino /opt/arduino/dl /opt/arduino/data/staging /root/.cache && \
-    chmod -R a-w,a+rX /opt/arduino && du -sh /opt/arduino /opt/arduino/cache /opt/arduino/data/packages/*
+    mv /tmp/work /opt/arduino/prebuilt && \
+    cd / && rm -rf /tmp/blank-out /tmp/arduino /opt/arduino/dl /opt/arduino/data/staging /root/.cache && \
+    chmod -R a-w,a+rX /opt/arduino && du -sh /opt/arduino /opt/arduino/prebuilt/* /opt/arduino/data/packages/*
 
 COPY handler.mjs validate.mjs ${LAMBDA_TASK_ROOT}/
 CMD ["handler.handler"]
