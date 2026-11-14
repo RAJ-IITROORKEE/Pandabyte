@@ -1,13 +1,19 @@
 # Node 22 Lambda base (Amazon Linux 2023): the compiler is arduino-cli, Node only runs the thin handler, and 22 is
 # the long-established LTS image. The handler uses nothing 24-specific.
+# esptool for the esp32 core, fetched where pip has SSL (pip in the Lambda image has none). Must match the core's esptool_py version.
+FROM public.ecr.aws/docker/library/python:3.11-slim AS esptool
+ARG ESPTOOL_VERSION=5.0.0
+RUN pip install --no-cache-dir --target /opt/esptool "esptool==${ESPTOOL_VERSION}"
+
 FROM public.ecr.aws/lambda/nodejs:22
 
 ARG ARDUINO_CLI_VERSION=1.3.1
 ARG ESP32_CORE=3.3.0
 ARG ESP8266_CORE=3.1.2
+ARG ESPTOOL_VERSION=5.0.0
 
 # python3 is needed by the esp8266 core tools; python3.11 runs esptool for the esp32 core (see below); tar/gzip unpack the CLI release.
-RUN microdnf install -y python3 python3.11 python3.11-pip tar gzip && microdnf clean all
+RUN microdnf install -y python3 python3.11 tar gzip && microdnf clean all
 
 ENV ARDUINO_DIRECTORIES_DATA=/opt/arduino/data \
     ARDUINO_DIRECTORIES_USER=/opt/arduino/user \
@@ -26,11 +32,12 @@ RUN arduino-cli config init --overwrite && \
     arduino-cli core install esp32:esp32@${ESP32_CORE} esp8266:esp8266@${ESP8266_CORE}
 
 # The esp32 core's bundled esptool binary needs glibc 2.35; this image has 2.34 (build failed 14 Nov 2026).
-# Run the same esptool version from PyPI instead, behind the bundled file name.
+# Run the same esptool version from PyPI (first stage) instead, behind the bundled file name.
+COPY --from=esptool /opt/esptool /opt/esptool
 RUN for dir in /opt/arduino/data/packages/esp32/tools/esptool_py/*/; do \
-      python3.11 -m pip install --no-cache-dir "esptool==$(basename "$dir")" && \
-      printf '#!/bin/sh\nexec python3.11 -m esptool "$@"\n' > "$dir/esptool" && chmod +x "$dir/esptool" || exit 1; \
-    done && esptool version
+      [ "$(basename "$dir")" = "${ESPTOOL_VERSION}" ] || { echo "core wants esptool $(basename "$dir")"; exit 1; }; \
+      printf '#!/bin/sh\nPYTHONPATH=/opt/esptool exec python3.11 -m esptool "$@"\n' > "$dir/esptool" && chmod +x "$dir/esptool" || exit 1; \
+    done && PYTHONPATH=/opt/esptool python3.11 -m esptool version
 
 # Keep in sync with ALLOWED_LIBRARIES in validate.mjs.
 RUN arduino-cli lib install \
