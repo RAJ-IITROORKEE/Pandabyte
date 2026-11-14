@@ -1,11 +1,12 @@
 import { nativeModelProfiles, isNativeModelId, profileForNativeModelId, reservationQuantumNanoUsd, type NativeModelId } from '../opencode/native-model-profiles.ts';
-import { fastHostedModel, flashHostedModel, haikuHostedModel, hostedDirectModelIds, qwenHostedModel, type HostedDirectModelId } from '../hosted-model.ts';
+import { fastHostedModel, flashHostedModel, freePoolModel, hostedDirectModelIds, qwenHostedModel, type HostedDirectModelId } from '../hosted-model.ts';
 /** Built-ins, plus models from the Admin registry and the free pool (any `vendor/model` id; the server checks it is enabled). */
 export type ChatModelId = NativeModelId | HostedDirectModelId | `${string}/${string}`;
 const extraModelId = /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._:-]*$/;
 export const isChatModelId = (id: unknown): id is ChatModelId => isNativeModelId(id) || hostedDirectModelIds.includes(id as string) || (typeof id === 'string' && id.length <= 120 && extraModelId.test(id));
-/** Hosted chats start on Haiku when it is available; otherwise the first enabled model. */
-export const preferredModelId = haikuHostedModel.id;
+/** Chats start on the free pool (owner's pick, 14 Nov 2026, after the live eval) when it is enabled; otherwise the first enabled model.
+ * A model the user saved in Settings still wins. */
+export const preferredModelId = freePoolModel.id;
 export const nativeToolIds = ['convert_units', 'format_bom', 'read_public_docs'] as const;
 export const nativeSkillIds = ['embedded-explainer', 'project-planner', 'bom-assistant', 'engineering-reviewer'] as const;
 /** tier/privacy are set on registry models (after the built-in list): 'logged' = a free endpoint that may keep prompts. */

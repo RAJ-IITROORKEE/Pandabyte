@@ -48,7 +48,7 @@ export function FirmwareCard({ firmware, canFlash, onFlash }: { firmware: Firmwa
         </button>
       </div>
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
-      <p className={styles.note}>Flashing replaces the program on the board. You confirm the details in the Device panel first.</p>
+      <p className={styles.note}>{canFlash ? 'Flashing replaces the program on the board. You confirm the details in the Device panel first.' : 'Flash the .bin with the Arduino IDE or esptool; in-browser flashing is off.'}</p>
     </section>
   );
 }

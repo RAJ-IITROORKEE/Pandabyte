@@ -286,7 +286,7 @@ export function createToolHost(deps: ToolDeps) {
     const sent = result.size <= MAX_STREAM_FIRMWARE_BYTES && !!deps.firmware;
     if (sent) { try { deps.firmware!({ id: `fw${compiles}${result.sha256.slice(0, 8)}`, board: result.board, fqbn: result.fqbn, address: result.address, size: result.size, sha256: result.sha256, binBase64: result.binBase64, durationMs: result.durationMs }); } catch { /* Presentation only. */ } }
     return { kind: 'result', content: JSON.stringify({ ok: true, board: result.board, sizeKB: Math.ceil(result.size / 1024), seconds: Math.round(result.durationMs / 1000), ...(result.warnings ? { warnings: result.warnings.slice(0, 1000) } : {}),
-      note: sent ? 'Compiled. A firmware card is shown with your answer; the user connects the board in the Device panel and confirms before flashing. Include the full sketch in final_answer.general.'
+      note: sent ? 'Compiled. A firmware card is shown with your answer; the user flashes it from there (when flashing is enabled) or downloads the .bin. Include the full sketch in final_answer.general.'
         : 'Compiled, but the image is too large to send to the browser. Give the user the sketch to build and flash in the Arduino IDE.' }) };
   }
   let planUpdates = 0, lastPlan: PlanStep[] | null = null, helperUsage: Usage = { inputTokens: 0, outputTokens: 0, costNanoUsd: 0 };

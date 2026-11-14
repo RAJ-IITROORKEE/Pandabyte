@@ -80,3 +80,22 @@ Verdict: do not adopt OmniRoute for the production Panda Agent. If wanted as a l
 - Added on `/admin/agent-models` and passed the live Test (tool call): Nemotron 3.5 Super VL, Cohere North Mini Code, Nemotron 3 Ultra 550B, Ling 3.2 Flash. Ling's free endpoint (`antdigital/fp8`) is listed as zero-retention, so its turns run with ZDR.
 - Nemotron 3.5 Lightning was first refused (OpenRouter reported its only endpoint unhealthy); a retry minutes later added it, it passed Test and sits at pool slot 4. All five are enabled in the section 4 order.
 - First live free-pool turn (catalog question): Nemotron 3.5 Super VL answered with 2 tools and 3 cited sources in 14 s; usage was recorded against that model ($0).
+
+## 7. Live eval: free pool vs paid (2026-11-14, owner Admin session, production)
+
+13 questions per model, one at a time, each in a new chat that was deleted afterwards: 5 product facts, a comparison, Zigbee/Thread, an I2C pinout, a blink sketch, a general I2C-vs-SPI question, a web question (re-run with web search on, as the composer sends it), stock count (must not invent one), an unknown board (xZ9) and an unclear "operating voltage" (must ask which product).
+
+| | Free pool | Claude Haiku 5.5 | DeepSeek V4.1 Flash |
+|---|---|---|---|
+| Passed | 12/13 | 13/13 | 13/13 |
+| Average time | 8.1 s | 7.8 s | 13.6 s |
+| Sources cited (all 13) | 14 | 23 | 33 |
+| Cost for 13 turns | $0 | $0.013 (~$0.001/turn) | $0.0034 (~$0.0003/turn) |
+
+- Every free turn was served by Nemotron 3.5 Super VL (first in the pool); no failover was needed.
+- Free pool miss: "How many xS3 boards are in stock?" looped search_catalog to the 10-step cap and gave the step-limit message. Smaller slips: it called hardware I2C on the S3 "software I2C", and added a year the web page did not show.
+- The two paid code answers used a named delay constant, so the automatic check (`delay(1000)`) missed them; both are correct sketches (DeepSeek also compiled it).
+- Whole run, including probes: about $0.03 on the OpenRouter key ($21.25 of the $35 limit used).
+- Finding: three chats started at the same moment got 401 for about a minute: each request checks the Clerk session through the Backend API (3 s timeout, lightweight-connection.ts), which failed under the burst.
+
+Owner decision: the free pool is now the default model for new users (a model saved in Settings still wins). Capacity limit: about 1,000 free requests a day for the whole OpenRouter account, about 3 per turn, so roughly 300 free turns a day across all users; after that free turns fail until the next day.
