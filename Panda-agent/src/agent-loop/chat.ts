@@ -12,6 +12,7 @@ import type { AgentLoopStore, LoopState } from './store.ts';
 import { parseToolSettings } from './tool-catalog.ts';
 import type { TurnSink } from './turn-events.ts';
 import type { Profile } from '../server/hosted-model-openrouter.ts';
+import { noteAnswered, noteLimited, readyFirst } from '../models/cooldown.ts';
 
 type Policy = { enabled(): Promise<boolean>; current(): Promise<boolean>; dispatchCurrent(): boolean; key(): string; isUnmetered?(): boolean; isAdmin?(): boolean };
 /** One model a turn may run on: a built-in (no profile) or an Admin-added model with its validated profile. */
@@ -65,7 +66,7 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
       if (policy.isUnmetered?.() !== true) throw new ChatStoreError('unavailable');
       // The models this turn may use are known before the turn is journaled, so an empty pool refuses instead of hanging.
       let entries: readonly PoolEntry[] = [{ id: options.model }];
-      if (options.pool) { try { entries = await options.pool(); } catch { entries = []; } if (!entries.length) throw new ChatStoreError('unavailable'); }
+      if (options.pool) { try { entries = await options.pool(); } catch { entries = []; } if (!entries.length) throw new ChatStoreError('unavailable'); entries = readyFirst(entries); }
       const begun = await store.begin(turn.thread, turn.request, turn.question);
       if (!begun.admitted) { const old = await read(turn.thread, turn.request); return old ? status(old) : { status: 'unknown' }; }
       const report = (stage: ActivityStage) => { try { progress?.(stage); } catch { /* Presentation only. */ } };
@@ -83,9 +84,10 @@ export function createAgentLoopChat(options: Options): BasicRagChatBridge {
         policyCurrent: policy.current, dispatchCurrent: policy.dispatchCurrent, beforeSend, claim });
       const step: StepFn = async (messages, specs, s, maxOutput, toolChoice) => {
         for (;;) {
-          try { return await make(at)(messages, specs, s, maxOutput, toolChoice); }
+          try { const r = await make(at)(messages, specs, s, maxOutput, toolChoice); noteAnswered(entries[at].id); return r; }
           catch (error) {
             const code = (error as { code?: unknown } | null)?.code;
+            if (code === 'rate_limited') noteLimited(entries[at].id);
             if (at + 1 < entries.length && !s.aborted && ['rate_limited', 'not_admitted', 'unavailable', 'outcome_unknown'].includes(String(code))) { at++; failedOver = true; continue; }
             throw error;
           }

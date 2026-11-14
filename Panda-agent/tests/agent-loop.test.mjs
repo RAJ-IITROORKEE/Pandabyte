@@ -935,3 +935,22 @@ test('free pool: a rate-limited model hands the turn to the next; one claim; usa
   const empty = harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, pool: async () => [] });
   await assert.rejects(empty.chat.start(turn, signal()), e => e.code === 'unavailable'); assert.ok(!empty.calls.includes('begin'), 'nothing journaled');
 });
+
+test('free pool cooldown: a rate-limited model is tried last on later turns, longer on each repeat, and is ready again after it answers', async () => {
+  const { readyFirst, noteLimited, noteAnswered } = await import('../src/models/cooldown.ts');
+  const used = [], limited = new Set(['vendor/a:free']);
+  const stepFactory = o => async () => { used.push(o.model); await o.claim('f'.repeat(64));
+    if (limited.has(o.model)) throw Object.assign(Error('429'), { code: 'rate_limited' });
+    return { ...reply(call('final_answer', { sourced: '', citations: [], general: 'Use GPIO8 for SDA.' })), usage: { inputTokens: 9, outputTokens: 8, costNanoUsd: 0 } }; };
+  const pool = async () => [{ id: 'vendor/a:free' }, { id: 'vendor/b:free' }, { id: 'vendor/c:free' }];
+  const once = () => harness({ script: { step: async () => { throw Error('unused'); } }, read: { thread, messages: [], turns: [current] }, stepFactory, pool }).chat.start(turn, signal());
+  assert.equal((await once()).status, 'saved'); assert.deepEqual(used, ['vendor/a:free', 'vendor/b:free']);
+  used.length = 0; assert.equal((await once()).status, 'saved'); assert.deepEqual(used, ['vendor/b:free'], 'the limited model is not tried first');
+  // timing: 1 minute, then 2 on a repeat; every model cooling still keeps an order (soonest ready first)
+  const t = 1e12, e = [{ id: 'x/one' }, { id: 'x/two' }, { id: 'x/three' }];
+  noteLimited('x/one', t); assert.deepEqual(readyFirst(e, t + 59000).map(x => x.id), ['x/two', 'x/three', 'x/one']);
+  assert.deepEqual(readyFirst(e, t + 60001).map(x => x.id), ['x/one', 'x/two', 'x/three'], 'ready after a minute');
+  noteLimited('x/one', t); assert.deepEqual(readyFirst(e, t + 90000).map(x => x.id)[0], 'x/two', 'a repeat doubles the wait');
+  noteLimited('x/two', t); noteLimited('x/three', t); assert.deepEqual(readyFirst(e, t + 1000).map(x => x.id), ['x/two', 'x/three', 'x/one']);
+  noteAnswered('x/one'); noteLimited('x/one', t); assert.deepEqual(readyFirst(e, t + 61000).map(x => x.id)[0], 'x/one', 'an answer resets the strikes');
+});
