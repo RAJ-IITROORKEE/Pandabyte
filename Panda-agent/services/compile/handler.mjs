@@ -22,7 +22,9 @@ const json = (statusCode, obj) => ({
 const copied = new Map();
 const workFor = (fqbn) => {
   const s = slugOf(fqbn);
-  if (!copied.has(s)) copied.set(s, cp(`${PREBUILT}/${s}`, `${WORK}/${s}`, { recursive: true, preserveTimestamps: true }).catch(() => {}));
+  // The image's files are read-only and cp keeps their modes, so the copy is made writable (14 Nov: every compile hit EACCES).
+  if (!copied.has(s)) copied.set(s, cp(`${PREBUILT}/${s}`, `${WORK}/${s}`, { recursive: true, preserveTimestamps: true })
+    .then(() => new Promise((done) => spawn("chmod", ["-R", "u+w", `${WORK}/${s}`]).on("close", done).on("error", done))).catch(() => {}));
   return copied.get(s).then(() => `${WORK}/${s}`);
 };
 
@@ -87,7 +89,8 @@ export async function handler(event) {
       warnings: scrubOutput(r.out),
       durationMs: Date.now() - started,
     });
-  } catch {
+  } catch (e) {
+    console.error("compile handler error", e?.code ?? "unknown"); // the code only: no sketch text or paths
     return json(500, { ok: false, reason: "internal error" });
   } finally {
     await rm(dir, { recursive: true, force: true });
