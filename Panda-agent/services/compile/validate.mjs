@@ -76,3 +76,10 @@ export function scrubOutput(text) {
 function bad(reason) {
   return { ok: false, reason };
 }
+
+/** Drops trailing 0xFF (erased flash) padding from a firmware image, keeping 4-byte alignment for the flasher. */
+export function trimErased(bin) {
+  let end = bin.length;
+  while (end > 0 && bin[end - 1] === 0xff) end--;
+  return bin.subarray(0, Math.min(bin.length, (end + 3) & ~3));
+}

@@ -1,8 +1,8 @@
 // Lambda Function URL handler: HMAC-checked, sandboxed arduino-cli compile.
 import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { validateRequest, verifySignature, scrubOutput, BOARDS } from "./validate.mjs";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { validateRequest, verifySignature, scrubOutput, trimErased, BOARDS } from "./validate.mjs";
 
 const TIMEOUT_MS = 100_000;
 const MAX_OUTPUT = 1_000_000;
@@ -68,9 +68,10 @@ export async function handler(event) {
 
     const esp32 = BOARDS[v.board].chip !== "esp8266";
     const file = `${dir}/out/${esp32 ? "sketch.ino.merged.bin" : "sketch.ino.bin"}`;
-    const size = (await stat(file)).size;
+    // merged.bin is padded with 0xFF (erased flash) to the full flash size; trimming it keeps the image small and leaves
+    // the board's other partitions (e.g. saved Wi-Fi in NVS) as they are, like an Arduino IDE upload.
+    const bin = trimErased(await readFile(file)), size = bin.length;
     if (size > MAX_BIN) return json(200, { ok: false, errors: "firmware too large to return" });
-    const bin = await readFile(file);
     return json(200, {
       ok: true, board: v.board, fqbn: v.fqbn, address: 0, size,
       sha256: createHash("sha256").update(bin).digest("hex"),

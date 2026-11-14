@@ -57,3 +57,10 @@ test("scrubOutput", () => {
   assert.match(out, /^sketch:3:1: error/);
   assert.equal(scrubOutput("a".repeat(5000)).length, 4000);
 });
+
+test("trimErased drops 0xFF flash padding but keeps 4-byte alignment", async () => {
+  const { trimErased } = await import("../services/compile/validate.mjs");
+  assert.deepEqual([...trimErased(Buffer.from([1, 2, 3, 0xff, 0xff, 0xff, 0xff, 0xff]))], [1, 2, 3, 0xff]);
+  assert.deepEqual([...trimErased(Buffer.from([1, 2, 3, 4]))], [1, 2, 3, 4]);
+  assert.equal(trimErased(Buffer.alloc(4096, 0xff)).length, 0);
+});
