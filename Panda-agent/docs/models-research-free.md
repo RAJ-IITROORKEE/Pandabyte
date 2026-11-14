@@ -73,3 +73,10 @@ Key facts:
 - Fit with Vercel: poor. Vercel functions cannot host the long-running gateway; it would need a separate VPS/container (extra cost, ops, auth hardening) and a public endpoint for the Vercel app to call, adding latency and a new attack surface carrying all upstream keys. For this app the same outcome (multi-model fallback) is achievable in ~20 lines inside the existing OpenRouter client by iterating a model list on 429/5xx.
 
 Verdict: do not adopt OmniRoute for the production Panda Agent. If wanted as a later experiment, run it on a separate small host for dev only, never with user data. An in-app ordered fallback over `:free` models (plus optionally Groq/Cerebras/Gemini free keys behind the same interface) covers the need with far less risk.
+
+## 6. Live status (2026-11-14, after the owner's picks)
+
+- Owner picks: the free pool is for every signed-in user, clearly labeled (composer notice); pool = the five models in section 4; paid addition = DeepSeek V4.1 Flash only.
+- Added on `/admin/agent-models` and passed the live Test (tool call): Nemotron 3.5 Super VL, Cohere North Mini Code, Nemotron 3 Ultra 550B, Ling 3.2 Flash. Ling's free endpoint (`antdigital/fp8`) is listed as zero-retention, so its turns run with ZDR.
+- Nemotron 3.5 Lightning was first refused (OpenRouter reported its only endpoint unhealthy); a retry minutes later added it, it passed Test and sits at pool slot 4. All five are enabled in the section 4 order.
+- First live free-pool turn (catalog question): Nemotron 3.5 Super VL answered with 2 tools and 3 cited sources in 14 s; usage was recorded against that model ($0).

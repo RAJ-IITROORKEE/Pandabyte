@@ -414,12 +414,15 @@ export function createToolHost(deps: ToolDeps) {
   function finalAnswer(args: Record<string, unknown>, webIds?: readonly string[]): ToolOutcome {
     const given = typeof args.sourced === 'string' ? stripExcerptIds(args.sourced).trim() : args.sourced === undefined ? '' : null;
     // Filler instead of an empty field ("None.", "No PandaByte product facts were used", a lone quote mark) is dropped, not rejected.
-    const sourced = given !== null && sourcedFiller.test(given) ? '' : given;
-    const general = typeof args.general === 'string' ? stripProcessNote(stripExcerptIds(httpsOnlyLinks(args.general)).trim()) : args.general === undefined ? '' : null;
+    let sourced = given !== null && sourcedFiller.test(given) ? '' : given;
+    let general = typeof args.general === 'string' ? stripProcessNote(stripExcerptIds(httpsOnlyLinks(args.general)).trim()) : args.general === undefined ? '' : null;
     const ids = args.citations === undefined ? [] : args.citations;
     if (sourced === null || general === null || !str(sourced, 6000) || !str(general, 7000) || !Array.isArray(ids) || ids.length > 5 * MAX_CITATIONS || ids.some(id => typeof id !== 'string'))
       return error('invalid_arguments', `final_answer needs sourced and general strings and at most ${MAX_CITATIONS} excerpt ids.`);
     if (!sourced && !general) return error('empty_answer', 'Write the answer in sourced or general.');
+    // Some models (free ones, live 14 Nov) also end the answer with the "Next:" line; it becomes suggestions, never answer text.
+    const next = splitNextLine(general || sourced);
+    if (general) general = next.text; else sourced = next.text;
     const cited = [...new Set(ids as string[])], missing = cited.filter(id => !excerpts.has(id) && !web.has(id));
     if (missing.length) return error('unknown_citation', `These ids were not returned by read_product, find_pinout or web_search this turn: ${missing.join(', ')}. Cite only ids you received.`);
     // One citation per web page, even when both searches returned it.
@@ -456,7 +459,8 @@ export function createToolHost(deps: ToolDeps) {
     if (bytes(JSON.stringify(answer)) > 23000) return error('too_long', 'The answer with its citations is over the 23,000-byte storage limit (non-English text and code count more). Shorten it.');
     // The checklist names the steps of this answer, so delivering it finishes them (models rarely tick the last ones).
     if (lastPlan?.some(s => !s.done)) { lastPlan = lastPlan.map(s => ({ ...s, done: true })); try { deps.plan?.(lastPlan); } catch { /* Presentation only. */ } }
-    return { kind: 'final', answer, citedSkus: [...new Set(unique.map(id => excerpts.get(id)!.sku))], suggestions: cleanSuggestions(args.suggestions) };
+    const suggested = cleanSuggestions(args.suggestions);
+    return { kind: 'final', answer, citedSkus: [...new Set(unique.map(id => excerpts.get(id)!.sku))], suggestions: suggested.length ? suggested : next.suggestions };
   }
 
   function askUser(args: Record<string, unknown>): ToolOutcome {

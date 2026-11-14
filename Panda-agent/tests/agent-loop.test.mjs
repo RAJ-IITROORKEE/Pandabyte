@@ -519,6 +519,11 @@ test('follow-up suggestions: cleaned, at most three, from final_answer or a trai
   // final_answer path
   const viaTool = await run('Plan an air quality project with the xS3', scripted([() => reply(call('final_answer', { sourced: '', citations: [], general: 'A plan in general terms.', suggestions: ['Give me the full Arduino code', 'https://bad'] }))]));
   assert.deepEqual(viaTool.suggestions, ['Give me the full Arduino code']);
+  // final_answer that also writes the Next line in general (seen live): the line leaves the text; given suggestions win
+  const both = await run('Plan an air quality project with the xS3', scripted([() => reply(call('final_answer', { sourced: '', citations: [], general: 'A plan in general terms.\n\nNext: Give me the code | Add a wiring table', suggestions: ['Make a step-by-step build plan'] }))]));
+  assert.equal(both.answer.text, 'A plan in general terms.'); assert.deepEqual(both.suggestions, ['Make a step-by-step build plan']);
+  const onlyLine = await run('Plan an air quality project with the xS3', scripted([() => reply(call('final_answer', { sourced: '', citations: [], general: 'A plan.\nNext: Give me the code' }))]));
+  assert.equal(onlyLine.answer.text, 'A plan.'); assert.deepEqual(onlyLine.suggestions, ['Give me the code']);
   // plain-text path: the Next line leaves the saved text
   const viaPlain = await run('Explain I2C pull-up resistors to me please', scripted([() => ({ content: 'Pull-ups keep the lines high when idle, so devices can pull them low.\nNext: Which resistor value should I use? | Show an ESP32 I2C scan sketch', toolCalls: [], usage })]));
   assert.equal(viaPlain.answer.text, 'Pull-ups keep the lines high when idle, so devices can pull them low.');
