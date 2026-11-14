@@ -31,6 +31,8 @@ COPY --from=esptool /opt/esptool /opt/esptool
 #   as installed), and the IDF libraries of chips PandaByte does not sell.
 # - Libraries: keep in sync with ALLOWED_LIBRARIES in validate.mjs.
 # - Pre-warm one blank sketch per FQBN; the core objects land in the cache the handler copies to /tmp at cold start.
+#   shortcut: arduino-cli 1.3 ignored both --build-cache-path and ARDUINO_BUILD_CACHE_PATH here, so the core cache is found
+#   wherever it was written and copied in; without it a cold compile rebuilds the core (slower, still inside the timeout).
 RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/dl && \
     node -e "fetch('https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(b=>require('fs').writeFileSync('/tmp/cli.tgz',Buffer.from(b)))" && \
     tar -xzf /tmp/cli.tgz -C /opt/arduino/bin arduino-cli && rm /tmp/cli.tgz && \
@@ -54,7 +56,9 @@ RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/d
     for f in esp32:esp32:esp32s3 esp32:esp32:esp32c3 esp32:esp32:esp32c5 esp32:esp32:esp32c6 esp32:esp32:esp32 esp8266:esp8266:nodemcuv2; do \
       ARDUINO_BUILD_CACHE_PATH=/opt/arduino/cache arduino-cli compile --fqbn $f --build-path /tmp/blank/build --output-dir /tmp/blank/out sketch || exit 1; \
     done && \
-    cd / && rm -rf /tmp/blank /opt/arduino/dl /opt/arduino/data/staging /root/.cache && \
+    C=$(find / -xdev -type d -name cores -path '*cache*' -not -path '/proc/*' 2>/dev/null | head -1); echo "core cache: ${C:-none}"; \
+    mkdir -p /opt/arduino/cache && { [ -z "$C" ] || cp -a "$C" /opt/arduino/cache/; } && \
+    cd / && rm -rf /tmp/blank /tmp/arduino /opt/arduino/dl /opt/arduino/data/staging /root/.cache && \
     chmod -R a-w,a+rX /opt/arduino && du -sh /opt/arduino /opt/arduino/cache /opt/arduino/data/packages/*
 
 COPY handler.mjs validate.mjs ${LAMBDA_TASK_ROOT}/
