@@ -27,6 +27,8 @@ function run(args, cwd) {
     ARDUINO_DIRECTORIES_DATA: "/opt/arduino/data",
     ARDUINO_DIRECTORIES_USER: "/opt/arduino/user",
     ARDUINO_DIRECTORIES_DOWNLOADS: "/tmp/arduino-dl",
+    // arduino-cli 1.3 takes the core cache from build_cache.path (the --build-cache-path flag did not fill it at image build).
+    ARDUINO_BUILD_CACHE_PATH: CACHE,
     ARDUINO_UPDATER_ENABLE_NOTIFICATION: "false",
   };
   return new Promise((resolve) => {
