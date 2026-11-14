@@ -85,3 +85,9 @@ AWS CLI 2 is set up but has no live session; deploying needs the owner to sign i
   question, meter card (23k of 1M; 61k billed input over 5 steps). Not verified as a non-Admin user (no test sign-in).
 - Not live yet: the compile service. The code (services/compile) and the compile_sketch tool are deployed but inactive until
   the AWS stack exists and PANDA_COMPILE_URL / PANDA_COMPILE_SECRET are set. Waiting on the owner's `aws login`.
+
+### Compile service live (14 Nov 2026)
+- Stack `panda-compile` (ap-south-1): ECR + CodeBuild (builds from GitHub `main`) + container Lambda behind an HMAC-checked Function URL; Vercel has `PANDA_COMPILE_URL`/`PANDA_COMPILE_SECRET` (production). A forged signature gets 401.
+- Image fixes found on the way: the esp32 core's bundled esptool needs glibc 2.35 (Lambda base has 2.34), so esptool 5.0.0 from PyPI runs behind the same file name; the toolchain is one layer (Lambda counts every layer uncompressed, 10 GiB limit; image now ~1.6 GB compressed); merged ESP32 images are trimmed of 0xFF padding (4 MB -> ~390 KB; Wi-Fi settings in NVS are kept); arduino-cli 1.3 ignored its cache flag, so per-board build folders are prebuilt and reused per container.
+- Signed test compiles (blank-ish sketch): xS3 19 s cold / 6 s warm, C3 32 s, C5 32 s, C6 13 s, ESP32 34 s, ESP8266 8 s. Live chat: "compile a blink for the xS3" returned a firmware card (385 KB) in a 43 s turn.
+- Daily limits (migration 20261114130000): non-Admins 10 compiles per India day by default, set on the Admin Models page.
