@@ -52,7 +52,7 @@ RUN mkdir -p /opt/arduino/bin /opt/arduino/data /opt/arduino/user /opt/arduino/d
     mkdir -p /tmp/blank/sketch && echo 'void setup(){} void loop(){}' > /tmp/blank/sketch/sketch.ino && \
     cd /tmp/blank && \
     for f in esp32:esp32:esp32s3 esp32:esp32:esp32c3 esp32:esp32:esp32c5 esp32:esp32:esp32c6 esp32:esp32:esp32 esp8266:esp8266:nodemcuv2; do \
-      arduino-cli compile --fqbn $f --build-path /tmp/blank/build --build-cache-path /opt/arduino/cache --output-dir /tmp/blank/out sketch || exit 1; \
+      ARDUINO_BUILD_CACHE_PATH=/opt/arduino/cache arduino-cli compile --fqbn $f --build-path /tmp/blank/build --output-dir /tmp/blank/out sketch || exit 1; \
     done && \
     cd / && rm -rf /tmp/blank /opt/arduino/dl /opt/arduino/data/staging /root/.cache && \
     chmod -R a-w,a+rX /opt/arduino && du -sh /opt/arduino /opt/arduino/cache /opt/arduino/data/packages/*
