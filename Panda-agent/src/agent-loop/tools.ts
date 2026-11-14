@@ -147,7 +147,7 @@ export function mcpSpecs(tools: readonly McpAgentTool[]): ToolSpec[] {
 export type ToolSpec = { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } };
 export type ToolOutcome = { kind: 'result'; content: string } | { kind: 'final' | 'ask'; answer: ChatAnswer; citedSkus: string[]; suggestions?: string[] };
 
-export const MAX_PRODUCTS = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 8, PINOUT_EXCERPT_BYTES = 8000;
+export const MAX_PRODUCTS = 3, MAX_CATALOG_SEARCHES = 3, PRODUCT_EXCERPT_BYTES = 3000, MAX_CITATIONS = 8, PINOUT_EXCERPT_BYTES = 8000;
 /** Ranking words for find_pinout; "photo printed pad" keep the board-photo transcription among the passages read. No "GPIO",
  *  "pinout" or "wiring": the evidence reader refuses those words as wiring-proof questions (needsUnavailableProof). */
 export const PINOUT_FOCUS = 'pin labels header pin definitions layout strapping boot I2C SDA SCL UART TX RX ADC photo printed pad';
@@ -215,7 +215,7 @@ const error = (code: string, message: string): ToolOutcome => ({ kind: 'result',
 const fn = (name: string, description: string, properties: Record<string, unknown>, required: string[]): ToolSpec =>
   ({ type: 'function', function: { name, description, parameters: { type: 'object', additionalProperties: false, properties, required } } });
 const specs = {
-  search_catalog: fn('search_catalog', 'Find PandaByte catalog products by words in their titles (sensor type, chip, board family). Returns SKU, title and category only; no specifications, price or stock.',
+  search_catalog: fn('search_catalog', `Find PandaByte catalog products by words in their titles (sensor type, chip, board family). Returns SKU, title and category only; no specifications, price or stock. At most ${MAX_CATALOG_SEARCHES} searches per turn.`,
     { query: { type: 'string', description: 'A few words, for example "air quality sensor" or "ESP32 board".' } }, ['query']),
   read_product: fn('read_product', `Read excerpts of one product's PandaByte listing (and any maker datasheet excerpt attached to it). Each excerpt has an id to cite. At most ${MAX_PRODUCTS} products per turn.`,
     { sku: { type: 'string', description: 'Exact SKU from search_catalog.' }, focus: { type: 'string', description: 'Optional words that rank the most relevant excerpts first.' } }, ['sku']),
@@ -270,7 +270,7 @@ export function createToolHost(deps: ToolDeps) {
   const rows = () => catalog ??= deps.catalog().then(list => (loaded = list));
   // Product slots are taken before any read is awaited, so parallel calls hit the cap and get read numbers in call order.
   const reading = new Set<string>();
-  let readNumber = 0, searches = 0;
+  let readNumber = 0, searches = 0, catalogSearches = 0;
   const skillsLoaded = new Set<string>();
   const productImages = new Map<string, CitationImage[]>();
   let approvalUsed = false, compiles = 0;
@@ -481,6 +481,8 @@ export function createToolHost(deps: ToolDeps) {
       if (!record(args)) return error('invalid_json', 'Tool arguments must be one JSON object.');
       if (name === 'search_catalog') {
         if (!str(args.query, 200)) return error('invalid_arguments', 'search_catalog needs a short query string.');
+        // A free model once searched to the step cap for stock the catalog never holds (14 Nov 2026 eval).
+        if (++catalogSearches > MAX_CATALOG_SEARCHES) return error('catalog_search_limit', `At most ${MAX_CATALOG_SEARCHES} catalog searches per turn. Answer with what you have; price and stock are never in the catalog, so point to the product page for them.`);
         report('searching_sources');
         try { return { kind: 'result', content: JSON.stringify(searchCatalog(await rows(), args.query)) }; }
         catch { catalog = undefined; signal.throwIfAborted(); return error('unavailable', 'The catalog cannot be read right now. Do not name PandaByte products from memory.'); }

@@ -86,6 +86,18 @@ test('failed and timed out checks are evicted and a late old response cannot evi
  releases[1]({status:'revoked',userId:'owner'});assert.deepEqual(await Promise.all([fresh,shared]),[false,false]);
 });
 
+test('one request reuses a passed session check for 5 s and never a failed one',async t=>{
+ const {requestSessionCheck}=await import('../src/server/lightweight-connection.ts');
+ const f=fixture();let reads=0;f.live=async()=>{reads++;return {status:'active',userId:'owner'};};
+ t.mock.timers.enable({apis:['Date'],now:1000});
+ const check=requestSessionCheck('owner','session');
+ assert.equal(await check(),true);assert.equal(await check(),true);assert.equal(reads,1,'reused within 5 s');
+ assert.equal(await requestSessionCheck('owner','session')(),true);assert.equal(reads,2,'another request checks afresh');
+ t.mock.timers.tick(5000);f.live=async()=>{reads++;return {status:'revoked',userId:'owner'};};
+ assert.equal(await check(),false);assert.equal(await check(),false);assert.equal(reads,4,'a failed check is never reused');
+ assert.equal(await requestSessionCheck('owner',undefined)(),false);
+});
+
 test('in-flight keys and map capacity are bounded without changing unshared checks',async()=>{
  const f=fixture(),releases=[];let reads=0;
  f.live=()=>{reads++;return new Promise(resolve=>{releases.push(()=>resolve({status:'active',userId:'owner'}));});};

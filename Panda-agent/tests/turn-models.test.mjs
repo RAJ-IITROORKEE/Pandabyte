@@ -40,3 +40,14 @@ test('capabilities: registry models after the built-in list are accepted only wh
     assert.equal(parseCapabilities({ ...base, models: [...fixed, bad] }), null, JSON.stringify(bad).slice(0, 80));
   assert.equal(parseCapabilities({ ...base, models: [...fixed, paid, paid] }), null, 'duplicate ids');
 });
+
+test('OpenRouter credit: low under $5 or a fifth of the limit; parsed from /key without the key', async () => {
+  const { lowBalance, fetchOpenRouterKey } = await import('../src/models/openrouter-key.ts');
+  assert.equal(lowBalance(35, 13.75), false); assert.equal(lowBalance(35, 6.9), true); assert.equal(lowBalance(10, 4.99), true);
+  assert.equal(lowBalance(null, null), false, 'no key limit, no warning');
+  let seen;
+  const fetcher = async (url, init) => { seen = [url, init.headers.authorization]; return new Response(JSON.stringify({ data: { usage: 31.5, limit: 35, limit_remaining: 3.5, usage_daily: 0.56, usage_weekly: 6.11 } }), { status: 200 }); };
+  assert.deepEqual(await fetchOpenRouterKey('k', fetcher), { usage: 31.5, limit: 35, remaining: 3.5, daily: 0.56, weekly: 6.11, low: true });
+  assert.deepEqual(seen, ['https://openrouter.ai/api/v1/key', 'Bearer k']);
+  await assert.rejects(fetchOpenRouterKey('k', async () => new Response('{}', { status: 401 })));
+});

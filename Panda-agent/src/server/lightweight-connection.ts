@@ -43,6 +43,20 @@ export async function authenticateLightweight(options?: { admin?: boolean }) {
   return { subject, sessionId, client };
 }
 
+/** One request's repeated session checks: a passed check is reused for 5 s, a failed one never.
+ *  shortcut: a revoked session can act for up to 5 s more inside a request that already passed (its Clerk token lives 60 s anyway);
+ *  without this a chat turn re-checks dozens of times and parallel turns hit Clerk's rate limit as 401s (14 Nov 2026). */
+export function requestSessionCheck(subject: string, sessionId: string | null | undefined): () => Promise<boolean> {
+  let passedAt = -Infinity;
+  return async () => {
+    if (!sessionId) return false;
+    if (Date.now() - passedAt < 5000) return true;
+    const ok = await currentLightweightSession(subject, sessionId);
+    passedAt = ok ? Date.now() : -Infinity;
+    return ok;
+  };
+}
+
 const inFlightSessions = new Map<string, Promise<boolean>>();
 
 export function currentLightweightSession(subject: string, sessionId: string): Promise<boolean> {

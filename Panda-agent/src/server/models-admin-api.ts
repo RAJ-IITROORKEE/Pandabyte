@@ -5,6 +5,7 @@ import { MODEL_ID, parseModelAdd, parseModelPatch, parseModelRows, parseModelTes
 import { catalogEntryFor, endpointsFor, searchCatalog } from '../models/openrouter-catalog.ts';
 import { probeModel, probeProfileFor } from '../models/probe.ts';
 import { profiles } from './hosted-model-openrouter.ts';
+import { cachedOpenRouterKey } from '../models/openrouter-key.ts';
 import type { HostedDirectModelId } from '../hosted-model.ts';
 
 // Admin API for the model registry (migration 20261114120000). Admin proof: panda_agent_models_admin and the write RPCs are Admin-only in the
@@ -56,7 +57,9 @@ function viewOf(row: ModelRow): ModelView | null {
 
 export const modelsGET = (request: Request) => run(request, ['GET'], async ({ url, rpc }) => {
  if (url.search) throw new Refused(400, 'invalid');
- return { models: (await adminRows(rpc)).map((r): ModelRowView => ({ ...r, view: viewOf(r) })), openrouterConfigured: !!process.env.OPENROUTER_API_KEY?.trim() };
+ const models = (await adminRows(rpc)).map((r): ModelRowView => ({ ...r, view: viewOf(r) })), key = process.env.OPENROUTER_API_KEY?.trim();
+ // Read only after the Admin-only registry read succeeded; a failed read shows "unavailable", never blocks the page.
+ return { models, openrouterConfigured: !!key, openrouterKey: key ? await cachedOpenRouterKey(key).catch(() => null) : null };
 });
 
 export const modelsPOST = (request: Request) => run(request, ['POST'], async ({ url, rpc }) => {

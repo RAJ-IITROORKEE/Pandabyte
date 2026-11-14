@@ -60,6 +60,8 @@ const stopped = (text: string): ChatAnswer => ({ outcome: 'insufficient', text, 
 export const stepLimitText = 'I could not finish this answer within my step limit, so nothing was confirmed from PandaByte sources. Please ask again, or narrow the question.';
 export const providerStopText = 'The model stopped responding before the answer was finished, so nothing was confirmed from PandaByte sources. Please try again.';
 const unsent = new Set(['not_admitted', 'unavailable', 'rate_limited']);
+/** Per-turn caps whose message says "answer with what you have": the next step offers only the answer tools. */
+const wrapUpCodes = new Set(['catalog_search_limit', 'search_limit', 'product_limit']);
 export const shortNudge = 'Answer the question fully.';
 const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 const greeting = /^\s*(?:hi|hello|hey|thanks|thank you|good (?:morning|afternoon|evening))\b/i;
@@ -94,7 +96,7 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
   const messages = [...input.messages], maxSteps = deps.maxSteps ?? MAX_STEPS, toolCalls: string[] = [];
   let questionAt = input.messages.length - 1;
   const trace = deps.trace ?? newLoopTrace();
-  let usage = zero(), steps = 0, nudged = false, shortNudged = false;
+  let usage = zero(), steps = 0, nudged = false, shortNudged = false, wrapUp = false;
   const question = input.messages.at(-1)?.content ?? '';
   let contextTokens = 0;
   const end = (kind: LoopResult['kind'], answer: ChatAnswer, citedSkus: string[] = [], suggestions: string[] = []): LoopResult => ({ kind, answer, citedSkus, usage, steps, toolCalls, suggestions, contextTokens });
@@ -115,7 +117,7 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
     // Output room keeps the summed receipt inside the journal's bounds; tools that need another step are offered only while a full answer step still fits after this one.
     const room = LOOP_OUTPUT_TOTAL - usage.outputTokens, maxOutput = Math.min(STEP_OUTPUT_MAX, room);
     if (maxOutput < STEP_OUTPUT_MIN) break;
-    const last = steps === maxSteps - 1 || room < 2 * STEP_OUTPUT_MAX;
+    const last = wrapUp || steps === maxSteps - 1 || room < 2 * STEP_OUTPUT_MAX;
     let result: StepResult;
     // Once sources were read the answer must go through a tool (final_answer cites them), so the model cannot write a plain
     // answer that would be discarded and written again; models that ignore 'required' still get the one-time nudge below.
@@ -174,7 +176,7 @@ export async function runAgentLoop(input: { messages: LoopMessage[] }, deps: { s
     usage = add(usage, deps.tools.drainUsage?.() ?? zero());
     for (const [i, outcome] of outcomes.entries()) {
       if (outcome.kind !== 'result') return end(outcome.kind, outcome.answer, outcome.citedSkus, outcome.suggestions);
-      const code = codeOf(outcome.content); if (code) trace.errors.push(code);
+      const code = codeOf(outcome.content); if (code) { trace.errors.push(code); if (wrapUpCodes.has(code)) wrapUp = true; }
       messages.push({ role: 'tool', tool_call_id: result.toolCalls[i].id, content: outcome.content });
     }
   }

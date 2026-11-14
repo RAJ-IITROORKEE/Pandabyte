@@ -16,8 +16,8 @@ import "./theme.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Development | PandaByte.in",
-  description: "A local preview of the PandaByte.in development foundation.",
+  title: "PandaByte.in",
+  description: "PandaByte is an IoT and embedded hardware company: development boards, sensors, shields, accessories and IoT kits.",
   robots: {
     index: false,
     follow: false,

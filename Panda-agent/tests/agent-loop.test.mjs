@@ -116,6 +116,17 @@ test('live conversation 3: several product reads, the per-turn product cap, and 
   assert.deepEqual(result.citedSkus.sort(), ['PB-BMV080', 'PB96OLED', 'PBDHT11']); assert.match(result.answer.text, /github\.com\/adafruit/); assert.doesNotMatch(result.answer.text, menu);
 });
 
+test('a stock question cannot search to the step cap: the 4th catalog search is refused and only the answer tools remain', async () => {
+  const script = scripted([
+    () => reply(call('search_catalog', { query: 'xS3' }), call('search_catalog', { query: 'xS3 stock' })),
+    () => reply(call('search_catalog', { query: 'ESP32-S3 board' }), call('search_catalog', { query: 'xS3 in stock' })),
+    (m, tools) => { assert.deepEqual(toolErrors(m), ['catalog_search_limit']); assert.deepEqual(tools, ['ask_user', 'final_answer']);
+      return { content: 'I cannot see live availability in this chat; please check the xS3 product page.', toolCalls: [], usage }; },
+  ]);
+  const result = await run('How many xS3 boards are in stock right now?', script);
+  assert.equal(result.kind, 'final'); assert.equal(result.steps, 3);
+});
+
 test('invalid tool calls and citation ids are rejected back to the model, which can recover', async () => {
   const script = scripted([
     () => reply(call('delete_everything', {}), call('read_product', '{not json'), call('read_product', { sku: 'NOPE' })),

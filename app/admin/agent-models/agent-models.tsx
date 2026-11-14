@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Plus } from "lucide-react";
 import type { ModelRowView } from "@/Panda-agent/src/server/models-admin-api";
+import type { OpenRouterKeyUsage } from "@/Panda-agent/src/models/openrouter-key";
 import { DailyLimits } from "./daily-limits";
 import { AddModelDialog } from "./add-model-dialog";
 import { Modal, Switch, call, failure, price, tokens } from "./model-ui";
@@ -12,6 +13,7 @@ type Load = "loading" | "ready" | "unavailable" | "denied";
 type Test = { ok: boolean; latencyMs: number; toolCall: boolean; servedBy: string | null; error: string | null };
 const usd = (nano: number) => `$${(nano / 1e9).toFixed(nano >= 1e9 ? 2 : 4)}`;
 const num = (n: number) => n.toLocaleString("en-IN");
+const dollars = (n: number) => `$${n.toFixed(2)}`;
 const poolOf = (rows: ModelRowView[]) => rows.filter(r => r.tier === "free" && r.enabled).sort((a, b) => (a.poolOrder ?? 99) - (b.poolOrder ?? 99) || a.label.localeCompare(b.label));
 
 export function AgentModels() {
@@ -27,9 +29,11 @@ export function AgentModels() {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
 
+  const [credit, setCredit] = useState<OpenRouterKeyUsage | null>(null);
+
   const refresh = useCallback(async () => {
     const result = await call("GET");
-    if (result.ok && Array.isArray(result.data.models)) { setRows(result.data.models as ModelRowView[]); setLoad("ready"); }
+    if (result.ok && Array.isArray(result.data.models)) { setRows(result.data.models as ModelRowView[]); setCredit((result.data.openrouterKey as OpenRouterKeyUsage | null) ?? null); setLoad("ready"); }
     else setLoad(result.status === 401 || result.status === 403 ? "denied" : "unavailable");
   }, []);
   useEffect(() => { void Promise.resolve().then(refresh); }, [refresh]);
@@ -74,7 +78,9 @@ export function AgentModels() {
   const total = rows.reduce((s, r) => ({ turns: s.turns + (r.usage30d?.turns ?? 0), tokens: s.tokens + (r.usage30d ? r.usage30d.inputTokens + r.usage30d.outputTokens : 0), cost: s.cost + (r.usage30d?.costNano ?? 0),
     failovers: s.failovers + (r.usage30d?.failovers ?? 0), failures: s.failures + (r.usage30d?.failures ?? 0) }), { turns: 0, tokens: 0, cost: 0, failovers: 0, failures: 0 });
   const stats: [string, string][] = [["Enabled models", String(rows.filter(r => r.enabled).length)], ["Free pool size", String(pool.length)], ["Turns, 30 days", num(total.turns)], ["Tokens, 30 days", tokens(total.tokens)],
-    ["Cost, 30 days", usd(total.cost)], ["Failovers", num(total.failovers)], ["Failures", num(total.failures)]];
+    ["Cost, 30 days", usd(total.cost)], ["Failovers", num(total.failovers)], ["Failures", num(total.failures)],
+    ["OpenRouter credit left", !credit ? "Unavailable" : credit.remaining !== null && credit.limit !== null ? `${dollars(credit.remaining)} of ${dollars(credit.limit)}` : "No key limit"],
+    ["OpenRouter spent today", credit?.daily != null ? dollars(credit.daily) : "Unavailable"]];
 
   return <div className={styles.screen}>
     <header className={styles.heading}>
@@ -87,6 +93,7 @@ export function AgentModels() {
     {(load === "unavailable" || load === "denied") && <div className={styles.banner} role="alert"><p>{load === "denied" ? "An active administrator account is required." : "The model registry is unavailable. It may not be set up yet."}</p>
       <button type="button" className={styles.button} onClick={() => { setLoad("loading"); void refresh(); }}>Retry</button></div>}
     {load === "ready" && <>
+      {credit?.low && credit.remaining !== null && <p className={styles.banner} role="alert">OpenRouter credit is low: {dollars(credit.remaining)} left on this key. When it reaches zero, every paid model and the free-pool fallback stop answering. Raise the key limit or add credit in OpenRouter.</p>}
       <dl className={styles.stats}>{stats.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
       <section className={styles.card} aria-labelledby="pool-title">
         <h2 id="pool-title">Free pool</h2>

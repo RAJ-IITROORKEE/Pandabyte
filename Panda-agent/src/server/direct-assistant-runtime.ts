@@ -7,7 +7,7 @@ import {createHostedDirectPolicy} from './hosted-direct-policy.ts';
 import {createDirectAssistantChat} from './direct-assistant-chat.ts';
 import {createDirectAssistantStore,type DirectBudgetRefs} from './direct-assistant-store.ts';
 import {createPlainLlmChatService,createPlainLlmStore} from './plain-llm-chat.ts';
-import {currentLightweightSession} from './lightweight-connection';
+import {requestSessionCheck} from './lightweight-connection';
 import type {BasicRagChatBridge} from './basic-rag-chat-contracts.ts';
 import {ChatStoreError} from './chat-store.ts';
 import {mainRagChatForActor} from './main-rag-chat.ts';
@@ -22,7 +22,7 @@ export {researchWebSearchEnabled};
 import {createResearchGatewayClient} from './research-gateway-client.ts';
 
 export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.ProcessEnv=process.env){
- const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
+ const current=requestSessionCheck(actor.subject,actor.sessionId);
  const requestOrigin=new URL(request.url).origin;
  if(env.VERCEL!==undefined||env.VERCEL_ENV!==undefined)return createHostedDirectPolicy({env,actor,requestOrigin,current});
  let refs:DirectBudgetRefs|null=null;
@@ -37,7 +37,7 @@ export function directPolicyForActor(actor:ChatActor,request:Request,env:NodeJS.
 /** New turns are direct; historical native turns retain status/cancel support without spawning OpenCode. */
 function baseAssistantForActor(actor:ChatActor,request:Request,web:(routed:BasicRagChatBridge)=>BasicRagChatBridge):BasicRagChatBridge {
  const key=process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'';
- const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
+ const current=requestSessionCheck(actor.subject,actor.sessionId);
  const policy=directPolicyForActor(actor,request),requested=request.headers.get('X-Panda-Model');
  const selected=hostedModelSelection(process.env),fast=process.env.VERCEL==='1'&&selected?.id===fastHostedModel.id;
  // The free pool or an Admin-added model runs only in the agent loop; its built-in stand-in (Haiku) is never sent for it there.
@@ -76,7 +76,7 @@ export function directAssistantForActor(actor:ChatActor,request:Request):BasicRa
 }
 function researchFor(actor:ChatActor,request:Request,base:BasicRagChatBridge):BasicRagChatBridge {
  if(!researchWebSearchEnabled())return {...base,start:(turn,signal,progress)=>turn.webSearch?Promise.reject(new ChatStoreError('unavailable')):base.start(turn,signal,progress)};
- const current=()=>actor.sessionId?currentLightweightSession(actor.subject,actor.sessionId):Promise.resolve(false);
+ const current=requestSessionCheck(actor.subject,actor.sessionId);
  const limit=Number(process.env.PANDA_AGENT_WEB_SEARCH_DAILY_LIMIT??'20');
  const research=createResearchChat({actor,key:process.env.PANDA_AGENT_LIGHTWEIGHT_DB_KEY??'',current,profile:researchProfileFor(request.headers.get('X-Panda-Model')),
   searchLimit:Number.isSafeInteger(limit)&&limit>=1&&limit<=100?limit:20,

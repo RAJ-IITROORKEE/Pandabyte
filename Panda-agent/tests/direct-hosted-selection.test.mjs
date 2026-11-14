@@ -10,7 +10,7 @@ registerHooks({resolve(specifier,context,next){
   './direct-assistant-chat.ts':'export const createDirectAssistantChat=options=>{globalThis.hostedSelectionFixture.options=options;return {state:async()=>true,status:async()=>({status:"saved"}),cancel:async()=>({status:"saved"}),start:()=>options.policy.enabled()}}',
   './direct-assistant-store.ts':'export const createDirectAssistantStore=()=>({})',
   './plain-llm-chat.ts':'export const createPlainLlmStore=()=>({});export const createPlainLlmChatService=()=>({state:async()=>false})',
-  './lightweight-connection':'export const currentLightweightSession=async()=>true',
+  './lightweight-connection':'export const currentLightweightSession=async()=>true;export const requestSessionCheck=()=>async()=>true',
   './main-rag-chat.ts':'export const mainRagChatForActor=({direct})=>direct',
  };
  return Object.hasOwn(sources,specifier)?{url:'data:text/javascript,'+encodeURIComponent(sources[specifier]),shortCircuit:true}:next(specifier,context);
